@@ -156,12 +156,24 @@
     </div>
     <div id="login-form">
       <div class="auth-field"><label>email</label><input type="email" id="login-email" placeholder="you@example.com" /></div>
-      <div class="auth-field"><label>password</label><input type="password" id="login-password" placeholder="••••••••" /></div>
+      <div class="auth-field">
+        <label>password</label>
+        <div style="position:relative">
+          <input type="password" id="login-password" placeholder="••••••••" style="width:100%;padding-right:42px" />
+          <button type="button" onclick="togglePw('login-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;letter-spacing:0.04em;font-family:'DM Mono',monospace">show</button>
+        </div>
+      </div>
       <button class="auth-btn" onclick="handleLogin()">sign in</button>
     </div>
     <div id="signup-form" style="display:none">
       <div class="auth-field"><label>email</label><input type="email" id="signup-email" placeholder="you@example.com" /></div>
-      <div class="auth-field"><label>password</label><input type="password" id="signup-password" placeholder="min 6 characters" /></div>
+      <div class="auth-field">
+        <label>password</label>
+        <div style="position:relative">
+          <input type="password" id="signup-password" placeholder="min 6 characters" style="width:100%;padding-right:42px" />
+          <button type="button" onclick="togglePw('signup-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;letter-spacing:0.04em;font-family:'DM Mono',monospace">show</button>
+        </div>
+      </div>
       <label class="auth-age">
         <input type="checkbox" id="age-check" />
         <span>I confirm I am 13 years of age or older</span>
@@ -283,6 +295,7 @@
 </div>
 
 <script>
+function togglePw(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'show':'hide';}
 const {createClient}=supabase;
 const sb=createClient('https://qfawusrelwthxabfbglg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E');
 
