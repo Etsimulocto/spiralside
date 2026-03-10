@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Spiralside</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --border:   #1e1e2e;
+      --muted:    #2a2a3e;
+      --text:     #e8e8f0;
+      --subtext:  #7070a0;
+      --accent:   #7c6af7;
+      --accent2:  #f76a8a;
+      --accent3:  #6af7c8;
+      --nav-h:    64px;
+      --safe-bot: env(safe-area-inset-bottom, 0px);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── APP SHELL ── */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      cursor: pointer;
+      border: 2px solid var(--border);
+    }
+    .credits-badge {
+      font-size: 0.65rem;
+      color: var(--accent3);
+      border: 1px solid var(--accent3);
+      border-radius: 20px;
+      padding: 3px 8px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── VIEWS ── */
+    .view {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+    .view.active { display: flex; }
+
+    /* ── CHAT VIEW ── */
+    #chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+    #chat-messages::-webkit-scrollbar { width: 3px; }
+    #chat-messages::-webkit-scrollbar-track { background: transparent; }
+    #chat-messages::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 2px; }
+
+    .msg {
+      display: flex;
+      gap: 10px;
+      animation: msgIn 0.2s ease;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg.user { flex-direction: row-reverse; }
+
+    .msg-avatar {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      margin-top: 2px;
+    }
+    .msg.bot .msg-avatar  { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+    .msg.user .msg-avatar { background: var(--muted); color: var(--subtext); }
+
+    .msg-bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      letter-spacing: 0.01em;
+    }
+    .msg.bot  .msg-bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--text);
+    }
+    .msg.user .msg-bubble {
+      background: var(--accent);
+      border-bottom-right-radius: 4px;
+      color: #fff;
+    }
+
+    .typing-indicator {
+      display: flex; gap: 4px; align-items: center;
+      padding: 10px 14px;
+    }
+    .typing-indicator span {
+      width: 6px; height: 6px;
+      background: var(--subtext);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%            { transform: translateY(-5px); }
+    }
+
+    /* ── CHAT INPUT ── */
+    .chat-input-area {
+      padding: 12px 16px calc(12px + var(--safe-bot));
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 8px 8px 14px;
+      transition: border-color 0.2s;
+    }
+    .input-row:focus-within { border-color: var(--accent); }
+
+    #msg-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.82rem;
+      resize: none;
+      max-height: 100px;
+      line-height: 1.5;
+    }
+    #msg-input::placeholder { color: var(--subtext); }
+
+    .input-actions {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .icon-btn {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--subtext);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.2s, background 0.2s;
+      flex-shrink: 0;
+    }
+    .icon-btn:hover { color: var(--text); background: var(--muted); }
+    .icon-btn.send {
+      background: var(--accent);
+      color: #fff;
+    }
+    .icon-btn.send:hover { background: #6a5ae0; }
+    .icon-btn svg { width: 16px; height: 16px; }
+
+    /* ── SHEET VIEW ── */
+    #sheet-view {
+      overflow-y: auto;
+      padding: 20px 16px calc(20px + var(--safe-bot));
+      -webkit-overflow-scrolling: touch;
+    }
+    .sheet-header {
+      text-align: center;
+      padding: 20px 0 24px;
+    }
+    .sheet-avatar-lg {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      margin: 0 auto 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      border: 3px solid var(--border);
+    }
+    .sheet-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+    }
+    .sheet-sub {
+      font-size: 0.72rem;
+      color: var(--subtext);
+      margin-top: 4px;
+      letter-spacing: 0.08em;
+    }
+
+    .sheet-section {
+      margin-bottom: 20px;
+    }
+    .sheet-section-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      color: var(--subtext);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .trait-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .trait-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .trait-label {
+      font-size: 0.62rem;
+      color: var(--subtext);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+    .trait-value {
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+    .trait-bar-wrap {
+      height: 3px;
+      background: var(--muted);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .trait-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 2px;
+      transition: width 0.8s ease;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--subtext);
+      font-size: 0.78rem;
+      line-height: 1.7;
+    }
+    .empty-state .icon { font-size: 2rem; margin-bottom: 12px; }
+
+    /* ── VAULT VIEW ── */
+    #vault-view {
+      overflow-y: auto;
+      padding: 16px 16px calc(16px + var(--safe-bot));
+      -webkit-overflow-scrolling: touch;
+    }
+    .vault-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .vault-btn {
+      flex: 1;
+      padding: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px;
+      transition: border-color 0.2s, background 0.2s;
+      letter-spacing: 0.04em;
+    }
+    .vault-btn:hover { border-color: var(--accent); background: var(--muted); }
+    .vault-btn svg { width: 14px; height: 14px; }
+
+    .vault-list { display: flex; flex-direction: column; gap: 8px; }
+    .vault-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .vault-item:hover { border-color: var(--accent); }
+    .vault-icon {
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      background: var(--muted);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .vault-info { flex: 1; min-width: 0; }
+    .vault-filename {
+      font-size: 0.78rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .vault-meta {
+      font-size: 0.62rem;
+      color: var(--subtext);
+      margin-top: 2px;
+    }
+    .vault-del {
+      color: var(--subtext);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      transition: color 0.2s;
+    }
+    .vault-del:hover { color: var(--accent2); }
+    .vault-del svg { width: 14px; height: 14px; }
+
+    /* ── BOT BUILDER VIEW ── */
+    #builder-view {
+      overflow-y: auto;
+      padding: 16px 16px calc(16px + var(--safe-bot));
+      -webkit-overflow-scrolling: touch;
+    }
+    .builder-section { margin-bottom: 24px; }
+    .builder-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--subtext);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .builder-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+    .builder-input:focus { border-color: var(--accent); }
+    .builder-input::placeholder { color: var(--subtext); }
+
+    .tone-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .tone-chip {
+      padding: 8px 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--subtext);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .tone-chip.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(124,106,247,0.1);
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.2s;
+    }
+    .save-btn:hover { opacity: 0.88; }
+
+    /* ── BOTTOM NAV ── */
+    nav {
+      display: flex;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      padding-bottom: var(--safe-bot);
+      flex-shrink: 0;
+    }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 4px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: var(--subtext);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.06em;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-item svg { width: 20px; height: 20px; }
+    .nav-item.active { color: var(--accent); }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 0 0 3px 3px;
+    }
+
+    /* ── SCROLLBAR GLOBAL ── */
+    * { scrollbar-width: thin; scrollbar-color: var(--muted) transparent; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">spiralside</div>
+    <div class="header-right">
+      <div class="credits-badge" id="credits-display">∞ credits</div>
+      <div class="avatar" id="user-avatar">?</div>
+    </div>
+  </header>
+
+  <!-- CHAT VIEW -->
+  <div class="view active" id="chat-view">
+    <div id="chat-messages">
+      <div class="msg bot">
+        <div class="msg-avatar">S</div>
+        <div class="msg-bubble">Hey. I'm here. What's on your mind?</div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <div class="input-row">
+        <textarea id="msg-input" rows="1" placeholder="say something..."></textarea>
+        <div class="input-actions">
+          <button class="icon-btn" id="attach-btn" title="Attach file">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+            </svg>
+          </button>
+          <button class="icon-btn send" id="send-btn" title="Send">
+            <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARACTER SHEET VIEW -->
+  <div class="view" id="sheet-view">
+    <div class="sheet-header">
+      <div class="sheet-avatar-lg" id="sheet-avatar">?</div>
+      <div class="sheet-name" id="sheet-username">Your Name</div>
+      <div class="sheet-sub">CHARACTER SHEET · DRAFT</div>
+    </div>
+
+    <div id="sheet-content">
+      <div class="empty-state">
+        <div class="icon">✦</div>
+        <div>Start chatting and your character sheet will build itself over time.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VAULT VIEW -->
+  <div class="view" id="vault-view">
+    <div class="vault-toolbar">
+      <button class="vault-btn" id="add-file-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <line x1="9" y1="15" x2="15" y2="15"/>
+        </svg>
+        add file
+      </button>
+      <button class="vault-btn" id="open-folder-btn">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+        </svg>
+        open folder
+      </button>
+    </div>
+    <div class="vault-list" id="vault-list">
+      <div class="empty-state">
+        <div class="icon">🗂</div>
+        <div>No files yet. Add docs or images and your companion will remember them.</div>
+      </div>
+    </div>
+    <input type="file" id="file-input" style="display:none" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.webp" multiple />
+  </div>
+
+  <!-- BOT BUILDER VIEW -->
+  <div class="view" id="builder-view">
+    <div class="builder-section">
+      <div class="builder-label">companion name</div>
+      <input class="builder-input" type="text" id="bot-name" placeholder="give them a name..." />
+    </div>
+    <div class="builder-section">
+      <div class="builder-label">personality</div>
+      <textarea class="builder-input" id="bot-personality" rows="4" placeholder="describe how they think, speak, feel..."></textarea>
+    </div>
+    <div class="builder-section">
+      <div class="builder-label">tone</div>
+      <div class="tone-grid" id="tone-grid">
+        <button class="tone-chip" data-tone="warm">warm</button>
+        <button class="tone-chip" data-tone="direct">direct</button>
+        <button class="tone-chip" data-tone="curious">curious</button>
+        <button class="tone-chip" data-tone="playful">playful</button>
+        <button class="tone-chip" data-tone="stoic">stoic</button>
+        <button class="tone-chip" data-tone="poetic">poetic</button>
+      </div>
+    </div>
+    <div class="builder-section">
+      <div class="builder-label">first words</div>
+      <input class="builder-input" type="text" id="bot-greeting" placeholder="what do they say first?" />
+    </div>
+    <button class="save-btn" id="save-bot-btn">save companion</button>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav>
+    <button class="nav-item active" data-view="chat-view">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      chat
+    </button>
+    <button class="nav-item" data-view="sheet-view">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+      sheet
+    </button>
+    <button class="nav-item" data-view="vault-view">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <rect x="2" y="3" width="20" height="14" rx="2"/>
+        <path d="M8 21h8M12 17v4"/>
+      </svg>
+      vault
+    </button>
+    <button class="nav-item" data-view="builder-view">
+      <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>
+      </svg>
+      build
+    </button>
+  </nav>
+
+</div>
+
+<script>
+// ── STATE ──
+const state = {
+  botName: 'companion',
+  botPersonality: '',
+  botGreeting: 'Hey. I\'m here. What\'s on your mind?',
+  botTone: [],
+  vaultFiles: [],
+  characterSheet: null,
+  messageCount: 0,
+};
+
+// ── NAV ──
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.view).classList.add('active');
+  });
+});
+
+// ── CHAT ──
+const messagesEl = document.getElementById('chat-messages');
+const inputEl    = document.getElementById('msg-input');
+const sendBtn    = document.getElementById('send-btn');
+
+inputEl.addEventListener('input', () => {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 100) + 'px';
+});
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+sendBtn.addEventListener('click', sendMessage);
+
+function addMessage(text, role) {
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  const initials = role === 'bot' ? (state.botName[0] || 'S').toUpperCase() : 'U';
+  div.innerHTML = `
+    <div class="msg-avatar">${initials}</div>
+    <div class="msg-bubble">${text}</div>`;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg bot'; div.id = 'typing';
+  div.innerHTML = `<div class="msg-avatar">${(state.botName[0]||'S').toUpperCase()}</div>
+    <div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+function hideTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const text = inputEl.value.trim();
+  if (!text) return;
+  inputEl.value = '';
+  inputEl.style.height = 'auto';
+  addMessage(text, 'user');
+  state.messageCount++;
+  showTyping();
+
+  try {
+    const vaultContext = state.vaultFiles.map(f => `[file: ${f.name}]\n${f.content}`).join('\n\n');
+    const systemPrompt = buildSystemPrompt(vaultContext);
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+    const data = await res.json();
+    hideTyping();
+    const reply = data.content?.[0]?.text || 'Something went wrong.';
+    addMessage(reply, 'bot');
+
+    // auto-update sheet every 5 messages
+    if (state.messageCount % 5 === 0) updateCharacterSheet(text, reply);
+  } catch (e) {
+    hideTyping();
+    addMessage('Connection issue. Try again.', 'bot');
+  }
+}
+
+function buildSystemPrompt(vaultContext) {
+  let prompt = `You are ${state.botName || 'a companion'}.`;
+  if (state.botPersonality) prompt += ` ${state.botPersonality}`;
+  if (state.botTone.length) prompt += ` Your tone is ${state.botTone.join(', ')}.`;
+  prompt += ` Be genuine, present, and concise. Never break character.`;
+  if (vaultContext) prompt += `\n\nThe user has shared these files with you:\n${vaultContext}`;
+  return prompt;
+}
+
+// ── VAULT ──
+const fileInput = document.getElementById('file-input');
+document.getElementById('add-file-btn').addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', async e => {
+  for (const file of e.target.files) {
+    const content = await file.text().catch(() => '[binary file]');
+    state.vaultFiles.push({ name: file.name, size: file.size, content, type: file.type });
+  }
+  renderVault();
+  fileInput.value = '';
+});
+
+document.getElementById('open-folder-btn').addEventListener('click', async () => {
+  if ('showDirectoryPicker' in window) {
+    try {
+      const dir = await window.showDirectoryPicker({ mode: 'readwrite' });
+      for await (const [name, handle] of dir.entries()) {
+        if (handle.kind === 'file') {
+          const file = await handle.getFile();
+          const content = await file.text().catch(() => '[binary]');
+          if (!state.vaultFiles.find(f => f.name === name))
+            state.vaultFiles.push({ name, size: file.size, content, type: file.type });
+        }
+      }
+      renderVault();
+    } catch {}
+  } else {
+    fileInput.click();
+  }
+});
+
+function renderVault() {
+  const list = document.getElementById('vault-list');
+  if (!state.vaultFiles.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🗂</div><div>No files yet.</div></div>`;
+    return;
+  }
+  list.innerHTML = state.vaultFiles.map((f, i) => `
+    <div class="vault-item">
+      <div class="vault-icon">${f.type.startsWith('image') ? '🖼' : '📄'}</div>
+      <div class="vault-info">
+        <div class="vault-filename">${f.name}</div>
+        <div class="vault-meta">${(f.size/1024).toFixed(1)} KB · visible to companion</div>
+      </div>
+      <button class="vault-del" onclick="removeFile(${i})">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+        </svg>
+      </button>
+    </div>`).join('');
+}
+
+function removeFile(i) {
+  state.vaultFiles.splice(i, 1);
+  renderVault();
+}
+
+// ── CHARACTER SHEET ──
+async function updateCharacterSheet(userMsg, botReply) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        system: `You analyze conversations and extract character traits. Return ONLY valid JSON with this shape:
+{"traits":[{"label":"string","value":"string","score":0-100}],"summary":"one sentence"}
+No markdown, no explanation. Just JSON.`,
+        messages: [{ role: 'user', content: `User said: "${userMsg}"\nCompanion replied: "${botReply}"\nExtract 4-6 personality traits.` }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '{}';
+    state.characterSheet = JSON.parse(text.replace(/```json|```/g, '').trim());
+    renderSheet();
+  } catch {}
+}
+
+function renderSheet() {
+  const el = document.getElementById('sheet-content');
+  if (!state.characterSheet?.traits?.length) return;
+  el.innerHTML = `
+    ${state.characterSheet.summary ? `<div class="sheet-section">
+      <div class="sheet-section-title">summary</div>
+      <div style="font-size:0.8rem;line-height:1.6;color:var(--subtext)">${state.characterSheet.summary}</div>
+    </div>` : ''}
+    <div class="sheet-section">
+      <div class="sheet-section-title">traits</div>
+      <div class="trait-grid">
+        ${state.characterSheet.traits.map(t => `
+          <div class="trait-card">
+            <div class="trait-label">${t.label}</div>
+            <div class="trait-value">${t.value}</div>
+            <div class="trait-bar-wrap"><div class="trait-bar" style="width:${t.score}%"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── BOT BUILDER ──
+document.querySelectorAll('.tone-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('selected');
+    const tone = chip.dataset.tone;
+    if (state.botTone.includes(tone)) state.botTone = state.botTone.filter(t => t !== tone);
+    else state.botTone.push(tone);
+  });
+});
+
+document.getElementById('save-bot-btn').addEventListener('click', () => {
+  state.botName = document.getElementById('bot-name').value.trim() || 'companion';
+  state.botPersonality = document.getElementById('bot-personality').value.trim();
+  state.botGreeting = document.getElementById('bot-greeting').value.trim() || 'Hey. I\'m here.';
+
+  // reset chat with new greeting
+  messagesEl.innerHTML = '';
+  addMessage(state.botGreeting, 'bot');
+
+  // switch to chat
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelector('[data-view="chat-view"]').classList.add('active');
+  document.getElementById('chat-view').classList.add('active');
+});
+
+// ── ATTACH IMAGE TO CHAT ──
+document.getElementById('attach-btn').addEventListener('click', () => {
+  const img = document.createElement('input');
+  img.type = 'file'; img.accept = 'image/*';
+  img.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    addMessage(`📎 ${file.name}`, 'user');
+    state.vaultFiles.push({ name: file.name, size: file.size, content: '[image attached]', type: file.type });
+  };
+  img.click();
+});
+</script>
+</body>
+</html>
