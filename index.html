@@ -302,8 +302,8 @@ const sb=createClient('https://qfawusrelwthxabfbglg.supabase.co','eyJhbGciOiJIUz
 const state={user:null,botName:'companion',botPersonality:'',botGreeting:"Hey. I'm here. What's on your mind?",botTone:[],vaultFiles:[],characterSheet:null,messageCount:0};
 
 sb.auth.onAuthStateChange((_,session)=>{
-  if(session?.user){state.user=session.user;showApp(session.user);}
-  else{state.user=null;showAuth();}
+  if(session?.user){state.user=session.user;state.session=session;showApp(session.user);}
+  else{state.user=null;state.session=null;showAuth();}
 });
 
 function showAuth(){document.getElementById('auth-screen').style.display='flex';document.getElementById('app').classList.remove('visible');}
@@ -394,8 +394,7 @@ async function send(){
     if(state.botPersonality)sys+=` ${state.botPersonality}`;
     if(state.botTone.length)sys+=` Tone: ${state.botTone.join(', ')}.`;
     sys+=` Be genuine and concise. Never break character.`;
-    const session=await sb.auth.getSession();
-    const token=session?.data?.session?.access_token;
+    const token=state.session?.access_token;
     const r=await fetch('https://web-production-4e6f3.up.railway.app/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
