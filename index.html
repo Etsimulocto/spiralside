@@ -593,6 +593,7 @@ function showApp(user){
   loadBot(user.id);
   loadStyle(user.id);
   loadUsage();
+  handlePayPalReturn();
 }
 function switchTab(t){
   document.getElementById('login-form').style.display=t==='login'?'block':'none';
@@ -747,8 +748,40 @@ function switchPanelTab(tab){
   document.getElementById(`panel-${tab}`).classList.add('active');
 }
 
-function buyPack(amount){
-  alert(`Stripe integration coming soon!\n\nYou selected the $${amount} pack.\n\nFor now, contact us to add credits manually.`);
+async function buyPack(amount){
+  if(!state.user){alert("Please sign in first.");return;}
+  const btn=document.querySelector(`.pack-card:nth-child(${amount==5?1:amount==10?2:3})`);
+  try{
+    let token=state.session?.access_token;
+    if(!token){const{data}=await sb.auth.getSession();token=data?.session?.access_token;}
+    const r=await fetch(`${RAIL}/create-order`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({amount:String(amount)})
+    });
+    const data=await r.json();
+    if(!r.ok){alert(data.detail||"Payment error.");return;}
+    window.location.href=data.approve_url;
+  }catch(e){alert("Payment error. Try again.");}
+}
+
+async function handlePayPalReturn(){
+  const params=new URLSearchParams(window.location.search);
+  const payment=params.get("payment");
+  const token=params.get("token");
+  if(payment==="success"&&token){
+    try{
+      let authToken=state.session?.access_token;
+      if(!authToken){const{data}=await sb.auth.getSession();authToken=data?.session?.access_token;}
+      const r=await fetch(`${RAIL}/capture-order`,{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Authorization":`Bearer ${authToken}`},
+        body:JSON.stringify({order_id:token})
+      });
+      const data=await r.json();
+      if(r.ok){await loadUsage();window.history.replaceState({},document.title,window.location.pathname);openPanel("store");setTimeout(()=>alert(`Payment successful! ${data.credits_added} credits added.`),300);}
+    }catch{}
+  }else if(payment==="cancelled"){window.history.replaceState({},document.title,window.location.pathname);}
 }
 
 // ── NAV ──
