@@ -274,7 +274,7 @@
     <div id="chat-messages">
       <div class="msg bot">
         <div class="msg-avatar" id="bot-initial-display">S</div>
-        <div class="msg-bubble" id="greeting-bubble">Hey. I'm here. What's on your mind?</div>
+        <div class="msg-bubble" id="greeting-bubble">Hey. I'm here.</div>
       </div>
     </div>
     <div class="chat-input-area">
@@ -574,7 +574,7 @@ const {createClient}=supabase;
 const sb=createClient('https://qfawusrelwthxabfbglg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E');
 const RAIL='https://web-production-4e6f3.up.railway.app';
 
-const state={user:null,session:null,botName:'companion',botPersonality:'',botGreeting:"Hey. I'm here. What's on your mind?",botTone:[],vaultFiles:[],characterSheet:null,messageCount:0,credits:0,freeToday:0,isPaid:false};
+const state={user:null,session:null,botName:'Sky',botPersonality:'',botGreeting:"Hey. I'm here.",botTone:[],vaultFiles:[],characterSheet:null,messageCount:0,credits:0,freeToday:0,isPaid:false};
 
 sb.auth.onAuthStateChange((_,session)=>{
   if(session?.user){state.user=session.user;state.session=session;showApp(session.user);}
