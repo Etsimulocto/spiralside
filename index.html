@@ -638,8 +638,8 @@ function updateCreditDisplay(){
   const storeEl=document.getElementById('store-credits');
   const freeEl=document.getElementById('store-free-msg');
   if(state.isPaid){
-    badge.textContent=`${state.credits.toFixed(1)} cr`;
-    storeEl.textContent=state.credits.toFixed(1);
+    const cr=Number.isInteger(state.credits)?state.credits:parseFloat(state.credits.toFixed(1));badge.textContent=`${cr} cr`;
+    storeEl.textContent=cr;
     freeEl.textContent='paid account';
   } else {
     const left=Math.max(0,10-state.freeToday);
