@@ -394,7 +394,13 @@ async function send(){
     if(state.botPersonality)sys+=` ${state.botPersonality}`;
     if(state.botTone.length)sys+=` Tone: ${state.botTone.join(', ')}.`;
     sys+=` Be genuine and concise. Never break character.`;
-    const token=state.session?.access_token;
+    // get fresh token each time in case session refreshed
+    let token=state.session?.access_token;
+    if(!token){
+      const {data}=await sb.auth.getSession();
+      token=data?.session?.access_token;
+    }
+    if(!token){addMsg('Please sign in to chat.','bot');hideTyping();return;}
     const r=await fetch('https://web-production-4e6f3.up.railway.app/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
