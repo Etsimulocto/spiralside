@@ -794,7 +794,7 @@ async function send(){
     const r=await fetch(`${RAIL}/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
-      body:JSON.stringify({message:text,system_prompt:sys,vault_context:vault})
+      body:JSON.stringify({message:text,system_prompt:sys,vault_context:vault,bot_name:state.botName})
     });
     const data=await r.json();
     hideTyping();
