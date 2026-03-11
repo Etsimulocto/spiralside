@@ -301,9 +301,18 @@ const sb=createClient('https://qfawusrelwthxabfbglg.supabase.co','eyJhbGciOiJIUz
 
 const state={user:null,botName:'companion',botPersonality:'',botGreeting:"Hey. I'm here. What's on your mind?",botTone:[],vaultFiles:[],characterSheet:null,messageCount:0};
 
+// onAuthStateChange fires on load with existing session AND on login/logout
 sb.auth.onAuthStateChange((_,session)=>{
-  if(session?.user){state.user=session.user;state.session=session;showApp(session.user);}
-  else{state.user=null;state.session=null;showAuth();}
+  console.log('[auth] state change, token:', session?.access_token ? 'present' : 'null');
+  if(session?.user){
+    state.user=session.user;
+    state.session=session;
+    showApp(session.user);
+  } else {
+    state.user=null;
+    state.session=null;
+    showAuth();
+  }
 });
 
 function showAuth(){document.getElementById('auth-screen').style.display='flex';document.getElementById('app').classList.remove('visible');}
@@ -399,7 +408,9 @@ async function send(){
     if(!token){
       const {data}=await sb.auth.getSession();
       token=data?.session?.access_token;
+      if(token) state.session=data.session; // cache it
     }
+    console.log('[send] token:', token ? token.substring(0,20)+'...' : 'NULL');
     if(!token){addMsg('Please sign in to chat.','bot');hideTyping();return;}
     const r=await fetch('https://web-production-4e6f3.up.railway.app/chat',{
       method:'POST',
