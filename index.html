@@ -5,33 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Spiralside</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&family=Space+Grotesk:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600&family=JetBrains+Mono:wght@300;400&family=Raleway:wght@300;400;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --bg:#0a0a0f;--surface:#111118;--border:#1e1e2e;--muted:#2a2a3e;
       --text:#e8e8f0;--subtext:#7070a0;--accent:#7c6af7;--accent2:#f76a8a;--accent3:#6af7c8;
       --safe-bot:env(safe-area-inset-bottom,0px);
+      --bubble-radius:16px;--bubble-user-bg:var(--accent);--bubble-bot-bg:var(--surface);
+      --font-ui:'DM Mono',monospace;--font-display:'Syne',sans-serif;
+      --msg-spacing:12px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;overflow:hidden;-webkit-font-smoothing:antialiased;}
+    html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);overflow:hidden;-webkit-font-smoothing:antialiased;}
 
     /* AUTH */
     #auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;padding:32px 24px;background:var(--bg);}
-    .auth-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:2.2rem;letter-spacing:-0.03em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+    .auth-logo{font-family:var(--font-display);font-weight:800;font-size:2.2rem;letter-spacing:-0.03em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
     .auth-tagline{font-size:0.72rem;color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:40px;text-align:center;}
     .auth-card{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px 24px;}
     .auth-tabs{display:flex;margin-bottom:24px;background:var(--muted);border-radius:8px;padding:3px;}
-    .auth-tab{flex:1;padding:8px;background:transparent;border:none;color:var(--subtext);font-family:'DM Mono',monospace;font-size:0.72rem;cursor:pointer;border-radius:6px;transition:all 0.2s;letter-spacing:0.06em;}
+    .auth-tab{flex:1;padding:8px;background:transparent;border:none;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;border-radius:6px;transition:all 0.2s;letter-spacing:0.06em;}
     .auth-tab.active{background:var(--surface);color:var(--text);}
     .auth-field{margin-bottom:14px;}
     .auth-field label{display:block;font-size:0.62rem;color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;}
-    .auth-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;outline:none;transition:border-color 0.2s;}
+    .auth-field input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:var(--font-ui);font-size:0.8rem;outline:none;transition:border-color 0.2s;}
     .auth-field input:focus{border-color:var(--accent);}
     .auth-age{display:flex;align-items:center;gap:10px;margin-bottom:18px;cursor:pointer;}
     .auth-age input[type="checkbox"]{width:16px;height:16px;accent-color:var(--accent);}
     .auth-age span{font-size:0.7rem;color:var(--subtext);line-height:1.4;}
-    .auth-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.88rem;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.2s;}
+    .auth-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.88rem;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.2s;}
     .auth-btn:hover{opacity:0.88;}
     .auth-btn:disabled{opacity:0.5;cursor:not-allowed;}
     .auth-error{font-size:0.7rem;color:var(--accent2);text-align:center;margin-top:12px;min-height:18px;}
@@ -44,33 +47,28 @@
 
     /* HEADER */
     header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;z-index:10;}
-    .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;letter-spacing:-0.02em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .logo{font-family:var(--font-display);font-weight:800;font-size:1.2rem;letter-spacing:-0.02em;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
     .header-right{display:flex;align-items:center;gap:10px;}
-    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;border:2px solid var(--border);position:relative;}
-    .avatar-menu{display:none;position:absolute;top:40px;right:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px;min-width:160px;z-index:100;}
-    .avatar-menu.open{display:block;}
-    .avatar-menu-item{padding:8px 12px;font-size:0.72rem;color:var(--subtext);cursor:pointer;border-radius:6px;transition:all 0.15s;letter-spacing:0.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .avatar-menu-item:hover{background:var(--muted);color:var(--text);}
-    .avatar-menu-item.danger:hover{color:var(--accent2);}
-    .credits-badge{font-size:0.65rem;color:var(--accent3);border:1px solid var(--accent3);border-radius:20px;padding:3px 8px;letter-spacing:0.05em;}
+    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-family:var(--font-display);font-weight:700;cursor:pointer;border:2px solid var(--border);position:relative;flex-shrink:0;}
+    .credits-badge{font-size:0.65rem;color:var(--accent3);border:1px solid var(--accent3);border-radius:20px;padding:3px 8px;letter-spacing:0.05em;cursor:pointer;}
 
     /* VIEWS */
     .view{display:none;flex-direction:column;flex:1;overflow:hidden;}
     .view.active{display:flex;}
 
     /* CHAT */
-    #chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+    #chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:var(--msg-spacing);-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
     #chat-messages::-webkit-scrollbar{width:3px;}
     #chat-messages::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px;}
     .msg{display:flex;gap:10px;animation:msgIn 0.2s ease;}
     @keyframes msgIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
     .msg.user{flex-direction:row-reverse;}
-    .msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;font-family:'Syne',sans-serif;margin-top:2px;}
+    .msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.6rem;font-weight:700;font-family:var(--font-display);margin-top:2px;}
     .msg.bot .msg-avatar{background:linear-gradient(135deg,var(--accent),var(--accent2));}
     .msg.user .msg-avatar{background:var(--muted);color:var(--subtext);}
-    .msg-bubble{max-width:75%;padding:10px 14px;border-radius:16px;font-size:0.82rem;line-height:1.55;letter-spacing:0.01em;}
-    .msg.bot .msg-bubble{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px;}
-    .msg.user .msg-bubble{background:var(--accent);border-bottom-right-radius:4px;color:#fff;}
+    .msg-bubble{max-width:75%;padding:10px 14px;border-radius:var(--bubble-radius);font-size:0.82rem;line-height:1.55;letter-spacing:0.01em;}
+    .msg.bot .msg-bubble{background:var(--bubble-bot-bg);border:1px solid var(--border);border-bottom-left-radius:4px;}
+    .msg.user .msg-bubble{background:var(--bubble-user-bg);border-bottom-right-radius:4px;color:#fff;}
     .typing-indicator{display:flex;gap:4px;align-items:center;padding:10px 14px;}
     .typing-indicator span{width:6px;height:6px;background:var(--subtext);border-radius:50%;animation:bounce 1.2s infinite;}
     .typing-indicator span:nth-child(2){animation-delay:0.2s;}
@@ -79,7 +77,7 @@
     .chat-input-area{padding:12px 16px calc(12px + var(--safe-bot));border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;}
     .input-row{display:flex;gap:8px;align-items:flex-end;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:8px 8px 8px 14px;transition:border-color 0.2s;}
     .input-row:focus-within{border-color:var(--accent);}
-    #msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82rem;resize:none;max-height:100px;line-height:1.5;}
+    #msg-input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--font-ui);font-size:0.82rem;resize:none;max-height:100px;line-height:1.5;}
     #msg-input::placeholder{color:var(--subtext);}
     .input-actions{display:flex;gap:6px;align-items:center;}
     .icon-btn{width:32px;height:32px;border-radius:50%;border:none;background:transparent;color:var(--subtext);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color 0.2s,background 0.2s;flex-shrink:0;}
@@ -91,8 +89,8 @@
     /* SHEET */
     #sheet-view{overflow-y:auto;padding:20px 16px calc(20px + var(--safe-bot));-webkit-overflow-scrolling:touch;}
     .sheet-header{text-align:center;padding:20px 0 24px;}
-    .sheet-avatar-lg{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-family:'Syne',sans-serif;font-weight:800;border:3px solid var(--border);}
-    .sheet-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;word-break:break-all;}
+    .sheet-avatar-lg{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-family:var(--font-display);font-weight:800;border:3px solid var(--border);}
+    .sheet-name{font-family:var(--font-display);font-weight:700;font-size:1.1rem;word-break:break-all;}
     .sheet-sub{font-size:0.72rem;color:var(--subtext);margin-top:4px;letter-spacing:0.08em;}
     .sheet-section{margin-bottom:20px;}
     .sheet-section-title{font-size:0.65rem;letter-spacing:0.12em;color:var(--subtext);text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
@@ -108,7 +106,7 @@
     /* VAULT */
     #vault-view{overflow-y:auto;padding:16px 16px calc(16px + var(--safe-bot));-webkit-overflow-scrolling:touch;}
     .vault-toolbar{display:flex;gap:8px;margin-bottom:16px;}
-    .vault-btn{flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:border-color 0.2s;letter-spacing:0.04em;}
+    .vault-btn{flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:border-color 0.2s;letter-spacing:0.04em;}
     .vault-btn:hover{border-color:var(--accent);}
     .vault-btn svg{width:14px;height:14px;}
     .vault-list{display:flex;flex-direction:column;gap:8px;}
@@ -125,22 +123,96 @@
     #builder-view{overflow-y:auto;padding:16px 16px calc(16px + var(--safe-bot));-webkit-overflow-scrolling:touch;}
     .builder-section{margin-bottom:24px;}
     .builder-label{font-size:0.65rem;letter-spacing:0.1em;color:var(--subtext);text-transform:uppercase;margin-bottom:8px;}
-    .builder-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8rem;outline:none;transition:border-color 0.2s;resize:none;}
+    .builder-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font-ui);font-size:0.8rem;outline:none;transition:border-color 0.2s;resize:none;}
     .builder-input:focus{border-color:var(--accent);}
     .builder-input::placeholder{color:var(--subtext);}
     .tone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-    .tone-chip{padding:8px 4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:'DM Mono',monospace;font-size:0.68rem;cursor:pointer;text-align:center;transition:all 0.15s;letter-spacing:0.04em;}
+    .tone-chip{padding:8px 4px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.68rem;cursor:pointer;text-align:center;transition:all 0.15s;letter-spacing:0.04em;}
     .tone-chip.selected{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,0.1);}
-    .save-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.2s;}
+    .save-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.9rem;cursor:pointer;letter-spacing:0.04em;transition:opacity 0.2s;}
     .save-btn:hover{opacity:0.88;}
 
     /* NAV */
     nav{display:flex;border-top:1px solid var(--border);background:var(--bg);padding-bottom:var(--safe-bot);flex-shrink:0;}
-    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;cursor:pointer;background:none;border:none;color:var(--subtext);font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.06em;transition:color 0.2s;position:relative;}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 4px;cursor:pointer;background:none;border:none;color:var(--subtext);font-family:var(--font-ui);font-size:0.58rem;letter-spacing:0.06em;transition:color 0.2s;position:relative;}
     .nav-item svg{width:20px;height:20px;}
     .nav-item.active{color:var(--accent);}
     .nav-item.active::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2px;background:var(--accent);border-radius:0 0 3px 3px;}
     *{scrollbar-width:thin;scrollbar-color:var(--muted) transparent;}
+
+    /* SLIDE PANEL (Store + Style) */
+    .panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.3s;}
+    .panel-overlay.open{opacity:1;pointer-events:all;}
+    .slide-panel{position:fixed;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);width:100%;max-width:480px;background:var(--bg);border:1px solid var(--border);border-bottom:none;border-radius:20px 20px 0 0;z-index:201;transition:transform 0.35s cubic-bezier(0.32,0.72,0,1);max-height:92dvh;display:flex;flex-direction:column;}
+    .slide-panel.open{transform:translateX(-50%) translateY(0);}
+    .panel-handle{width:36px;height:4px;background:var(--muted);border-radius:2px;margin:12px auto 0;}
+    .panel-header{display:flex;padding:16px 20px 0;gap:4px;border-bottom:1px solid var(--border);margin-top:8px;}
+    .panel-tab{flex:1;padding:10px 8px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s;margin-bottom:-1px;}
+    .panel-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .panel-body{flex:1;overflow-y:auto;padding:20px 20px calc(20px + var(--safe-bot));-webkit-overflow-scrolling:touch;}
+    .panel-section{margin-bottom:28px;}
+    .panel-section-title{font-size:0.6rem;letter-spacing:0.14em;color:var(--subtext);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .panel-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+    .panel-tab-content{display:none;}
+    .panel-tab-content.active{display:block;}
+
+    /* STORE */
+    .credit-display{background:linear-gradient(135deg,rgba(124,106,247,0.15),rgba(247,106,138,0.15));border:1px solid rgba(124,106,247,0.3);border-radius:14px;padding:20px;text-align:center;margin-bottom:24px;}
+    .credit-amount{font-family:var(--font-display);font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;}
+    .credit-label{font-size:0.65rem;color:var(--subtext);letter-spacing:0.12em;text-transform:uppercase;margin-top:4px;}
+    .credit-sub{font-size:0.68rem;color:var(--subtext);margin-top:8px;}
+    .pack-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+    .pack-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 8px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+    .pack-card:hover{border-color:var(--accent);transform:translateY(-2px);}
+    .pack-card.popular{border-color:var(--accent2);}
+    .pack-popular-tag{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--accent2);color:#fff;font-size:0.55rem;letter-spacing:0.08em;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+    .pack-price{font-family:var(--font-display);font-weight:700;font-size:1.3rem;color:var(--text);}
+    .pack-credits{font-size:0.65rem;color:var(--subtext);margin-top:3px;}
+    .pack-bonus{font-size:0.6rem;color:var(--accent3);margin-top:2px;}
+    .feature-pricing{display:flex;flex-direction:column;gap:8px;}
+    .feature-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;}
+    .feature-icon{font-size:1.1rem;width:28px;text-align:center;flex-shrink:0;}
+    .feature-name{flex:1;font-size:0.78rem;}
+    .feature-cost{font-size:0.7rem;color:var(--accent3);letter-spacing:0.04em;}
+    .feature-model-select{background:var(--muted);border:none;color:var(--subtext);font-family:var(--font-ui);font-size:0.62rem;border-radius:6px;padding:3px 6px;cursor:pointer;outline:none;}
+    .feature-model-select:focus{outline:1px solid var(--accent);}
+
+    /* STYLE EDITOR */
+    .style-preview{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:20px;}
+    .preview-label{font-size:0.6rem;color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;}
+    .preview-bubble-row{display:flex;gap:8px;margin-bottom:8px;}
+    .preview-bubble{padding:8px 12px;border-radius:12px;font-size:0.75rem;max-width:70%;}
+    .preview-bubble.bot{background:var(--bubble-bot-bg);border:1px solid var(--border);border-bottom-left-radius:3px;}
+    .preview-bubble.user{background:var(--bubble-user-bg);color:#fff;border-bottom-right-radius:3px;margin-left:auto;}
+    .color-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .color-row:last-child{border-bottom:none;}
+    .color-label{flex:1;font-size:0.75rem;color:var(--subtext);}
+    .color-swatch{width:32px;height:32px;border-radius:8px;border:2px solid var(--border);cursor:pointer;overflow:hidden;position:relative;flex-shrink:0;}
+    .color-swatch input[type="color"]{position:absolute;inset:-4px;width:calc(100%+8px);height:calc(100%+8px);border:none;cursor:pointer;opacity:0;}
+    .color-swatch-bg{width:100%;height:100%;border-radius:6px;}
+    .font-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+    .font-chip{padding:10px 8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:center;transition:all 0.15s;font-size:0.78rem;}
+    .font-chip.selected{border-color:var(--accent);background:rgba(124,106,247,0.1);}
+    .slider-row{display:flex;align-items:center;gap:12px;padding:8px 0;}
+    .slider-label{font-size:0.72rem;color:var(--subtext);width:110px;flex-shrink:0;}
+    .slider-row input[type="range"]{flex:1;accent-color:var(--accent);height:4px;}
+    .slider-val{font-size:0.68rem;color:var(--accent);width:32px;text-align:right;flex-shrink:0;}
+    .bubble-shape-row{display:flex;gap:8px;}
+    .shape-chip{flex:1;padding:10px 4px;background:var(--surface);border:1px solid var(--border);cursor:pointer;text-align:center;font-size:0.68rem;transition:all 0.15s;}
+    .shape-chip:nth-child(1){border-radius:8px 2px 8px 8px;}
+    .shape-chip:nth-child(2){border-radius:20px;}
+    .shape-chip:nth-child(3){border-radius:2px;}
+    .shape-chip.selected{border-color:var(--accent);color:var(--accent);background:rgba(124,106,247,0.1);}
+    .style-apply-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:12px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.88rem;cursor:pointer;letter-spacing:0.04em;margin-top:8px;transition:opacity 0.2s;}
+    .style-apply-btn:hover{opacity:0.88;}
+    .style-reset-btn{width:100%;padding:11px;background:transparent;border:1px solid var(--border);border-radius:12px;color:var(--subtext);font-family:var(--font-ui);font-size:0.78rem;cursor:pointer;letter-spacing:0.04em;margin-top:8px;transition:all 0.2s;}
+    .style-reset-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+    .gradient-toggle{display:flex;align-items:center;gap:10px;padding:10px 0;}
+    .toggle-switch{width:40px;height:22px;background:var(--muted);border-radius:11px;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;}
+    .toggle-switch.on{background:var(--accent);}
+    .toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.2s;}
+    .toggle-switch.on::after{transform:translateX(18px);}
+    .toggle-label{font-size:0.72rem;color:var(--subtext);}
   </style>
 </head>
 <body>
@@ -160,7 +232,7 @@
         <label>password</label>
         <div style="position:relative">
           <input type="password" id="login-password" placeholder="••••••••" style="width:100%;padding-right:42px" />
-          <button type="button" onclick="togglePw('login-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;letter-spacing:0.04em;font-family:'DM Mono',monospace">show</button>
+          <button type="button" onclick="togglePw('login-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;letter-spacing:0.04em;font-family:var(--font-ui)">show</button>
         </div>
       </div>
       <button class="auth-btn" onclick="handleLogin()">sign in</button>
@@ -171,7 +243,7 @@
         <label>password</label>
         <div style="position:relative">
           <input type="password" id="signup-password" placeholder="min 6 characters" style="width:100%;padding-right:42px" />
-          <button type="button" onclick="togglePw('signup-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;letter-spacing:0.04em;font-family:'DM Mono',monospace">show</button>
+          <button type="button" onclick="togglePw('signup-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;letter-spacing:0.04em;font-family:var(--font-ui)">show</button>
         </div>
       </div>
       <label class="auth-age">
@@ -190,17 +262,14 @@
   <header>
     <div class="logo">spiralside</div>
     <div class="header-right">
-      <div class="credits-badge">∞ free</div>
-      <div class="avatar" id="user-avatar" onclick="toggleMenu()">
+      <div class="credits-badge" onclick="openPanel('store')" id="credits-badge">∞ free</div>
+      <div class="avatar" id="user-avatar" onclick="openPanel('store')">
         <span id="avatar-initial">?</span>
-        <div class="avatar-menu" id="avatar-menu">
-          <div class="avatar-menu-item" id="user-email-display">account</div>
-          <div class="avatar-menu-item danger" onclick="handleSignout()">sign out</div>
-        </div>
       </div>
     </div>
   </header>
 
+  <!-- CHAT VIEW -->
   <div class="view active" id="chat-view">
     <div id="chat-messages">
       <div class="msg bot">
@@ -223,6 +292,7 @@
     </div>
   </div>
 
+  <!-- SHEET VIEW -->
   <div class="view" id="sheet-view">
     <div class="sheet-header">
       <div class="sheet-avatar-lg" id="sheet-avatar">?</div>
@@ -234,6 +304,7 @@
     </div>
   </div>
 
+  <!-- VAULT VIEW -->
   <div class="view" id="vault-view">
     <div class="vault-toolbar">
       <button class="vault-btn" id="add-file-btn">
@@ -251,7 +322,9 @@
     <input type="file" id="file-input" style="display:none" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.webp" multiple />
   </div>
 
+  <!-- BUILD VIEW -->
   <div class="view" id="builder-view">
+    <div style="overflow-y:auto;padding:16px 16px calc(16px + var(--safe-bot));-webkit-overflow-scrolling:touch;">
     <div class="builder-section">
       <div class="builder-label">companion name</div>
       <input class="builder-input" type="text" id="bot-name" placeholder="give them a name..." />
@@ -276,6 +349,7 @@
       <input class="builder-input" type="text" id="bot-greeting" placeholder="what do they say first?" />
     </div>
     <button class="save-btn" id="save-bot-btn">save companion</button>
+    </div>
   </div>
 
   <nav>
@@ -294,25 +368,217 @@
   </nav>
 </div>
 
+<!-- SLIDE PANEL: Store + Style -->
+<div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
+<div class="slide-panel" id="slide-panel">
+  <div class="panel-handle"></div>
+  <div class="panel-header">
+    <button class="panel-tab active" onclick="switchPanelTab('store')">store</button>
+    <button class="panel-tab" onclick="switchPanelTab('style')">style</button>
+    <button class="panel-tab" onclick="switchPanelTab('account')">account</button>
+  </div>
+  <div class="panel-body">
+
+    <!-- STORE TAB -->
+    <div class="panel-tab-content active" id="panel-store">
+      <div class="credit-display">
+        <div class="credit-amount" id="store-credits">0</div>
+        <div class="credit-label">credits remaining</div>
+        <div class="credit-sub" id="store-free-msg">— free messages today</div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">buy credits</div>
+        <div class="pack-grid">
+          <div class="pack-card" onclick="buyPack(5)">
+            <div class="pack-price">$5</div>
+            <div class="pack-credits">500 credits</div>
+            <div class="pack-bonus">starter</div>
+          </div>
+          <div class="pack-card popular" onclick="buyPack(10)">
+            <div class="pack-popular-tag">✦ popular</div>
+            <div class="pack-price">$10</div>
+            <div class="pack-credits">1,100 credits</div>
+            <div class="pack-bonus">+100 bonus</div>
+          </div>
+          <div class="pack-card" onclick="buyPack(20)">
+            <div class="pack-price">$20</div>
+            <div class="pack-credits">2,400 credits</div>
+            <div class="pack-bonus">+400 bonus</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">feature pricing</div>
+        <div class="feature-pricing">
+          <div class="feature-row">
+            <div class="feature-icon">💬</div>
+            <div class="feature-name">chat message</div>
+            <div class="feature-cost">1 cr</div>
+            <select class="feature-model-select" id="model-chat">
+              <option value="haiku">haiku (fast)</option>
+              <option value="sonnet">sonnet (smart)</option>
+            </select>
+          </div>
+          <div class="feature-row">
+            <div class="feature-icon">🎨</div>
+            <div class="feature-name">image generation</div>
+            <div class="feature-cost">5 cr</div>
+            <select class="feature-model-select" id="model-image">
+              <option value="flux-schnell">flux schnell</option>
+              <option value="flux-krea">flux krea</option>
+            </select>
+          </div>
+          <div class="feature-row">
+            <div class="feature-icon">🗣️</div>
+            <div class="feature-name">text to speech</div>
+            <div class="feature-cost">2 cr</div>
+            <select class="feature-model-select" id="model-tts">
+              <option value="chatterbox">chatterbox</option>
+            </select>
+          </div>
+          <div class="feature-row">
+            <div class="feature-icon">🎤</div>
+            <div class="feature-name">speech to text</div>
+            <div class="feature-cost">1 cr</div>
+            <select class="feature-model-select" id="model-stt">
+              <option value="whisper">whisper</option>
+            </select>
+          </div>
+          <div class="feature-row">
+            <div class="feature-icon">📹</div>
+            <div class="feature-name">video generation</div>
+            <div class="feature-cost">20 cr</div>
+            <select class="feature-model-select" id="model-video">
+              <option value="wan2">wan 2.2</option>
+            </select>
+          </div>
+          <div class="feature-row">
+            <div class="feature-icon">🖼️</div>
+            <div class="feature-name">image editing</div>
+            <div class="feature-cost">3 cr</div>
+            <select class="feature-model-select" id="model-imgedit">
+              <option value="flux-kontext">flux kontext</option>
+              <option value="qwen-edit">qwen edit</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STYLE TAB -->
+    <div class="panel-tab-content" id="panel-style">
+
+      <!-- LIVE PREVIEW -->
+      <div class="style-preview">
+        <div class="preview-label">preview</div>
+        <div class="preview-bubble-row">
+          <div class="preview-bubble bot" id="preview-bot">hey, what's on your mind?</div>
+        </div>
+        <div class="preview-bubble-row">
+          <div class="preview-bubble user" id="preview-user">just exploring the vibe</div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">colors</div>
+        <div class="color-row">
+          <span class="color-label">background</span>
+          <div class="color-swatch" id="swatch-bg"><div class="color-swatch-bg" id="swatch-bg-bg" style="background:#0a0a0f"></div><input type="color" value="#0a0a0f" oninput="previewColor('bg',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">surface / cards</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="swatch-surface-bg" style="background:#111118"></div><input type="color" value="#111118" oninput="previewColor('surface',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">accent (primary)</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="swatch-accent-bg" style="background:#7c6af7"></div><input type="color" value="#7c6af7" oninput="previewColor('accent',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">accent (secondary)</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="swatch-accent2-bg" style="background:#f76a8a"></div><input type="color" value="#f76a8a" oninput="previewColor('accent2',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">user bubble</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="swatch-userbubble-bg" style="background:#7c6af7"></div><input type="color" value="#7c6af7" oninput="previewColor('userbubble',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">text color</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="swatch-text-bg" style="background:#e8e8f0"></div><input type="color" value="#e8e8f0" oninput="previewColor('text',this.value)" /></div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">bubble shape</div>
+        <div class="bubble-shape-row">
+          <div class="shape-chip selected" data-shape="16" onclick="selectShape(this,'16')">soft</div>
+          <div class="shape-chip" data-shape="24" onclick="selectShape(this,'24')">pill</div>
+          <div class="shape-chip" data-shape="4" onclick="selectShape(this,'4')">sharp</div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">typography</div>
+        <div class="builder-label" style="margin-bottom:8px">ui font</div>
+        <div class="font-grid" id="font-grid-ui">
+          <div class="font-chip selected" data-font="'DM Mono',monospace" style="font-family:'DM Mono',monospace" onclick="selectFont('ui',this)">DM Mono</div>
+          <div class="font-chip" data-font="'JetBrains Mono',monospace" style="font-family:'JetBrains Mono',monospace" onclick="selectFont('ui',this)">JetBrains</div>
+          <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('ui',this)">Grotesk</div>
+          <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('ui',this)">Outfit</div>
+          <div class="font-chip" data-font="'Raleway',sans-serif" style="font-family:'Raleway',sans-serif" onclick="selectFont('ui',this)">Raleway</div>
+          <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('ui',this)">Playfair</div>
+        </div>
+        <div class="builder-label" style="margin-bottom:8px;margin-top:14px">display / logo font</div>
+        <div class="font-grid" id="font-grid-display">
+          <div class="font-chip selected" data-font="'Syne',sans-serif" style="font-family:'Syne',sans-serif" onclick="selectFont('display',this)">Syne</div>
+          <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('display',this)">Outfit</div>
+          <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('display',this)">Grotesk</div>
+          <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('display',this)">Playfair</div>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <div class="panel-section-title">spacing & size</div>
+        <div class="slider-row">
+          <div class="slider-label">bubble radius</div>
+          <input type="range" min="2" max="28" value="16" oninput="previewSlider('bubble-radius',this.value+'px');document.getElementById('sv-br').textContent=this.value" />
+          <div class="slider-val" id="sv-br">16</div>
+        </div>
+        <div class="slider-row">
+          <div class="slider-label">message gap</div>
+          <input type="range" min="4" max="28" value="12" oninput="previewSlider('msg-spacing',this.value+'px');document.getElementById('sv-mg').textContent=this.value" />
+          <div class="slider-val" id="sv-mg">12</div>
+        </div>
+      </div>
+
+      <button class="style-apply-btn" onclick="applyAndSaveStyle()">apply & save theme</button>
+      <button class="style-reset-btn" onclick="resetStyle()">reset to default</button>
+    </div>
+
+    <!-- ACCOUNT TAB -->
+    <div class="panel-tab-content" id="panel-account">
+      <div class="panel-section">
+        <div class="panel-section-title">account</div>
+        <div style="font-size:0.78rem;color:var(--subtext);margin-bottom:16px" id="account-email-display">—</div>
+        <button class="style-reset-btn" onclick="handleSignout()">sign out</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
 <script>
 function togglePw(id,btn){const i=document.getElementById(id);i.type=i.type==='password'?'text':'password';btn.textContent=i.type==='password'?'show':'hide';}
 const {createClient}=supabase;
 const sb=createClient('https://qfawusrelwthxabfbglg.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E');
+const RAIL='https://web-production-4e6f3.up.railway.app';
 
-const state={user:null,botName:'companion',botPersonality:'',botGreeting:"Hey. I'm here. What's on your mind?",botTone:[],vaultFiles:[],characterSheet:null,messageCount:0};
+const state={user:null,session:null,botName:'companion',botPersonality:'',botGreeting:"Hey. I'm here. What's on your mind?",botTone:[],vaultFiles:[],characterSheet:null,messageCount:0,credits:0,freeToday:0,isPaid:false};
 
-// onAuthStateChange fires on load with existing session AND on login/logout
 sb.auth.onAuthStateChange((_,session)=>{
-  console.log('[auth] state change, token:', session?.access_token ? 'present' : 'null');
-  if(session?.user){
-    state.user=session.user;
-    state.session=session;
-    showApp(session.user);
-  } else {
-    state.user=null;
-    state.session=null;
-    showAuth();
-  }
+  if(session?.user){state.user=session.user;state.session=session;showApp(session.user);}
+  else{state.user=null;state.session=null;showAuth();}
 });
 
 function showAuth(){document.getElementById('auth-screen').style.display='flex';document.getElementById('app').classList.remove('visible');}
@@ -323,8 +589,10 @@ function showApp(user){
   document.getElementById('avatar-initial').textContent=i;
   document.getElementById('sheet-avatar').textContent=i;
   document.getElementById('sheet-username').textContent=user.email;
-  document.getElementById('user-email-display').textContent=user.email;
+  document.getElementById('account-email-display').textContent=user.email;
   loadBot(user.id);
+  loadStyle(user.id);
+  loadUsage();
 }
 function switchTab(t){
   document.getElementById('login-form').style.display=t==='login'?'block':'none';
@@ -337,19 +605,48 @@ async function handleLogin(){
   const e=document.getElementById('login-email').value.trim(),p=document.getElementById('login-password').value;
   const btn=document.querySelector('#login-form .auth-btn');btn.disabled=true;btn.textContent='signing in...';
   const{error}=await sb.auth.signInWithPassword({email:e,password:p});
-  if(error){document.getElementById('auth-error').textContent=error.message;btn.disabled=false;btn.textContent='sign in';}
+  btn.disabled=false;btn.textContent='sign in';
+  if(error)document.getElementById('auth-error').textContent=error.message;
 }
 async function handleSignup(){
-  const e=document.getElementById('signup-email').value.trim(),p=document.getElementById('signup-password').value;
   if(!document.getElementById('age-check').checked){document.getElementById('auth-error').textContent='You must confirm your age.';return;}
+  const e=document.getElementById('signup-email').value.trim(),p=document.getElementById('signup-password').value;
   const btn=document.querySelector('#signup-form .auth-btn');btn.disabled=true;btn.textContent='creating...';
   const{error}=await sb.auth.signUp({email:e,password:p});
-  if(error){document.getElementById('auth-error').textContent=error.message;btn.disabled=false;btn.textContent='create account';}
-  else{document.getElementById('auth-error').style.color='var(--accent3)';document.getElementById('auth-error').textContent='Check your email to confirm!';btn.disabled=false;btn.textContent='create account';}
+  btn.disabled=false;btn.textContent='create account';
+  if(error)document.getElementById('auth-error').textContent=error.message;
+  else document.getElementById('auth-error').style.color='var(--accent3)',document.getElementById('auth-error').textContent='Check your email to confirm!';
 }
-async function handleSignout(){await sb.auth.signOut();}
-function toggleMenu(){document.getElementById('avatar-menu').classList.toggle('open');}
-document.addEventListener('click',e=>{if(!e.target.closest('#user-avatar'))document.getElementById('avatar-menu').classList.remove('open');});
+async function handleSignout(){await sb.auth.signOut();closePanel();}
+
+async function loadUsage(){
+  try{
+    let token=state.session?.access_token;
+    if(!token){const{data}=await sb.auth.getSession();token=data?.session?.access_token;}
+    if(!token)return;
+    const r=await fetch(`${RAIL}/usage`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(r.ok){
+      const d=await r.json();
+      state.credits=d.credits||0;state.freeToday=d.free_messages_today||0;state.isPaid=d.is_paid||false;
+      updateCreditDisplay();
+    }
+  }catch{}
+}
+function updateCreditDisplay(){
+  const badge=document.getElementById('credits-badge');
+  const storeEl=document.getElementById('store-credits');
+  const freeEl=document.getElementById('store-free-msg');
+  if(state.isPaid){
+    badge.textContent=`${state.credits.toFixed(1)} cr`;
+    storeEl.textContent=state.credits.toFixed(1);
+    freeEl.textContent='paid account';
+  } else {
+    const left=Math.max(0,10-state.freeToday);
+    badge.textContent=`${left} free left`;
+    storeEl.textContent=left;
+    freeEl.textContent=`${left} of 10 free messages today`;
+  }
+}
 
 function loadBot(uid){
   const s=localStorage.getItem(`ss_bot_${uid}`);if(!s)return;
@@ -368,6 +665,93 @@ function saveBot(){
   localStorage.setItem(`ss_bot_${state.user.id}`,JSON.stringify({name:state.botName,personality:state.botPersonality,greeting:state.botGreeting,tone:state.botTone}));
 }
 
+// ── STYLE SYSTEM ──
+const DEFAULT_STYLE={bg:'#0a0a0f',surface:'#111118',accent:'#7c6af7',accent2:'#f76a8a',userbubble:'#7c6af7',text:'#e8e8f0',bubbleRadius:'16',msgSpacing:'12',fontUi:"'DM Mono',monospace",fontDisplay:"'Syne',sans-serif"};
+let pendingStyle={...DEFAULT_STYLE};
+
+function loadStyle(uid){
+  const s=localStorage.getItem(`ss_style_${uid}`);
+  if(s){pendingStyle={...DEFAULT_STYLE,...JSON.parse(s)};applyStyle(pendingStyle);}
+}
+function applyStyle(s){
+  const r=document.documentElement.style;
+  r.setProperty('--bg',s.bg);
+  r.setProperty('--surface',s.surface);
+  r.setProperty('--accent',s.accent);
+  r.setProperty('--accent2',s.accent2);
+  r.setProperty('--bubble-user-bg',s.userbubble);
+  r.setProperty('--text',s.text);
+  r.setProperty('--bubble-radius',s.bubbleRadius+'px');
+  r.setProperty('--msg-spacing',s.msgSpacing+'px');
+  r.setProperty('--font-ui',s.fontUi);
+  r.setProperty('--font-display',s.fontDisplay);
+  updatePreviewBubbles();
+}
+function applyAndSaveStyle(){
+  applyStyle(pendingStyle);
+  if(state.user)localStorage.setItem(`ss_style_${state.user.id}`,JSON.stringify(pendingStyle));
+  closePanel();
+}
+function resetStyle(){
+  pendingStyle={...DEFAULT_STYLE};
+  applyStyle(pendingStyle);
+  if(state.user)localStorage.removeItem(`ss_style_${state.user.id}`);
+}
+function previewColor(key,val){
+  pendingStyle[key]=val;
+  // update swatch display
+  const swatchMap={bg:'swatch-bg-bg',surface:'swatch-surface-bg',accent:'swatch-accent-bg',accent2:'swatch-accent2-bg',userbubble:'swatch-userbubble-bg',text:'swatch-text-bg'};
+  const el=document.getElementById(swatchMap[key]);if(el)el.style.background=val;
+  applyStyle(pendingStyle);
+}
+function previewSlider(key,val){
+  if(key==='bubble-radius')pendingStyle.bubbleRadius=parseInt(val);
+  if(key==='msg-spacing')pendingStyle.msgSpacing=parseInt(val);
+  applyStyle(pendingStyle);
+}
+function selectShape(el,val){
+  document.querySelectorAll('.shape-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  pendingStyle.bubbleRadius=parseInt(val);
+  applyStyle(pendingStyle);
+}
+function selectFont(type,el){
+  const grid=document.getElementById(`font-grid-${type}`);
+  grid.querySelectorAll('.font-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const font=el.dataset.font;
+  if(type==='ui')pendingStyle.fontUi=font;
+  else pendingStyle.fontDisplay=font;
+  applyStyle(pendingStyle);
+}
+function updatePreviewBubbles(){
+  // preview bubbles pick up CSS vars automatically since they use var(--bubble-*)
+}
+
+// ── PANEL ──
+function openPanel(tab){
+  document.getElementById('panel-overlay').classList.add('open');
+  document.getElementById('slide-panel').classList.add('open');
+  if(tab)switchPanelTab(tab);
+}
+function closePanel(){
+  document.getElementById('panel-overlay').classList.remove('open');
+  document.getElementById('slide-panel').classList.remove('open');
+}
+function switchPanelTab(tab){
+  document.querySelectorAll('.panel-tab').forEach((t,i)=>{
+    const tabs=['store','style','account'];
+    t.classList.toggle('active',tabs[i]===tab);
+  });
+  document.querySelectorAll('.panel-tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+}
+
+function buyPack(amount){
+  alert(`Stripe integration coming soon!\n\nYou selected the $${amount} pack.\n\nFor now, contact us to add credits manually.`);
+}
+
+// ── NAV ──
 document.querySelectorAll('.nav-item').forEach(b=>{
   b.addEventListener('click',()=>{
     document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
@@ -376,6 +760,7 @@ document.querySelectorAll('.nav-item').forEach(b=>{
   });
 });
 
+// ── CHAT ──
 const msgs=document.getElementById('chat-messages'),inp=document.getElementById('msg-input');
 inp.addEventListener('input',()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,100)+'px';});
 inp.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();}});
@@ -403,16 +788,10 @@ async function send(){
     if(state.botPersonality)sys+=` ${state.botPersonality}`;
     if(state.botTone.length)sys+=` Tone: ${state.botTone.join(', ')}.`;
     sys+=` Be genuine and concise. Never break character.`;
-    // get fresh token each time in case session refreshed
     let token=state.session?.access_token;
-    if(!token){
-      const {data}=await sb.auth.getSession();
-      token=data?.session?.access_token;
-      if(token) state.session=data.session; // cache it
-    }
-    console.log('[send] token:', token ? token.substring(0,20)+'...' : 'NULL');
+    if(!token){const{data}=await sb.auth.getSession();token=data?.session?.access_token;if(token)state.session=data.session;}
     if(!token){addMsg('Please sign in to chat.','bot');hideTyping();return;}
-    const r=await fetch('https://web-production-4e6f3.up.railway.app/chat',{
+    const r=await fetch(`${RAIL}/chat`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
       body:JSON.stringify({message:text,system_prompt:sys,vault_context:vault})
@@ -423,13 +802,16 @@ async function send(){
     addMsg(data.reply,'bot');
     if(data.usage){
       const u=data.usage;
-      const badge=document.querySelector('.credits-badge');
-      if(badge) badge.textContent=u.is_paid?`${u.credits_remaining?.toFixed(2)} credits`:`${u.free_limit-u.free_messages_today} free left`;
+      state.freeToday=u.free_messages_today||state.freeToday;
+      state.credits=u.credits_remaining||state.credits;
+      state.isPaid=u.is_paid||false;
+      updateCreditDisplay();
     }
     if(state.messageCount%5===0)updateSheet(text,data.reply);
   }catch{hideTyping();addMsg('Connection issue. Try again.','bot');}
 }
 
+// ── VAULT ──
 document.getElementById('add-file-btn').addEventListener('click',()=>document.getElementById('file-input').click());
 document.getElementById('file-input').addEventListener('change',async e=>{
   for(const f of e.target.files){const c=await f.text().catch(()=>'[binary]');state.vaultFiles.push({name:f.name,size:f.size,content:c,type:f.type});}
@@ -449,11 +831,19 @@ function renderVault(){
 }
 function removeFile(i){state.vaultFiles.splice(i,1);renderVault();}
 
+// ── SHEET ──
 async function updateSheet(u,b){
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:500,system:'Extract character traits from conversation. Return ONLY JSON: {"traits":[{"label":"string","value":"string","score":0-100}],"summary":"one sentence"} No markdown.',messages:[{role:'user',content:`User: "${u}"\nBot: "${b}"\nExtract 4 traits.`}]})});
+    let token=state.session?.access_token;
+    if(!token){const{data}=await sb.auth.getSession();token=data?.session?.access_token;}
+    if(!token)return;
+    const r=await fetch(`${RAIL}/sheet`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body:JSON.stringify({message:u,system_prompt:b,vault_context:''})
+    });
     const data=await r.json();
-    state.characterSheet=JSON.parse(data.content?.[0]?.text.replace(/```json|```/g,'').trim()||'{}');
+    state.characterSheet=JSON.parse(data.sheet?.replace(/```json|```/g,'').trim()||'{}');
     renderSheet();
   }catch{}
 }
@@ -464,6 +854,7 @@ function renderSheet(){
   <div class="sheet-section"><div class="sheet-section-title">traits</div><div class="trait-grid">${state.characterSheet.traits.map(t=>`<div class="trait-card"><div class="trait-label">${t.label}</div><div class="trait-value">${t.value}</div><div class="trait-bar-wrap"><div class="trait-bar" style="width:${t.score}%"></div></div></div>`).join('')}</div></div>`;
 }
 
+// ── BUILD ──
 document.querySelectorAll('.tone-chip').forEach(c=>{
   c.addEventListener('click',()=>{
     c.classList.toggle('selected');
