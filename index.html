@@ -394,12 +394,23 @@ async function send(){
     if(state.botPersonality)sys+=` ${state.botPersonality}`;
     if(state.botTone.length)sys+=` Tone: ${state.botTone.join(', ')}.`;
     sys+=` Be genuine and concise. Never break character.`;
-    if(vault)sys+=`\n\nUser's files:\n${vault}`;
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,system:sys,messages:[{role:'user',content:text}]})});
-    const data=await r.json();hideTyping();
-    const reply=data.content?.[0]?.text||'Something went wrong.';
-    addMsg(reply,'bot');
-    if(state.messageCount%5===0)updateSheet(text,reply);
+    const session=await sb.auth.getSession();
+    const token=session?.data?.session?.access_token;
+    const r=await fetch('https://web-production-4e6f3.up.railway.app/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body:JSON.stringify({message:text,system_prompt:sys,vault_context:vault})
+    });
+    const data=await r.json();
+    hideTyping();
+    if(!r.ok){addMsg(`⚠️ ${data.detail||'Something went wrong.'}`,'bot');return;}
+    addMsg(data.reply,'bot');
+    if(data.usage){
+      const u=data.usage;
+      const badge=document.querySelector('.credits-badge');
+      if(badge) badge.textContent=u.is_paid?`${u.credits_remaining?.toFixed(2)} credits`:`${u.free_limit-u.free_messages_today} free left`;
+    }
+    if(state.messageCount%5===0)updateSheet(text,data.reply);
   }catch{hideTyping();addMsg('Connection issue. Try again.','bot');}
 }
 
