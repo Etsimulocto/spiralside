@@ -578,7 +578,7 @@ const RAIL='https://web-production-4e6f3.up.railway.app';
 const state={user:null,session:null,botName:'Sky',botPersonality:'',botGreeting:"Hey. I'm here.",botTone:[],vaultFiles:[],characterSheet:null,messageCount:0,credits:0,freeToday:0,isPaid:false};
 
 sb.auth.onAuthStateChange((_,session)=>{
-  if(session?.user){state.user=session.user;state.session=session;showApp(session.user);}
+if(session?.user){state.user=session.user;state.session=session;ComicViewer.init(()=>showApp(session.user));}
   else{state.user=null;state.session=null;showAuth();}
 });
 
