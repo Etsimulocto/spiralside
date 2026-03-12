@@ -1,0 +1,122 @@
+// ============================================================
+// SPIRALSIDE — AUTH v1.0
+// Supabase init, login/signup/signout, screen routing
+// Exports sb (supabase client) for use across all modules
+// Nimbis anchor: js/app/auth.js
+// ============================================================
+
+import { state } from './state.js';
+
+// ── SUPABASE CLIENT ───────────────────────────────────────────
+// supabase global is loaded via CDN script tag in index.html
+const { createClient } = supabase;
+export const sb = createClient(
+  'https://qfawusrelwthxabfbglg.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E'
+);
+
+// ── SCREEN ROUTING ────────────────────────────────────────────
+// Shows one .screen by name, hides all others
+export function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${name}`)?.classList.add('active');
+}
+
+// ── CHECK SESSION AND ROUTE ───────────────────────────────────
+// Called after comic finishes — routes to app or auth
+export function checkAuthAndShow(onAppReady) {
+  sb.auth.getSession().then(({ data }) => {
+    if (data?.session?.user) {
+      state.user    = data.session.user;
+      state.session = data.session;
+      showScreen('app');
+      onAppReady();
+    } else {
+      showScreen('auth');
+    }
+  });
+}
+
+// ── LISTEN FOR AUTH CHANGES ───────────────────────────────────
+// Keeps state.session current if user signs in from another tab
+export function listenAuthChanges() {
+  sb.auth.onAuthStateChange((_, session) => {
+    if (session?.user && !state.user) {
+      state.user    = session.user;
+      state.session = session;
+    }
+  });
+}
+
+// ── PASSWORD VISIBILITY TOGGLE ────────────────────────────────
+// Called from HTML onclick — keeps btn in sync
+export function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  input.type     = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? 'show' : 'hide';
+}
+
+// ── AUTH TAB SWITCH ───────────────────────────────────────────
+export function switchAuthTab(t) {
+  document.getElementById('login-form').style.display  = t === 'login'  ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = t === 'signup' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',  t === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', t === 'signup');
+  document.getElementById('auth-error').textContent = '';
+}
+
+// ── ERROR DISPLAY ─────────────────────────────────────────────
+function setAuthError(msg, success = false) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.className   = 'auth-error' + (success ? ' auth-success' : '');
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────
+export async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const btn   = document.querySelector('#login-form .auth-btn');
+  btn.disabled = true; btn.textContent = 'signing in...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'sign in';
+  if (error) setAuthError(error.message);
+}
+
+// ── SIGNUP ────────────────────────────────────────────────────
+export async function handleSignup() {
+  if (!document.getElementById('age-check').checked) {
+    setAuthError('You must confirm your age.');
+    return;
+  }
+  const email = document.getElementById('signup-email').value.trim();
+  const pass  = document.getElementById('signup-password').value;
+  const btn   = document.querySelector('#signup-form .auth-btn');
+  btn.disabled = true; btn.textContent = 'creating...';
+  const { error } = await sb.auth.signUp({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'create account';
+  if (error) setAuthError(error.message);
+  else setAuthError('Check your email to confirm!', true);
+}
+
+// ── SIGNOUT ───────────────────────────────────────────────────
+export async function handleSignout(closePanel) {
+  await sb.auth.signOut();
+  closePanel();
+  state.user    = null;
+  state.session = null;
+  showScreen('auth');
+}
+
+// ── GET FRESH TOKEN ───────────────────────────────────────────
+// Helper used in chat/usage/paypal — refreshes session if needed
+export async function getToken() {
+  let token = state.session?.access_token;
+  if (!token) {
+    const { data } = await sb.auth.getSession();
+    token = data?.session?.access_token;
+    if (data?.session) state.session = data.session;
+  }
+  return token;
+}
+
