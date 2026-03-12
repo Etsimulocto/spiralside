@@ -29,7 +29,7 @@ let particles    = [];
 
 export function initStylePanel() {
   const grid = document.getElementById('theme-grid');
-  if (!grid || styleInited) return;
+  if (!grid) return;
   styleInited = true;
   grid.innerHTML = THEMES.map(t =>
     '<div class="theme-card" data-theme="' + t.id + '" onclick="applyThemePreset(\'' + t.id + '\')">' +
