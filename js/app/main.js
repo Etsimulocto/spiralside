@@ -18,6 +18,10 @@ import { initVault, renderVault,
 import { initMusic }          from './music.js';
 import { initMusicView, destroyMusicView } from './musicview.js';
 import { initBuild, loadBotIntoForm }              from './build.js';
+import { initLibrary, openPanelEditor, deletePanel,
+         openBookBuilder, addPanelToBook,
+         removePanelFromBook, movePanelInBook,
+         deleteBook }                              from './library.js';
 import { buildFAB, toggleFAB, switchView,
          openPanel, closePanel, switchPanelTab,
          loadUsage, updateCreditDisplay,
@@ -43,6 +47,13 @@ window.saveSummarize     = saveSummarize;
 window.initMusicView     = initMusicView;
 window.destroyMusicView  = destroyMusicView;
 window.removeFile        = removeFile;
+window.openPanelEditor   = openPanelEditor;
+window.deletePanel       = deletePanel;
+window.openBookBuilder   = openBookBuilder;
+window.addPanelToBook    = addPanelToBook;
+window.removePanelFromBook = removePanelFromBook;
+window.movePanelInBook   = movePanelInBook;
+window.deleteBook        = deleteBook;
 
 // ── APP READY ─────────────────────────────────────────────────
 // Called after auth check confirms a valid session
@@ -71,6 +82,7 @@ async function onAppReady() {
   initChat();
   initVault();
   initBuild();
+  initLibrary();
   buildFAB();
 
   // 6. Populate forms and UI

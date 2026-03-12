@@ -68,7 +68,7 @@ export function switchView(id) {
   if (nextTab?.onOpen) nextTab.onOpen();
 
   // Header glow color per view
-  const glowColors = { chat: '#00F6D6', sheet: '#FF4BCB', vault: '#7B5FFF', build: '#FFD93D', music: '#00F6D6' };
+  const glowColors = { chat: '#00F6D6', sheet: '#FF4BCB', vault: '#7B5FFF', build: '#FFD93D', music: '#00F6D6', library: '#FF4BCB' };
   document.getElementById('header-glow').style.background = glowColors[id] || '#00F6D6';
 
   // Highlight active FAB icon
