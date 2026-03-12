@@ -49,8 +49,8 @@ export async function initLibrary() {
 // ── WIRE CONTROLS ─────────────────────────────────────────────
 function wireLibraryControls() {
   // Add image button
-  document.getElementById('lib-add-btn')
-    .addEventListener('click', () => document.getElementById('lib-file-input').click());
+  var addBtn = document.getElementById('lib-add-btn');
+  if (addBtn) addBtn.onclick = function() { document.getElementById('lib-file-input').click(); };
 
   // File input → ingest images
   document.getElementById('lib-file-input')
@@ -101,8 +101,8 @@ function wireLibraryControls() {
       document.querySelectorAll('.lib-tab').forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       const which = tab.dataset.tab;
-      document.getElementById('lib-gallery-view').style.display = which === 'gallery' ? '' : 'none';
-      document.getElementById('lib-books-view').style.display   = which === 'books'   ? '' : 'none';
+      document.getElementById('lib-gallery-view').style.display = which === 'gallery' ? 'flex' : 'none';
+      document.getElementById('lib-books-view').style.display   = which === 'books'   ? 'flex' : 'none';
     });
   });
 }
