@@ -15,6 +15,7 @@ import { buildCharSelector, renderActiveChar,
          saveSummarize, loadSavedSheets }          from './sheet.js';
 import { initVault, renderVault,
          removeFile, loadVaultFromDB }             from './vault.js';
+import { initMusic }          from './music.js';
 import { initBuild, loadBotIntoForm }              from './build.js';
 import { buildFAB, toggleFAB, switchView,
          openPanel, closePanel, switchPanelTab,
@@ -81,6 +82,7 @@ async function onAppReady() {
 
   // 8. Handle any PayPal return redirect
   handlePayPalReturn();
+  initMusic();  // start background music
 }
 
 // ── BOOT ──────────────────────────────────────────────────────

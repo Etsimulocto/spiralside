@@ -23,7 +23,14 @@ export function initVault() {
 // ── HANDLE FILE INPUT ─────────────────────────────────────────
 async function handleFileInput(e) {
   for (const f of e.target.files) {
-    const content = await f.text().catch(() => '[binary]');
+    // Detect audio files — add to music player instead of reading as text
+  const isAudio = f.type.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a)$/i.test(f.name);
+  if (isAudio) {
+    const blobUrl = URL.createObjectURL(f);
+    // Dynamically import music module to add track
+    import('./music.js').then(m => m.addVaultTrack(f.name, blobUrl));
+  }
+  const content = isAudio ? '[audio file — added to music player]' : await f.text().catch(() => '[binary]');
     const entry   = { name: f.name, size: f.size, content, type: f.type };
     state.vaultFiles.push(entry);
     await dbSet('vault', entry);

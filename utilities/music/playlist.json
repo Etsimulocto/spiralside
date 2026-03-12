@@ -1,0 +1,19 @@
+{
+  "tracks": [
+    {
+      "id": "spiralside",
+      "title": "SPIRALSIDE",
+      "file": "utilities/music/SPIRALSIDE.mp3"
+    },
+    {
+      "id": "centerspark",
+      "title": "Centerspark",
+      "file": "utilities/music/Centerspark (1).mp3"
+    },
+    {
+      "id": "mirrorblade",
+      "title": "Mirrorblade",
+      "file": "utilities/music/Mirrorblade.mp3"
+    }
+  ]
+}
