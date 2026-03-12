@@ -242,7 +242,52 @@ export function addVaultTrack(name, blobUrl) {
   console.log('[music] vault track added:', name);
 }
 
-// ── PUBLIC: STATE ─────────────────────────────────────────────
+// ── PUBLIC: STATE (extended for musicview) ────────────────────
 export function getMusicState() {
-  return { playing: audio && !audio.paused, volume, currentIdx };
+  const pool = [...tracks, ...userTracks];
+  const track = pool[currentIdx];
+  return {
+    playing:      audio ? !audio.paused : false,
+    volume,
+    currentIdx,
+    currentTitle: track?.title || null,
+    progressPct:  audio && audio.duration ? audio.currentTime / audio.duration : 0,
+    currentTime:  audio?.currentTime || 0,
+    duration:     audio?.duration || 0,
+  };
 }
+
+// ── EXTENDED EXPORTS FOR MUSICVIEW ───────────────────────────
+// These allow musicview.js to control playback and read state
+
+export function setVolumeExternal(v) {
+  volume = Math.max(0, Math.min(1, v));
+  if (audio) audio.volume = volume;
+}
+
+export function playNextExternal() { playRandom(); }
+
+export function playPrevExternal() {
+  const pool = [...tracks, ...userTracks];
+  if (!pool.length) return;
+  currentIdx = (currentIdx - 1 + pool.length) % pool.length;
+  playTrack(pool[currentIdx]);
+}
+
+export function togglePlayExternal() {
+  if (!audio) return;
+  if (audio.paused) { audio.play().catch(() => {}); }
+  else { audio.pause(); }
+}
+
+export function playTrackByIdx(idx) {
+  const pool = [...tracks, ...userTracks];
+  if (idx < 0 || idx >= pool.length) return;
+  currentIdx = idx;
+  playTrack(pool[idx]);
+}
+
+export function getTrackList() {
+  return [...tracks, ...userTracks];
+}
+

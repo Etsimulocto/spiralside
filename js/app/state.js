@@ -104,5 +104,6 @@ export const FAB_TABS = [
   { id: 'sheet', label: 'sheet', icon: '✦',  color: '#FF4BCB' },
   { id: 'vault', label: 'vault', icon: '🗂',  color: '#7B5FFF' },
   { id: 'build', label: 'build', icon: '⚙',  color: '#FFD93D' },
+  { id: 'music', label: 'music', icon: '♪',  color: '#00F6D6', view: 'view-music' },
 ];
 
