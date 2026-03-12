@@ -31,10 +31,14 @@ export function initMusicView() {
 }
 
 // ── DESTROY ───────────────────────────────────────────────────
+// Only stop the animation loop — do NOT touch audioCtx or sourceNode.
+// createMediaElementSource can only be called once per audio element;
+// nulling sourceNode and recreating it on the next open breaks the analyser.
 export function destroyMusicView() {
   stopRaf();
   const el = document.getElementById('view-music');
   if (el) el.innerHTML = '';
+  // audioCtx, sourceNode, analyser, dataArr all stay alive
 }
 
 // ── HTML ──────────────────────────────────────────────────────
@@ -146,21 +150,29 @@ function stopRaf() {
 }
 
 // ── ANALYSER SETUP ────────────────────────────────────────────
+// Called every time music view opens.
+// AudioContext and sourceNode are created only once (module-level singletons).
+// On subsequent opens we just resume the suspended context.
 function setupAnalyser() {
   const ms = getMusicState();
   if (!ms?.audio) return;
   try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (!sourceNode) {
+    if (!audioCtx) {
+      // First ever open: create everything
+      audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
       sourceNode = audioCtx.createMediaElementSource(ms.audio);
       analyser   = audioCtx.createAnalyser();
       analyser.fftSize = 128;
       dataArr    = new Uint8Array(analyser.frequencyBinCount);
       sourceNode.connect(analyser);
       analyser.connect(audioCtx.destination);
+    } else {
+      // Subsequent opens: browser may have suspended the context — resume it
+      if (audioCtx.state === 'suspended') audioCtx.resume();
     }
-  } catch {
-    analyser = null; // fallback: draw idle ring
+  } catch(e) {
+    console.warn('[musicview] analyser setup failed:', e.message);
+    analyser = null; // graceful fallback: draw idle ring
   }
 }
 
@@ -232,8 +244,9 @@ function updateProgress() {
   if (timeCur) timeCur.textContent = fmt(cur);
   if (timeTot) timeTot.textContent = fmt(dur);
 
-  // Track changed — resync title + queue
-  if (ms.title !== (document.getElementById('mv-title')?.textContent)) syncUI();
+  // Track changed — resync title + queue (only if view is built)
+  const titleEl2 = document.getElementById('mv-title');
+  if (titleEl2 && ms.title !== titleEl2.textContent) syncUI();
 }
 
 function fmt(s) {
