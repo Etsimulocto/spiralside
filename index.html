@@ -597,6 +597,146 @@
 
     /* ── MISC ───────────────────────────────────────────────── */
     @keyframes glowPulse { 0%,100% { opacity: 0.06; } 50% { opacity: 0.12; } }
+
+    /* ── PARTICLES CANVAS ── */
+    #particles-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    #particles-canvas.active { opacity: 1; }
+
+    /* ── STYLE PANEL ── */
+    .style-section { margin-bottom: 28px; }
+    .style-section-title {
+      font-size: 0.6rem; letter-spacing: 0.14em; color: var(--subtext);
+      text-transform: uppercase; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .style-section-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* Presets */
+    .theme-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin-bottom: 4px;
+    }
+    .theme-card {
+      border-radius: 10px; overflow: hidden; cursor: pointer;
+      border: 2px solid transparent; transition: border-color 0.2s, transform 0.15s;
+      position: relative;
+    }
+    .theme-card:hover { transform: translateY(-2px); }
+    .theme-card.active { border-color: var(--teal); }
+    .theme-preview {
+      height: 48px;
+      display: flex; align-items: flex-end; padding: 6px;
+    }
+    .theme-dot {
+      width: 8px; height: 8px; border-radius: 50%; margin-right: 3px;
+    }
+    .theme-name {
+      font-size: 0.6rem; letter-spacing: 0.08em; text-align: center;
+      padding: 5px 4px; background: var(--surface2);
+      color: var(--subtext);
+    }
+
+    /* Color swatches */
+    .color-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 9px 0; border-bottom: 1px solid var(--border);
+    }
+    .color-row:last-child { border-bottom: none; }
+    .color-label { flex: 1; font-size: 0.75rem; color: var(--subtext); }
+    .color-swatch {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: 2px solid var(--border); cursor: pointer;
+      overflow: hidden; position: relative; flex-shrink: 0;
+    }
+    .color-swatch-bg { width: 100%; height: 100%; border-radius: 6px; }
+    .color-swatch input[type="color"] {
+      position: absolute; inset: -4px;
+      width: calc(100% + 8px); height: calc(100% + 8px);
+      border: none; cursor: pointer; opacity: 0;
+    }
+
+    /* Background type */
+    .bg-type-row { display: flex; gap: 8px; margin-bottom: 14px; }
+    .bg-chip {
+      flex: 1; padding: 9px 4px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--subtext); font-family: var(--font-ui);
+      font-size: 0.68rem; cursor: pointer; text-align: center;
+      transition: all 0.15s; letter-spacing: 0.04em;
+    }
+    .bg-chip.selected {
+      border-color: var(--teal); color: var(--teal);
+      background: rgba(0,246,214,0.07);
+    }
+    .scanline-row {
+      display: flex; align-items: center; gap: 12px; padding: 6px 0;
+    }
+    .scanline-label { flex: 1; font-size: 0.72rem; color: var(--subtext); }
+    .scanline-row input[type="range"] { flex: 1; accent-color: var(--teal); }
+    .scanline-val { font-size: 0.68rem; color: var(--teal); width: 28px; text-align: right; }
+
+    /* Bubble shape */
+    .bubble-shape-row { display: flex; gap: 8px; }
+    .shape-chip {
+      flex: 1; padding: 10px 4px; background: var(--surface);
+      border: 1px solid var(--border); cursor: pointer;
+      text-align: center; font-size: 0.68rem; transition: all 0.15s;
+      color: var(--subtext);
+    }
+    .shape-chip:nth-child(1) { border-radius: 8px 2px 8px 8px; }
+    .shape-chip:nth-child(2) { border-radius: 20px; }
+    .shape-chip:nth-child(3) { border-radius: 2px; }
+    .shape-chip.selected {
+      border-color: var(--teal); color: var(--teal);
+      background: rgba(0,246,214,0.07);
+    }
+
+    /* Font chips */
+    .font-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px;
+    }
+    .font-chip {
+      padding: 10px 8px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 8px;
+      cursor: pointer; text-align: center; transition: all 0.15s;
+      font-size: 0.78rem; color: var(--subtext);
+    }
+    .font-chip.selected {
+      border-color: var(--teal); color: var(--teal);
+      background: rgba(0,246,214,0.07);
+    }
+
+    /* Sliders */
+    .slider-row {
+      display: flex; align-items: center; gap: 12px; padding: 8px 0;
+    }
+    .slider-label { font-size: 0.72rem; color: var(--subtext); width: 100px; flex-shrink: 0; }
+    .slider-row input[type="range"] { flex: 1; accent-color: var(--teal); height: 4px; }
+    .slider-val { font-size: 0.68rem; color: var(--teal); width: 28px; text-align: right; flex-shrink: 0; }
+
+    /* Apply / reset buttons */
+    .style-apply-btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, var(--teal), var(--pink));
+      border: none; border-radius: 12px; color: #fff;
+      font-family: var(--font-display); font-weight: 700; font-size: 0.88rem;
+      cursor: pointer; letter-spacing: 0.04em; margin-top: 8px; transition: opacity 0.2s;
+    }
+    .style-apply-btn:hover { opacity: 0.88; }
+    .style-reset-btn {
+      width: 100%; padding: 11px; background: transparent;
+      border: 1px solid var(--border); border-radius: 12px;
+      color: var(--subtext); font-family: var(--font-ui); font-size: 0.78rem;
+      cursor: pointer; letter-spacing: 0.04em; margin-top: 8px; transition: all 0.2s;
+    }
+    .style-reset-btn:hover { border-color: var(--pink); color: var(--pink); }
   </style>
 </head>
 <body>
@@ -829,6 +969,7 @@
   <div class="panel-handle"></div>
   <div class="panel-tabs">
     <button class="panel-tab active" onclick="switchPanelTab('store')">store</button>
+    <button class="panel-tab" onclick="switchPanelTab('style')">style</button>
     <button class="panel-tab" onclick="switchPanelTab('account')">account</button>
   </div>
   <div class="panel-body">
@@ -869,6 +1010,119 @@
         <div class="feature-row"><div class="feature-icon">📹</div><div class="feature-name">video generation</div><div class="feature-cost">20 cr</div></div>
       </div>
     </div>
+
+    <!-- STYLE -->
+    <div class="panel-tab-content" id="panel-style">
+
+      <!-- THEME PRESETS -->
+      <div class="style-section">
+        <div class="style-section-title">themes</div>
+        <div class="theme-grid" id="theme-grid">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- COLORS -->
+      <div class="style-section">
+        <div class="style-section-title">colors</div>
+        <div class="color-row">
+          <span class="color-label">background</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="sw-bg" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">surface</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="sw-surface" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">accent (primary)</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="sw-teal" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">accent (secondary)</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="sw-pink" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">user bubble</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div>
+        </div>
+        <div class="color-row">
+          <span class="color-label">text</span>
+          <div class="color-swatch"><div class="color-swatch-bg" id="sw-text" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div>
+        </div>
+      </div>
+
+      <!-- BACKGROUND -->
+      <div class="style-section">
+        <div class="style-section-title">background</div>
+        <div class="bg-type-row">
+          <div class="bg-chip selected" data-bg="solid" onclick="selectBgType(this,'solid')">solid</div>
+          <div class="bg-chip" data-bg="scanlines" onclick="selectBgType(this,'scanlines')">scanlines</div>
+          <div class="bg-chip" data-bg="particles" onclick="selectBgType(this,'particles')">particles</div>
+          <div class="bg-chip" data-bg="grid" onclick="selectBgType(this,'grid')">grid</div>
+        </div>
+        <div class="scanline-row" id="scanline-control" style="display:none">
+          <span class="scanline-label">intensity</span>
+          <input type="range" min="0" max="6" value="2" oninput="previewScanlines(this.value);document.getElementById('sl-val').textContent=this.value" />
+          <span class="scanline-val" id="sl-val">2</span>
+        </div>
+        <div class="scanline-row" id="particle-control" style="display:none">
+          <span class="scanline-label">density</span>
+          <input type="range" min="10" max="80" value="30" oninput="updateParticleDensity(this.value);document.getElementById('pd-val').textContent=this.value" />
+          <span class="scanline-val" id="pd-val">30</span>
+        </div>
+      </div>
+
+      <!-- BUBBLE SHAPE -->
+      <div class="style-section">
+        <div class="style-section-title">bubble shape</div>
+        <div class="bubble-shape-row">
+          <div class="shape-chip selected" data-shape="16" onclick="selectBubbleShape(this,'16')">soft</div>
+          <div class="shape-chip" data-shape="24" onclick="selectBubbleShape(this,'24')">pill</div>
+          <div class="shape-chip" data-shape="3" onclick="selectBubbleShape(this,'3')">sharp</div>
+        </div>
+      </div>
+
+      <!-- TYPOGRAPHY -->
+      <div class="style-section">
+        <div class="style-section-title">typography</div>
+        <div class="panel-section-title" style="font-size:0.6rem;margin-bottom:8px">ui font</div>
+        <div class="font-grid" id="font-grid-ui">
+          <div class="font-chip selected" data-font="'DM Mono',monospace" style="font-family:'DM Mono',monospace" onclick="selectFont('ui',this)">DM Mono</div>
+          <div class="font-chip" data-font="'JetBrains Mono',monospace" style="font-family:'JetBrains Mono',monospace" onclick="selectFont('ui',this)">JetBrains</div>
+          <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('ui',this)">Grotesk</div>
+          <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('ui',this)">Outfit</div>
+          <div class="font-chip" data-font="'Raleway',sans-serif" style="font-family:'Raleway',sans-serif" onclick="selectFont('ui',this)">Raleway</div>
+          <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('ui',this)">Playfair</div>
+        </div>
+        <div class="panel-section-title" style="font-size:0.6rem;margin-bottom:8px;margin-top:14px">display font</div>
+        <div class="font-grid" id="font-grid-display">
+          <div class="font-chip selected" data-font="'Syne',sans-serif" style="font-family:'Syne',sans-serif" onclick="selectFont('display',this)">Syne</div>
+          <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('display',this)">Outfit</div>
+          <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('display',this)">Grotesk</div>
+          <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('display',this)">Playfair</div>
+        </div>
+      </div>
+
+      <!-- SPACING -->
+      <div class="style-section">
+        <div class="style-section-title">spacing</div>
+        <div class="slider-row">
+          <span class="slider-label">bubble radius</span>
+          <input type="range" min="2" max="28" value="14" oninput="previewSlider('bubble-radius',this.value+'px');document.getElementById('sv-br').textContent=this.value" />
+          <span class="slider-val" id="sv-br">14</span>
+        </div>
+        <div class="slider-row">
+          <span class="slider-label">message gap</span>
+          <input type="range" min="4" max="28" value="10" oninput="previewSlider('msg-spacing',this.value+'px');document.getElementById('sv-mg').textContent=this.value" />
+          <span class="slider-val" id="sv-mg">10</span>
+        </div>
+      </div>
+
+      <button class="style-apply-btn" onclick="applyAndSaveStyle()">apply + save theme</button>
+      <button class="style-reset-btn" onclick="resetStyle()">reset to default</button>
+      <div style="height:40px"></div>
+    </div>
+
     <!-- ACCOUNT -->
     <div class="panel-tab-content" id="panel-account">
       <div class="panel-section-title">account</div>
