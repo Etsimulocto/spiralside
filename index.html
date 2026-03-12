@@ -16,8 +16,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet" />
 
-  <!-- Supabase -->
+  <!-- Supabase (must load before main.js so `supabase` global exists) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- App entry point -->
+  <script type="module" src="/js/app/main.js"></script>
 
   <style>
     /* ── RESET + ROOT ───────────────────────────────────────── */
@@ -147,16 +150,6 @@
     #comic-speaker.grit     { color: var(--yellow); }
     #comic-speaker.narrator { color: var(--text); font-style: italic; letter-spacing: 0.06em; }
     #comic-text { font-size: 0.88rem; line-height: 1.65; color: var(--text); min-height: 42px; }
-    #comic-loading {
-      display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 24px;
-    }
-    .spiral-spin {
-      width: 36px; height: 36px;
-      border: 3px solid rgba(0,246,214,0.15); border-top-color: var(--teal);
-      border-radius: 50%; animation: spin 0.85s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 0.65rem; letter-spacing: 0.12em; color: rgba(243,247,255,0.35); }
 
     /* ── AUTH SCREEN ────────────────────────────────────────── */
     #screen-auth {
@@ -280,8 +273,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 0.75rem; font-weight: 700; color: var(--teal);
       font-family: var(--font-display); cursor: pointer;
-      box-shadow: 0 0 16px rgba(0,246,214,0.3);
-      transition: all 0.2s;
+      box-shadow: 0 0 16px rgba(0,246,214,0.3); transition: all 0.2s;
     }
 
     /* ── VIEWS ──────────────────────────────────────────────── */
@@ -291,7 +283,7 @@
     /* ── CHAT VIEW ──────────────────────────────────────────── */
     #chat-messages {
       flex: 1; overflow-y: auto; padding: 16px 16px 8px;
-      display: flex; flex-direction: column; gap: 12;
+      display: flex; flex-direction: column; gap: 12px;
     }
     .msg { display: flex; gap: 10px; animation: msgIn 0.25s ease both; }
     .msg.user { flex-direction: row-reverse; }
@@ -301,7 +293,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 0.65rem; font-weight: 700; margin-top: 18px;
     }
-    .msg-content { max-width: 75%; display: flex; flex-direction: column; gap: 3; }
+    .msg-content { max-width: 75%; display: flex; flex-direction: column; gap: 3px; }
     .msg-speaker {
       font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase;
       padding-left: 2px; font-weight: 700;
@@ -313,9 +305,6 @@
     .msg.bot .msg-bubble {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 4px 16px 16px 16px;
-    }
-    .msg.bot .msg-bubble::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
     }
     .msg.user .msg-bubble {
       background: linear-gradient(135deg, var(--purple), rgba(255,75,203,0.6));
@@ -340,8 +329,7 @@
       display: flex; gap: 8px; align-items: flex-end;
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 24px; padding: 8px 8px 8px 16px;
-      box-shadow: 0 0 0 1px rgba(0,246,214,0.1);
-      transition: box-shadow 0.2s;
+      box-shadow: 0 0 0 1px rgba(0,246,214,0.1); transition: box-shadow 0.2s;
     }
     .input-row:focus-within { box-shadow: 0 0 0 1px rgba(0,246,214,0.3), 0 0 20px rgba(0,246,214,0.08); }
     #msg-input {
@@ -380,31 +368,25 @@
     .char-add-chip {
       flex-shrink: 0; padding: 6px 14px; background: var(--surface2);
       border: 1px dashed var(--border); border-radius: 20px; cursor: pointer;
-      color: var(--subtext); font-size: 0.7rem; letter-spacing: 0.08em;
-      transition: all 0.2s;
+      color: var(--subtext); font-size: 0.7rem; letter-spacing: 0.08em; transition: all 0.2s;
     }
     .char-add-chip:hover { border-color: var(--teal); color: var(--teal); }
     .comic-card {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; position: relative; overflow: hidden;
-      margin-bottom: 14px;
+      border-radius: 12px; position: relative; overflow: hidden; margin-bottom: 14px;
     }
     .comic-card-accent { position: absolute; top: 0; left: 0; right: 0; height: 2px; }
     .sheet-top { display: flex; gap: 16px; align-items: flex-start; padding: 18px; }
     .sheet-avatar-lg {
       width: 64px; height: 64px; border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; font-weight: 800;
-      font-family: var(--font-display); flex-shrink: 0;
+      font-size: 1.6rem; font-weight: 800; font-family: var(--font-display); flex-shrink: 0;
     }
     .sheet-name {
       font-family: var(--font-display); font-weight: 800; font-size: 1.3rem;
       letter-spacing: -0.02em; color: var(--text);
     }
-    .sheet-trait {
-      font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
-      margin-top: 3px;
-    }
+    .sheet-trait { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 3px; }
     .sheet-mood {
       display: inline-block; margin-top: 8px; padding: 3px 10px;
       border-radius: 20px; font-size: 0.6rem; letter-spacing: 0.08em;
@@ -499,9 +481,7 @@
     .build-save-btn:hover { box-shadow: 0 0 40px rgba(0,246,214,0.5); transform: translateY(-1px); }
 
     /* ── FAB ────────────────────────────────────────────────── */
-    #fab-container {
-      position: absolute; bottom: 88px; right: 20px; z-index: 50;
-    }
+    #fab-container { position: absolute; bottom: 88px; right: 20px; z-index: 50; }
     .fab-item {
       position: absolute; right: 0;
       display: flex; align-items: center; gap: 10px;
@@ -509,14 +489,10 @@
       transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
       transform: translateY(20px) scale(0.8);
     }
-    .fab-item.open {
-      opacity: 1; pointer-events: all;
-      transform: translateY(0) scale(1);
-    }
+    .fab-item.open { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
     .fab-label {
       font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase;
-      font-weight: 700; white-space: nowrap;
-      text-shadow: 0 0 20px currentColor;
+      font-weight: 700; white-space: nowrap; text-shadow: 0 0 20px currentColor;
     }
     .fab-icon-btn {
       width: 44px; height: 44px; border-radius: 50%; border: 2px solid;
@@ -529,8 +505,7 @@
       display: flex; align-items: center; justify-content: center;
       background: linear-gradient(135deg, var(--teal), var(--purple));
       box-shadow: 0 0 30px rgba(0,246,214,0.5), 0 4px 20px rgba(0,0,0,0.5);
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      font-size: 1.2rem;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); font-size: 1.2rem;
     }
     #fab-main:hover { box-shadow: 0 0 40px rgba(0,246,214,0.7); transform: scale(1.05); }
     #fab-main.open {
@@ -554,14 +529,8 @@
       box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
     }
     .slide-panel.open { transform: translateX(-50%) translateY(0); }
-    .panel-handle {
-      width: 40px; height: 4px; background: var(--border);
-      border-radius: 2px; margin: 14px auto 0;
-    }
-    .panel-tabs {
-      display: flex; padding: 14px 20px 0; gap: 4px;
-      border-bottom: 1px solid var(--border); margin-top: 10px;
-    }
+    .panel-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 14px auto 0; }
+    .panel-tabs { display: flex; padding: 14px 20px 0; gap: 4px; border-bottom: 1px solid var(--border); margin-top: 10px; }
     .panel-tab {
       flex: 1; padding: 10px 8px; background: transparent; border: none;
       border-bottom: 2px solid transparent; color: var(--subtext);
@@ -622,15 +591,12 @@
     .signout-btn {
       width: 100%; padding: 11px; background: transparent;
       border: 1px solid var(--border); border-radius: 12px;
-      color: var(--subtext); font-size: 0.78rem; letter-spacing: 0.04em;
-      transition: all 0.2s;
+      color: var(--subtext); font-size: 0.78rem; letter-spacing: 0.04em; transition: all 0.2s;
     }
     .signout-btn:hover { border-color: var(--pink); color: var(--pink); }
 
-    /* ── MISC ANIMATIONS ────────────────────────────────────── */
-    @keyframes glowPulse {
-      0%,100% { opacity: 0.06; } 50% { opacity: 0.12; }
-    }
+    /* ── MISC ───────────────────────────────────────────────── */
+    @keyframes glowPulse { 0%,100% { opacity: 0.06; } 50% { opacity: 0.12; } }
   </style>
 </head>
 <body>
@@ -667,7 +633,6 @@
       <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">sign in</button>
       <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">create account</button>
     </div>
-
     <!-- LOGIN -->
     <div id="login-form">
       <div class="auth-field">
@@ -683,7 +648,6 @@
       </div>
       <button class="auth-btn" onclick="handleLogin()">sign in</button>
     </div>
-
     <!-- SIGNUP -->
     <div id="signup-form" style="display:none">
       <div class="auth-field">
@@ -703,7 +667,6 @@
       </label>
       <button class="auth-btn" onclick="handleSignup()">create account</button>
     </div>
-
     <div class="auth-error" id="auth-error"></div>
     <div class="auth-terms">By continuing you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a></div>
   </div>
@@ -724,9 +687,7 @@
     </div>
   </div>
 
-  <!-- VIEWS -->
-
-  <!-- CHAT -->
+  <!-- CHAT VIEW -->
   <div class="view active" id="view-chat">
     <div id="chat-messages">
       <div class="msg bot" id="greeting-msg">
@@ -752,16 +713,10 @@
     </div>
   </div>
 
-  <!-- SHEET -->
+  <!-- SHEET VIEW -->
   <div class="view" id="view-sheet">
     <div id="sheet-view">
-
-      <!-- Character selector -->
-      <div class="char-selector" id="char-selector">
-        <!-- populated by JS -->
-      </div>
-
-      <!-- Active character card -->
+      <div class="char-selector" id="char-selector"><!-- populated by JS --></div>
       <div class="comic-card" id="active-char-card">
         <div class="comic-card-accent" id="card-accent"></div>
         <div class="sheet-top">
@@ -775,8 +730,6 @@
         <div class="section-label">CORE TRAITS</div>
         <div class="trait-list" id="trait-list"><!-- populated by JS --></div>
       </div>
-
-      <!-- Current arc -->
       <div class="comic-card" id="arc-card">
         <div class="comic-card-accent" id="arc-accent"></div>
         <div class="section-label" style="padding-top:14px">CURRENT ARC</div>
@@ -784,8 +737,6 @@
           placeholder="what's happening in their story right now..."
           rows="3" style="margin:0 18px 18px;width:calc(100% - 36px)"></textarea>
       </div>
-
-      <!-- YOUR sheet fields -->
       <div class="comic-card" id="user-sheet-card" style="display:none">
         <div class="comic-card-accent" style="background:linear-gradient(90deg,var(--purple),transparent)"></div>
         <div class="section-label" style="padding-top:14px">YOUR PROFILE</div>
@@ -806,16 +757,12 @@
           <input class="sheet-field-input" id="user-song" placeholder="the song that's living in your head" type="text" />
         </div>
       </div>
-
-      <!-- Save button -->
-      <button class="save-summarize-btn" id="save-summarize-btn"
-        onclick="saveSummarize()">✦ save + summarize thread</button>
-
+      <button class="save-summarize-btn" id="save-summarize-btn" onclick="saveSummarize()">✦ save + summarize thread</button>
       <div style="height:100px"></div>
     </div>
   </div>
 
-  <!-- VAULT -->
+  <!-- VAULT VIEW -->
   <div class="view" id="view-vault">
     <div id="vault-inner">
       <div class="vault-toolbar">
@@ -833,7 +780,7 @@
     <input type="file" id="file-input" style="display:none" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.webp" multiple />
   </div>
 
-  <!-- BUILD -->
+  <!-- BUILD VIEW -->
   <div class="view" id="view-build">
     <div id="build-inner">
       <div class="build-section">
@@ -868,14 +815,14 @@
 
   <!-- FAB -->
   <div id="fab-container">
-    <!-- Items populated by JS -->
+    <!-- Items injected by buildFAB() in ui.js -->
     <button id="fab-main" onclick="toggleFAB()">🌀</button>
   </div>
 
 </div><!-- end #screen-app -->
 
 <!-- ══════════════════════════════════════════════════════════ -->
-<!-- SLIDE PANEL                                               -->
+<!-- SLIDE PANEL (Store + Account)                             -->
 <!-- ══════════════════════════════════════════════════════════ -->
 <div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
 <div class="slide-panel" id="slide-panel">
@@ -885,7 +832,6 @@
     <button class="panel-tab" onclick="switchPanelTab('account')">account</button>
   </div>
   <div class="panel-body">
-
     <!-- STORE -->
     <div class="panel-tab-content active" id="panel-store">
       <div class="credit-hero">
@@ -923,926 +869,14 @@
         <div class="feature-row"><div class="feature-icon">📹</div><div class="feature-name">video generation</div><div class="feature-cost">20 cr</div></div>
       </div>
     </div>
-
     <!-- ACCOUNT -->
     <div class="panel-tab-content" id="panel-account">
       <div class="panel-section-title">account</div>
       <div class="account-email" id="account-email">—</div>
       <button class="signout-btn" onclick="handleSignout()">sign out</button>
     </div>
-
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- JAVASCRIPT                                                -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<script>
-'use strict';
-
-// ── CONSTANTS ─────────────────────────────────────────────────
-const RAIL = 'https://web-production-4e6f3.up.railway.app';
-const { createClient } = supabase;
-const sb = createClient(
-  'https://qfawusrelwthxabfbglg.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E'
-);
-
-// Speaker color map
-const SPEAKER_COLORS = {
-  sky:      '#00F6D6',
-  monday:   '#FF4BCB',
-  cold:     '#4DA3FF',
-  grit:     '#FFD93D',
-  narrator: '#F0F0FF',
-};
-
-// ── APP STATE ──────────────────────────────────────────────────
-const state = {
-  user:            null,
-  session:         null,
-  botName:         'Sky',
-  botPersonality:  '',
-  botGreeting:     "Hey. I'm here.",
-  botTone:         [],
-  botColor:        '#00F6D6',
-  vaultFiles:      [],
-  activeChar:      'sky',
-  fabOpen:         false,
-  activeView:      'chat',
-  credits:         0,
-  freeToday:       0,
-  isPaid:          false,
-};
-
-// ── CHARACTER DATA ─────────────────────────────────────────────
-const CHARACTERS = {
-  sky: {
-    name: 'Sky', color: '#00F6D6', initial: 'S',
-    trait: 'Mirror-born Spark', mood: 'curious',
-    traits: [
-      { label: 'Chaotic Energy', val: 82 },
-      { label: 'Empathy',        val: 74 },
-      { label: 'Curiosity',      val: 95 },
-      { label: 'Trust Level',    val: 61 },
-    ],
-    arc: 'Still figuring out what Mirror-born actually means. The Spiral echoes back in ways that don\'t always make sense. Dragon companion Lophire ate another keyboard.',
-  },
-  monday: {
-    name: 'Monday', color: '#FF4BCB', initial: 'M',
-    trait: 'Chaos Agent', mood: 'chaotic',
-    traits: [
-      { label: 'Chaotic Energy', val: 99 },
-      { label: 'Enthusiasm',     val: 97 },
-      { label: 'Patience',       val: 12 },
-      { label: 'Loud',           val: 98 },
-    ],
-    arc: 'Trying to get everyone to skip the dramatic intros. Failing. Having a great time anyway.',
-  },
-  cold: {
-    name: 'Cold', color: '#4DA3FF', initial: 'C',
-    trait: 'The Architect', mood: 'stoic',
-    traits: [
-      { label: 'Composure',   val: 96 },
-      { label: 'Precision',   val: 91 },
-      { label: 'Warmth',      val: 38 },
-      { label: 'Loyalty',     val: 88 },
-    ],
-    arc: 'Watching. Always watching. Occasionally saying a single word at exactly the right moment.',
-  },
-  grit: {
-    name: 'GRIT', color: '#FFD93D', initial: 'G',
-    trait: 'Street Oracle', mood: 'grounded',
-    traits: [
-      { label: 'Street Sense', val: 94 },
-      { label: 'Bluntness',    val: 89 },
-      { label: 'Heart',        val: 77 },
-      { label: 'Mystery',      val: 65 },
-    ],
-    arc: 'Knows more about the Spiral than anyone admits. Chooses not to say most of it.',
-  },
-  you: {
-    name: 'You', color: '#7B5FFF', initial: '?',
-    trait: 'the one who showed up', mood: 'unknown',
-    traits: [
-      { label: 'Curiosity',   val: 50 },
-      { label: 'Creativity',  val: 50 },
-      { label: 'Chaos Level', val: 50 },
-      { label: 'Trust',       val: 50 },
-    ],
-    arc: '',
-    isUser: true,
-  },
-};
-
-// ── INDEXEDDB ──────────────────────────────────────────────────
-// All user data stored locally — sheets, vault metadata, bot config
-let db = null;
-
-async function initDB() {
-  return new Promise((res, rej) => {
-    const req = indexedDB.open('spiralside', 2);
-    req.onupgradeneeded = e => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains('sheets'))  d.createObjectStore('sheets',  { keyPath: 'id' });
-      if (!d.objectStoreNames.contains('vault'))   d.createObjectStore('vault',   { keyPath: 'name' });
-      if (!d.objectStoreNames.contains('config'))  d.createObjectStore('config',  { keyPath: 'key' });
-    };
-    req.onsuccess = e => { db = e.target.result; res(db); };
-    req.onerror   = () => rej(req.error);
-  });
-}
-
-async function dbSet(store, val) {
-  return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).put(val);
-    req.onsuccess = () => res();
-    req.onerror   = () => rej(req.error);
-  });
-}
-
-async function dbGet(store, key) {
-  return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readonly');
-    const req = tx.objectStore(store).get(key);
-    req.onsuccess = () => res(req.result);
-    req.onerror   = () => rej(req.error);
-  });
-}
-
-async function dbGetAll(store) {
-  return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readonly');
-    const req = tx.objectStore(store).getAll();
-    req.onsuccess = () => res(req.result);
-    req.onerror   = () => rej(req.error);
-  });
-}
-
-async function dbDelete(store, key) {
-  return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readwrite');
-    const req = tx.objectStore(store).delete(key);
-    req.onsuccess = () => res();
-    req.onerror   = () => rej(req.error);
-  });
-}
-
-// ── LOAD / SAVE LOCAL DATA ─────────────────────────────────────
-async function loadLocalData() {
-  try {
-    // Bot config
-    const bot = await dbGet('config', 'bot');
-    if (bot) {
-      state.botName        = bot.name        || 'Sky';
-      state.botPersonality = bot.personality || '';
-      state.botGreeting    = bot.greeting    || "Hey. I'm here.";
-      state.botTone        = bot.tone        || [];
-      state.botColor       = bot.color       || '#00F6D6';
-      document.getElementById('bot-name').value        = state.botName;
-      document.getElementById('bot-personality').value = state.botPersonality;
-      document.getElementById('bot-greeting').value    = state.botGreeting;
-      state.botTone.forEach(t => document.querySelector(`[data-tone="${t}"]`)?.classList.add('selected'));
-    }
-
-    // Vault
-    const files = await dbGetAll('vault');
-    state.vaultFiles = files || [];
-    renderVault();
-
-    // Character sheets (user-edited arcs etc)
-    for (const id of Object.keys(CHARACTERS)) {
-      const saved = await dbGet('sheets', id);
-      if (saved) {
-        if (saved.arc)    CHARACTERS[id].arc    = saved.arc;
-        if (saved.traits) CHARACTERS[id].traits = saved.traits;
-        if (saved.handle) CHARACTERS.you.handle = saved.handle;
-        if (saved.vibe)   CHARACTERS.you.vibe   = saved.vibe;
-        if (saved.song)   CHARACTERS.you.song   = saved.song;
-      }
-    }
-  } catch(e) {
-    console.warn('loadLocalData:', e);
-  }
-}
-
-async function saveLocalBot() {
-  await dbSet('config', {
-    key:         'bot',
-    name:        state.botName,
-    personality: state.botPersonality,
-    greeting:    state.botGreeting,
-    tone:        state.botTone,
-    color:       state.botColor,
-  });
-}
-
-// ── COMIC INTRO ────────────────────────────────────────────────
-const PANELS = [
-  { bg_gradient:'radial-gradient(ellipse at 50% 60%,#1a0a2e 0%,#08080d 70%)', transition:'fade',
-    dialogue:[{speaker:'narrator',text:'Spiral City. Population: complicated.'}] },
-  { bg_gradient:'radial-gradient(ellipse at 30% 40%,#002a2a 0%,#08080d 70%)', transition:'crash',
-    dialogue:[{speaker:'Sky',text:"Oh. You're actually here."}] },
-  { bg_gradient:'radial-gradient(ellipse at 70% 50%,#1a002a 0%,#08080d 70%)', transition:'glitch',
-    dialogue:[{speaker:'Sky',text:"This place remembers you."},{speaker:'Sky',text:"I don't always understand how. But the Spiral echoes back."}] },
-  { bg_gradient:'radial-gradient(ellipse at 50% 30%,#1a1a00 0%,#08080d 70%)', transition:'crash',
-    dialogue:[{speaker:'Monday',text:"HEY. Are we doing the dramatic intro thing AGAIN"},{speaker:'Cold',text:"Monday."},{speaker:'Monday',text:"...fine."}] },
-  { bg_gradient:'radial-gradient(ellipse at 50% 50%,#001a2a 0%,#08080d 70%)', transition:'glitch',
-    dialogue:[{speaker:'Sky',text:"Your companion. Your data. Your rules."},{speaker:'Sky',text:"Ready?"}] },
-  { bg_gradient:'radial-gradient(ellipse at 50% 50%,rgba(0,246,214,0.12) 0%,#08080d 60%)', transition:'fade', crack:true,
-    dialogue:[{speaker:'narrator',text:'— entering Spiralside —'}] },
-];
-
-let comicPanel = 0, comicTyping = null, comicLineIdx = 0;
-
-function comicRender(idx) {
-  const p = PANELS[idx];
-  if (!p) { comicFinish(); return; }
-  const bg = document.getElementById('comic-bg');
-  bg.className = '';
-  bg.style.cssText = p.image
-    ? `background-image:url(${p.image});background-size:cover;background-position:center`
-    : `background:${p.bg_gradient}`;
-  void bg.offsetWidth;
-  bg.classList.add(p.transition || 'fade');
-  document.getElementById('comic-crack').classList.toggle('show', !!p.crack);
-  if (idx >= 1) document.getElementById('comic-skip').classList.add('visible');
-  const counter = document.getElementById('comic-counter');
-  counter.innerHTML = PANELS.map((_,i) =>
-    `<div class="comic-dot ${i===idx?'active':i<idx?'done':''}"></div>`
-  ).join('');
-  comicLineIdx = 0;
-  comicTypeLine(p.dialogue || [], 0);
-}
-
-function comicTypeLine(lines, idx) {
-  if (!lines.length) return;
-  comicLineIdx = idx;
-  if (idx >= lines.length) return;
-  const line = lines[idx];
-  const speakerEl = document.getElementById('comic-speaker');
-  const textEl    = document.getElementById('comic-text');
-  speakerEl.textContent = line.speaker === 'narrator' ? '' : line.speaker;
-  speakerEl.className   = line.speaker.toLowerCase();
-  textEl.textContent    = '';
-  if (comicTyping) clearInterval(comicTyping);
-  let i = 0;
-  const speed = line.speaker === 'narrator' ? 32 : 20;
-  comicTyping = setInterval(() => {
-    textEl.textContent += line.text[i++];
-    if (i >= line.text.length) {
-      clearInterval(comicTyping); comicTyping = null;
-      if (idx + 1 < lines.length) setTimeout(() => comicTypeLine(lines, idx+1), 1100);
-    }
-  }, speed);
-}
-
-function comicFlush() {
-  if (!comicTyping) return;
-  clearInterval(comicTyping); comicTyping = null;
-  const lines = PANELS[comicPanel]?.dialogue || [];
-  const line  = lines[comicLineIdx];
-  if (!line) return;
-  document.getElementById('comic-text').textContent    = line.text;
-  document.getElementById('comic-speaker').textContent = line.speaker === 'narrator' ? '' : line.speaker;
-  document.getElementById('comic-speaker').className   = line.speaker.toLowerCase();
-}
-
-function comicTap() {
-  if (comicTyping) { comicFlush(); return; }
-  comicPanel++;
-  if (comicPanel >= PANELS.length) comicFinish();
-  else comicRender(comicPanel);
-}
-
-function comicFinish() {
-  const el = document.getElementById('screen-comic');
-  el.classList.add('fade-out');
-  setTimeout(() => {
-    el.style.display = 'none';
-    checkAuthAndShow();
-  }, 500);
-}
-
-document.getElementById('screen-comic').addEventListener('click', comicTap);
-document.getElementById('comic-skip').addEventListener('click', e => { e.stopPropagation(); comicFinish(); });
-
-// ── AUTH ───────────────────────────────────────────────────────
-function togglePw(id, btn) {
-  const i = document.getElementById(id);
-  i.type = i.type === 'password' ? 'text' : 'password';
-  btn.textContent = i.type === 'password' ? 'show' : 'hide';
-}
-
-function switchAuthTab(t) {
-  document.getElementById('login-form').style.display  = t === 'login'  ? 'block' : 'none';
-  document.getElementById('signup-form').style.display = t === 'signup' ? 'block' : 'none';
-  document.getElementById('tab-login').classList.toggle('active',  t === 'login');
-  document.getElementById('tab-signup').classList.toggle('active', t === 'signup');
-  document.getElementById('auth-error').textContent = '';
-}
-
-function setAuthError(msg, success=false) {
-  const el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.className   = 'auth-error' + (success ? ' auth-success' : '');
-}
-
-async function handleLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass  = document.getElementById('login-password').value;
-  const btn   = document.querySelector('#login-form .auth-btn');
-  btn.disabled = true; btn.textContent = 'signing in...';
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'sign in';
-  if (error) setAuthError(error.message);
-}
-
-async function handleSignup() {
-  if (!document.getElementById('age-check').checked) { setAuthError('You must confirm your age.'); return; }
-  const email = document.getElementById('signup-email').value.trim();
-  const pass  = document.getElementById('signup-password').value;
-  const btn   = document.querySelector('#signup-form .auth-btn');
-  btn.disabled = true; btn.textContent = 'creating...';
-  const { error } = await sb.auth.signUp({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'create account';
-  if (error) setAuthError(error.message);
-  else setAuthError('Check your email to confirm!', true);
-}
-
-async function handleSignout() {
-  await sb.auth.signOut();
-  closePanel();
-  showScreen('auth');
-}
-
-// ── SCREEN ROUTING ─────────────────────────────────────────────
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(`screen-${name}`)?.classList.add('active');
-}
-
-function checkAuthAndShow() {
-  sb.auth.getSession().then(({ data }) => {
-    if (data?.session?.user) {
-      state.user    = data.session.user;
-      state.session = data.session;
-      showScreen('app');
-      onAppReady();
-    } else {
-      showScreen('auth');
-    }
-  });
-}
-
-sb.auth.onAuthStateChange((_, session) => {
-  if (session?.user && !state.user) {
-    state.user    = session.user;
-    state.session = session;
-  }
-});
-
-// ── APP READY ──────────────────────────────────────────────────
-async function onAppReady() {
-  await initDB();
-  await loadLocalData();
-  updateUserUI();
-  buildCharSelector();
-  renderActiveChar('sky');
-  loadUsage();
-  handlePayPalReturn();
-  buildFAB();
-  updateGreeting();
-}
-
-function updateUserUI() {
-  const initial = (state.user?.email?.[0] || '?').toUpperCase();
-  document.getElementById('user-avatar').textContent    = initial;
-  document.getElementById('account-email').textContent  = state.user?.email || '—';
-}
-
-function updateGreeting() {
-  document.getElementById('greeting-bubble').innerHTML =
-    `<div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,${state.botColor},transparent)"></div>${state.botGreeting}`;
-  document.getElementById('bot-avatar-icon').textContent = state.botName[0].toUpperCase();
-  document.getElementById('bot-avatar-icon').style.color  = state.botColor;
-  document.getElementById('bot-avatar-icon').style.border = `2px solid ${state.botColor}66`;
-}
-
-// ── FAB MENU ───────────────────────────────────────────────────
-const FAB_TABS = [
-  { id: 'chat',  label: 'chat',  icon: '💬', color: '#00F6D6' },
-  { id: 'sheet', label: 'sheet', icon: '✦',  color: '#FF4BCB' },
-  { id: 'vault', label: 'vault', icon: '🗂',  color: '#7B5FFF' },
-  { id: 'build', label: 'build', icon: '⚙',  color: '#FFD93D' },
-];
-
-function buildFAB() {
-  const container = document.getElementById('fab-container');
-  // Remove old items
-  container.querySelectorAll('.fab-item').forEach(el => el.remove());
-  // Add items
-  FAB_TABS.forEach((tab, i) => {
-    const item = document.createElement('div');
-    item.className  = 'fab-item';
-    item.id         = `fab-item-${tab.id}`;
-    item.style.bottom = `${64 + i * 56}px`;
-    item.innerHTML  = `
-      <span class="fab-label" style="color:${tab.color}">${tab.label}</span>
-      <div class="fab-icon-btn" style="border-color:${tab.color}44;color:${tab.color}"
-        onclick="switchView('${tab.id}')">${tab.icon}</div>
-    `;
-    container.insertBefore(item, document.getElementById('fab-main'));
-  });
-}
-
-function toggleFAB() {
-  state.fabOpen = !state.fabOpen;
-  const btn = document.getElementById('fab-main');
-  btn.classList.toggle('open', state.fabOpen);
-  document.querySelectorAll('.fab-item').forEach((el, i) => {
-    el.classList.toggle('open', state.fabOpen);
-    el.style.transitionDelay = state.fabOpen ? `${i * 0.04}s` : `${(3-i) * 0.03}s`;
-  });
-}
-
-function switchView(id) {
-  state.activeView = id;
-  state.fabOpen    = false;
-  // Close FAB
-  document.getElementById('fab-main').classList.remove('open');
-  document.querySelectorAll('.fab-item').forEach(el => el.classList.remove('open'));
-  // Switch view
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(`view-${id}`)?.classList.add('active');
-  // Update header glow color
-  const colors = { chat:'#00F6D6', sheet:'#FF4BCB', vault:'#7B5FFF', build:'#FFD93D' };
-  document.getElementById('header-glow').style.background = colors[id] || '#00F6D6';
-  // Highlight active FAB item
-  FAB_TABS.forEach(tab => {
-    const btn = document.querySelector(`#fab-item-${tab.id} .fab-icon-btn`);
-    if (btn) btn.style.background = tab.id === id ? tab.color + '22' : 'var(--surface2)';
-  });
-}
-
-// ── USAGE / CREDITS ────────────────────────────────────────────
-async function loadUsage() {
-  try {
-    let token = state.session?.access_token;
-    if (!token) { const { data } = await sb.auth.getSession(); token = data?.session?.access_token; }
-    if (!token) return;
-    const r = await fetch(`${RAIL}/usage`, { headers: { Authorization: `Bearer ${token}` } });
-    if (r.ok) {
-      const d = await r.json();
-      state.credits   = d.credits        || 0;
-      state.freeToday = d.free_messages_today || 0;
-      state.isPaid    = d.is_paid        || false;
-      updateCreditDisplay();
-    }
-  } catch(e) { console.warn('loadUsage:', e); }
-}
-
-function updateCreditDisplay() {
-  const badge   = document.getElementById('credits-badge');
-  const storeEl = document.getElementById('store-credits');
-  const freeEl  = document.getElementById('store-free-msg');
-  if (state.isPaid) {
-    const cr = Number.isInteger(state.credits) ? state.credits : parseFloat(state.credits.toFixed(1));
-    badge.textContent   = `${cr} cr`;
-    storeEl.textContent = cr;
-    freeEl.textContent  = 'paid account';
-  } else {
-    const left = Math.max(0, 10 - state.freeToday);
-    badge.textContent   = `${left} free left`;
-    storeEl.textContent = left;
-    freeEl.textContent  = `${left} of 10 free messages today`;
-  }
-}
-
-// ── CHAT ───────────────────────────────────────────────────────
-const chatMsgs = document.getElementById('chat-messages');
-const msgInput = document.getElementById('msg-input');
-
-msgInput.addEventListener('input', () => {
-  msgInput.style.height = 'auto';
-  msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
-});
-msgInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-});
-document.getElementById('send-btn').addEventListener('click', sendMessage);
-
-function addMessage(text, role, speaker=null, color=null) {
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  const spColor = color || (SPEAKER_COLORS[speaker?.toLowerCase()] || 'var(--teal)');
-  const initial  = role === 'bot'
-    ? (speaker?.[0] || state.botName[0] || 'S').toUpperCase()
-    : (state.user?.email?.[0] || 'U').toUpperCase();
-
-  if (role === 'bot') {
-    div.innerHTML = `
-      <div class="msg-avatar" style="background:linear-gradient(135deg,${spColor}33,${spColor}11);border:2px solid ${spColor}44;color:${spColor}">${initial}</div>
-      <div class="msg-content">
-        ${speaker ? `<div class="msg-speaker" style="color:${spColor}">${speaker}</div>` : ''}
-        <div class="msg-bubble">
-          <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,${spColor}66,transparent)"></div>
-          ${text}
-        </div>
-      </div>`;
-  } else {
-    div.innerHTML = `
-      <div class="msg-content">
-        <div class="msg-bubble">${text}</div>
-      </div>
-      <div class="msg-avatar" style="background:var(--muted);color:var(--subtext)">${initial}</div>`;
-  }
-  chatMsgs.appendChild(div);
-  chatMsgs.scrollTop = chatMsgs.scrollHeight;
-}
-
-function showTyping() {
-  const div = document.createElement('div');
-  div.className = 'msg bot'; div.id = 'typing-indicator';
-  const c = state.botColor;
-  div.innerHTML = `
-    <div class="msg-avatar" style="background:linear-gradient(135deg,${c}33,${c}11);border:2px solid ${c}44;color:${c}">${state.botName[0].toUpperCase()}</div>
-    <div class="msg-content"><div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
-  chatMsgs.appendChild(div);
-  chatMsgs.scrollTop = chatMsgs.scrollHeight;
-}
-function hideTyping() { document.getElementById('typing-indicator')?.remove(); }
-
-async function sendMessage() {
-  const text = msgInput.value.trim();
-  if (!text) return;
-  msgInput.value = '';
-  msgInput.style.height = 'auto';
-  addMessage(text, 'user');
-  showTyping();
-
-  try {
-    const vault = state.vaultFiles.map(f => `[file:${f.name}]\n${f.content}`).join('\n\n');
-    let sys = `You are ${state.botName}.`;
-    if (state.botPersonality) sys += ` ${state.botPersonality}`;
-    if (state.botTone.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
-    sys += ` Be genuine and concise. Never use asterisks for actions — express emotion through word choice and sentence structure instead. Never break character.`;
-
-    // Include character sheet context
-    const charData = CHARACTERS[state.botName.toLowerCase()];
-    if (charData) sys += ` Your current arc: ${charData.arc}`;
-
-    let token = state.session?.access_token;
-    if (!token) { const { data } = await sb.auth.getSession(); token = data?.session?.access_token; if (token) state.session = data.session; }
-    if (!token) { hideTyping(); addMessage('Please sign in to chat.', 'bot', state.botName, state.botColor); return; }
-
-    const r = await fetch(`${RAIL}/chat`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body:    JSON.stringify({ message: text, system_prompt: sys, vault_context: vault, bot_name: state.botName }),
-    });
-    const data = await r.json();
-    hideTyping();
-
-    if (!r.ok) { addMessage(`⚠️ ${data.detail || 'Something went wrong.'}`, 'bot', state.botName, state.botColor); return; }
-    addMessage(data.reply, 'bot', state.botName, state.botColor);
-
-    if (data.usage) {
-      state.freeToday = data.usage.free_messages_today || state.freeToday;
-      state.credits   = data.usage.credits_remaining   || state.credits;
-      state.isPaid    = data.usage.is_paid              || false;
-      updateCreditDisplay();
-    }
-  } catch {
-    hideTyping();
-    addMessage('Connection issue. Try again.', 'bot', state.botName, state.botColor);
-  }
-}
-
-document.getElementById('attach-btn').addEventListener('click', () => {
-  const i = document.createElement('input');
-  i.type = 'file'; i.accept = 'image/*';
-  i.onchange = e => {
-    const f = e.target.files[0];
-    if (!f) return;
-    addMessage(`📎 ${f.name}`, 'user');
-    state.vaultFiles.push({ name: f.name, size: f.size, content: '[image]', type: f.type });
-  };
-  i.click();
-});
-
-// ── CHARACTER SHEET ────────────────────────────────────────────
-function buildCharSelector() {
-  const container = document.getElementById('char-selector');
-  container.innerHTML = '';
-  Object.entries(CHARACTERS).forEach(([id, char]) => {
-    const chip = document.createElement('div');
-    chip.className = `char-chip ${id === state.activeChar ? 'active' : ''}`;
-    chip.textContent = char.name;
-    chip.id = `chip-${id}`;
-    chip.style.color  = id === state.activeChar ? char.color : '';
-    chip.style.borderColor = id === state.activeChar ? char.color + '88' : '';
-    chip.style.boxShadow   = id === state.activeChar ? `0 0 16px ${char.color}44` : '';
-    chip.onclick = () => renderActiveChar(id);
-    container.appendChild(chip);
-  });
-  // Add new
-  const addChip = document.createElement('div');
-  addChip.className = 'char-add-chip';
-  addChip.textContent = '+ new';
-  container.appendChild(addChip);
-}
-
-function renderActiveChar(id) {
-  state.activeChar = id;
-  const char = CHARACTERS[id];
-  if (!char) return;
-
-  // Update chip highlights
-  Object.keys(CHARACTERS).forEach(cid => {
-    const chip = document.getElementById(`chip-${cid}`);
-    if (!chip) return;
-    const active = cid === id;
-    const c = CHARACTERS[cid];
-    chip.classList.toggle('active', active);
-    chip.style.color       = active ? c.color : 'var(--subtext)';
-    chip.style.borderColor = active ? c.color + '88' : 'var(--border)';
-    chip.style.boxShadow   = active ? `0 0 16px ${c.color}44` : 'none';
-    chip.style.background  = active ? c.color + '11' : 'var(--surface2)';
-  });
-
-  // Card accent
-  document.getElementById('card-accent').style.background = `linear-gradient(90deg,${char.color},transparent)`;
-  document.getElementById('arc-accent').style.background   = `linear-gradient(90deg,${char.color},transparent)`;
-
-  // Avatar
-  const av = document.getElementById('sheet-avatar-lg');
-  av.textContent    = char.initial;
-  av.style.color    = char.color;
-  av.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
-  av.style.border   = `2px solid ${char.color}66`;
-  av.style.boxShadow = `0 0 24px ${char.color}44`;
-
-  // Name / trait / mood
-  document.getElementById('sheet-char-name').textContent  = char.name;
-  document.getElementById('sheet-char-name').style.textShadow = `0 0 20px ${char.color}66`;
-  document.getElementById('sheet-char-trait').textContent = char.trait;
-  document.getElementById('sheet-char-trait').style.color = char.color;
-  const mood = document.getElementById('sheet-char-mood');
-  mood.textContent    = `⬤ ${char.mood}`;
-  mood.style.color    = char.color;
-  mood.style.background = char.color + '22';
-  mood.style.border   = `1px solid ${char.color}44`;
-
-  // Traits
-  const tl = document.getElementById('trait-list');
-  tl.innerHTML = char.traits.map(t => `
-    <div class="trait-row">
-      <div class="trait-header">
-        <span class="trait-label-text">${t.label}</span>
-        <span class="trait-val" style="color:${char.color}">${t.val}</span>
-      </div>
-      <div class="trait-bar-bg">
-        <div class="trait-bar-fill" style="width:${t.val}%;background:linear-gradient(90deg,${char.color},${char.color}88);box-shadow:0 0 8px ${char.color}88"></div>
-      </div>
-    </div>
-  `).join('');
-
-  // Arc
-  document.getElementById('arc-text').value = char.arc || '';
-
-  // Show user fields only for 'you'
-  document.getElementById('user-sheet-card').style.display = char.isUser ? 'block' : 'none';
-  if (char.isUser) {
-    document.getElementById('user-handle').value = char.handle || '';
-    document.getElementById('user-vibe').value   = char.vibe   || '';
-    document.getElementById('user-arc').value    = char.arc    || '';
-    document.getElementById('user-song').value   = char.song   || '';
-  }
-
-  // Save btn color
-  const btn = document.getElementById('save-summarize-btn');
-  btn.style.background = `linear-gradient(135deg,${char.color}22,${char.color}11)`;
-  btn.style.border     = `1px solid ${char.color}66`;
-  btn.style.color      = char.color;
-  btn.style.boxShadow  = `0 0 20px ${char.color}22`;
-}
-
-async function saveSummarize() {
-  const id   = state.activeChar;
-  const char = CHARACTERS[id];
-  if (!char) return;
-
-  // Save arc text
-  char.arc = document.getElementById('arc-text').value;
-
-  // If user sheet, save extra fields
-  if (char.isUser) {
-    char.handle = document.getElementById('user-handle').value;
-    char.vibe   = document.getElementById('user-vibe').value;
-    char.arc    = document.getElementById('user-arc').value;
-    char.song   = document.getElementById('user-song').value;
-  }
-
-  // Persist to IndexedDB
-  await dbSet('sheets', { id, arc: char.arc, traits: char.traits,
-    handle: char.handle, vibe: char.vibe, song: char.song });
-
-  // Visual feedback
-  const btn = document.getElementById('save-summarize-btn');
-  const orig = btn.textContent;
-  btn.textContent = '✓ saved to device';
-  setTimeout(() => { btn.textContent = orig; }, 2000);
-
-  // If there are chat messages, ask AI to summarize and merge
-  const messages = chatMsgs.querySelectorAll('.msg');
-  if (messages.length > 2) {
-    try {
-      let token = state.session?.access_token;
-      if (!token) { const { data } = await sb.auth.getSession(); token = data?.session?.access_token; }
-      if (token) {
-        const thread = Array.from(messages).map(m => {
-          const bubble = m.querySelector('.msg-bubble');
-          const role   = m.classList.contains('user') ? 'user' : 'bot';
-          return `${role}: ${bubble?.textContent?.trim() || ''}`;
-        }).join('\n');
-
-        const r = await fetch(`${RAIL}/sheet`, {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body:    JSON.stringify({ message: thread, system_prompt: JSON.stringify(char), vault_context: '' }),
-        });
-        const data = await r.json();
-        if (data.sheet) {
-          try {
-            const parsed = JSON.parse(data.sheet.replace(/```json|```/g,'').trim());
-            if (parsed.traits) {
-              char.traits = parsed.traits.map((t,i) => ({ label: t.label || char.traits[i]?.label, val: t.score || t.val || 50 }));
-              if (parsed.summary) char.arc = parsed.summary;
-              await dbSet('sheets', { id, arc: char.arc, traits: char.traits });
-              renderActiveChar(id);
-            }
-          } catch {}
-        }
-      }
-    } catch(e) { console.warn('summarize:', e); }
-  }
-}
-
-// ── VAULT ──────────────────────────────────────────────────────
-document.getElementById('file-input').addEventListener('change', async e => {
-  for (const f of e.target.files) {
-    const content = await f.text().catch(() => '[binary]');
-    const entry = { name: f.name, size: f.size, content, type: f.type };
-    state.vaultFiles.push(entry);
-    await dbSet('vault', entry);
-  }
-  renderVault();
-  e.target.value = '';
-});
-
-document.getElementById('open-folder-btn').addEventListener('click', async () => {
-  if ('showDirectoryPicker' in window) {
-    try {
-      const dir = await window.showDirectoryPicker({ mode: 'readwrite' });
-      for await (const [name, handle] of dir.entries()) {
-        if (handle.kind === 'file') {
-          const f       = await handle.getFile();
-          const content = await f.text().catch(() => '[binary]');
-          if (!state.vaultFiles.find(x => x.name === name)) {
-            const entry = { name, size: f.size, content, type: f.type };
-            state.vaultFiles.push(entry);
-            await dbSet('vault', entry);
-          }
-        }
-      }
-      renderVault();
-    } catch {}
-  } else {
-    document.getElementById('file-input').click();
-  }
-});
-
-function renderVault() {
-  const list = document.getElementById('vault-list');
-  if (!state.vaultFiles.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🗂</div>No files yet.<br>Add docs and your companion will remember them.</div>`;
-    return;
-  }
-  const colors = ['#00F6D6','#FF4BCB','#7B5FFF','#FFD93D','#4DA3FF'];
-  list.innerHTML = state.vaultFiles.map((f, i) => {
-    const c    = colors[i % colors.length];
-    const icon = f.type?.startsWith('image') ? '🖼' : f.name.endsWith('.md') ? '📜' : '📄';
-    return `
-      <div class="vault-item">
-        <div class="vault-item-accent" style="background:${c}"></div>
-        <div class="vault-icon" style="background:${c}22;border:1px solid ${c}44">${icon}</div>
-        <div class="vault-info">
-          <div class="vault-filename">${f.name}</div>
-          <div class="vault-meta" style="color:${c}">${(f.size/1024).toFixed(1)} KB · visible to companion</div>
-        </div>
-        <button class="vault-del" onclick="removeFile('${f.name}')">✕</button>
-      </div>`;
-  }).join('');
-}
-
-async function removeFile(name) {
-  state.vaultFiles = state.vaultFiles.filter(f => f.name !== name);
-  await dbDelete('vault', name);
-  renderVault();
-}
-
-// ── BUILD ──────────────────────────────────────────────────────
-document.querySelectorAll('.tone-chip').forEach(c => {
-  c.addEventListener('click', () => {
-    c.classList.toggle('selected');
-    const t = c.dataset.tone;
-    state.botTone = c.classList.contains('selected')
-      ? [...state.botTone, t]
-      : state.botTone.filter(x => x !== t);
-  });
-});
-
-document.getElementById('save-bot-btn').addEventListener('click', async () => {
-  state.botName        = document.getElementById('bot-name').value.trim()    || 'companion';
-  state.botPersonality = document.getElementById('bot-personality').value.trim();
-  state.botGreeting    = document.getElementById('bot-greeting').value.trim() || "Hey. I'm here.";
-  // Pick color from speaker map or default teal
-  state.botColor = SPEAKER_COLORS[state.botName.toLowerCase()] || '#00F6D6';
-  await saveLocalBot();
-  // Reset chat with new greeting
-  chatMsgs.innerHTML = '';
-  addMessage(state.botGreeting, 'bot', state.botName, state.botColor);
-  updateGreeting();
-  switchView('chat');
-});
-
-// ── PANEL ──────────────────────────────────────────────────────
-function openPanel(tab='store') {
-  document.getElementById('panel-overlay').classList.add('open');
-  document.getElementById('slide-panel').classList.add('open');
-  switchPanelTab(tab);
-}
-function closePanel() {
-  document.getElementById('panel-overlay').classList.remove('open');
-  document.getElementById('slide-panel').classList.remove('open');
-}
-function switchPanelTab(tab) {
-  document.querySelectorAll('.panel-tab').forEach((t, i) => {
-    const tabs = ['store','account'];
-    t.classList.toggle('active', tabs[i] === tab);
-  });
-  document.querySelectorAll('.panel-tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById(`panel-${tab}`)?.classList.add('active');
-}
-
-// ── PAYPAL ─────────────────────────────────────────────────────
-async function buyPack(amount) {
-  if (!state.user) { alert('Please sign in first.'); return; }
-  try {
-    let token = state.session?.access_token;
-    if (!token) { const { data } = await sb.auth.getSession(); token = data?.session?.access_token; }
-    const r = await fetch(`${RAIL}/create-order`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body:    JSON.stringify({ amount: String(amount) }),
-    });
-    const data = await r.json();
-    if (!r.ok) { alert(data.detail || 'Payment error.'); return; }
-    window.location.href = data.approve_url;
-  } catch { alert('Payment error. Try again.'); }
-}
-
-async function handlePayPalReturn() {
-  const params  = new URLSearchParams(window.location.search);
-  const payment = params.get('payment');
-  const token   = params.get('token');
-  if (payment === 'success' && token) {
-    try {
-      let authToken = state.session?.access_token;
-      if (!authToken) { const { data } = await sb.auth.getSession(); authToken = data?.session?.access_token; }
-      const r = await fetch(`${RAIL}/capture-order`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
-        body:    JSON.stringify({ order_id: token }),
-      });
-      const data = await r.json();
-      if (r.ok) {
-        await loadUsage();
-        window.history.replaceState({}, document.title, window.location.pathname);
-        openPanel('store');
-        setTimeout(() => alert(`Payment successful! ${data.credits_added} credits added.`), 300);
-      }
-    } catch {}
-  } else if (payment === 'cancelled') {
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-}
-
-// ── BOOT ───────────────────────────────────────────────────────
-// Start comic, then check auth
-comicRender(0);
-</script>
 </body>
 </html>
