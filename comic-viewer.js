@@ -243,8 +243,8 @@ const ComicViewer = (() => {
     // Set background
     const bg = document.getElementById('comic-bg');
     bg.className = '';
-    if (panel.image) {
-      bg.style.backgroundImage = `url(${HF_RAW}/${panel.image})`;
+if (panel.image) {
+  bg.style.backgroundImage = `url(${panel.image})`;
       bg.style.background = '';
     } else if (panel.bg_gradient) {
       bg.style.background = panel.bg_gradient;
