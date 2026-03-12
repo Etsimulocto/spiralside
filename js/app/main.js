@@ -16,10 +16,7 @@ import { buildCharSelector, renderActiveChar,
 import { initVault, renderVault,
          removeFile, loadVaultFromDB }             from './vault.js';
 import { initMusic }          from './music.js';
-import { initMusicView, destroyMusicView } from './musicview.js';
 import { initBuild, loadBotIntoForm }              from './build.js';
-import { initMusic }                               from './music.js';
-import { initMusicView, destroyMusicView }         from './musicview.js';
 import { buildFAB, toggleFAB, switchView,
          openPanel, closePanel, switchPanelTab,
          loadUsage, updateCreditDisplay,
