@@ -47,6 +47,7 @@ export function toggleFAB() {
 // ── SWITCH VIEW ───────────────────────────────────────────────
 // id: 'chat' | 'sheet' | 'vault' | 'build'
 export function switchView(id) {
+  const prevViewId = state.activeView;
   state.activeView = id;
 
   // Close FAB
@@ -54,12 +55,20 @@ export function switchView(id) {
   document.getElementById('fab-main').classList.remove('open');
   document.querySelectorAll('.fab-item').forEach(el => el.classList.remove('open'));
 
+  // Call onClose for previous view
+  const prevTab = FAB_TABS.find(t => t.id === prevViewId);
+  if (prevTab?.onClose) prevTab.onClose();
+
   // Activate the matching view
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById(`view-${id}`)?.classList.add('active');
 
+  // Call onOpen for new view
+  const nextTab = FAB_TABS.find(t => t.id === id);
+  if (nextTab?.onOpen) nextTab.onOpen();
+
   // Header glow color per view
-  const glowColors = { chat: '#00F6D6', sheet: '#FF4BCB', vault: '#7B5FFF', build: '#FFD93D' };
+  const glowColors = { chat: '#00F6D6', sheet: '#FF4BCB', vault: '#7B5FFF', build: '#FFD93D', music: '#00F6D6' };
   document.getElementById('header-glow').style.background = glowColors[id] || '#00F6D6';
 
   // Highlight active FAB icon
