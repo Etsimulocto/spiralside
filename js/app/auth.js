@@ -17,10 +17,8 @@ export const sb = createClient(
     auth: {
       autoRefreshToken:   true,
       detectSessionInUrl: true,
-      // Use window.localStorage directly (first-party) instead of
-      // Supabase's default which Edge flags as third-party storage
       storage:            window.localStorage,
-      storageKey:         'ss_auth',   // scoped key — won't clash
+      storageKey:         'ss_auth',
       persistSession:     true,
     }
   }
