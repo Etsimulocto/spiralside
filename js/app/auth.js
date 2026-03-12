@@ -1,8 +1,7 @@
 // ============================================================
-// SPIRALSIDE — AUTH v1.2
-// Supabase init, login/signup/signout, screen routing
-// v1.2: custom localStorage key scoped to spiralside.com
-//       fixes Edge tracking prevention blocking session storage
+// SPIRALSIDE — AUTH v1.3
+// v1.3: onAuthStateChange now routes to app on SIGNED_IN
+//       fixes login succeeding but screen not changing
 // Nimbis anchor: js/app/auth.js
 // ============================================================
 
@@ -31,7 +30,11 @@ export function showScreen(name) {
 }
 
 // ── CHECK SESSION AND ROUTE ───────────────────────────────────
+// Called once after comic finishes
 export function checkAuthAndShow(onAppReady) {
+  // Store the callback so listenAuthChanges can call it too
+  window._onAppReady = onAppReady;
+
   sb.auth.getSession().then(async ({ data }) => {
     let session = data?.session;
     if (session) {
@@ -55,9 +58,21 @@ export function checkAuthAndShow(onAppReady) {
 }
 
 // ── LISTEN FOR AUTH CHANGES ───────────────────────────────────
+// SIGNED_IN fires after handleLogin() succeeds — route to app
 export function listenAuthChanges() {
   sb.auth.onAuthStateChange((event, session) => {
-    if (session?.user) {
+    if (event === 'SIGNED_IN' && session?.user) {
+      state.user    = session.user;
+      state.session = session;
+      showScreen('app');
+      // Call onAppReady if it hasn't been called yet
+      if (window._onAppReady) {
+        const fn = window._onAppReady;
+        window._onAppReady = null; // only call once
+        fn();
+      }
+    } else if (event === 'TOKEN_REFRESHED' && session?.user) {
+      // Keep state in sync on background refresh
       state.user    = session.user;
       state.session = session;
     } else if (event === 'SIGNED_OUT') {
@@ -99,6 +114,7 @@ export async function handleLogin() {
   const { error } = await sb.auth.signInWithPassword({ email, password: pass });
   btn.disabled = false; btn.textContent = 'sign in';
   if (error) setAuthError(error.message);
+  // On success, onAuthStateChange fires SIGNED_IN and routes to app
 }
 
 // ── SIGNUP ────────────────────────────────────────────────────
@@ -123,6 +139,7 @@ export async function handleSignout(closePanel) {
   closePanel();
   state.user    = null;
   state.session = null;
+  window._onAppReady = null;
   showScreen('auth');
 }
 
