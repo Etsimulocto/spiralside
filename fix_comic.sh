@@ -1,3 +1,19 @@
+#!/bin/bash
+# ============================================================
+# SPIRALSIDE — COMIC FIX v1.0
+# Replaces ES module approach with global ComicViewer object
+# Fixes timing issue where window.ComicViewer wasn't set
+# before onAuthStateChange fired
+# Nimbis anchor: fix_comic.sh
+# ============================================================
+
+set -e
+echo "🌀 Fixing comic viewer..."
+
+# ── REWRITE comic-viewer.js AS GLOBAL SCRIPT ─────────────────
+# This stays in the root so index.html can load it with a plain
+# <script src="comic-viewer.js"> tag — no modules, no timing issues
+cat > comic-viewer.js << 'EOF'
 // ============================================================
 // SPIRALSIDE — COMIC VIEWER v1.1
 // Global script — sets window.ComicViewer immediately on load
@@ -323,3 +339,34 @@ const ComicViewer = (() => {
   return { init };
 
 })();
+EOF
+
+# ── FIX index.html — restore plain script tag ────────────────
+echo "📄 Fixing index.html script tag..."
+python3 - << 'PYEOF'
+with open('index.html', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# Remove the module script block, replace with plain script tag
+import re
+content = re.sub(
+    r'<script type="module"[^>]*>.*?</script>',
+    '<script src="comic-viewer.js"></script>',
+    content,
+    flags=re.DOTALL
+)
+
+with open('index.html', 'w', encoding='utf-8') as f:
+    f.write(content)
+print("index.html fixed!")
+PYEOF
+
+# ── COMMIT AND PUSH ───────────────────────────────────────────
+echo "📦 Committing..."
+git add comic-viewer.js index.html
+git commit -m "fix: revert to global ComicViewer, fix timing issue, wire GitHub image URLs"
+git push
+
+echo ""
+echo "✅ Done! Check spiralside.com in 30 seconds."
+echo "   Comic should play with panel art on panels 1-4."
