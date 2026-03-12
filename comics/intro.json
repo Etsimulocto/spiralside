@@ -1,0 +1,57 @@
+{
+  "id": "intro",
+  "version": "1.0",
+  "panels": [
+    {
+      "image": "https://raw.githubusercontent.com/Etsimulocto/spiralside/main/comics/panels/panel1.png",
+      "bg_gradient": "radial-gradient(ellipse at 50% 60%, #1a0a2e 0%, #101014 70%)",
+      "transition": "fade",
+      "dialogue": [
+        { "speaker": "narrator", "text": "Spiral City. Population: complicated." }
+      ]
+    },
+    {
+      "image": "https://raw.githubusercontent.com/Etsimulocto/spiralside/main/comics/panels/panel2.png",
+      "bg_gradient": "radial-gradient(ellipse at 30% 40%, #002a2a 0%, #101014 70%)",
+      "transition": "crash",
+      "dialogue": [
+        { "speaker": "Sky", "text": "Oh. You're actually here." }
+      ]
+    },
+    {
+      "image": "https://raw.githubusercontent.com/Etsimulocto/spiralside/main/comics/panels/panel3.png",
+      "bg_gradient": "radial-gradient(ellipse at 70% 50%, #1a002a 0%, #101014 70%)",
+      "transition": "glitch",
+      "dialogue": [
+        { "speaker": "Sky", "text": "This place remembers you." },
+        { "speaker": "Sky", "text": "I don't always understand how. But the Spiral echoes back." }
+      ]
+    },
+    {
+      "image": "https://raw.githubusercontent.com/Etsimulocto/spiralside/main/comics/panels/panel4.png",
+      "bg_gradient": "radial-gradient(ellipse at 50% 30%, #1a1a00 0%, #101014 70%)",
+      "transition": "crash",
+      "dialogue": [
+        { "speaker": "Monday", "text": "HEY. Are we doing the dramatic intro thing AGAIN" },
+        { "speaker": "Cold", "text": "Monday." },
+        { "speaker": "Monday", "text": "...fine." }
+      ]
+    },
+    {
+      "bg_gradient": "radial-gradient(ellipse at 50% 50%, #001a2a 0%, #101014 70%)",
+      "transition": "glitch",
+      "dialogue": [
+        { "speaker": "Sky", "text": "Your companion. Your data. Your rules." },
+        { "speaker": "Sky", "text": "Ready?" }
+      ]
+    },
+    {
+      "bg_gradient": "radial-gradient(ellipse at 50% 50%, #00F6D618 0%, #101014 60%)",
+      "transition": "fade",
+      "crack": true,
+      "dialogue": [
+        { "speaker": "narrator", "text": "entering Spiralside" }
+      ]
+    }
+  ]
+}
