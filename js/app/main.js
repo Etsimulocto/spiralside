@@ -89,3 +89,24 @@ async function onAppReady() {
 listenAuthChanges();
 initComic(() => checkAuthAndShow(onAppReady));
 
+
+// ── STYLE MODULE ──────────────────────────────────────────────
+import {
+  initStylePanel, applyThemePreset, previewColor, selectBgType,
+  previewScanlines, selectBubbleShape, selectFont, previewSlider,
+  applyAndSaveStyle, resetStyle, updateParticleDensity, loadSavedStyle
+} from './style.js';
+
+window.initStylePanel       = initStylePanel;
+window.applyThemePreset     = applyThemePreset;
+window.previewColor         = previewColor;
+window.selectBgType         = selectBgType;
+window.previewScanlines     = previewScanlines;
+window.selectBubbleShape    = selectBubbleShape;
+window.selectFont           = selectFont;
+window.previewSlider        = previewSlider;
+window.applyAndSaveStyle    = applyAndSaveStyle;
+window.resetStyle           = resetStyle;
+window.updateParticleDensity = updateParticleDensity;
+
+loadSavedStyle();
