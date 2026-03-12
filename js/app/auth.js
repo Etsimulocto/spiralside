@@ -1,7 +1,7 @@
 // ============================================================
-// SPIRALSIDE — AUTH v1.0
+// SPIRALSIDE — AUTH v1.1
 // Supabase init, login/signup/signout, screen routing
-// Exports sb (supabase client) for use across all modules
+// v1.1: auto token refresh — expired sessions silently renewed
 // Nimbis anchor: js/app/auth.js
 // ============================================================
 
@@ -12,11 +12,18 @@ import { state } from './state.js';
 const { createClient } = supabase;
 export const sb = createClient(
   'https://qfawusrelwthxabfbglg.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E',
+  {
+    // Tell Supabase to auto-refresh the token before it expires
+    auth: {
+      autoRefreshToken:    true,   // renews JWT automatically
+      persistSession:      true,   // keeps session in localStorage
+      detectSessionInUrl:  true,   // handles magic link / OAuth returns
+    }
+  }
 );
 
 // ── SCREEN ROUTING ────────────────────────────────────────────
-// Shows one .screen by name, hides all others
 export function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(`screen-${name}`)?.classList.add('active');
@@ -24,35 +31,56 @@ export function showScreen(name) {
 
 // ── CHECK SESSION AND ROUTE ───────────────────────────────────
 // Called after comic finishes — routes to app or auth
+// Tries to refresh the session first so expired tokens don't
+// strand the user on a blank screen
 export function checkAuthAndShow(onAppReady) {
-  sb.auth.getSession().then(({ data }) => {
-    if (data?.session?.user) {
-      state.user    = data.session.user;
-      state.session = data.session;
+  sb.auth.getSession().then(async ({ data }) => {
+
+    let session = data?.session;
+
+    // If session exists but token looks stale, force a refresh
+    if (session) {
+      try {
+        const { data: refreshed } = await sb.auth.refreshSession();
+        if (refreshed?.session) session = refreshed.session;
+      } catch (_) {
+        // Refresh failed — session is genuinely dead, go to auth
+        session = null;
+      }
+    }
+
+    if (session?.user) {
+      state.user    = session.user;
+      state.session = session;
       showScreen('app');
       onAppReady();
     } else {
+      // Clear any stale local session data before showing auth
+      await sb.auth.signOut();
       showScreen('auth');
     }
   });
 }
 
 // ── LISTEN FOR AUTH CHANGES ───────────────────────────────────
-// Keeps state.session current if user signs in from another tab
+// Keeps state.session in sync whenever Supabase auto-refreshes
+// the token in the background (happens every ~55 minutes)
 export function listenAuthChanges() {
-  sb.auth.onAuthStateChange((_, session) => {
-    if (session?.user && !state.user) {
+  sb.auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
       state.user    = session.user;
       state.session = session;
+    } else if (event === 'SIGNED_OUT') {
+      state.user    = null;
+      state.session = null;
     }
   });
 }
 
 // ── PASSWORD VISIBILITY TOGGLE ────────────────────────────────
-// Called from HTML onclick — keeps btn in sync
 export function togglePw(id, btn) {
-  const input = document.getElementById(id);
-  input.type     = input.type === 'password' ? 'text' : 'password';
+  const input     = document.getElementById(id);
+  input.type      = input.type === 'password' ? 'text' : 'password';
   btn.textContent = input.type === 'password' ? 'show' : 'hide';
 }
 
@@ -67,7 +95,7 @@ export function switchAuthTab(t) {
 
 // ── ERROR DISPLAY ─────────────────────────────────────────────
 function setAuthError(msg, success = false) {
-  const el = document.getElementById('auth-error');
+  const el  = document.getElementById('auth-error');
   el.textContent = msg;
   el.className   = 'auth-error' + (success ? ' auth-success' : '');
 }
@@ -109,14 +137,28 @@ export async function handleSignout(closePanel) {
 }
 
 // ── GET FRESH TOKEN ───────────────────────────────────────────
-// Helper used in chat/usage/paypal — refreshes session if needed
+// Used by chat/usage/paypal — always returns a valid token
+// Silently refreshes if current one is expired
 export async function getToken() {
+  // Try current in-memory token first
   let token = state.session?.access_token;
-  if (!token) {
-    const { data } = await sb.auth.getSession();
-    token = data?.session?.access_token;
-    if (data?.session) state.session = data.session;
-  }
-  return token;
-}
+  if (token) return token;
 
+  // Fall back to reading from storage
+  const { data } = await sb.auth.getSession();
+  if (data?.session) {
+    state.session = data.session;
+    return data.session.access_token;
+  }
+
+  // Last resort — force a refresh
+  try {
+    const { data: refreshed } = await sb.auth.refreshSession();
+    if (refreshed?.session) {
+      state.session = refreshed.session;
+      return refreshed.session.access_token;
+    }
+  } catch (_) {}
+
+  return null;
+}
