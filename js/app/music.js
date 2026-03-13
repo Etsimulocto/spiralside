@@ -46,7 +46,7 @@ async function loadPlaylist() {
     // Hardcoded fallback — matches current HF files
     tracks = [
       { id: 'spiralside',  title: 'SPIRALSIDE',  file: 'utilities/music/SPIRALSIDE.mp3'      },
-      { id: 'centerspark', title: 'Centerspark',  file: 'utilities/music/Centerspark (1).mp3' },
+      { id: 'centerspark', title: 'Centerspark',  file: 'utilities/music/Centerspark.mp3' },
       { id: 'mirrorblade', title: 'Mirrorblade',  file: 'utilities/music/Mirrorblade.mp3'    },
     ];
   }
@@ -79,6 +79,7 @@ function playTrack(track) {
   }
 
   audio = new Audio(url);
+  audio.crossOrigin = 'anonymous';
   audio.volume = volume;
   audio.loop   = false;
   audio.addEventListener('ended', playRandom);
@@ -250,10 +251,13 @@ export function getMusicState() {
     playing:      audio ? !audio.paused : false,
     volume,
     currentIdx,
+    trackIdx:     currentIdx,
     currentTitle: track?.title || null,
+    title:        track?.title || null,
     progressPct:  audio && audio.duration ? audio.currentTime / audio.duration : 0,
     currentTime:  audio?.currentTime || 0,
     duration:     audio?.duration || 0,
+    audio,
   };
 }
 

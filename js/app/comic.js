@@ -31,6 +31,26 @@ let comicPanel   = 0;
 let comicTyping  = null;
 let comicLineIdx = 0;
 
+export function playCustomComic(customPanels) {
+  if (!customPanels || !customPanels.length) return;
+  PANELS = customPanels;
+  comicPanel = 0;
+  const screen = document.getElementById('screen-comic');
+  screen.classList.remove('fade-out');
+  screen.style.display = '';
+  const skipBtn = document.getElementById('comic-skip');
+  if (skipBtn) skipBtn.classList.remove('visible');
+  const onFinish = () => {
+    screen.classList.add('fade-out');
+    setTimeout(() => { screen.style.display = 'none'; }, 500);
+  };
+  if (screen._customTap) screen.removeEventListener('click', screen._customTap);
+  screen._customTap = () => comicTap(onFinish);
+  screen.addEventListener('click', screen._customTap);
+  if (skipBtn) skipBtn.onclick = e => { e.stopPropagation(); comicFinish(onFinish); };
+  comicRender(0, onFinish);
+}
+
 export async function initComic(onFinish) {
   document.getElementById('screen-comic')
     .addEventListener('click', () => comicTap(onFinish));

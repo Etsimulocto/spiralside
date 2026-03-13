@@ -17,6 +17,7 @@ let analyser  = null;   // Web Audio analyser node
 let dataArr   = null;   // Uint8Array for frequency data
 let audioCtx  = null;   // AudioContext
 let sourceNode= null;   // MediaElementSource
+let seeking   = false;
 
 // ── INIT ──────────────────────────────────────────────────────
 export function initMusicView() {
@@ -36,6 +37,7 @@ export function initMusicView() {
 // nulling sourceNode and recreating it on the next open breaks the analyser.
 export function destroyMusicView() {
   stopRaf();
+  seeking = false;
   const el = document.getElementById('view-music');
   if (el) el.innerHTML = '';
   // audioCtx, sourceNode, analyser, dataArr all stay alive
@@ -102,12 +104,20 @@ function wireControls() {
     setVolumeExternal(parseFloat(e.target.value));
   });
 
-  document.getElementById('mv-seek')?.addEventListener('input', e => {
-    const ms = getMusicState();
-    if (ms.audio && ms.audio.duration) {
-      ms.audio.currentTime = (parseFloat(e.target.value) / 100) * ms.audio.duration;
-    }
-  });
+  const seekEl = document.getElementById('mv-seek');
+  if (seekEl) {
+    seekEl.addEventListener('mousedown', () => { seeking = true; });
+    seekEl.addEventListener('touchstart', () => { seeking = true; }, { passive: true });
+    seekEl.addEventListener('change', e => {
+      const ms = getMusicState();
+      if (ms.audio && ms.audio.duration) ms.audio.currentTime = (parseFloat(e.target.value)/100)*ms.audio.duration;
+      seeking = false;
+    });
+    seekEl.addEventListener('input', e => {
+      const ms = getMusicState();
+      if (ms.audio && ms.audio.duration) ms.audio.currentTime = (parseFloat(e.target.value)/100)*ms.audio.duration;
+    });
+  }
 
   window.mvPlayTrack = (idx) => { playTrackByIdx(idx); syncUI(); };
 }
@@ -240,7 +250,7 @@ function updateProgress() {
   const timeTot  = document.getElementById('mv-time-tot');
 
   if (fill)    fill.style.width = `${pct}%`;
-  if (seek)    seek.value       = pct;
+  if (seek && !seeking) seek.value = pct;
   if (timeCur) timeCur.textContent = fmt(cur);
   if (timeTot) timeTot.textContent = fmt(dur);
 

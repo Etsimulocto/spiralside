@@ -5,7 +5,7 @@
 // Nimbis anchor: js/app/main.js
 // ============================================================
 
-import { initComic }                               from './comic.js';
+import { initComic, playCustomComic }              from './comic.js';
 import { sb, checkAuthAndShow, listenAuthChanges,
          handleLogin, handleSignup, handleSignout,
          switchAuthTab, togglePw }                 from './auth.js';
@@ -54,6 +54,7 @@ window.addPanelToBook    = addPanelToBook;
 window.removePanelFromBook = removePanelFromBook;
 window.movePanelInBook   = movePanelInBook;
 window.deleteBook        = deleteBook;
+window.playCustomComic   = playCustomComic;
 
 // ── APP READY ─────────────────────────────────────────────────
 // Called after auth check confirms a valid session
