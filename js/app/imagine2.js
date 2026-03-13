@@ -109,31 +109,26 @@ export function injectImagineStyles() {
   const s = document.createElement('style');
   s.id = 'imagine-styles';
   s.textContent = `
-    #view-imagine { overflow-y: auto; padding: 16px 16px calc(80px + var(--safe-bot, 0px)); }
-    #imagine-inner { display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; }
-    .imagine-header { font-family: var(--font-display); font-weight: 800; font-size: 1rem; letter-spacing: 0.12em; color: var(--teal); padding-top: 8px; }
-    .imagine-section { display: flex; flex-direction: column; gap: 8px; }
-    .imagine-label { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--subtext); text-transform: uppercase; }
-    .imagine-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: var(--font-ui); font-size: 0.82rem; outline: none; resize: none; transition: border-color 0.2s; }
-    .imagine-input:focus { border-color: var(--teal); }
-    .imagine-input::placeholder { color: var(--subtext); }
-    .imagine-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--teal), var(--purple)); border: none; border-radius: 12px; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.2s; }
-    .imagine-btn:hover { opacity: 0.88; }
-    .imagine-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .imagine-error { font-size: 0.72rem; color: var(--pink); min-height: 18px; text-align: center; }
-    .size-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .imagine-sublabel { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.06em; margin-left: 6px; }
-    .size-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .size-chip {
-      padding: 12px 8px; background: var(--surface); border: 1px solid var(--border);
-      border-radius: 10px; font-size: 0.78rem; color: var(--subtext); cursor: pointer;
-      transition: all 0.15s; text-align: center; line-height: 1.4; font-family: var(--font-ui);
-    }
-    .size-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(0,246,214,0.08); }
-    .imagine-spinner { width: 40px; height: 40px; margin: 30px auto; border: 3px solid rgba(0,246,214,0.15); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.85s linear infinite; }
-    .imagine-tier { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--subtext); text-align: center; text-transform: uppercase; margin-bottom: 8px; }
-    .size-sub { font-size: 0.62rem; color: var(--teal); display: block; }
-    .imagine-result-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); display: block; margin-bottom: 12px; }
-  `;
+    #view-imagine { overflow-y:auto; padding:20px 16px calc(80px + var(--safe-bot,0px)); -webkit-overflow-scrolling:touch; }
+    #imagine-inner { display:flex; flex-direction:column; gap:12px; max-width:600px; margin:0 auto; }
+    .imagine-header { font-size:0.65rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); font-family:var(--font-ui); font-weight:600; padding-top:4px; }
+    .imagine-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+    .imagine-label { font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtext); font-family:var(--font-ui); }
+    .imagine-sublabel { color:var(--teal); font-size:0.58rem; margin-left:6px; letter-spacing:0.06em; }
+    .imagine-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-family:var(--font-ui); font-size:0.82rem; outline:none; resize:none; transition:border-color 0.2s; line-height:1.5; }
+    .imagine-input:focus { border-color:var(--teal); }
+    .imagine-input::placeholder { color:var(--subtext); }
+    .size-chips { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .size-chip { padding:10px 8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--subtext); cursor:pointer; transition:all 0.15s; text-align:center; line-height:1.5; font-family:var(--font-ui); font-size:0.75rem; }
+    .size-chip.active { border-color:var(--teal); color:var(--teal); background:rgba(0,246,214,0.08); }
+    .size-sub { font-size:0.6rem; color:var(--teal); display:block; opacity:0.8; }
+    .imagine-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--teal),var(--purple)); border:none; border-radius:12px; color:#fff; font-family:var(--font-display); font-weight:700; font-size:0.88rem; cursor:pointer; letter-spacing:0.06em; transition:opacity 0.2s; }
+    .imagine-btn:hover { opacity:0.88; }
+    .imagine-btn:disabled { opacity:0.45; cursor:not-allowed; }
+    .imagine-error { font-size:0.72rem; color:var(--pink); min-height:16px; text-align:center; font-family:var(--font-ui); }
+    .imagine-spinner { width:36px; height:36px; margin:24px auto; border:3px solid rgba(0,246,214,0.15); border-top-color:var(--teal); border-radius:50%; animation:spin 0.85s linear infinite; }
+    .imagine-tier { font-size:0.6rem; letter-spacing:0.1em; color:var(--subtext); text-align:center; text-transform:uppercase; margin-bottom:6px; font-family:var(--font-ui); }
+    .imagine-result-img { width:100%; border-radius:12px; border:1px solid var(--border); display:block; margin-bottom:10px; }
+    `;
   document.head.appendChild(s);
 }
