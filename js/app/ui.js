@@ -213,8 +213,10 @@ export async function handlePayPalReturn() {
 
 // ── FONT SIZE ─────────────────────────────────────────────────
 export function setFontSize(size) {
-  const scales = { s: 0.85, m: 1, l: 1.18 };
+  const scales = { s: 0.82, m: 1, l: 1.2 };
   const scale = scales[size] || 1;
+  // Set on <html> so all rem units scale — this is the only reliable approach
+  document.documentElement.style.fontSize = (16 * scale) + 'px';
   document.documentElement.style.setProperty('--font-scale', scale);
   localStorage.setItem('ss_fontsize', size);
   ['s','m','l'].forEach(id => {
