@@ -3,6 +3,7 @@
 // AI image generation via Railway -> HF FLUX.1-schnell
 // Free: 3/day 512x512 | Paid: 5cr, up to 1024x1024
 // Nimbis anchor: js/app/imagine.js
+// v1.1 — Railway routing, no HF token needed
 // ============================================================
 
 import { RAIL } from './state.js';
