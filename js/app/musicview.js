@@ -195,36 +195,62 @@ function drawVisualizer() {
   const H = canvas.offsetHeight;
   if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
 
-  const ctx  = canvas.getContext('2d');
-  const cx   = W / 2;
-  const cy   = H / 2;
-  const R    = Math.min(W, H) * 0.38;
-  const bars = 52;
+  const ctx   = canvas.getContext('2d');
+  const cx    = W / 2;
+  const cy    = H / 2;
+  const maxR  = Math.min(W, H) * 0.38;  // outer edge of spiral
+  const minR  = maxR * 0.18;            // tight inner center
+  const turns = 2.5;                    // number of rotations
+  const bars  = 128;                    // one spike per frequency bin
 
   ctx.clearRect(0, 0, W, H);
-
   if (analyser) analyser.getByteFrequencyData(dataArr);
 
+  // Draw frequency spikes along the spiral
   for (let i = 0; i < bars; i++) {
-    const angle  = (i / bars) * Math.PI * 2 - Math.PI / 2;
-    const raw    = analyser ? (dataArr[i % dataArr.length] / 255) : 0.08;
-    const amp    = 0.06 + raw * 0.45;
-    const inner  = R;
-    const outer  = R + amp * R;
+    const t      = i / (bars - 1);                        // 0=center, 1=outer
+    const angle  = t * turns * Math.PI * 2 - Math.PI / 2; // spiral angle
+    const baseR  = minR + t * (maxR - minR);               // radius grows outward
 
-    const t      = i / bars;                           // 0→1
-    const r      = Math.round(0   + t * 123);          // teal→purple R
-    const g      = Math.round(246 - t * 151);          // teal→purple G
-    const b      = Math.round(214 + t * 41);           // teal→purple B
+    const raw    = analyser ? (dataArr[i] / 255) : 0.06;
+    const spike  = (0.04 + raw * 0.38) * maxR;            // spike length in px
+
+    const bx = cx + Math.cos(angle) * baseR;
+    const by = cy + Math.sin(angle) * baseR;
+    const ex = cx + Math.cos(angle) * (baseR + spike);
+    const ey = cy + Math.sin(angle) * (baseR + spike);
+
+    // Teal at center, violet at outer edge
+    const cr = Math.round(0   + t * 123);
+    const cg = Math.round(246 - t * 151);
+    const cb = Math.round(214 + t * 41);
+    const ca = (0.55 + raw * 0.45).toFixed(2);
 
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
-    ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
-    ctx.strokeStyle = `rgba(${r},${g},${b},0.85)`;
-    ctx.lineWidth   = 2.5;
+    ctx.moveTo(bx, by);
+    ctx.lineTo(ex, ey);
+    ctx.strokeStyle = `rgba(${cr},${cg},${cb},${ca})`;
+    ctx.lineWidth   = 1.8;
     ctx.lineCap     = 'round';
     ctx.stroke();
   }
+
+  // Faint spiral guide line underneath the spikes
+  ctx.beginPath();
+  for (let i = 0; i <= 300; i++) {
+    const t     = i / 300;
+    const angle = t * turns * Math.PI * 2 - Math.PI / 2;
+    const r     = minR + t * (maxR - minR);
+    const x     = cx + Math.cos(angle) * r;
+    const y     = cy + Math.sin(angle) * r;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  }
+  ctx.strokeStyle = 'rgba(0,246,214,0.10)';
+  ctx.lineWidth   = 1;
+  ctx.lineCap     = 'butt';
+  ctx.stroke();
+}
+
 
   // Center ring
   ctx.beginPath();
