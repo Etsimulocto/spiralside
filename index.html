@@ -263,6 +263,11 @@
       filter: drop-shadow(0 0 12px rgba(0,246,214,0.4));
     }
     .header-right { display: flex; align-items: center; gap: 10px; }
+    .version-badge {
+      font-size: 0.52rem; letter-spacing: 0.08em; color: var(--subtext);
+      border: 1px solid var(--border); border-radius: 20px;
+      padding: 2px 7px; font-family: var(--font-ui); opacity: 0.6;
+    }
     :root { --font-scale: 1; }
     body  { font-size: calc(1rem * var(--font-scale)); }
     .font-size-btns { display: flex; align-items: center; gap: 3px; }
@@ -1241,6 +1246,7 @@
   <div id="app-header">
     <div class="header-glow" id="header-glow"></div>
     <div class="app-logo">spiralside</div>
+    <div class="version-badge" id="version-badge">v0.8</div>
     <div class="header-right">
       <div class="font-size-btns">
         <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
