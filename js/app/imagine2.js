@@ -7,6 +7,7 @@
 // ============================================================
 
 import { RAIL } from './state.js';
+import { sb } from './auth.js';
 
 export function initImagine() {
   const el = document.getElementById('view-imagine');
@@ -67,8 +68,7 @@ function wireGenerator() {
     btn.disabled      = true;
     resultEl.innerHTML = '<div class="imagine-spinner"></div>';
     try {
-      const sbClient = window._sb || window.supabase;
-      const { data: { session } } = await sbClient.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       const authToken = session?.access_token;
       if (!authToken) throw new Error('Not signed in.');
       const r = await fetch(`${RAIL}/generate-image`, {
