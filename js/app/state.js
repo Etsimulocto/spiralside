@@ -108,6 +108,8 @@ export const FAB_TABS = [
   { id: 'build', label: 'build', icon: '⚙',  color: '#FFD93D' },
   { id: 'library', label: 'library', icon: '🖼',  color: '#FF4BCB',
     onOpen: () => {} },
+  { id: 'imagine', label: 'imagine', icon: '✦', color: '#FF4BCB',
+    onOpen: () => window.initImagine && window.initImagine() },
   { id: 'music', label: 'music', icon: '♪',  color: '#00F6D6',
     onOpen:  () => window.initMusicView   && window.initMusicView(),
     onClose: () => window.destroyMusicView && window.destroyMusicView() },

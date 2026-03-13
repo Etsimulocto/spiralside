@@ -16,6 +16,7 @@ import { buildCharSelector, renderActiveChar,
 import { initVault, renderVault,
          removeFile, loadVaultFromDB }             from './vault.js';
 import { initMusic }          from './music.js';
+import { initImagine, injectImagineStyles }    from './imagine.js';
 import { initMusicView, destroyMusicView } from './musicview.js';
 import { initBuild, loadBotIntoForm }              from './build.js';
 import { initLibrary, openPanelEditor, deletePanel,
@@ -46,6 +47,7 @@ window.switchView        = switchView;
 window.buyPack           = buyPack;
 window.saveSummarize     = saveSummarize;
 window.initMusicView     = initMusicView;
+window.initImagine        = initImagine;
 window.destroyMusicView  = destroyMusicView;
 window.removeFile        = removeFile;
 window.openPanelEditor   = openPanelEditor;
