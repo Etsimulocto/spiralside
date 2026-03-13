@@ -51,10 +51,10 @@
     button { cursor: pointer; }
     ::-webkit-scrollbar { display: none; }
     * { scrollbar-width: auto; scrollbar-color: var(--teal) var(--surface); }
-    *::-webkit-scrollbar { width: 8px; height: 8px; }
-    *::-webkit-scrollbar-track { background: var(--surface); border-radius: 4px; }
-    *::-webkit-scrollbar-thumb { background: rgba(0,246,214,0.5); border-radius: 4px; border: 2px solid var(--surface); }
-    *::-webkit-scrollbar-thumb:hover { background: rgba(0,246,214,0.85); }
+    *::-webkit-scrollbar { width: 4px; height: 4px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb { background: rgba(0,246,214,0.3); border-radius: 4px; }
+    *::-webkit-scrollbar-thumb:hover { background: rgba(0,246,214,0.7); }
 
     /* ── IMAGINE VIEW ── */
     #view-imagine { overflow-y:auto; overflow-x:hidden; padding:20px 16px calc(80px + var(--safe-bot,0px)); height:100%; -webkit-overflow-scrolling:touch; }
