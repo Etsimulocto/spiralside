@@ -22,7 +22,7 @@ import { initLibrary, openPanelEditor, deletePanel,
          openBookBuilder, addPanelToBook,
          removePanelFromBook, movePanelInBook,
          deleteBook }                              from './library.js';
-import { buildFAB, toggleFAB, switchView,
+import { buildFAB, toggleFAB, switchView, setFontSize, loadFontSize,
          openPanel, closePanel, switchPanelTab,
          loadUsage, updateCreditDisplay,
          updateGreeting, updateUserUI,
@@ -38,6 +38,7 @@ window.handleLogin       = handleLogin;
 window.handleSignup      = handleSignup;
 window.handleSignout     = () => handleSignout(closePanel);
 window.openPanel         = openPanel;
+window.setFontSize        = setFontSize;
 window.closePanel        = closePanel;
 window.switchPanelTab    = switchPanelTab;
 window.toggleFAB         = toggleFAB;
@@ -89,6 +90,7 @@ async function onAppReady() {
   // 6. Populate forms and UI
   loadBotIntoForm();
   updateUserUI();
+  loadFontSize();
   updateGreeting();
   buildCharSelector();
   renderActiveChar('sky');

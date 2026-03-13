@@ -238,6 +238,9 @@
 
     /* ── APP SHELL ──────────────────────────────────────────── */
     #screen-app { max-width: 480px; margin: 0 auto; position: relative; }
+    @media (min-width: 600px)  { #screen-app { max-width: 600px; } }
+    @media (min-width: 900px)  { #screen-app { max-width: 740px; } }
+    @media (min-width: 1200px) { #screen-app { max-width: 900px; } }
 
     /* ── HEADER ─────────────────────────────────────────────── */
     #app-header {
@@ -260,6 +263,19 @@
       filter: drop-shadow(0 0 12px rgba(0,246,214,0.4));
     }
     .header-right { display: flex; align-items: center; gap: 10px; }
+    :root { --font-scale: 1; }
+    body  { font-size: calc(1rem * var(--font-scale)); }
+    .font-size-btns { display: flex; align-items: center; gap: 3px; }
+    .fs-btn {
+      background: none; border: 1px solid rgba(0,246,214,0.2); border-radius: 4px;
+      color: var(--subtext); cursor: pointer; font-family: var(--font-ui);
+      padding: 2px 5px; line-height: 1; transition: all 0.2s;
+    }
+    .fs-btn:hover        { border-color: var(--teal); color: var(--teal); }
+    .fs-btn.fs-active    { border-color: var(--teal); color: var(--teal); background: rgba(0,246,214,0.1); }
+    .fs-btn.fs-s         { font-size: 0.6rem; }
+    .fs-btn.fs-m         { font-size: 0.75rem; }
+    .fs-btn.fs-l         { font-size: 0.9rem; }
     .credits-badge {
       font-size: 0.65rem; color: var(--teal); border: 1px solid rgba(0,246,214,0.3);
       border-radius: 20px; padding: 4px 10px; letter-spacing: 0.06em;
@@ -1225,6 +1241,11 @@
     <div class="header-glow" id="header-glow"></div>
     <div class="app-logo">spiralside</div>
     <div class="header-right">
+      <div class="font-size-btns">
+        <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
+        <button class="fs-btn fs-m fs-active" onclick="setFontSize('m')" id="fs-m" title="medium text">A</button>
+        <button class="fs-btn fs-l" onclick="setFontSize('l')" id="fs-l" title="large text">A</button>
+      </div>
       <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       <div class="user-avatar" id="user-avatar" onclick="openPanel('account')">?</div>
     </div>

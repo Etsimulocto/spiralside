@@ -210,3 +210,19 @@ export async function handlePayPalReturn() {
   }
 }
 
+
+// ── FONT SIZE ─────────────────────────────────────────────────
+export function setFontSize(size) {
+  const scales = { s: 0.85, m: 1, l: 1.18 };
+  const scale = scales[size] || 1;
+  document.documentElement.style.setProperty('--font-scale', scale);
+  localStorage.setItem('ss_fontsize', size);
+  ['s','m','l'].forEach(id => {
+    document.getElementById('fs-' + id)?.classList.toggle('fs-active', id === size);
+  });
+}
+
+export function loadFontSize() {
+  const saved = localStorage.getItem('ss_fontsize') || 'm';
+  setFontSize(saved);
+}
