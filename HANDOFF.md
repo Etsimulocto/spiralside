@@ -100,6 +100,12 @@ New user -> intro comic -> scripted chat (free, zero tokens)
 
 ---
 
+## REPO LOCATIONS
+| Repo | Local Path | GitHub | Deploys To |
+|---|---|---|---|
+| Frontend | ~/spiralside | Etsimulocto/spiralside | Vercel (spiralside.com) |
+| Backend | ~/spiralside-api | Etsimulocto/spiralside-api | Railway (web-production-4e6f3.up.railway.app) |
+
 ## MODULE MAP
 ```
 js/app/main.js       boot, globals, onAppReady
@@ -185,3 +191,34 @@ if old in src:
 else:
     print("not found")
 EOF
+
+---
+
+## SESSION LOG — March 13 2026
+
+### COMPLETED THIS SESSION
+- [x] js/app/demo.js — scripted responses for Sky, Monday, Cold, Grit
+- [x] js/app/chat.js — demo check wired before API call, getChatMsgs export added
+- [x] js/app/state.js — added totalMessages, messageCount fields
+- [x] js/app/main.js — initChat(openPanel) now passes openPanel for nudge callback
+- [x] ~/spiralside-api/main.py — lifetime free limit (15 msgs), total_messages tracking
+- [x] Supabase — ADD COLUMN total_messages integer DEFAULT 0 (run manually if not done)
+
+### HOW DEMO MODE WORKS
+- chat.js calls getDemoResponse(text, botName, nudgeCallback) BEFORE any fetch
+- demo.js matches keywords against KEYWORD_MAP, returns scripted string or null
+- null = fall through to Railway API as normal
+- After 5 scripted replies, Sky fires GO_DEEPER_LINES + opens store panel
+- Only Sky/Monday/Cold/Grit have scripted modes — custom bots fall through to API
+- scriptedCount resets to 0 after nudge fires (so it nudges again after 5 more)
+
+### BACKEND REPO
+- Cloned to ~/spiralside-api
+- Deploy: cd ~/spiralside-api && git add . && git commit -m "msg" && git push
+- Railway auto-deploys on push, ~30s
+
+### KNOWN ISSUES ADDED
+- [ ] demo.js fallback fires on ALL unmatched input for Sky — could feel repetitive
+      fix: add a "no-repeat" filter so same fallback line doesn't show twice in a row
+- [ ] nudge only fires for scripted path — user who goes straight to API won't see it
+      fix: check totalMessages in chat.js and fire nudge at threshold there too
