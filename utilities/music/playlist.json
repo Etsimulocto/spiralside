@@ -1,19 +1,12 @@
 {
   "tracks": [
-    {
-      "id": "spiralside",
-      "title": "SPIRALSIDE",
-      "file": "utilities/music/SPIRALSIDE.mp3"
-    },
-    {
-      "id": "centerspark",
-      "title": "Centerspark",
-      "file": "utilities/music/Centerspark.mp3"
-    },
-    {
-      "id": "mirrorblade",
-      "title": "Mirrorblade",
-      "file": "utilities/music/Mirrorblade.mp3"
-    }
+    { "id": "spiralside",     "file": "utilities/music/SPIRALSIDE.mp3" },
+    { "id": "centerspark",    "file": "utilities/music/Centerspark.mp3" },
+    { "id": "mirrorblade",    "file": "utilities/music/Mirrorblade.mp3" },
+    { "id": "act2",           "file": "utilities/music/ACT 2.mp3" },
+    { "id": "act3",           "file": "utilities/music/ACT 3.mp3" },
+    { "id": "bloomcore",      "file": "utilities/music/Bloomcore.mp3" },
+    { "id": "canvaswalkers",  "file": "utilities/music/Canvas Walkers.mp3" },
+    { "id": "wrotethesky",    "file": "utilities/music/Wrote the Sky.mp3" }
   ]
 }
