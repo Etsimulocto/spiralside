@@ -39,7 +39,10 @@ async function loadPlaylist() {
     const r = await fetch(PLAYLIST_URL + '?t=' + Date.now());
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
-    tracks = data.tracks || [];
+    tracks = (data.tracks || []).map(t => ({
+      ...t,
+      title: t.title || t.file.split('/').pop().replace(/\.mp3$/i,'').replace(/[_\-()+]+/g,' ').replace(/\s+/g,' ').trim()
+    }));
     console.log('[music] loaded', tracks.length, 'tracks');
   } catch (e) {
     console.warn('[music] playlist fetch failed, using fallback:', e.message);
