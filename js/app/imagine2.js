@@ -21,20 +21,20 @@ function buildGeneratorHTML() {
   <div id="imagine-inner">
     <div class="imagine-header">✦ IMAGINE</div>
 
-    <div class="imagine-section">
+    <div class="imagine-card">
       <div class="imagine-label">prompt</div>
       <textarea class="imagine-input" id="imagine-prompt" rows="3"
         placeholder="Sky floating above a neon city at night, bloomcore art style..."></textarea>
     </div>
 
-    <div class="imagine-section">
+    <div class="imagine-card">
       <div class="imagine-label">negative prompt <span class="imagine-sublabel">optional</span></div>
       <textarea class="imagine-input" id="imagine-neg" rows="2"
         placeholder="blurry, low quality, realistic photo, ugly, deformed"></textarea>
     </div>
 
-    <div class="imagine-section">
-      <div class="imagine-label">size <span class="imagine-sublabel">✦ paid only for larger sizes</span></div>
+    <div class="imagine-card">
+      <div class="imagine-label">size <span class="imagine-sublabel">✦ paid only for larger</span></div>
       <div class="size-chips">
         <button class="size-chip active" data-w="512"  data-h="512">512 × 512<br><span class="size-sub">free</span></button>
         <button class="size-chip" data-w="768"  data-h="768">768 × 768<br><span class="size-sub">5 cr</span></button>
