@@ -212,6 +212,17 @@ export async function sendMessage() {
   }
 }
 
+// ── GET CHAT MESSAGES ────────────────────────────────────────
+// Returns array of {role, text} from current DOM — used by sheet.js
+// to summarize the conversation for character sheet updates
+export function getChatMsgs() {
+  if (!msgList) return [];
+  return [...msgList.querySelectorAll('.msg')].map(el => ({
+    role: el.classList.contains('user') ? 'user' : 'bot',
+    text: el.querySelector('.msg-bubble')?.textContent || '',
+  }));
+}
+
 // ── CLEAR CHAT ────────────────────────────────────────────
 // Called from build.js when companion is saved / changed
 export function clearChat(greetingText) {
