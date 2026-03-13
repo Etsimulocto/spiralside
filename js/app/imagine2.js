@@ -67,7 +67,8 @@ function wireGenerator() {
     btn.disabled      = true;
     resultEl.innerHTML = '<div class="imagine-spinner"></div>';
     try {
-      const { data: { session } } = await window._sb.auth.getSession();
+      const sbClient = window._sb || window.supabase;
+      const { data: { session } } = await sbClient.auth.getSession();
       const authToken = session?.access_token;
       if (!authToken) throw new Error('Not signed in.');
       const r = await fetch(`${RAIL}/generate-image`, {
@@ -117,7 +118,7 @@ export function injectImagineStyles() {
     .imagine-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .imagine-error { font-size: 0.72rem; color: var(--pink); min-height: 18px; text-align: center; }
     .size-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .size-chip { padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: 0.7rem; color: var(--subtext); cursor: pointer; transition: all 0.15s; }
+    .size-chip { padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 0.78rem; color: var(--subtext); cursor: pointer; transition: all 0.15s; }
     .size-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(0,246,214,0.08); }
     .imagine-spinner { width: 40px; height: 40px; margin: 30px auto; border: 3px solid rgba(0,246,214,0.15); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.85s linear infinite; }
     .imagine-tier { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--subtext); text-align: center; text-transform: uppercase; margin-bottom: 8px; }
