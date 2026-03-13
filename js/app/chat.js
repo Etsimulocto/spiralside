@@ -1,156 +1,173 @@
 // ============================================================
 // SPIRALSIDE — CHAT v1.0
-// addMessage, showTyping, sendMessage, attach handler
-// Reads state for bot config; writes usage back to state
+// Handles all message sending, rendering, and typewriter display
+// Checks demo.js FIRST — scripted replies cost zero tokens
+// Falls through to Railway API only when demo returns null
 // Nimbis anchor: js/app/chat.js
 // ============================================================
 
-import { state, SPEAKER_COLORS, CHARACTERS, RAIL } from './state.js';
-import { getToken }                                  from './auth.js';
-import { updateCreditDisplay }                       from './ui.js';
+import { state }           from './state.js';
+import { getDemoResponse } from './demo.js';
 
-// ── DOM REFS ──────────────────────────────────────────────────
-// Set once at module init — avoids repeated getElementById calls
-let chatMsgs = null;
-let msgInput  = null;
+// ── DOM REFS ──────────────────────────────────────────────
+// Grabbed once on initChat — never queried again after that
+let msgList  = null;  // #chat-messages scroll container
+let msgInput = null;  // #msg-input textarea
+let sendBtn  = null;  // #send-btn button
 
-// ── INIT ──────────────────────────────────────────────────────
-// Call once after DOM is ready
-export function initChat() {
-  chatMsgs = document.getElementById('chat-messages');
-  msgInput  = document.getElementById('msg-input');
+// ── RAIL URL ──────────────────────────────────────────────
+// Imported from state.js so it stays in one place
+// If state.js not wired yet, fallback inline
+const RAIL = 'https://web-production-4e6f3.up.railway.app';
 
-  // Auto-grow textarea
+// ── INIT ──────────────────────────────────────────────────
+// Called once from main.js after DOM is ready
+// Wires textarea auto-resize, Enter key, send button
+export function initChat(openPanelFn) {
+  msgList  = document.getElementById('chat-messages');
+  msgInput = document.getElementById('msg-input');
+  sendBtn  = document.getElementById('send-btn');
+
+  // Store openPanel reference so nudge callback can open the store
+  // openPanelFn is passed in from main.js / ui.js
+  state._openPanel = openPanelFn || (() => {});
+
+  // Auto-resize textarea as user types
   msgInput.addEventListener('input', () => {
     msgInput.style.height = 'auto';
     msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
   });
 
-  // Enter to send (shift+enter = newline)
+  // Enter sends, Shift+Enter adds newline
   msgInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   });
 
-  // Send button
-  document.getElementById('send-btn').addEventListener('click', sendMessage);
-
-  // Attach button (quick image attach — goes to vault too)
-  document.getElementById('attach-btn').addEventListener('click', () => {
-    const input = document.createElement('input');
-    input.type   = 'file';
-    input.accept = 'image/*';
-    input.onchange = e => {
-      const f = e.target.files[0];
-      if (!f) return;
-      addMessage(`📎 ${f.name}`, 'user');
-      state.vaultFiles.push({ name: f.name, size: f.size, content: '[image]', type: f.type });
-    };
-    input.click();
-  });
+  sendBtn.addEventListener('click', sendMessage);
 }
 
-// ── ADD MESSAGE ───────────────────────────────────────────────
-// role: 'bot' | 'user'
-// speaker: display name string (bot only, optional)
-// color: hex string (bot only, optional)
-export function addMessage(text, role, speaker = null, color = null) {
-  const div      = document.createElement('div');
-  div.className  = `msg ${role}`;
+// ── ADD MESSAGE TO DOM ────────────────────────────────────
+// role: 'user' | 'bot'
+// Returns the bubble element so callers can stream into it
+export function addMessage(text, role) {
+  const wrap = document.createElement('div');
+  wrap.className = `msg ${role}`;
 
-  const spColor  = color || (SPEAKER_COLORS[speaker?.toLowerCase()] || 'var(--teal)');
-  const initial  = role === 'bot'
-    ? (speaker?.[0] || state.botName[0] || 'S').toUpperCase()
+  // Avatar initial — bot uses first letter of bot name, user uses email initial
+  const initial = role === 'bot'
+    ? (state.botName?.[0] || 'S').toUpperCase()
     : (state.user?.email?.[0] || 'U').toUpperCase();
 
-  if (role === 'bot') {
-    div.innerHTML = `
-      <div class="msg-avatar"
-        style="background:linear-gradient(135deg,${spColor}33,${spColor}11);border:2px solid ${spColor}44;color:${spColor}">
-        ${initial}
-      </div>
-      <div class="msg-content">
-        ${speaker ? `<div class="msg-speaker" style="color:${spColor}">${speaker}</div>` : ''}
-        <div class="msg-bubble">
-          <div style="position:absolute;top:0;left:0;right:0;height:1px;
-            background:linear-gradient(90deg,${spColor}66,transparent)"></div>
-          ${text}
-        </div>
-      </div>`;
-  } else {
-    div.innerHTML = `
-      <div class="msg-content">
-        <div class="msg-bubble">${text}</div>
-      </div>
-      <div class="msg-avatar" style="background:var(--muted);color:var(--subtext)">${initial}</div>`;
-  }
+  wrap.innerHTML = `
+    <div class="msg-avatar">${initial}</div>
+    <div class="msg-bubble">${text}</div>
+  `;
 
-  chatMsgs.appendChild(div);
-  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  msgList.appendChild(wrap);
+  msgList.scrollTop = msgList.scrollHeight;
+
+  // Return bubble element in case caller wants to update it (streaming etc)
+  return wrap.querySelector('.msg-bubble');
 }
 
-// ── TYPING INDICATOR ──────────────────────────────────────────
-export function showTyping() {
-  const div     = document.createElement('div');
-  div.className = 'msg bot';
-  div.id        = 'typing-indicator';
-  const c       = state.botColor;
-  div.innerHTML = `
-    <div class="msg-avatar"
-      style="background:linear-gradient(135deg,${c}33,${c}11);border:2px solid ${c}44;color:${c}">
-      ${state.botName[0].toUpperCase()}
+// ── TYPING INDICATOR ──────────────────────────────────────
+function showTyping() {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg bot';
+  wrap.id = 'typing-indicator';
+  wrap.innerHTML = `
+    <div class="msg-avatar">${(state.botName?.[0] || 'S').toUpperCase()}</div>
+    <div class="msg-bubble">
+      <div class="typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
     </div>
-    <div class="msg-content">
-      <div class="msg-bubble">
-        <div class="typing-indicator"><span></span><span></span><span></span></div>
-      </div>
-    </div>`;
-  chatMsgs.appendChild(div);
-  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+  `;
+  msgList.appendChild(wrap);
+  msgList.scrollTop = msgList.scrollHeight;
 }
 
-export function hideTyping() {
+function hideTyping() {
   document.getElementById('typing-indicator')?.remove();
 }
 
-// ── SEND MESSAGE ──────────────────────────────────────────────
+// ── SEND MESSAGE ──────────────────────────────────────────
+// Main entry point — called by button click and Enter key
 export async function sendMessage() {
   const text = msgInput.value.trim();
   if (!text) return;
 
-  // Clear input
-  msgInput.value        = '';
+  // Clear input immediately
+  msgInput.value = '';
   msgInput.style.height = 'auto';
 
+  // Show user bubble
   addMessage(text, 'user');
+  state.messageCount = (state.messageCount || 0) + 1;
+
+  // Show typing dots while we figure out the reply
   showTyping();
 
+  // ── DEMO CHECK ────────────────────────────────────────
+  // getDemoResponse returns a string or null
+  // null means "no scripted match — hit the API"
+  // The third argument is the nudge callback — opens store panel
+  const demoReply = getDemoResponse(
+    text,
+    state.botName,
+    () => state._openPanel('store')
+  );
+
+  if (demoReply !== null) {
+    // Scripted reply — no API call, no credit deduction
+    hideTyping();
+    addMessage(demoReply, 'bot');
+    return;
+  }
+
+  // ── API CALL ──────────────────────────────────────────
+  // Fall through to Railway backend
   try {
-    // Build vault context string
-    const vault = state.vaultFiles
-      .map(f => `[file:${f.name}]\n${f.content}`)
-      .join('\n\n');
+    // Refresh token if needed
+    let token = state.session?.access_token;
+    if (!token) {
+      const { createClient } = supabase;
+      const sb = createClient(
+        'https://qfawusrelwthxabfbglg.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E'
+      );
+      const { data } = await sb.auth.getSession();
+      token = data?.session?.access_token;
+      if (token) state.session = data.session;
+    }
 
-    // Build system prompt from current bot config + character arc
-    let sys = `You are ${state.botName}.`;
-    if (state.botPersonality) sys += ` ${state.botPersonality}`;
-    if (state.botTone.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
-    sys += ` Be genuine and concise. Never use asterisks for actions — express emotion through word choice and sentence structure instead. Never break character.`;
-
-    // Inject character sheet arc for known characters
-    const charData = CHARACTERS[state.botName.toLowerCase()];
-    if (charData) sys += ` Your current arc: ${charData.arc}`;
-
-    const token = await getToken();
     if (!token) {
       hideTyping();
-      addMessage('Please sign in to chat.', 'bot', state.botName, state.botColor);
+      addMessage('Please sign in to chat.', 'bot');
       return;
     }
 
-    const r = await fetch(`${RAIL}/chat`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body:    JSON.stringify({
+    // Build vault context from any loaded files
+    const vault = (state.vaultFiles || [])
+      .map(f => `[file:${f.name}]\n${f.content}`)
+      .join('\n\n');
+
+    // Build system prompt from bot config
+    let sys = `You are ${state.botName}.`;
+    if (state.botPersonality) sys += ` ${state.botPersonality}`;
+    if (state.botTone?.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
+    sys += ' Be genuine and concise. Never break character.';
+
+    const resp = await fetch(`${RAIL}/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
         message:       text,
         system_prompt: sys,
         vault_context: vault,
@@ -158,30 +175,47 @@ export async function sendMessage() {
       }),
     });
 
-    const data = await r.json();
+    const data = await resp.json();
     hideTyping();
 
-    if (!r.ok) {
-      addMessage(`⚠️ ${data.detail || 'Something went wrong.'}`, 'bot', state.botName, state.botColor);
+    if (!resp.ok) {
+      // 429 = lifetime free limit hit — open store
+      if (resp.status === 429) {
+        addMessage(data.detail || 'Free messages used up. Add credits to keep going.', 'bot');
+        setTimeout(() => state._openPanel('store'), 800);
+        return;
+      }
+      addMessage(`\u26A0\uFE0F ${data.detail || 'Something went wrong.'}`, 'bot');
       return;
     }
 
-    addMessage(data.reply, 'bot', state.botName, state.botColor);
+    addMessage(data.reply, 'bot');
 
-    // Update credit display from response usage object
-    if (data.usage) {
-      state.freeToday = data.usage.free_messages_today ?? state.freeToday;
-      state.credits   = data.usage.credits_remaining   ?? state.credits;
-      state.isPaid    = data.usage.is_paid              ?? false;
+    // Update credit/usage display if main.js exposed updateCreditDisplay globally
+    if (data.usage && typeof updateCreditDisplay === 'function') {
+      const u = data.usage;
+      state.totalMessages  = u.total_messages  ?? state.totalMessages;
+      state.credits        = u.credits_remaining ?? state.credits;
+      state.isPaid         = u.is_paid ?? state.isPaid;
       updateCreditDisplay();
     }
-  } catch {
+
+    // Update character sheet every 5 messages
+    if (state.messageCount % 5 === 0 && typeof updateSheet === 'function') {
+      updateSheet(text, data.reply);
+    }
+
+  } catch (err) {
     hideTyping();
-    addMessage('Connection issue. Try again.', 'bot', state.botName, state.botColor);
+    addMessage('Connection issue. Try again.', 'bot');
+    console.error('[chat] fetch error:', err);
   }
 }
 
-// ── EXPORTED REF ─────────────────────────────────────────────
-// sheet.js needs to read chatMsgs to summarize thread
-export function getChatMsgs() { return chatMsgs; }
-
+// ── CLEAR CHAT ────────────────────────────────────────────
+// Called from build.js when companion is saved / changed
+export function clearChat(greetingText) {
+  if (!msgList) return;
+  msgList.innerHTML = '';
+  addMessage(greetingText || "Hey. I'm here.", 'bot');
+}

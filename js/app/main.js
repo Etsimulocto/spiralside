@@ -81,7 +81,7 @@ async function onAppReady() {
   await loadSavedSheets(dbGet);
 
   // 5. Init all modules
-  initChat();
+  initChat(openPanel);
   initVault();
   initBuild();
   initLibrary();

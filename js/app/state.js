@@ -32,6 +32,8 @@ export const state = {
   activeView:      'chat', // current view id
   credits:         0,
   freeToday:       0,
+  totalMessages:   0,   // lifetime message count
+  messageCount:    0,   // session message count
   isPaid:          false,
 };
 
