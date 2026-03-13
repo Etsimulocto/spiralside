@@ -252,14 +252,6 @@ function drawVisualizer() {
 }
 
 
-  // Center ring
-  ctx.beginPath();
-  ctx.arc(cx, cy, R * 0.55, 0, Math.PI * 2);
-  ctx.strokeStyle = 'rgba(0,246,214,0.12)';
-  ctx.lineWidth   = 1;
-  ctx.stroke();
-}
-
 // ── UPDATE PROGRESS ───────────────────────────────────────────
 function updateProgress() {
   const ms = getMusicState();
