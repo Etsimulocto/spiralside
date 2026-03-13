@@ -50,7 +50,7 @@
     input, textarea, button { font-family: var(--font-ui); }
     button { cursor: pointer; }
     ::-webkit-scrollbar { display: none; }
-    * { scrollbar-width: none; }
+    * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
     /* ── IMAGINE VIEW ── */
     #view-imagine { overflow-y:auto; overflow-x:hidden; padding:20px 16px calc(80px + var(--safe-bot,0px)); height:100%; -webkit-overflow-scrolling:touch; }
