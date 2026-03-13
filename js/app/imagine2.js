@@ -20,26 +20,30 @@ function buildGeneratorHTML() {
   return `
   <div id="imagine-inner">
     <div class="imagine-header">✦ IMAGINE</div>
+
     <div class="imagine-section">
-      <div class="imagine-label">✏ prompt</div>
-      <textarea class="imagine-input" id="imagine-prompt" rows="4"
+      <div class="imagine-label">prompt</div>
+      <textarea class="imagine-input" id="imagine-prompt" rows="3"
         placeholder="Sky floating above a neon city at night, bloomcore art style..."></textarea>
     </div>
+
     <div class="imagine-section">
-      <div class="imagine-label">🚫 negative prompt</div>
+      <div class="imagine-label">negative prompt <span class="imagine-sublabel">optional</span></div>
       <textarea class="imagine-input" id="imagine-neg" rows="2"
         placeholder="blurry, low quality, realistic photo, ugly, deformed"></textarea>
     </div>
+
     <div class="imagine-section">
-      <div class="imagine-label">size <span style="color:var(--subtext);font-size:0.6rem">(paid only for larger)</span></div>
+      <div class="imagine-label">size <span class="imagine-sublabel">✦ paid only for larger sizes</span></div>
       <div class="size-chips">
-        <div class="size-chip active" data-w="512"  data-h="512">512 × 512</div>
-        <div class="size-chip" data-w="768"  data-h="768">768 × 768 ✦</div>
-        <div class="size-chip" data-w="1024" data-h="768">1024 × 768 ✦</div>
-        <div class="size-chip" data-w="768"  data-h="1024">768 × 1024 ✦</div>
+        <button class="size-chip active" data-w="512"  data-h="512">512 × 512<br><span class="size-sub">free</span></button>
+        <button class="size-chip" data-w="768"  data-h="768">768 × 768<br><span class="size-sub">5 cr</span></button>
+        <button class="size-chip" data-w="1024" data-h="768">1024 × 768<br><span class="size-sub">5 cr</span></button>
+        <button class="size-chip" data-w="768"  data-h="1024">768 × 1024<br><span class="size-sub">5 cr</span></button>
       </div>
     </div>
-    <button class="imagine-btn" id="imagine-go">🎨 generate</button>
+
+    <button class="imagine-btn" id="imagine-go">✦ generate image</button>
     <div class="imagine-error" id="imagine-error"></div>
     <div id="imagine-result"></div>
   </div>`;
@@ -118,10 +122,17 @@ export function injectImagineStyles() {
     .imagine-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .imagine-error { font-size: 0.72rem; color: var(--pink); min-height: 18px; text-align: center; }
     .size-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .size-chip { padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 0.78rem; color: var(--subtext); cursor: pointer; transition: all 0.15s; }
+    .imagine-sublabel { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.06em; margin-left: 6px; }
+    .size-chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .size-chip {
+      padding: 12px 8px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; font-size: 0.78rem; color: var(--subtext); cursor: pointer;
+      transition: all 0.15s; text-align: center; line-height: 1.4; font-family: var(--font-ui);
+    }
     .size-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(0,246,214,0.08); }
     .imagine-spinner { width: 40px; height: 40px; margin: 30px auto; border: 3px solid rgba(0,246,214,0.15); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.85s linear infinite; }
     .imagine-tier { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--subtext); text-align: center; text-transform: uppercase; margin-bottom: 8px; }
+    .size-sub { font-size: 0.62rem; color: var(--teal); display: block; }
     .imagine-result-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); display: block; margin-bottom: 12px; }
   `;
   document.head.appendChild(s);
