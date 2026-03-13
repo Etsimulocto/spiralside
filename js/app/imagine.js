@@ -5,47 +5,17 @@
 // Nimbis anchor: js/app/imagine.js
 // ============================================================
 
-const HF_MODEL = 'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell';
-const TOKEN_KEY = 'ss_hf_token';
+import { RAIL } from './state.js';
 
 // ── PUBLIC: INIT ──────────────────────────────────────────────
 export function initImagine() {
   const el = document.getElementById('view-imagine');
   if (!el) return;
-  const token = localStorage.getItem(TOKEN_KEY);
-  el.innerHTML = token ? buildGeneratorHTML() : buildTokenHTML();
-  token ? wireGenerator() : wireTokenForm();
+  el.innerHTML = buildGeneratorHTML();
+  wireGenerator();
 }
 
-// ── TOKEN SETUP VIEW ──────────────────────────────────────────
-function buildTokenHTML() {
-  return `
-  <div id="imagine-inner">
-    <div class="imagine-header">✦ IMAGE GENERATION</div>
-    <div class="imagine-section">
-      <div class="imagine-label">your huggingface token</div>
-      <p class="imagine-hint">
-        Free to get. Go to <strong>huggingface.co</strong> → Settings → Access Tokens → New Token (read).
-        Stored only on this device, never sent to Spiralside servers.
-      </p>
-      <input class="imagine-input" type="password" id="hf-token-input" placeholder="hf_xxxxxxxxxxxxxxxx" />
-      <button class="imagine-btn" id="hf-token-save">unlock image gen ✦</button>
-      <div class="imagine-error" id="imagine-error"></div>
-    </div>
-  </div>`;
-}
 
-function wireTokenForm() {
-  document.getElementById('hf-token-save')?.addEventListener('click', () => {
-    const val = document.getElementById('hf-token-input')?.value.trim();
-    if (!val || !val.startsWith('hf_')) {
-      document.getElementById('imagine-error').textContent = 'Token must start with hf_';
-      return;
-    }
-    localStorage.setItem(TOKEN_KEY, val);
-    initImagine(); // re-render as generator
-  });
-}
 
 // ── GENERATOR VIEW ────────────────────────────────────────────
 function buildGeneratorHTML() {
@@ -80,7 +50,6 @@ function buildGeneratorHTML() {
 
     <div id="imagine-result"></div>
 
-    <button class="imagine-reset" id="hf-token-reset">change HF token</button>
   </div>`;
 }
 
@@ -111,28 +80,30 @@ function wireGenerator() {
     resultEl.innerHTML= '<div class="imagine-spinner"></div>';
 
     try {
-      const token = localStorage.getItem(TOKEN_KEY);
-      const body  = { inputs: prompt };
-      if (neg) body.negative_prompt = neg;
-      body.width  = selW;
-      body.height = selH;
+      // Get auth token
+      const { data: { session } } = await window._sb.auth.getSession();
+      const authToken = session?.access_token;
+      if (!authToken) throw new Error('Not signed in.');
 
-      const r = await fetch(HF_MODEL, {
+      const r = await fetch(`${RAIL}/generate-image`, {
         method:  'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
+        headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ prompt, negative_prompt: neg, width: selW, height: selH }),
       });
 
-      if (!r.ok) {
-        const txt = await r.text();
-        throw new Error(txt.includes('loading') ? 'Model loading, try again in 20s' : `Error ${r.status}`);
-      }
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
 
-      const blob = await r.blob();
-      const url  = URL.createObjectURL(blob);
+      // data.image is base64
+      const url = `data:image/png;base64,${data.image}`;
+      const tier = data.is_paid
+        ? `paid · ${selW}×${selH}`
+        : `free · ${data.free_images_used}/${data.free_images_limit} today · 512×512`;
+
       resultEl.innerHTML = `
+        <div class="imagine-tier">${tier}</div>
         <img class="imagine-result-img" src="${url}" alt="generated image" />
-        <button class="imagine-btn" id="imagine-save">save to library</button>`;
+        <button class="imagine-btn" id="imagine-save">💾 save image</button>`;
 
       document.getElementById('imagine-save')?.addEventListener('click', () => {
         const a = document.createElement('a');
@@ -148,11 +119,6 @@ function wireGenerator() {
     }
   });
 
-  // Reset token
-  document.getElementById('hf-token-reset')?.addEventListener('click', () => {
-    localStorage.removeItem(TOKEN_KEY);
-    initImagine();
-  });
 }
 
 // ── INJECT STYLES ─────────────────────────────────────────────
@@ -204,6 +170,10 @@ export function injectImagineStyles() {
     .imagine-result-img {
       width: 100%; border-radius: 12px; border: 1px solid var(--border);
       display: block; margin-bottom: 12px;
+    }
+    .imagine-tier {
+      font-size: 0.65rem; letter-spacing: 0.1em; color: var(--subtext);
+      text-align: center; text-transform: uppercase; margin-bottom: 8px;
     }
     .imagine-reset {
       background: none; border: none; color: var(--subtext);
