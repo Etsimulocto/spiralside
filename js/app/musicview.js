@@ -168,17 +168,21 @@ function setupAnalyser() {
   if (!ms?.audio) return;
   try {
     if (!audioCtx) {
-      // First ever open: create everything
+      // First ever open: create context, source, analyser
       audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-      sourceNode = audioCtx.createMediaElementSource(ms.audio);
       analyser   = audioCtx.createAnalyser();
-      analyser.fftSize = 128;
+      analyser.fftSize = 256;  // 128 bins — matches spiral bar count
       dataArr    = new Uint8Array(analyser.frequencyBinCount);
+      sourceNode = audioCtx.createMediaElementSource(ms.audio);
       sourceNode.connect(analyser);
       analyser.connect(audioCtx.destination);
     } else {
-      // Subsequent opens: browser may have suspended the context — resume it
+      // Resume if suspended (browser autoplay policy)
       if (audioCtx.state === 'suspended') audioCtx.resume();
+      // Reconnect analyser if dataArr size changed
+      if (!dataArr || dataArr.length !== analyser.frequencyBinCount) {
+        dataArr = new Uint8Array(analyser.frequencyBinCount);
+      }
     }
   } catch(e) {
     console.warn('[musicview] analyser setup failed:', e.message);
