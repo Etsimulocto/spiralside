@@ -275,9 +275,10 @@
     /* ── HEADER ─────────────────────────────────────────────── */
     #app-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 20px 12px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--border);
       background: var(--bg); flex-shrink: 0; position: relative; overflow: hidden;
+      gap: 6px; flex-wrap: nowrap;
     }
     .header-glow {
       position: absolute; width: 200px; height: 60px; border-radius: 50%;
@@ -286,13 +287,14 @@
       transition: background 0.4s;
     }
     .app-logo {
-      font-family: var(--font-display); font-weight: 800; font-size: 1.3rem;
-      letter-spacing: -0.03em; position: relative;
+      font-family: var(--font-display); font-weight: 800;
+      font-size: clamp(0.9rem, 3.5vw, 1.3rem);
+      letter-spacing: -0.03em; position: relative; flex-shrink: 0;
       background: linear-gradient(135deg, var(--teal), var(--purple));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 0 12px rgba(0,246,214,0.4));
     }
-    .header-right { display: flex; align-items: center; gap: 10px; }
+    .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
     .version-badge {
       font-size: 0.52rem; letter-spacing: 0.08em; color: var(--subtext);
       border: 1px solid var(--border); border-radius: 20px;
@@ -300,7 +302,7 @@
     }
     :root { --font-scale: 1; }
     body  { font-size: calc(1rem * var(--font-scale)); }
-    .font-size-btns { display: flex; align-items: center; gap: 3px; }
+    .font-size-btns { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
     .fs-btn {
       background: none; border: 1px solid rgba(0,246,214,0.2); border-radius: 4px;
       color: var(--subtext); cursor: pointer; font-family: var(--font-ui);
@@ -1276,7 +1278,7 @@
   <div id="app-header">
     <div class="header-glow" id="header-glow"></div>
     <div class="app-logo">spiralside</div>
-    <div class="version-badge" id="version-badge">v0.8.1</div>
+    <div class="version-badge" id="version-badge">v0.8.2</div>
     <div class="header-right">
       <div class="font-size-btns">
         <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
