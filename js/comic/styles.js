@@ -28,7 +28,7 @@ export function injectStyles() {
     /* ── PANEL CONTAINER ── */
     #comic-panel {
       position:relative;
-      width:100%;max-width:480px;height:100dvh;
+      width:100%;max-width:480px;height:calc(var(--vh, 1vh) * 100);
       overflow:hidden;
       display:flex;flex-direction:column;justify-content:flex-end;
     }
