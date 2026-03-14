@@ -273,6 +273,14 @@
     @media (min-width: 1200px) { #screen-app { max-width: min(900px, 100vw); } }
 
     /* ── HEADER ─────────────────────────────────────────────── */
+    .header-logo-row {
+      display: flex; justify-content: center; align-items: center;
+      padding: 4px 0 2px;
+    }
+    .header-controls-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 2px 0;
+    }
     #app-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 10px 14px;
@@ -1277,16 +1285,20 @@
   <!-- HEADER -->
   <div id="app-header">
     <div class="header-glow" id="header-glow"></div>
-    <div class="app-logo">spiralside</div>
-    <div class="version-badge" id="version-badge">v0.8.7</div>
-    <div class="header-right">
-      <div class="font-size-btns">
-        <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
-        <button class="fs-btn fs-m fs-active" onclick="setFontSize('m')" id="fs-m" title="medium text">A</button>
-        <button class="fs-btn fs-l" onclick="setFontSize('l')" id="fs-l" title="large text">A</button>
+    <div class="header-logo-row">
+      <div class="app-logo">spiralside</div>
+    </div>
+    <div class="header-controls-row">
+      <div class="version-badge" id="version-badge">v0.8.8</div>
+      <div class="header-right">
+        <div class="font-size-btns">
+          <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
+          <button class="fs-btn fs-m fs-active" onclick="setFontSize('m')" id="fs-m" title="medium text">A</button>
+          <button class="fs-btn fs-l" onclick="setFontSize('l')" id="fs-l" title="large text">A</button>
+        </div>
+        <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
+        <div class="user-avatar" id="user-avatar" onclick="openPanel('account')">?</div>
       </div>
-      <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
-      <div class="user-avatar" id="user-avatar" onclick="openPanel('account')">?</div>
     </div>
   </div>
 
