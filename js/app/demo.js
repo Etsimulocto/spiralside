@@ -165,7 +165,8 @@ const GO_DEEPER_LINES = [
 //              so chat.js can open the store panel
 //
 // Returns: response string, or null (null = hit the API)
-export function getDemoResponse(text, speaker, onNudge) {
+export function getDemoResponse(text, speaker, onNudge, isPaid = false) {
+  if (isPaid) return null;
   const s = (speaker || 'sky').toLowerCase();
 
   // Only Sky, Monday, Cold, Grit have scripted modes

@@ -118,7 +118,7 @@ export async function sendMessage() {
   const demoReply = getDemoResponse(
     text,
     state.botName,
-    () => state._openPanel('store')
+    () => state._openPanel('store'), state.isPaid
   );
 
   if (demoReply !== null) {
