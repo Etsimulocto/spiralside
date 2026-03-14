@@ -360,7 +360,7 @@
       padding-left: 2px; font-weight: 700;
     }
     .msg-bubble {
-      padding: 10px 14px; font-size: 0.82rem; line-height: 1.6;
+      padding: 10px 14px; font-size: calc(0.82rem * var(--font-scale)); line-height: 1.6;
       color: var(--text); position: relative; overflow: hidden;
     }
     .msg.bot .msg-bubble {
@@ -1297,7 +1297,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.22</div>
+      <div class="version-badge" id="version-badge">v0.8.23</div>
       <div class="header-right">
         <div class="font-size-btns">
           <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
