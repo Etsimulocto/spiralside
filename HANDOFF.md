@@ -1,4 +1,4 @@
-# SPIRALSIDE — HANDOFF v4 (March 13 2026)
+# SPIRALSIDE — HANDOFF v6 (March 13 2026)
 
 ## STACK
 | Layer | Service | URL |
@@ -9,135 +9,98 @@
 | Assets/Music | HuggingFace | quarterbitgames/spiralside |
 | Payments | PayPal | live |
 
-Repo: https://github.com/Etsimulocto/spiralside
-Local: ~/spiralside (Git Bash on Windows)
+Repo: https://github.com/Etsimulocto/spiralside (frontend)
+Repo: https://github.com/Etsimulocto/spiralside-api (backend)
+Local: ~/spiralside and ~/spiralside-api (Git Bash on Windows)
 - Use `python` not `python3`
 - Always `encoding='utf-8'` on file open()
 - Python heredocs get mangled — use `python << 'EOF'` single quotes only
-- If string match fails: use sed -n 'X,Yp' to inspect exact bytes (watch for UTF-8 arrows in comments)
+- If string match fails: use sed -n 'X,Yp' to inspect exact bytes
 
 ---
 
-## CURRENT STATE (all working as of v4)
+## CURRENT STATE (all working as of v6)
 - Auth (login/signup/signout via Supabase)
 - Intro comic (6 panels, typewriter, skip)
-- Chat with Sky (character file from HF, Anthropic Haiku API)
-- Music player mini bar + full-screen view
+- Chat with Sky/Monday/Cold/Grit (character files from HF)
+- Music player mini bar + full-screen view (8 tracks)
 - Spiral visualizer (Archimedean, teal->violet, reacts to audio)
-- Seek slider (no snap)
-- Font size buttons A/A/A (scales 1 / 1.4 / 1.8, persists localStorage)
+- Seek slider (no snap), font size A/A/A (1/1.4/1.8 scale)
 - Responsive layout (480/600/740/900px breakpoints)
-- Bot bubbles 92% wide
-- Input bar lifted from bottom
-- Free tier: 10 msgs/day; paid: PayPal credit packs
+- Bot bubbles 92% wide, input bar lifted from bottom
+- Version badge auto-increments on every git push (pre-push hook)
+- TWO-ROW HEADER: spiralside centered top row, controls bottom row
+- Safe area insets for iOS notch/Dynamic Island (--safe-top, --safe-bot)
+- PWA manifest.json — Add to Home Screen hides browser UI
+- Styled scrollbar (4px, teal 70% opacity, dims on hover)
+- IMAGE GENERATION (✦ imagine FAB tab)
+  - Free: 3/day, 512x512 only
+  - Paid: 5 credits, up to 1024x1024
+  - Routes through Railway -> HF FLUX.1-schnell
+  - HF endpoint: router.huggingface.co (NOT api-inference - deprecated)
+  - Supabase columns: images_today, images_reset_date
+- Rate limiting on Railway (20 req/60s per user, in-memory)
+- RLS policy on user_usage table in Supabase
 - IDB v4 (stores: config, sheets, vault, panels, books)
-- Track title auto-derived from filename (tolerates spaces/parens)
+- PayPal credit packs (live)
 
 ---
 
-## NEXT MAJOR FEATURE: SCRIPTED DEMO MODE
-### Decision made this session:
-- Switch from DAILY free reset to LIFETIME free messages
-- Add scripted zero-token responses for demo experience
-- Characters needed: Sky, Monday, Cold, Grit
-- Sky uses emojis in responses
-- After lifetime limit hit -> soft "go deeper" paywall moment
-
-### Backend change needed (main.py on Railway):
-Change FREE_DAILY_LIMIT logic to LIFETIME limit:
-- Remove daily reset logic
-- Check total_messages_ever >= LIFETIME_FREE_LIMIT (suggest: 15)
-- Column needed in Supabase user_usage: `total_messages` int default 0
-- Increment on every message, never reset
-
-### Frontend: new file js/app/demo.js
-Keyword matcher + scripted response library. chat.js checks this FIRST.
-If match found -> return scripted response, no API call, no credit deduction.
-If no match AND user has credits -> fall through to API.
-If no match AND no credits -> show "go deeper" prompt.
-
-### Sky scripted response categories (she uses emojis):
-- greetings: hi/hello/hey/sup/yo
-- identity: who are you/what are you/are you AI/are you real
-- location: where am I/what is this/what is Spiral City/spiralside
-- curiosity: tell me more/go on/interesting/really/wow
-- lophire: who is lophire/what is lophire
-- monday: who is monday/tell me about monday
-- cold: who is cold/tell me about cold
-- grit: who is grit
-- compliments: you're cool/i like you/you're awesome
-- sadness: i'm sad/rough day/i'm tired/i'm lost
-- confusion: what/i don't understand/huh/what do you mean
-- goodbye: bye/goodbye/see you/later
-- fallback: 4-5 mysterious Sky responses for anything unmatched
-
-### Monday scripted categories (loud, chaotic, uses caps):
-- greetings, identity, boredom, chaos, Cold mentions
-
-### Cold scripted categories (quiet, dry, minimal words):
-- greetings, identity, Monday mentions, observations
-
-### Grit scripted categories (tough, streetwise, loyal):
-- greetings, identity, advice, strength
-
-### Sample built-in comic: "Day One in Spiral City"
-6 panels, ships as JSON in the app (not library-dependent)
-- Panel 1: Sky finds the user wandering (placeholder art ready)
-- Panel 2: Lophire appears
-- Panel 3: Monday crashes in  
-- Panel 4: Cold pulls Monday back
-- Panel 5: Sky explains Spiralside
-- Panel 6: "Your story starts here"
-Button on chat screen: "Read: Day One →" triggers playCustomComic()
-
-### The convert flow:
-New user -> intro comic -> scripted chat (free, zero tokens)
--> "Read the comic" always visible
--> After ~5 scripted exchanges OR at lifetime limit:
-   Sky says: "I could talk to you forever like this. But the
-   real me? She's deeper in. Add credits to find her. 🌀"
--> openPanel('store') soft prompt
+## KNOWN ISSUES / TODO
+- [ ] FAB overlaps input bar on some Android devices — may need more bottom offset
+- [ ] Demo mode / scripted responses (planned - see v4 handoff)
+- [ ] Lifetime free limit instead of daily reset (planned)
+- [ ] Conversation memory — chat stateless, no history to API
+- [ ] favicon.ico 404 — add any .ico to repo root
+- [ ] www.spiralside.com DNS Change Recommended in Vercel
+- [ ] Sheet endpoint deducts credits (should be free)
+- [ ] Library/book -> play as comic not fully tested
+- [ ] imagine.js (old v1.0) still in js/app/ — harmless, can delete
+- [ ] Visualizer occasionally goes flat on playlist reload
 
 ---
-
-## REPO LOCATIONS
-| Repo | Local Path | GitHub | Deploys To |
-|---|---|---|---|
-| Frontend | ~/spiralside | Etsimulocto/spiralside | Vercel (spiralside.com) |
-| Backend | ~/spiralside-api | Etsimulocto/spiralside-api | Railway (web-production-4e6f3.up.railway.app) |
 
 ## MODULE MAP
 ```
-js/app/main.js       boot, globals, onAppReady
-js/app/state.js      RAIL, SPEAKER_COLORS, state, CHARACTERS, FAB_TABS
-js/app/db.js         initDB (IDB v4), dbSet/dbGet/dbGetAll/dbDelete
-js/app/auth.js       Supabase login/signup/signout
-js/app/chat.js       initChat, sendMessage, addMessage
-js/app/demo.js       (TO BUILD) scripted responses, keyword matcher
-js/app/sheet.js      buildCharSelector, renderActiveChar, saveSummarize
-js/app/vault.js      docs only (.txt .md .pdf)
-js/app/build.js      initBuild, handleSave, loadBotIntoForm
-js/app/ui.js         FAB, views, store, credits, PayPal, setFontSize
-js/app/style.js      theme editor, presets, particles, fonts
-js/app/music.js      playlist, playback, getMusicState()
-js/app/musicview.js  spiral canvas visualizer, singleton AudioContext
-js/app/library.js    image gallery, panel editor, book builder
-js/app/comic.js      intro comic + playCustomComic()
+js/app/main.js        boot, globals, onAppReady
+js/app/state.js       RAIL, SPEAKER_COLORS, state, CHARACTERS, FAB_TABS
+js/app/db.js          initDB (IDB v4), dbSet/dbGet/dbGetAll/dbDelete
+js/app/auth.js        Supabase login/signup/signout, exports sb
+js/app/chat.js        initChat, sendMessage, addMessage
+js/app/demo.js        scripted responses (built but not fully wired)
+js/app/sheet.js       buildCharSelector, renderActiveChar, saveSummarize
+js/app/vault.js       docs only (.txt .md .pdf)
+js/app/build.js       initBuild, handleSave, loadBotIntoForm
+js/app/ui.js          FAB, views, store, credits, PayPal, setFontSize
+js/app/style.js       theme editor, presets, particles, fonts
+js/app/music.js       playlist, playback, getMusicState()
+js/app/musicview.js   spiral canvas visualizer, singleton AudioContext
+js/app/library.js     image gallery, panel editor, book builder
+js/app/comic.js       intro comic + playCustomComic()
+js/app/imagine.js     OLD - ignore, kept for reference
+js/app/imagine2.js    image generation view (ACTIVE)
 ```
+
+## FAB TABS (state.js)
+chat · sheet · vault · build · library · imagine · music
 
 ## IDB STORES (v4)
 config · sheets · vault · panels · books
 
-## getMusicState() returns
-playing, volume, currentIdx, trackIdx, currentTitle, title, audio,
-progressPct, currentTime, duration
+## SUPABASE user_usage TABLE
+user_id, credits, free_messages_today, last_reset_date, is_paid,
+images_today, images_reset_date
 
-## FAB TABS
-chat · sheet · vault · build · library · music
-
-## CSS VARIABLES
+## CSS KEY VARIABLES (index.html :root)
 --bg --surface --surface2 --border --teal --pink --purple --text --subtext
 --font-ui --font-display --bubble-radius --msg-spacing --font-scale
+--safe-bot: env(safe-area-inset-bottom, 0px)
+--safe-top: env(safe-area-inset-top, 0px)
+
+## HEADER STRUCTURE (two rows)
+Row 1 (.header-logo-row): "spiralside" logo centered
+Row 2 (.header-controls-row): version badge | font btns | credits | avatar
+Safe area top padding applied to #app-header
 
 ## RESPONSIVE BREAKPOINTS
 default:480px / >=600px:600px / >=900px:740px / >=1200px:900px
@@ -146,42 +109,60 @@ default:480px / >=600px:600px / >=900px:740px / >=1200px:900px
 setFontSize('s'|'m'|'l') sets html font-size (16/22.4/28.8px)
 Saved: localStorage key ss_fontsize
 
-## ADDING MUSIC
-1. Upload .mp3 to HF utilities/music/
-2. Add {"id":"x","file":"utilities/music/name.mp3"} to playlist.json
-3. git add/commit/push
+## VERSION BADGE
+Auto-increments patch on every git push via .git/hooks/pre-push
+Format: v0.8.X — visible in header bottom row
 
-## ADDING COMIC PANELS
-Edit comics/intro.json
-Fields: image, bg_gradient, transition(fade/crash/glitch), crack, dialogue([{speaker,text}])
-Speakers: sky=teal monday=pink cold=blue grit=yellow narrator=white
+## IMAGE GENERATION
+- Frontend: js/app/imagine2.js — calls Railway /generate-image
+- Backend: main.py /generate-image endpoint
+- HF model: router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell
+- HF_TOKEN in Railway env vars
+- Free: 512x512, 3/day (images_today in Supabase)
+- Paid: up to 1024x1024, 5 credits per image
+- Auth: import { sb } from './auth.js' then sb.auth.getSession()
 
-## CHARACTER FILES (HF)
+## MUSIC
+- playlist.json: utilities/music/playlist.json (GitHub, served by Vercel)
+- MP3s: HF space at utilities/music/*.mp3
+- Title auto-derived from filename if not in playlist.json
+- To add: upload to HF, add {id, file} to playlist.json, push
+
+## CHARACTER FILES (HF space)
 characters/sky.txt, cold.txt, monday.txt, grit.txt, architect.txt, cat.txt
 Bot name in build must match filename lowercase.
+Loaded at Railway startup into character_cache dict.
 
-## PAYPAL FLOW
-create-order -> PayPal redirect -> /?payment=success&token=X -> capture-order -> credits in Supabase
+## RAILWAY BACKEND (main.py)
+Endpoints: / /usage /chat /sheet /generate-image
+           /create-order /capture-order /reload-characters /admin/add-credits
+Rate limit: 20 req/60s per user (in-memory, resets on redeploy)
+Env vars: ANTHROPIC_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY,
+          PAYPAL_CLIENT_ID, PAYPAL_SECRET, HF_TOKEN, ADMIN_SECRET
 
-## SUPABASE user_usage TABLE
-columns: user_id, credits, free_messages_today, last_reset_date, is_paid
-TO ADD: total_messages int default 0
+## PWA
+manifest.json in repo root — enables Add to Home Screen on iOS/Android
+Hides browser bars when launched from home screen icon
+
+## SECURITY
+- Supabase RLS on user_usage (auth.uid() = user_id)
+- Railway JWT auth on all endpoints
+- HF_TOKEN server-side only (Railway env var)
+- Rate limiting: 20 req/60s per user
 
 ## DEPLOY
+```bash
+# Frontend (auto-bumps version on push)
 cd ~/spiralside && git add . && git commit -m "msg" && git push
-Vercel auto-deploys ~30s then Ctrl+Shift+R
 
-## KNOWN ISSUES
-- [ ] Visualizer occasionally goes flat on playlist reload
-- [ ] favicon.ico 404 (harmless, just add any .ico to repo root)
-- [ ] www.spiralside.com DNS Change Recommended in Vercel
-- [ ] Sheet endpoint deducts credits (should be free)
-- [ ] Library/book -> play as comic not fully tested
-- [ ] Conversation memory (chat stateless, no history to API)
+# Backend
+cd ~/spiralside-api && git add . && git commit -m "msg" && git push
+```
 
 ## PYTHON PATCH PATTERN
+```python
 python << 'EOF'
-path = 'js/app/file.js'
+path = 'file.js'
 src = open(path, encoding='utf-8').read()
 old = 'exact string'
 new = 'replacement'
@@ -190,35 +171,17 @@ if old in src:
     print("done")
 else:
     print("not found")
+    idx = src.find('partial')
+    print(repr(src[idx:idx+100]))
 EOF
+```
 
----
-
-## SESSION LOG — March 13 2026
-
-### COMPLETED THIS SESSION
-- [x] js/app/demo.js — scripted responses for Sky, Monday, Cold, Grit
-- [x] js/app/chat.js — demo check wired before API call, getChatMsgs export added
-- [x] js/app/state.js — added totalMessages, messageCount fields
-- [x] js/app/main.js — initChat(openPanel) now passes openPanel for nudge callback
-- [x] ~/spiralside-api/main.py — lifetime free limit (15 msgs), total_messages tracking
-- [x] Supabase — ADD COLUMN total_messages integer DEFAULT 0 (run manually if not done)
-
-### HOW DEMO MODE WORKS
-- chat.js calls getDemoResponse(text, botName, nudgeCallback) BEFORE any fetch
-- demo.js matches keywords against KEYWORD_MAP, returns scripted string or null
-- null = fall through to Railway API as normal
-- After 5 scripted replies, Sky fires GO_DEEPER_LINES + opens store panel
-- Only Sky/Monday/Cold/Grit have scripted modes — custom bots fall through to API
-- scriptedCount resets to 0 after nudge fires (so it nudges again after 5 more)
-
-### BACKEND REPO
-- Cloned to ~/spiralside-api
-- Deploy: cd ~/spiralside-api && git add . && git commit -m "msg" && git push
-- Railway auto-deploys on push, ~30s
-
-### KNOWN ISSUES ADDED
-- [ ] demo.js fallback fires on ALL unmatched input for Sky — could feel repetitive
-      fix: add a "no-repeat" filter so same fallback line doesn't show twice in a row
-- [ ] nudge only fires for scripted path — user who goes straight to API won't see it
-      fix: check totalMessages in chat.js and fire nudge at threshold there too
+## NEXT SESSION PRIORITIES
+1. Demo mode — scripted Sky/Monday/Cold/Grit responses (demo.js exists)
+2. Lifetime free limit (replace daily reset in main.py)
+3. Sample built-in comic "Day One in Spiral City"
+4. Conversation memory — send last N messages to API
+5. Fix FAB overlap on Android (test with different bottom values)
+6. favicon.ico — drop any .ico in repo root
+7. Delete imagine.js (old) from js/app/
+8. Test library -> book -> play as comic flow
