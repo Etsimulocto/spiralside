@@ -386,7 +386,9 @@
       margin-bottom: 12px;
       background: linear-gradient(to top, var(--bg) 85%, transparent);
       flex-shrink: 0;
+      display: flex; gap: 8px; align-items: flex-end;
     }
+    .chat-input-area .input-row { flex: 1; }
     .input-row {
       display: flex; gap: 8px; align-items: flex-end;
       background: var(--surface2); border: 1px solid var(--border);
@@ -1289,7 +1291,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.11</div>
+      <div class="version-badge" id="version-badge">v0.8.12</div>
       <div class="header-right">
         <div class="font-size-btns">
           <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
