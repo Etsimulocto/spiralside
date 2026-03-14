@@ -309,7 +309,6 @@
       padding: 2px 7px; font-family: var(--font-ui); opacity: 0.6;
     }
     
-    .msg-bubble { font-size: calc(0.82rem * var(--font-scale)); }
     .font-size-btns { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
     .fs-btn {
       background: none; border: 1px solid rgba(0,246,214,0.2); border-radius: 4px;
@@ -1210,7 +1209,7 @@
 <script>
   function setFontSize(s){const scales={s:0.85,m:1,l:1.2};document.documentElement.style.setProperty("--font-scale",scales[s]);document.querySelectorAll(".fs-btn").forEach(b=>b.classList.remove("fs-active"));document.getElementById("fs-"+s).classList.add("fs-active");}
   function setVh() { document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px"); }
-  document.documentElement.style.setProperty("--font-scale","1"); setVh();
+  document.documentElement.style.setProperty("--font-scale",1); setVh();
   window.addEventListener("resize", setVh);
 </script>
 
@@ -1297,7 +1296,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.24</div>
+      <div class="version-badge" id="version-badge">v0.8.25</div>
       <div class="header-right">
         <div class="font-size-btns">
           <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
