@@ -1355,6 +1355,26 @@
 
   // ── MODEL SELECTOR ──
   window.selectedModel = 'haiku';
+
+  // ── INPUT MENU TOGGLE ──
+  let inputMenuOpen = false;
+  function toggleInputMenu() {
+    inputMenuOpen = !inputMenuOpen;
+    const menu = document.getElementById('input-menu');
+    if (menu) menu.classList.toggle('open', inputMenuOpen);
+    if (inputMenuOpen) {
+      setTimeout(() => document.addEventListener('click', function handler(e) {
+        const menu = document.getElementById('input-menu');
+        const btn  = document.getElementById('plus-btn');
+        if (!menu.contains(e.target) && e.target !== btn) {
+          inputMenuOpen = false;
+          menu.classList.remove('open');
+        }
+        document.removeEventListener('click', handler);
+      }), 10);
+    }
+  }
+
   function selectModel(m) {
     window.selectedModel = m;
     document.getElementById('btn-haiku').classList.toggle('active', m === 'haiku');
@@ -1446,7 +1466,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.51</div>
+      <div class="version-badge" id="version-badge">v0.8.52</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
