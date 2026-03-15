@@ -414,7 +414,7 @@
     .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
     .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
-    .chat-input-area {
+    .chat-input-area { position: relative;
       padding: 12px 16px calc(20px + var(--safe-bot));
       margin-bottom: 12px;
       background: linear-gradient(to top, var(--bg) 85%, transparent);
@@ -1466,7 +1466,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.52</div>
+      <div class="version-badge" id="version-badge">v0.8.53</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
@@ -1503,6 +1503,8 @@
       </div>
     </div>
     <!-- INPUT POPUP MENU -->
+    <input type="file" id="file-input-chat" style="display:none" accept="image/*,.txt,.md,.pdf" />
+    <div class="chat-input-area">
     <div id="input-menu" class="input-menu">
       <div class="input-menu-section" id="input-menu-models">
         <button class="input-menu-btn model-opt active" id="iopt-haiku" onclick="selectModel('haiku');updateInputMenu()">
@@ -1533,8 +1535,6 @@
         </button>
       </div>
     </div>
-    <input type="file" id="file-input-chat" style="display:none" accept="image/*,.txt,.md,.pdf" />
-    <div class="chat-input-area">
       <div class="input-row">
         <textarea id="msg-input" rows="1" placeholder="say something..."></textarea>
         <div class="input-actions">
