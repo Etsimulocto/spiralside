@@ -66,9 +66,9 @@ export function switchView(id) {
   const prevViewId = state.activeView;
   state.activeView = id;
 
-  // Close FAB
+  // Close FAB (if it still exists)
   state.fabOpen = false;
-  document.getElementById('fab-main').classList.remove('open');
+  document.getElementById('fab-main')?.classList.remove('open');
   document.querySelectorAll('.fab-item').forEach(el => el.classList.remove('open'));
 
   // Call onClose for previous view
