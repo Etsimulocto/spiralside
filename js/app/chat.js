@@ -33,7 +33,7 @@ export function initChat(openPanelFn) {
 
   // Store openPanel reference so nudge callback can open the store
   // openPanelFn is passed in from main.js / ui.js
-  state._openPanel = openPanelFn || (() => {});
+  state._openPanel = (tab) => window.switchView && window.switchView(tab);
 
   // Auto-resize textarea as user types
   msgInput.addEventListener('input', () => {

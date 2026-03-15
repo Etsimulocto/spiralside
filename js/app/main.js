@@ -24,7 +24,7 @@ import { initLibrary, openPanelEditor, deletePanel,
          removePanelFromBook, movePanelInBook,
          deleteBook }                              from './library.js';
 import { buildFAB, toggleFAB, switchView, setFontSize, loadFontSize,
-         openPanel, closePanel, switchPanelTab,
+
          loadUsage, updateCreditDisplay,
          updateGreeting, updateUserUI,
          buyPack, handlePayPalReturn }             from './ui.js';
@@ -39,7 +39,7 @@ window.switchAuthTab     = switchAuthTab;
 window.togglePw          = togglePw;
 window.handleLogin       = handleLogin;
 window.handleSignup      = handleSignup;
-window.handleSignout     = () => handleSignout(closePanel);
+window.handleSignout     = () => handleSignout(() => {});
 window.openPanel         = openPanel;
 window.setFontSize        = setFontSize;
 window.closePanel        = closePanel;
