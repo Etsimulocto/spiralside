@@ -47,6 +47,13 @@ export function toggleFAB() {
 // ── SWITCH VIEW ───────────────────────────────────────────────
 // id: 'chat' | 'sheet' | 'vault' | 'build'
 export function switchView(id) {
+  // Highlight correct tab
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const activeTab = document.getElementById(`tab-${id}`);
+  if (activeTab) {
+    activeTab.classList.add('active');
+    activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
   const prevViewId = state.activeView;
   state.activeView = id;
 
@@ -135,11 +142,15 @@ export function updateCreditDisplay() {
     storeEl.textContent = cr;
     freeEl.textContent  = 'paid account';
     if (toggle) toggle.classList.add('visible');
+    window._isPaid = true;
+    if (window.updateInputMenu) window.updateInputMenu();
   } else {
     badge.textContent   = 'demo';
     storeEl.textContent = 0;
     freeEl.textContent  = 'free demo — buy credits to unlock real AI';
     if (toggle) toggle.classList.remove('visible');
+    window._isPaid = false;
+    if (window.updateInputMenu) window.updateInputMenu();
   }
 }
 

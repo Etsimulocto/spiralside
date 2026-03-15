@@ -577,6 +577,81 @@
     }
     .build-save-btn:hover { box-shadow: 0 0 40px rgba(0,246,214,0.5); transform: translateY(-1px); }
 
+    /* ── TAB BAR ─────────────────────────────────────────────── */
+    #tab-bar {
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      gap: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      padding: 0 4px;
+    }
+    #tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--subtext);
+      font-family: var(--font-ui);
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+    /* ── INPUT POPUP MENU ─────────────────────────────────────── */
+    .input-menu {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 16px;
+      width: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 8px;
+      z-index: 100;
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+    }
+    .input-menu.open { display: flex; }
+    .input-menu-section { display: flex; flex-direction: column; gap: 2px; }
+    .input-menu-divider { height: 1px; background: var(--border); margin: 6px 0; }
+    .input-menu-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      background: transparent;
+      border: none;
+      border-radius: 9px;
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      text-align: left;
+    }
+    .input-menu-btn:hover { background: var(--muted); }
+    .input-menu-btn.active { background: rgba(0,246,214,0.1); color: var(--teal); }
+    .iopt-icon { width: 20px; text-align: center; font-size: 0.9rem; }
+    .iopt-label { flex: 1; }
+    .iopt-cost {
+      font-size: 0.62rem;
+      color: var(--subtext);
+      letter-spacing: 0.06em;
+    }
+    .input-menu-btn.active .iopt-cost { color: var(--teal); }
+
     /* ── FAB ────────────────────────────────────────────────── */
     #fab-container { position: fixed; bottom: calc(90px + var(--safe-bot, 0px)); right: 20px; z-index: 50; }
     .fab-item {
@@ -1339,22 +1414,29 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.34</div>
+      <div class="version-badge" id="version-badge">v0.8.35</div>
       <div class="header-right">
         <div class="font-size-btns">
           <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
           <button class="fs-btn fs-m fs-active" onclick="setFontSize('m')" id="fs-m" title="medium text">A</button>
           <button class="fs-btn fs-l" onclick="setFontSize('l')" id="fs-l" title="large text">A</button>
         </div>
-        <div class="model-toggle" id="model-toggle">
-          <button class="model-btn active" id="btn-haiku" onclick="selectModel('haiku')">HAIKU</button>
-          <button class="model-btn" id="btn-sonnet" onclick="selectModel('sonnet')">SONNET</button>
-          <span class="model-cost" id="model-cost">1cr</span>
-        </div>
+
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
         <div class="user-avatar" id="user-avatar" onclick="openPanel('account')">?</div>
       </div>
     </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div id="tab-bar">
+    <button class="tab-btn active" id="tab-chat"    onclick="switchView('chat')"   >💬 chat</button>
+    <button class="tab-btn"        id="tab-sheet"   onclick="switchView('sheet')"  >✦ sheet</button>
+    <button class="tab-btn"        id="tab-imagine" onclick="switchView('imagine')" >🎨 imagine</button>
+    <button class="tab-btn"        id="tab-music"   onclick="switchView('music')"  >♪ music</button>
+    <button class="tab-btn"        id="tab-library" onclick="switchView('library')">🖼 library</button>
+    <button class="tab-btn"        id="tab-build"   onclick="switchView('build')"  >⚙ build</button>
+    <button class="tab-btn"        id="tab-vault"   onclick="switchView('vault')"  >🗂 vault</button>
   </div>
 
   <!-- CHAT VIEW -->
@@ -1372,11 +1454,38 @@
         </div>
       </div>
     </div>
+    <!-- INPUT POPUP MENU -->
+    <div id="input-menu" class="input-menu">
+      <div class="input-menu-section" id="input-menu-models">
+        <button class="input-menu-btn model-opt active" id="iopt-haiku" onclick="selectModel('haiku');updateInputMenu()">
+          <span class="iopt-icon">⚡</span>
+          <span class="iopt-label">Haiku</span>
+          <span class="iopt-cost">1 cr</span>
+        </button>
+        <button class="input-menu-btn model-opt" id="iopt-sonnet" onclick="selectModel('sonnet');updateInputMenu()">
+          <span class="iopt-icon">✦</span>
+          <span class="iopt-label">Sonnet</span>
+          <span class="iopt-cost">6 cr</span>
+        </button>
+      </div>
+      <div class="input-menu-divider"></div>
+      <div class="input-menu-section">
+        <button class="input-menu-btn" onclick="document.getElementById('file-input-chat').click();toggleInputMenu()">
+          <span class="iopt-icon">📎</span>
+          <span class="iopt-label">attach file</span>
+        </button>
+        <button class="input-menu-btn" onclick="switchView('imagine');toggleInputMenu()">
+          <span class="iopt-icon">🎨</span>
+          <span class="iopt-label">imagine</span>
+        </button>
+      </div>
+    </div>
+    <input type="file" id="file-input-chat" style="display:none" accept="image/*,.txt,.md,.pdf" />
     <div class="chat-input-area">
       <div class="input-row">
         <textarea id="msg-input" rows="1" placeholder="say something..."></textarea>
         <div class="input-actions">
-          <button class="icon-btn" id="attach-btn" title="attach file">📎</button>
+          <button class="icon-btn" id="plus-btn" onclick="toggleInputMenu()" title="options">+</button>
           <button class="send-btn" id="send-btn">↑</button>
         </div>
       </div>
