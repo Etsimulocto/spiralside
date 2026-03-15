@@ -653,7 +653,33 @@
     .input-menu-btn.active .iopt-cost { color: var(--teal); }
 
     /* ── FAB ────────────────────────────────────────────────── */
-    #fab-container { position: fixed; bottom: calc(90px + var(--safe-bot, 0px)); right: 20px; z-index: 50; }
+    #fab-container { display: none; }
+    /* ── ACCOUNT FAB ── */
+    #account-fab {
+      position: fixed;
+      bottom: calc(20px + var(--safe-bot, 0px));
+      right: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      cursor: pointer;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 1rem;
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #account-fab:hover {
+      transform: scale(1.08);
+      box-shadow: 0 6px 28px rgba(124,106,247,0.5);
+    }
     .fab-item {
       position: absolute; right: 0;
       display: flex; align-items: center; gap: 10px;
@@ -1414,16 +1440,9 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.35</div>
+      <div class="version-badge" id="version-badge">v0.8.36</div>
       <div class="header-right">
-        <div class="font-size-btns">
-          <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
-          <button class="fs-btn fs-m fs-active" onclick="setFontSize('m')" id="fs-m" title="medium text">A</button>
-          <button class="fs-btn fs-l" onclick="setFontSize('l')" id="fs-l" title="large text">A</button>
-        </div>
-
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
-        <div class="user-avatar" id="user-avatar" onclick="openPanel('account')">?</div>
       </div>
     </div>
   </div>
@@ -1697,6 +1716,11 @@
   </div>
 
   <!-- FAB -->
+  <!-- ACCOUNT FAB — bottom right, opens store/style/account panel -->
+  <button id="account-fab" onclick="openPanel('store')">
+    <span id="account-fab-initial">?</span>
+  </button>
+
   <div id="fab-container">
     <!-- Items injected by buildFAB() in ui.js -->
     <button id="fab-main" onclick="toggleFAB()">🌀</button>

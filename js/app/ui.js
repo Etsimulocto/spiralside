@@ -174,7 +174,8 @@ export function updateGreeting() {
 // ── USER AVATAR + EMAIL ───────────────────────────────────────
 export function updateUserUI() {
   const initial = (state.user?.email?.[0] || '?').toUpperCase();
-  document.getElementById('user-avatar').textContent   = initial;
+  const fabEl = document.getElementById('account-fab-initial');
+  if (fabEl) fabEl.textContent = initial;
   document.getElementById('account-email').textContent = state.user?.email || '—';
 }
 
