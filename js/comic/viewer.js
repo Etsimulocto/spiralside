@@ -117,7 +117,7 @@ export async function init(callback) {
   document.getElementById('comic-dialogue').innerHTML = `
     <div id="comic-loading">
       <div class="spiral-spin"></div>
-      <div class="loading-text">initializing spiral...</div>
+      <div class="loading-text">initializing spiral... <span id="loading-version"></span></div>
     </div>
   `;
 
