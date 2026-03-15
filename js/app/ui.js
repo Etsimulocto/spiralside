@@ -142,7 +142,6 @@ export function updateCreditDisplay() {
     if (toggle) toggle.classList.remove('visible');
   }
 }
-}
 
 // ── GREETING MESSAGE UPDATE ───────────────────────────────────
 // Refreshes the first bot message in chat with current bot config
