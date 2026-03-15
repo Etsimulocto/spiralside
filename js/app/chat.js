@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state }           from './state.js';
-import { getDemoResponse } from './demo.js';
+import { getDemoResponse, loadDemoResponses } from './demo.js';
 
 // ── DOM REFS ──────────────────────────────────────────────
 // Grabbed once on initChat — never queried again after that
@@ -24,6 +24,9 @@ const RAIL = 'https://web-production-4e6f3.up.railway.app';
 // Called once from main.js after DOM is ready
 // Wires textarea auto-resize, Enter key, send button
 export function initChat(openPanelFn) {
+  // Load Sky's response library from HF into IDB cache
+  // Runs async in background  ready well before first message
+  loadDemoResponses();
   msgList  = document.getElementById('chat-messages');
   msgInput = document.getElementById('msg-input');
   sendBtn  = document.getElementById('send-btn');
@@ -168,6 +171,7 @@ export async function sendMessage() {
         'Authorization': `Bearer ${token}`,
       },
       body: JSON.stringify({
+        model: window.selectedModel || 'haiku',
         message:       text,
         system_prompt: sys,
         vault_context: vault,

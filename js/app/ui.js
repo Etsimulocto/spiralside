@@ -126,7 +126,7 @@ export function updateCreditDisplay() {
   const badge   = document.getElementById('credits-badge');
   const storeEl = document.getElementById('store-credits');
   const freeEl  = document.getElementById('store-free-msg');
-
+  const toggle  = document.getElementById('model-toggle');
   if (state.isPaid) {
     const cr = Number.isInteger(state.credits)
       ? state.credits
@@ -134,12 +134,14 @@ export function updateCreditDisplay() {
     badge.textContent   = `${cr} cr`;
     storeEl.textContent = cr;
     freeEl.textContent  = 'paid account';
+    if (toggle) toggle.classList.add('visible');
   } else {
-    const left          = Math.max(0, 10 - state.freeToday);
-    badge.textContent   = `${left} free left`;
-    storeEl.textContent = left;
-    freeEl.textContent  = `${left} of 10 free messages today`;
+    badge.textContent   = 'demo';
+    storeEl.textContent = 0;
+    freeEl.textContent  = 'free demo — buy credits to unlock real AI';
+    if (toggle) toggle.classList.remove('visible');
   }
+}
 }
 
 // ── GREETING MESSAGE UPDATE ───────────────────────────────────

@@ -326,6 +326,40 @@
       background: rgba(0,246,214,0.08); cursor: pointer; transition: all 0.2s;
     }
     .credits-badge:hover { background: rgba(0,246,214,0.15); }
+    .model-toggle {
+      display: none;
+      align-items: center;
+      gap: 0;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .model-toggle.visible { display: flex; }
+    .model-btn {
+      padding: 4px 10px;
+      font-family: var(--font-ui);
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      background: transparent;
+      border: none;
+      color: var(--subtext);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .model-btn.active {
+      background: var(--teal);
+      color: #000;
+      font-weight: 700;
+    }
+    .model-cost {
+      font-size: 0.55rem;
+      color: var(--subtext);
+      padding: 0 8px 0 0;
+      letter-spacing: 0.06em;
+    }
     .user-avatar {
       width: 34px; height: 34px; border-radius: 50%;
       background: linear-gradient(135deg, rgba(0,246,214,0.3), rgba(123,95,255,0.3));
@@ -1211,6 +1245,15 @@
   function setVh() { document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px"); }
   document.documentElement.style.setProperty("--font-scale",1); setVh();
   window.addEventListener("resize", setVh);
+
+  // ── MODEL SELECTOR ──
+  window.selectedModel = 'haiku';
+  function selectModel(m) {
+    window.selectedModel = m;
+    document.getElementById('btn-haiku').classList.toggle('active', m === 'haiku');
+    document.getElementById('btn-sonnet').classList.toggle('active', m === 'sonnet');
+    document.getElementById('model-cost').textContent = m === 'haiku' ? '1cr' : '6cr';
+  }
 </script>
 
 <!-- ══════════════════════════════════════════════════════════ -->
@@ -1296,12 +1339,17 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.31</div>
+      <div class="version-badge" id="version-badge">v0.8.32</div>
       <div class="header-right">
         <div class="font-size-btns">
           <button class="fs-btn fs-s" onclick="setFontSize('s')" id="fs-s" title="small text">A</button>
           <button class="fs-btn fs-m fs-active" onclick="setFontSize('m')" id="fs-m" title="medium text">A</button>
           <button class="fs-btn fs-l" onclick="setFontSize('l')" id="fs-l" title="large text">A</button>
+        </div>
+        <div class="model-toggle" id="model-toggle">
+          <button class="model-btn active" id="btn-haiku" onclick="selectModel('haiku')">HAIKU</button>
+          <button class="model-btn" id="btn-sonnet" onclick="selectModel('sonnet')">SONNET</button>
+          <span class="model-cost" id="model-cost">1cr</span>
         </div>
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
         <div class="user-avatar" id="user-avatar" onclick="openPanel('account')">?</div>
