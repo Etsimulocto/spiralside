@@ -185,3 +185,48 @@ EOF
 6. favicon.ico — drop any .ico in repo root
 7. Delete imagine.js (old) from js/app/
 8. Test library -> book -> play as comic flow
+
+---
+
+## SESSION LOG — March 15 2026
+
+### COMPLETED THIS SESSION
+- [x] PayPal bug fixed — orders now stored in Supabase `paypal_orders` table, capture reads from DB not PayPal custom_id — correct user gets credited
+- [x] `credit_transactions` table added to Supabase — every deduction logged
+- [x] `paypal_orders` table added to Supabase — replay protection + correct user lookup
+- [x] Model toggle — HAIKU/SONNET pill in header, paid users only, cost shown (1cr/6cr)
+- [x] Per-model credit costs — haiku=0.01cr, sonnet=0.06cr in CREDIT_COSTS dict
+- [x] Demo mode v2 — fetches Sky responses from HF `characters/responses/all.json`
+- [x] IDB cache — responses cached, re-fetches only when version.json bumps
+- [x] `loadDemoResponses()` wired into `initChat()` in chat.js
+- [x] Free tier — is_paid=false shows demo badge, hides model toggle, scripted Sky only
+- [x] Nudge fires every 25 scripted replies, never hard wall
+- [x] Sonnet model string fixed — was charging ~6x without correct credit deduction
+
+### CURRENT STACK STATE
+- Frontend: v0.8.33 on Vercel → spiralside.com
+- Backend: Railway → web-production-4e6f3.up.railway.app
+- Supabase tables: user_usage, credit_transactions, paypal_orders
+- HF responses: characters/responses/all.json (Sky only, flat structure)
+- HF version file: characters/responses/version.json — STILL NEEDS CREATING { "version": 1 }
+
+### KNOWN ISSUES
+- [ ] version.json not yet created on HF — cache busting won't work until it exists
+- [ ] Helen occasional 500 errors — not fully resolved
+- [ ] window.playCustomComic — book→comic playback not wired
+- [ ] Conversation memory — chat stateless, no history sent to API
+- [ ] imagine.js / imagine2.js — unknown state, untested
+- [ ] iOS safe area / UI redesign needed — Apple blank space top, FAB buttons need moving to top, full layout rearrange per v3 mockup
+
+### CREDIT SYSTEM
+- Free users: is_paid=false, demo mode only, scripted Sky, no API calls
+- Paid users: is_paid=true, model toggle in header, real AI
+- CREDIT_COSTS = { haiku: 0.01, sonnet: 0.06 }
+- To test free tier: UPDATE user_usage SET is_paid=false WHERE user_id='57d3cc4b-c461-498c-8f10-e5dd1a6962c6'
+- To restore paid: UPDATE user_usage SET is_paid=true WHERE user_id='57d3cc4b-c461-498c-8f10-e5dd1a6962c6'
+
+### NEXT SESSION PRIORITIES
+1. iOS UI redesign — move FABs to top, fix safe area blank space, per v3 mockup
+2. Wire image gen — flux-schnell free on HF for haiku tier, better model for sonnet tier
+3. version.json on HF
+4. Conversation memory / chat history
