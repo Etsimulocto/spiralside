@@ -54,6 +54,15 @@ export function switchView(id) {
     activeTab.classList.add('active');
     activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
+  // Lazy-init view on first visit
+  const viewInits = {
+    store:   () => window.initStoreView   && window.initStoreView(),
+    account: () => window.initAccountView && window.initAccountView(),
+    imagine: () => window.initImagine     && window.initImagine(),
+    music:   () => window.initMusicView   && window.initMusicView(),
+    library: () => window.initLibrary     && window.initLibrary(),
+  };
+  if (viewInits[id]) viewInits[id]();
   const prevViewId = state.activeView;
   state.activeView = id;
 

@@ -29,6 +29,8 @@ import { buildFAB, toggleFAB, switchView, setFontSize, loadFontSize,
          updateGreeting, updateUserUI,
          buyPack, handlePayPalReturn }             from './ui.js';
 import { state }                                   from './state.js';
+import { initStoreView, updateStoreView }          from './views/store.js';
+import { initAccountView }                         from './views/account.js';
 
 // ── EXPOSE GLOBALS ────────────────────────────────────────────
 // HTML onclick attributes need these on window.
