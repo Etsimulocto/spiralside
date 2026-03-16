@@ -158,6 +158,10 @@ export function renderActiveChar(id) {
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
   btn.style.boxShadow  = `0 0 20px ${char.color}22`;
+
+  // Hide edit/delete — archetypes are not editable
+  const actionRow = document.getElementById('print-action-row');
+  if (actionRow) actionRow.style.display = 'none';
 }
 
 // ── SAVE + SUMMARIZE ──────────────────────────────────────────
@@ -358,8 +362,13 @@ function renderPrintCard(print) {
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
 
-  // ── edit + delete buttons ──
+  // ── edit + delete buttons — only for user prints ──
   let actionRow = document.getElementById('print-action-row');
+  if (!print || !print.id) {
+    if (actionRow) actionRow.style.display = 'none';
+    return;
+  }
+  if (actionRow) actionRow.style.display = 'flex';
   if (!actionRow) {
     actionRow = document.createElement('div');
     actionRow.id = 'print-action-row';
