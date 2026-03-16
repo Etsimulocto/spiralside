@@ -103,8 +103,6 @@ export function renderActiveChar(id) {
     talkBtn.style.display = 'none'; // hide for user's own sheet
   }
 
-  // ── identity line + vibe (from soul print) ──
-  }
   const vibeEl = document.getElementById('sheet-vibe');
   if (vibeEl) {
     vibeEl.textContent = char.vibe ? `"${char.vibe}"` : '';
