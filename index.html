@@ -1916,6 +1916,134 @@
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- SLIDE PANEL (Store + Account)                             -->
 <!-- ══════════════════════════════════════════════════════════ -->
+<div class="view" id="view-store">
+  <div style="overflow-y:auto;padding:20px 16px calc(80px + var(--safe-bot))">
+    <div class="credit-hero">
+      <div class="credit-amount" id="store-credits">0</div>
+      <div class="credit-label">credits remaining</div>
+      <div class="credit-sub" id="store-free-msg">— free messages today</div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="panel-section-title">buy credits</div>
+      <div class="pack-grid">
+        <div class="pack-card" onclick="buyPack('5')">
+          <div class="pack-price">$5</div>
+          <div class="pack-credits">500 credits</div>
+          <div class="pack-bonus">starter</div>
+        </div>
+        <div class="pack-card popular" onclick="buyPack('10')">
+          <div class="pack-tag">✦ popular</div>
+          <div class="pack-price">$10</div>
+          <div class="pack-credits">1,100 credits</div>
+          <div class="pack-bonus">+100 bonus</div>
+        </div>
+        <div class="pack-card" onclick="buyPack('20')">
+          <div class="pack-price">$20</div>
+          <div class="pack-credits">2,400 credits</div>
+          <div class="pack-bonus">+400 bonus</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel-section-title">feature pricing</div>
+      <div class="feature-row"><div class="feature-icon">💬</div><div class="feature-name">chat message</div><div class="feature-cost">1 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">🎨</div><div class="feature-name">image generation</div><div class="feature-cost">5 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">🗣️</div><div class="feature-name">text to speech</div><div class="feature-cost">2 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">🎤</div><div class="feature-name">speech to text</div><div class="feature-cost">1 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">📹</div><div class="feature-name">video generation</div><div class="feature-cost">20 cr</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="view" id="view-style">
+  <div style="overflow-y:auto;padding:20px 16px calc(80px + var(--safe-bot))">
+    <div class="style-section">
+      <div class="style-section-title">themes</div>
+      <div class="theme-grid" id="theme-grid-view"></div>
+    </div>
+    <div class="style-section">
+      <div class="style-section-title">colors</div>
+      <div class="color-row"><span class="color-label">background</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg-v" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
+      <div class="color-row"><span class="color-label">surface</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface-v" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
+      <div class="color-row"><span class="color-label">accent (primary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal-v" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
+      <div class="color-row"><span class="color-label">accent (secondary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink-v" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
+      <div class="color-row"><span class="color-label">user bubble</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble-v" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
+      <div class="color-row"><span class="color-label">text</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-text-v" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
+    </div>
+    <div class="style-section">
+      <div class="style-section-title">bubble shape</div>
+      <div class="bubble-shape-row">
+        <div class="shape-chip selected" data-shape="16" onclick="selectBubbleShape(this,'16')">soft</div>
+        <div class="shape-chip" data-shape="24" onclick="selectBubbleShape(this,'24')">pill</div>
+        <div class="shape-chip" data-shape="3" onclick="selectBubbleShape(this,'3')">sharp</div>
+      </div>
+    </div>
+    <div class="style-section">
+      <div class="style-section-title">typography</div>
+      <div style="font-size:0.6rem;color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px">ui font</div>
+      <div class="font-grid" id="font-grid-ui-v">
+        <div class="font-chip selected" data-font="'DM Mono',monospace" style="font-family:'DM Mono',monospace" onclick="selectFont('ui',this)">DM Mono</div>
+        <div class="font-chip" data-font="'JetBrains Mono',monospace" style="font-family:'JetBrains Mono',monospace" onclick="selectFont('ui',this)">JetBrains</div>
+        <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('ui',this)">Grotesk</div>
+        <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('ui',this)">Outfit</div>
+        <div class="font-chip" data-font="'Raleway',sans-serif" style="font-family:'Raleway',sans-serif" onclick="selectFont('ui',this)">Raleway</div>
+        <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('ui',this)">Playfair</div>
+      </div>
+      <div style="font-size:0.6rem;color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;margin-top:14px">display font</div>
+      <div class="font-grid" id="font-grid-display-v">
+        <div class="font-chip selected" data-font="'Syne',sans-serif" style="font-family:'Syne',sans-serif" onclick="selectFont('display',this)">Syne</div>
+        <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('display',this)">Outfit</div>
+        <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('display',this)">Grotesk</div>
+        <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('display',this)">Playfair</div>
+      </div>
+    </div>
+    <div class="style-section">
+      <div class="style-section-title">spacing</div>
+      <div class="slider-row"><span class="slider-label">bubble radius</span><input type="range" min="2" max="28" value="14" oninput="previewSlider('bubble-radius',this.value+'px');document.getElementById('sv-br-v').textContent=this.value" /><span class="slider-val" id="sv-br-v">14</span></div>
+      <div class="slider-row"><span class="slider-label">message gap</span><input type="range" min="4" max="28" value="10" oninput="previewSlider('msg-spacing',this.value+'px');document.getElementById('sv-mg-v').textContent=this.value" /><span class="slider-val" id="sv-mg-v">10</span></div>
+    </div>
+    <button class="style-apply-btn" onclick="applyAndSaveStyle()">apply + save theme</button>
+    <button class="style-reset-btn" onclick="resetStyle()">reset to default</button>
+    <div style="height:40px"></div>
+  </div>
+</div>
+
+<div class="view" id="view-account">
+  <div style="overflow-y:auto;padding:20px 16px calc(80px + var(--safe-bot))">
+    <div style="text-align:center;padding:32px 0 24px">
+      <div id="account-fab-initial" style="
+        width:72px;height:72px;border-radius:50%;
+        background:linear-gradient(135deg,var(--teal),var(--purple));
+        margin:0 auto 12px;display:flex;align-items:center;
+        justify-content:center;font-family:var(--font-display);
+        font-size:1.8rem;font-weight:800;border:3px solid var(--border)
+      ">?</div>
+      <div id="account-email" style="font-size:0.8rem;color:var(--subtext);margin-bottom:4px">—</div>
+    </div>
+    <div class="panel-section-title">credits</div>
+    <div class="credit-hero" style="margin-bottom:24px">
+      <div class="credit-amount" id="account-credits">0</div>
+      <div class="credit-label">credits remaining</div>
+    </div>
+    <div class="panel-section-title">account</div>
+    <button class="signout-btn" onclick="handleSignout()" style="
+      width:100%;padding:13px;background:transparent;
+      border:1px solid var(--border);border-radius:12px;
+      color:var(--subtext);font-family:var(--font-ui);
+      font-size:0.8rem;cursor:pointer;letter-spacing:0.04em;
+      transition:all 0.2s;margin-bottom:10px
+    ">sign out</button>
+    <button onclick="window.switchView('store')" style="
+      width:100%;padding:13px;
+      background:linear-gradient(135deg,var(--teal),var(--purple));
+      border:none;border-radius:12px;color:#fff;
+      font-family:var(--font-display);font-weight:700;
+      font-size:0.88rem;cursor:pointer;letter-spacing:0.04em;
+      transition:opacity 0.2s
+    ">buy credits</button>
+  </div>
+</div>
+
 <div class="panel-overlay" id="panel-overlay" onclick="closePanel()"></div>
 <div class="slide-panel" id="slide-panel">
   <div class="panel-handle"></div>
@@ -2276,132 +2404,5 @@
   </div>
 </div>
 
-<div class="view" id="view-store">
-  <div style="overflow-y:auto;padding:20px 16px calc(80px + var(--safe-bot))">
-    <div class="credit-hero">
-      <div class="credit-amount" id="store-credits">0</div>
-      <div class="credit-label">credits remaining</div>
-      <div class="credit-sub" id="store-free-msg">— free messages today</div>
-    </div>
-    <div style="margin-bottom:20px">
-      <div class="panel-section-title">buy credits</div>
-      <div class="pack-grid">
-        <div class="pack-card" onclick="buyPack('5')">
-          <div class="pack-price">$5</div>
-          <div class="pack-credits">500 credits</div>
-          <div class="pack-bonus">starter</div>
-        </div>
-        <div class="pack-card popular" onclick="buyPack('10')">
-          <div class="pack-tag">✦ popular</div>
-          <div class="pack-price">$10</div>
-          <div class="pack-credits">1,100 credits</div>
-          <div class="pack-bonus">+100 bonus</div>
-        </div>
-        <div class="pack-card" onclick="buyPack('20')">
-          <div class="pack-price">$20</div>
-          <div class="pack-credits">2,400 credits</div>
-          <div class="pack-bonus">+400 bonus</div>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="panel-section-title">feature pricing</div>
-      <div class="feature-row"><div class="feature-icon">💬</div><div class="feature-name">chat message</div><div class="feature-cost">1 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">🎨</div><div class="feature-name">image generation</div><div class="feature-cost">5 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">🗣️</div><div class="feature-name">text to speech</div><div class="feature-cost">2 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">🎤</div><div class="feature-name">speech to text</div><div class="feature-cost">1 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">📹</div><div class="feature-name">video generation</div><div class="feature-cost">20 cr</div></div>
-    </div>
-  </div>
-</div>
-
-<div class="view" id="view-style">
-  <div style="overflow-y:auto;padding:20px 16px calc(80px + var(--safe-bot))">
-    <div class="style-section">
-      <div class="style-section-title">themes</div>
-      <div class="theme-grid" id="theme-grid-view"></div>
-    </div>
-    <div class="style-section">
-      <div class="style-section-title">colors</div>
-      <div class="color-row"><span class="color-label">background</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg-v" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
-      <div class="color-row"><span class="color-label">surface</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface-v" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
-      <div class="color-row"><span class="color-label">accent (primary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal-v" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
-      <div class="color-row"><span class="color-label">accent (secondary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink-v" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
-      <div class="color-row"><span class="color-label">user bubble</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble-v" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
-      <div class="color-row"><span class="color-label">text</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-text-v" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
-    </div>
-    <div class="style-section">
-      <div class="style-section-title">bubble shape</div>
-      <div class="bubble-shape-row">
-        <div class="shape-chip selected" data-shape="16" onclick="selectBubbleShape(this,'16')">soft</div>
-        <div class="shape-chip" data-shape="24" onclick="selectBubbleShape(this,'24')">pill</div>
-        <div class="shape-chip" data-shape="3" onclick="selectBubbleShape(this,'3')">sharp</div>
-      </div>
-    </div>
-    <div class="style-section">
-      <div class="style-section-title">typography</div>
-      <div style="font-size:0.6rem;color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px">ui font</div>
-      <div class="font-grid" id="font-grid-ui-v">
-        <div class="font-chip selected" data-font="'DM Mono',monospace" style="font-family:'DM Mono',monospace" onclick="selectFont('ui',this)">DM Mono</div>
-        <div class="font-chip" data-font="'JetBrains Mono',monospace" style="font-family:'JetBrains Mono',monospace" onclick="selectFont('ui',this)">JetBrains</div>
-        <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('ui',this)">Grotesk</div>
-        <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('ui',this)">Outfit</div>
-        <div class="font-chip" data-font="'Raleway',sans-serif" style="font-family:'Raleway',sans-serif" onclick="selectFont('ui',this)">Raleway</div>
-        <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('ui',this)">Playfair</div>
-      </div>
-      <div style="font-size:0.6rem;color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;margin-top:14px">display font</div>
-      <div class="font-grid" id="font-grid-display-v">
-        <div class="font-chip selected" data-font="'Syne',sans-serif" style="font-family:'Syne',sans-serif" onclick="selectFont('display',this)">Syne</div>
-        <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('display',this)">Outfit</div>
-        <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFont('display',this)">Grotesk</div>
-        <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('display',this)">Playfair</div>
-      </div>
-    </div>
-    <div class="style-section">
-      <div class="style-section-title">spacing</div>
-      <div class="slider-row"><span class="slider-label">bubble radius</span><input type="range" min="2" max="28" value="14" oninput="previewSlider('bubble-radius',this.value+'px');document.getElementById('sv-br-v').textContent=this.value" /><span class="slider-val" id="sv-br-v">14</span></div>
-      <div class="slider-row"><span class="slider-label">message gap</span><input type="range" min="4" max="28" value="10" oninput="previewSlider('msg-spacing',this.value+'px');document.getElementById('sv-mg-v').textContent=this.value" /><span class="slider-val" id="sv-mg-v">10</span></div>
-    </div>
-    <button class="style-apply-btn" onclick="applyAndSaveStyle()">apply + save theme</button>
-    <button class="style-reset-btn" onclick="resetStyle()">reset to default</button>
-    <div style="height:40px"></div>
-  </div>
-</div>
-
-<div class="view" id="view-account">
-  <div style="overflow-y:auto;padding:20px 16px calc(80px + var(--safe-bot))">
-    <div style="text-align:center;padding:32px 0 24px">
-      <div id="account-fab-initial" style="
-        width:72px;height:72px;border-radius:50%;
-        background:linear-gradient(135deg,var(--teal),var(--purple));
-        margin:0 auto 12px;display:flex;align-items:center;
-        justify-content:center;font-family:var(--font-display);
-        font-size:1.8rem;font-weight:800;border:3px solid var(--border)
-      ">?</div>
-      <div id="account-email" style="font-size:0.8rem;color:var(--subtext);margin-bottom:4px">—</div>
-    </div>
-    <div class="panel-section-title">credits</div>
-    <div class="credit-hero" style="margin-bottom:24px">
-      <div class="credit-amount" id="account-credits">0</div>
-      <div class="credit-label">credits remaining</div>
-    </div>
-    <div class="panel-section-title">account</div>
-    <button class="signout-btn" onclick="handleSignout()" style="
-      width:100%;padding:13px;background:transparent;
-      border:1px solid var(--border);border-radius:12px;
-      color:var(--subtext);font-family:var(--font-ui);
-      font-size:0.8rem;cursor:pointer;letter-spacing:0.04em;
-      transition:all 0.2s;margin-bottom:10px
-    ">sign out</button>
-    <button onclick="window.switchView('store')" style="
-      width:100%;padding:13px;
-      background:linear-gradient(135deg,var(--teal),var(--purple));
-      border:none;border-radius:12px;color:#fff;
-      font-family:var(--font-display);font-weight:700;
-      font-size:0.88rem;cursor:pointer;letter-spacing:0.04em;
-      transition:opacity 0.2s
-    ">buy credits</button>
-  </div>
-</div>
 </body>
 </html>
