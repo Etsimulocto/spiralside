@@ -11,7 +11,7 @@ let db = null; // single shared IDB connection
 // Open the database. Must be called before any other db* fn.
 export async function initDB() {
   return new Promise((res, rej) => {
-    const req = indexedDB.open('spiralside', 4); // v4 adds panels + books
+    const req = indexedDB.open('spiralside', 5); // v5 adds prints store
 
     req.onupgradeneeded = e => {
       const d = e.target.result;

@@ -7,7 +7,7 @@
 // ============================================================
 
 import { state, CHARACTERS, RAIL } from './state.js';
-import { dbSet }                    from './db.js';
+import { dbSet, dbGetAll }          from './db.js';
 import { getToken }                 from './auth.js';
 import { getChatMsgs }              from './chat.js';
 
@@ -27,7 +27,26 @@ export function buildCharSelector() {
     container.appendChild(chip);
   });
 
-  // "+" chip for adding custom characters (future feature)
+  // ── USER PRINTS from IDB ──────────────────────────────────
+  dbGetAll('prints').then(prints => {
+    if (!prints) return;
+    prints.forEach(print => {
+      if (!print.identity?.name) return;
+      const chip     = document.createElement('div');
+      chip.className = 'char-chip';
+      chip.textContent = print.identity.name;
+      chip.id        = `chip-print-${print.id}`;
+      // Style with print color or default teal
+      const color = print.metadata?.color || '#00F6D6';
+      chip.style.color       = 'var(--subtext)';
+      chip.style.borderColor = 'var(--border)';
+      chip.style.background  = 'var(--surface2)';
+      chip.onclick = () => renderPrintCard(print);
+      container.insertBefore(chip, addChip);
+    });
+  }).catch(() => {});
+
+  // "+" chip
   const addChip       = document.createElement('div');
   addChip.className   = 'char-add-chip';
   addChip.textContent = '+ new';
@@ -240,6 +259,103 @@ export async function loadSavedSheets(dbGet) {
       if (saved.song)   CHARACTERS.you.song   = saved.song;
     }
   }
+}
+
+// ── RENDER A USER PRINT CARD ─────────────────────────────────
+// Called when a user-created print chip is tapped
+// Populates the card face from soul print JSON
+function renderPrintCard(print) {
+  const id   = print.identity || {};
+  const char = {
+    name:         id.name         || 'unknown',
+    title:        id.title        || '',
+    identityLine: id.identity_line|| '',
+    vibe:         id.vibe         || '',
+    firstWords:   id.first_words  || "Hey. I'm here.",
+    mood:         id.tone_tags?.[0] || 'unknown',
+    color:        '#00F6D6',
+    initial:      (id.name?.[0] || '?').toUpperCase(),
+    trait:        id.title        || '',
+    traits:       Object.entries(print.stats || {}).slice(0,4).map(([k,v]) => ({
+      label: k.replace(/_/g,' '), val: v.value || 50
+    })),
+    arc:          print.story?.current_arc || '',
+    isUser:       false,
+  };
+
+  // Update chip highlights — deselect archetypes
+  Object.keys(CHARACTERS).forEach(cid => {
+    const chip = document.getElementById(`chip-${cid}`);
+    if (chip) _styleChip(chip, cid, false);
+  });
+
+  // Populate card face — reuse same DOM elements
+  document.getElementById('card-accent').style.background =
+    `linear-gradient(90deg,${char.color},transparent)`;
+  document.getElementById('arc-accent').style.background =
+    `linear-gradient(90deg,${char.color},transparent)`;
+
+  const av = document.getElementById('sheet-avatar-lg');
+  av.textContent = char.initial;
+  av.style.color = char.color;
+  av.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
+  av.style.border = `2px solid ${char.color}66`;
+  av.style.boxShadow = `0 0 24px ${char.color}44`;
+
+  document.getElementById('sheet-char-name').textContent  = char.name;
+  document.getElementById('sheet-char-name').style.textShadow = `0 0 20px ${char.color}66`;
+  document.getElementById('sheet-char-trait').textContent = char.trait;
+  document.getElementById('sheet-char-trait').style.color = char.color;
+
+  const mood = document.getElementById('sheet-char-mood');
+  mood.textContent      = `⬤ ${char.mood}`;
+  mood.style.color      = char.color;
+  mood.style.background = char.color + '22';
+  mood.style.border     = `1px solid ${char.color}44`;
+
+  const idLine = document.getElementById('sheet-identity-line');
+  if (idLine) {
+    idLine.textContent   = char.identityLine;
+    idLine.style.color   = char.color + 'cc';
+    idLine.style.display = char.identityLine ? 'block' : 'none';
+  }
+  const vibeEl = document.getElementById('sheet-vibe');
+  if (vibeEl) {
+    vibeEl.textContent   = char.vibe ? `"${char.vibe}"` : '';
+    vibeEl.style.display = char.vibe ? 'block' : 'none';
+  }
+
+  document.getElementById('trait-list').innerHTML = char.traits.map(t => `
+    <div class="trait-row">
+      <div class="trait-header">
+        <span class="trait-label-text">${t.label}</span>
+        <span class="trait-val" style="color:${char.color}">${t.val}</span>
+      </div>
+      <div class="trait-bar-bg">
+        <div class="trait-bar-fill"
+          style="width:${t.val}%;background:linear-gradient(90deg,${char.color},${char.color}88);
+                 box-shadow:0 0 8px ${char.color}88"></div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('arc-text').value = char.arc;
+  document.getElementById('user-sheet-card').style.display = 'none';
+
+  const talkBtn = document.getElementById('talk-to-btn');
+  if (talkBtn) {
+    talkBtn.style.display    = 'block';
+    talkBtn.textContent      = `talk to ${char.name}`;
+    talkBtn.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
+    talkBtn.style.border     = `1px solid ${char.color}88`;
+    talkBtn.style.color      = char.color;
+    talkBtn.onclick          = () => _setPersonaAndChat(char);
+  }
+
+  const btn = document.getElementById('save-summarize-btn');
+  btn.style.background = `linear-gradient(135deg,${char.color}22,${char.color}11)`;
+  btn.style.border     = `1px solid ${char.color}66`;
+  btn.style.color      = char.color;
 }
 
 // ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────
