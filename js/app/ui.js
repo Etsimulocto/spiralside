@@ -45,7 +45,7 @@ export function toggleFAB() {
 }
 
 // ── SWITCH VIEW ───────────────────────────────────────────────
-// id: 'chat' | 'sheet' | 'vault' | 'build'
+// id: 'chat' | 'codex' | 'vault' | 'forge'
 export function switchView(id) {
   // Highlight correct tab
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
