@@ -368,3 +368,37 @@ Appearance, Relationships, Preferences, Inventory, Media, Notes
 3. Codex card — load from IDB prints (user prints appear alongside archetypes)
 4. Echo button on archetype cards (fork to editable print)
 5. Conversation memory
+
+---
+
+## SESSION LOG  March 16 2026 (final)
+
+### COMPLETED THIS SESSION
+- [x] Codex + Forge rename  tabs, view IDs, all references
+- [x] Canonical soul print data synced into CHARACTERS (sky/monday/cold/grit)
+- [x] Identity line + vibe rendering on Codex cards
+- [x] Talk-to button  tap archetype card ? sets persona ? navigates to chat
+- [x] Forge v1  5 collapsible sections (identity/personality/background/stats/flavor)
+- [x] build.js rewritten  saves full soul print JSON to IDB prints store
+- [x] + new chip in Codex  opens Forge blank
+- [x] Pre-push hook fixed  version ships in same commit, no more one-behind
+- [x] Archetype JSONs live at codex/archetypes/*.json + index.json
+- [x] Version at v0.8.72
+
+### CURRENT ARCHITECTURE
+- Codex (sheet.js) = card browser + persona selector
+- Forge (build.js) = soul print builder, saves to IDB prints store
+- Library (library.js) = image gallery + comic/book editor  UNTOUCHED
+- Archetypes = read from CHARACTERS in state.js + codex/archetypes/*.json
+- User prints = saved to IDB prints store, not yet showing in Codex chips
+
+### NEXT SESSION PRIORITIES
+1. User prints appear as chips in Codex after saving in Forge
+2. IDB confirm  check db.js version is 5, prints store exists
+3. Echo button on archetype cards (fork to editable print)
+4. Conversation memory  chat stateless, no history sent to API
+5. version.json on HF for demo cache busting
+
+### DEPLOY
+cd ~/spiralside && git add . && git commit -m "msg" && git push
+cd ~/spiralside-api && git add . && git commit -m "msg" && git push
