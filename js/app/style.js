@@ -57,8 +57,11 @@ export function applyThemePreset(id) {
 export function previewColor(key, val) {
   pendingStyle[key] = val;
   const map = { bg:'sw-bg', surface:'sw-surface', teal:'sw-teal', pink:'sw-pink', userbubble:'sw-userbubble', text:'sw-text' };
+  const mapV = { bg:'sw-bg-v', surface:'sw-surface-v', teal:'sw-teal-v', pink:'sw-pink-v', userbubble:'sw-userbubble-v', text:'sw-text-v' };
   const el = document.getElementById(map[key]);
   if (el) el.style.background = val;
+  const elV = document.getElementById(mapV[key]);
+  if (elV) elV.style.background = val;
   applyStyleVars(pendingStyle);
 }
 
@@ -125,6 +128,7 @@ export function applyStyleVars(s) {
   r.setProperty('--text',          s.text);
   r.setProperty('--subtext',       s.subtext    || '#6060A0');
   r.setProperty('--user-bubble',   s.userbubble || s.purple || '#7B5FFF');
+  r.setProperty('--bubble-user-bg', s.userbubble || s.purple || '#7B5FFF');
   r.setProperty('--bubble-radius', (s.bubbleRadius || 14) + 'px');
   r.setProperty('--msg-spacing',   (s.msgSpacing   || 10)  + 'px');
   r.setProperty('--font-ui',       s.fontUi      || "'DM Mono',monospace");
@@ -132,15 +136,16 @@ export function applyStyleVars(s) {
 }
 
 function updateSwatches() {
-  const map = { bg:'sw-bg', surface:'sw-surface', teal:'sw-teal', pink:'sw-pink', userbubble:'sw-userbubble', text:'sw-text' };
-  Object.entries(map).forEach(([k,id]) => { const el=document.getElementById(id); if(el) el.style.background = pendingStyle[k]||''; });
+  const map  = { bg:'sw-bg', surface:'sw-surface', teal:'sw-teal', pink:'sw-pink', userbubble:'sw-userbubble', text:'sw-text' };
+  const mapV = { bg:'sw-bg-v', surface:'sw-surface-v', teal:'sw-teal-v', pink:'sw-pink-v', userbubble:'sw-userbubble-v', text:'sw-text-v' };
+  Object.entries(map).forEach(([k,id])  => { const el=document.getElementById(id);  if(el) el.style.background = pendingStyle[k]||''; });
+  Object.entries(mapV).forEach(([k,id]) => { const el=document.getElementById(id);  if(el) el.style.background = pendingStyle[k]||''; });
 }
 
 export function applyAndSaveStyle() {
   applyStyleVars(pendingStyle);
   applyBgType(pendingStyle.bgType || 'solid');
   localStorage.setItem('ss_style', JSON.stringify(pendingStyle));
-  window.closePanel();
 }
 
 export function resetStyle() {
