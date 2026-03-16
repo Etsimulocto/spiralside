@@ -168,6 +168,14 @@ async function handleSave() {
     color:       state.botColor,
   });
 
+  // Enforce 16 print cap
+  const { dbGetAll } = await import('./db.js');
+  const allPrints = await dbGetAll('prints').catch(() => []);
+  if (allPrints.length > 16) {
+    alert('Codex is full — 16 prints max. Remove one before adding another.');
+    return;
+  }
+
   // Button feedback
   const btn = document.getElementById('save-bot-btn');
   const orig = btn.textContent;
@@ -179,6 +187,10 @@ async function handleSave() {
   if (chatMsgs) chatMsgs.innerHTML = '';
   addMessage(state.botGreeting, 'bot', state.botName, state.botColor);
   updateGreeting();
+
+  // Refresh codex chip row so new print appears immediately
+  import('./sheet.js').then(({ buildCharSelector }) => buildCharSelector());
+
   switchView('chat');
 }
 
