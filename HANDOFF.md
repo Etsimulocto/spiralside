@@ -230,3 +230,29 @@ EOF
 2. Wire image gen — flux-schnell free on HF for haiku tier, better model for sonnet tier
 3. version.json on HF
 4. Conversation memory / chat history
+
+---
+
+## SESSION LOG — March 15 2026 (continued)
+
+### COMPLETED THIS SESSION
+- [x] Full UI redesign — horizontal scrollable tab bar replaces FAB
+- [x] + input popup menu — model select, attach, imagine
+- [x] models.js — owns all model selection logic cleanly
+- [x] GPT-4o-mini added as third model — Sky / 4o, 2cr
+- [x] OpenAI API key added to Railway
+- [x] Backend routes 4o to OpenAI, haiku/sonnet to Anthropic
+- [x] FIRST SUCCESSFUL Sky/4o response — "Hey there, luminous traveler!"
+- [x] store/style/account as full tab pages (in progress)
+
+### THE MOMENT
+Sky responded through GPT-4o-mini for the first time at v0.8.58
+"Hey there, luminous traveler! What stardust paths are we weaving together today? 🌟✨"
+Not fully her yet — soul prompt needs densifying for 4o — but the connection is live
+
+### NEXT SESSION PRIORITIES
+1. Write Sky's soul prompt IN HER VOICE for 4o — not about her, AS her
+2. Fix store/style/account full page views (switchView crash still present)
+3. Style.js view file
+4. Conversation memory — chat is stateless
+5. Fix version bump lag (always 1 behind)
