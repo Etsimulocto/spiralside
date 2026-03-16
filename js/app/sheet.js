@@ -104,11 +104,6 @@ export function renderActiveChar(id) {
   }
 
   // ── identity line + vibe (from soul print) ──
-  const idLine = document.getElementById('sheet-identity-line');
-  if (idLine) {
-    idLine.textContent = char.identityLine || '';
-    idLine.style.color = char.color + 'cc';
-    idLine.style.display = char.identityLine ? 'block' : 'none';
   }
   const vibeEl = document.getElementById('sheet-vibe');
   if (vibeEl) {
