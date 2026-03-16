@@ -176,15 +176,15 @@ async function handleSave() {
   // Enforce 16 print cap + no duplicates
   const { dbGetAll, dbDelete } = await import('./db.js');
   const allPrints = await dbGetAll('prints').catch(() => []);
-  const existing = allPrints.find(p => p.identity?.name?.toLowerCase() === print.identity.name.toLowerCase() && p.id !== print.card_id);
-  if (existing) {
-    // overwrite existing instead of creating duplicate
-    print.card_id = existing.id;
-    state.activePrintId = existing.id;
-  } else if (allPrints.length >= 16) {
+  // Only overwrite if we're explicitly editing (activePrintId set from edit button)
+  // Never overwrite by name match — each save is its own print unless editing
+  if (allPrints.length >= 16 && !state.activePrintId) {
     alert('Codex is full — 16 prints max. Remove one before adding another.');
     return;
   }
+
+  // Clear activePrintId so next save creates a new print not overwrite
+  state.activePrintId = null;
 
   // Button feedback
   const btn = document.getElementById('save-bot-btn');
