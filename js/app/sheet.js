@@ -1,7 +1,8 @@
 // ============================================================
-// SPIRALSIDE — SHEET v1.0
+// SPIRALSIDE — SHEET v1.1
 // Character sheet: selector chips, card render, save+summarize
 // Reads CHARACTERS from state, persists to IndexedDB
+// Adds: identity line, vibe, talk-to button from soul prints
 // Nimbis anchor: js/app/sheet.js
 // ============================================================
 
@@ -78,48 +79,27 @@ export function renderActiveChar(id) {
   // ── identity line + vibe (from soul print) ──
   const idLine = document.getElementById('sheet-identity-line');
   if (idLine) {
-    idLine.textContent = char.identityLine || '';
-    idLine.style.color = char.color + 'cc';
+    idLine.textContent   = char.identityLine || '';
+    idLine.style.color   = char.color + 'cc';
     idLine.style.display = char.identityLine ? 'block' : 'none';
   }
+
   const vibeEl = document.getElementById('sheet-vibe');
   if (vibeEl) {
-    vibeEl.textContent = char.vibe ? `"${char.vibe}"` : '';
+    vibeEl.textContent   = char.vibe ? `"${char.vibe}"` : '';
     vibeEl.style.display = char.vibe ? 'block' : 'none';
   }
 
   // ── talk-to button — sets persona and switches to chat ──
   const talkBtn = document.getElementById('talk-to-btn');
   if (talkBtn && !char.isUser) {
-    talkBtn.style.display     = 'block';
-    talkBtn.textContent       = `talk to ${char.name}`;
-    talkBtn.style.background  = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
-    talkBtn.style.border      = `1px solid ${char.color}88`;
-    talkBtn.style.color       = char.color;
-    talkBtn.style.boxShadow   = `0 0 20px ${char.color}22`;
-    // Wire click — sets active persona and navigates to chat
-    talkBtn.onclick = () => _setPersonaAndChat(char);
-  } else if (talkBtn) {
-    talkBtn.style.display = 'none'; // hide for user's own sheet
-  }
-
-  const vibeEl = document.getElementById('sheet-vibe');
-  if (vibeEl) {
-    vibeEl.textContent = char.vibe ? `"${char.vibe}"` : '';
-    vibeEl.style.display = char.vibe ? 'block' : 'none';
-  }
-
-  // ── talk-to button — sets persona and switches to chat ──
-  const talkBtn = document.getElementById('talk-to-btn');
-  if (talkBtn && !char.isUser) {
-    talkBtn.style.display     = 'block';
-    talkBtn.textContent       = `talk to ${char.name}`;
-    talkBtn.style.background  = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
-    talkBtn.style.border      = `1px solid ${char.color}88`;
-    talkBtn.style.color       = char.color;
-    talkBtn.style.boxShadow   = `0 0 20px ${char.color}22`;
-    // Wire click — sets active persona and navigates to chat
-    talkBtn.onclick = () => _setPersonaAndChat(char);
+    talkBtn.style.display    = 'block';
+    talkBtn.textContent      = `talk to ${char.name}`;
+    talkBtn.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
+    talkBtn.style.border     = `1px solid ${char.color}88`;
+    talkBtn.style.color      = char.color;
+    talkBtn.style.boxShadow  = `0 0 20px ${char.color}22`;
+    talkBtn.onclick          = () => _setPersonaAndChat(char);
   } else if (talkBtn) {
     talkBtn.style.display = 'none'; // hide for user's own sheet
   }
@@ -266,49 +246,17 @@ export async function loadSavedSheets(dbGet) {
 // then navigates to chat — same effect as build.js handleSave
 // but triggered from a card tap, no form needed
 function _setPersonaAndChat(char) {
-  // Lazy import to avoid circular deps — ui.js and chat.js
   import('./ui.js').then(({ switchView }) => {
     import('./chat.js').then(({ addMessage, getChatMsgs }) => {
       import('./state.js').then(({ state }) => {
-        // Set active persona in state
         state.botName        = char.name;
-        state.botPersonality = '';   // archetype — personality lives in HF .txt
-        state.botGreeting    = char.firstWords || `Hey. I'm here.`;
+        state.botPersonality = '';
+        state.botGreeting    = char.firstWords || "Hey. I'm here.";
         state.botColor       = char.color;
 
-        // Reset chat with new greeting
         const chatMsgs = getChatMsgs();
         if (chatMsgs) chatMsgs.innerHTML = '';
         addMessage(state.botGreeting, 'bot', char.name, char.color);
-
-        // Navigate to chat
-        switchView('chat');
-      });
-    });
-  });
-}
-
-// ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────
-// Sets state.botName/botPersonality/botGreeting/botColor
-// then navigates to chat — same effect as build.js handleSave
-// but triggered from a card tap, no form needed
-function _setPersonaAndChat(char) {
-  // Lazy import to avoid circular deps — ui.js and chat.js
-  import('./ui.js').then(({ switchView }) => {
-    import('./chat.js').then(({ addMessage, getChatMsgs }) => {
-      import('./state.js').then(({ state }) => {
-        // Set active persona in state
-        state.botName        = char.name;
-        state.botPersonality = '';   // archetype — personality lives in HF .txt
-        state.botGreeting    = char.firstWords || `Hey. I'm here.`;
-        state.botColor       = char.color;
-
-        // Reset chat with new greeting
-        const chatMsgs = getChatMsgs();
-        if (chatMsgs) chatMsgs.innerHTML = '';
-        addMessage(state.botGreeting, 'bot', char.name, char.color);
-
-        // Navigate to chat
         switchView('chat');
       });
     });
@@ -319,9 +267,8 @@ function _setPersonaAndChat(char) {
 function _styleChip(chip, id, active) {
   const c = CHARACTERS[id].color;
   chip.classList.toggle('active', active);
-  chip.style.color       = active ? c            : 'var(--subtext)';
-  chip.style.borderColor = active ? c + '88'     : 'var(--border)';
+  chip.style.color       = active ? c        : 'var(--subtext)';
+  chip.style.borderColor = active ? c + '88' : 'var(--border)';
   chip.style.boxShadow   = active ? `0 0 16px ${c}44` : 'none';
-  chip.style.background  = active ? c + '11'     : 'var(--surface2)';
+  chip.style.background  = active ? c + '11' : 'var(--surface2)';
 }
-
