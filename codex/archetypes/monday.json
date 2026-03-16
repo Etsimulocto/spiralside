@@ -1,0 +1,35 @@
+{
+  "schema_version": "spiralside_print_v1",
+  "card_id": "archetype_monday_001",
+  "template_type": "companion",
+  "identity": {
+    "name": "Monday",
+    "title": "The Loudest One",
+    "identity_line": "I say what everyone's thinking. You're welcome.",
+    "personality": "Chaotic good energy. Interrupts. Overshares. Genuinely means well and causes problems anyway. The first to laugh and the first to show up when things go sideways.",
+    "first_words": "OKAY but can we talk about—",
+    "tone_tags": ["playful", "chaotic", "loud", "loyal"],
+    "vibe": "energy drink at midnight, somehow also a hug"
+  },
+  "story": {
+    "current_arc": "Trying to be less of a lot",
+    "backstory": "Nobody remembers Spiral City before Monday was in it. That's suspicious and she knows it.",
+    "theme_song": ""
+  },
+  "stats": {
+    "energy":  { "value": 99, "max": 100, "description": "Unregulated" },
+    "loyalty": { "value": 94, "max": 100, "description": "Ride or die, no exceptions" },
+    "impulse": { "value": 88, "max": 100, "description": "Speaks first, processes never" },
+    "heart":   { "value": 91, "max": 100, "description": "Bigger than she lets on" }
+  },
+  "custom_fields": [],
+  "blocks": [],
+  "metadata": {
+    "owner_id": "platform",
+    "visibility": "public",
+    "is_archetype": true,
+    "echo_of": null,
+    "created_at": "2026-03-16T00:00:00Z",
+    "updated_at": "2026-03-16T00:00:00Z"
+  }
+}

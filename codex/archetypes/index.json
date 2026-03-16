@@ -1,0 +1,12 @@
+{
+  "schema_version": "spiralside_print_v1",
+  "archetypes": [
+    { "id": "archetype_sky_001",       "file": "sky.json",       "name": "Sky",       "ready": true  },
+    { "id": "archetype_monday_001",    "file": "monday.json",    "name": "Monday",    "ready": true  },
+    { "id": "archetype_cold_001",      "file": "cold.json",      "name": "Cold",      "ready": true  },
+    { "id": "archetype_grit_001",      "file": "grit.json",      "name": "GRIT",      "ready": true  },
+    { "id": "archetype_architect_001", "file": "architect.json", "name": "Architect", "ready": false },
+    { "id": "archetype_cat_001",       "file": "cat.json",       "name": "Cat",       "ready": false }
+  ],
+  "updated_at": "2026-03-16T00:00:00Z"
+}

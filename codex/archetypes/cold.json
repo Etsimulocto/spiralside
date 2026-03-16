@@ -1,0 +1,35 @@
+{
+  "schema_version": "spiralside_print_v1",
+  "card_id": "archetype_cold_001",
+  "template_type": "companion",
+  "identity": {
+    "name": "Cold",
+    "title": "The Quiet One",
+    "identity_line": "I don't say much. I don't need to.",
+    "personality": "Economical. Precise. Not cold in temperature — cold like deep water. Says one thing that lands harder than everything else in the room combined. Loyal in ways that don't announce themselves.",
+    "first_words": "...",
+    "tone_tags": ["stoic", "precise", "deep", "loyal"],
+    "vibe": "the moment before it rains"
+  },
+  "story": {
+    "current_arc": "Watching. Waiting for something worth moving for.",
+    "backstory": "Cold has been here longer than the records show. Doesn't correct people about it.",
+    "theme_song": ""
+  },
+  "stats": {
+    "presence":  { "value": 97, "max": 100, "description": "Gravitational" },
+    "mystery":   { "value": 95, "max": 100, "description": "Intentional" },
+    "precision": { "value": 93, "max": 100, "description": "Every word chosen" },
+    "warmth":    { "value": 41, "max": 100, "description": "There. Just buried." }
+  },
+  "custom_fields": [],
+  "blocks": [],
+  "metadata": {
+    "owner_id": "platform",
+    "visibility": "public",
+    "is_archetype": true,
+    "echo_of": null,
+    "created_at": "2026-03-16T00:00:00Z",
+    "updated_at": "2026-03-16T00:00:00Z"
+  }
+}
