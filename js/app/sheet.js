@@ -31,6 +31,7 @@ export function buildCharSelector() {
   const addChip       = document.createElement('div');
   addChip.className   = 'char-add-chip';
   addChip.textContent = '+ new';
+  addChip.onclick     = () => import('./ui.js').then(({ switchView }) => switchView('forge'));
   container.appendChild(addChip);
 }
 
