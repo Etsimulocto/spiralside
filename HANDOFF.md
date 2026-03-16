@@ -402,3 +402,11 @@ Appearance, Relationships, Preferences, Inventory, Media, Notes
 ### DEPLOY
 cd ~/spiralside && git add . && git commit -m "msg" && git push
 cd ~/spiralside-api && git add . && git commit -m "msg" && git push
+
+### ADDED TO NEXT SESSION PRIORITIES (from final screenshot)
+- [ ] Duplicate chip bug — saving Nimbis twice created two chips
+      Fix: check if print with same name already exists before saving in build.js
+- [ ] Delete card button on Codex card — with "are you sure?" confirm
+      Then remove from IDB prints store + rebuild chip row
+- [ ] Edit button on Codex card — loads that print into Forge for editing
+      state.activePrintId = print.card_id then switchView('forge')
