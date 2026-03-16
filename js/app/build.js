@@ -49,6 +49,15 @@ window.toggleForgeSection = toggleSection;
 
 // ── INIT ──────────────────────────────────────────────────────
 export function initBuild() {
+  // Register onForgeOpen — called every time forge tab is opened
+  window.onForgeOpen = () => {
+    if (state.activePrintId) {
+      loadPrintIntoForm();
+    } else {
+      clearForgeForm();
+    }
+  };
+
   // If editing an existing print — load it. Otherwise clear the form.
   if (state.activePrintId) {
     loadPrintIntoForm();

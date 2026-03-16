@@ -122,15 +122,16 @@ export const CHARACTERS = {
 
 // ── FAB TAB DEFINITIONS ───────────────────────────────────────
 export const FAB_TABS = [
-  { id: 'chat',  label: 'chat',  icon: '💬', color: '#00F6D6' },
-  { id: 'sheet', label: 'sheet', icon: '✦',  color: '#FF4BCB' },
-  { id: 'vault', label: 'vault', icon: '🗂',  color: '#7B5FFF' },
-  { id: 'build', label: 'build', icon: '⚙',  color: '#FFD93D' },
+  { id: 'chat',    label: 'chat',    icon: '💬', color: '#00F6D6' },
+  { id: 'codex',   label: 'codex',   icon: '✦',  color: '#FF4BCB' },
+  { id: 'vault',   label: 'vault',   icon: '🗂',  color: '#7B5FFF' },
+  { id: 'forge',   label: 'forge',   icon: '⚙',  color: '#FFD93D',
+    onOpen: () => window.onForgeOpen && window.onForgeOpen() },
   { id: 'library', label: 'library', icon: '🖼',  color: '#FF4BCB',
     onOpen: () => {} },
-  { id: 'imagine', label: 'imagine', icon: '✦', color: '#FF4BCB',
+  { id: 'imagine', label: 'imagine', icon: '✦',  color: '#FF4BCB',
     onOpen: () => window.initImagine && window.initImagine() },
-  { id: 'music', label: 'music', icon: '♪',  color: '#00F6D6',
+  { id: 'music',   label: 'music',   icon: '♪',  color: '#00F6D6',
     onOpen:  () => window.initMusicView   && window.initMusicView(),
     onClose: () => window.destroyMusicView && window.destroyMusicView() },
 ];
