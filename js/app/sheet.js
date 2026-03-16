@@ -265,6 +265,7 @@ export async function loadSavedSheets(dbGet) {
 // Called when a user-created print chip is tapped
 // Populates the card face from soul print JSON
 function renderPrintCard(print) {
+  window._activePrint = print; // store for edit/delete buttons
   const id   = print.identity || {};
   const char = {
     name:         id.name         || 'unknown',
@@ -356,6 +357,29 @@ function renderPrintCard(print) {
   btn.style.background = `linear-gradient(135deg,${char.color}22,${char.color}11)`;
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
+
+  // ── edit + delete buttons ──
+  let actionRow = document.getElementById('print-action-row');
+  if (!actionRow) {
+    actionRow = document.createElement('div');
+    actionRow.id = 'print-action-row';
+    actionRow.style.cssText = 'display:flex;gap:8px;margin-top:8px';
+    btn.parentNode.insertBefore(actionRow, btn);
+  }
+  actionRow.innerHTML = `
+    <button onclick="editPrint('${print.id}')" style="
+      flex:1;padding:11px;background:var(--surface2);
+      border:1px solid var(--border);border-radius:10px;
+      color:var(--subtext);font-family:var(--font-ui);
+      font-size:0.75rem;cursor:pointer;letter-spacing:0.06em;
+      transition:all 0.2s">✏ edit</button>
+    <button onclick="deletePrint('${print.id}','${char.name}')" style="
+      flex:1;padding:11px;background:var(--surface2);
+      border:1px solid var(--border);border-radius:10px;
+      color:var(--subtext);font-family:var(--font-ui);
+      font-size:0.75rem;cursor:pointer;letter-spacing:0.06em;
+      transition:all 0.2s">🗑 delete</button>
+  `;
 }
 
 // ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────
@@ -379,6 +403,30 @@ function _setPersonaAndChat(char) {
     });
   });
 }
+
+// ── GLOBAL: EDIT PRINT ───────────────────────────────────────
+// Loads print into Forge for editing
+window.editPrint = function(printId) {
+  import('./state.js').then(({ state }) => {
+    state.activePrintId = printId;
+    import('./ui.js').then(({ switchView }) => switchView('forge'));
+  });
+};
+
+// ── GLOBAL: DELETE PRINT ──────────────────────────────────────
+// Confirms then removes print from IDB and rebuilds chip row
+window.deletePrint = function(printId, name) {
+  if (!confirm(`Delete "${name}" from your Codex?
+
+This cannot be undone.`)) return;
+  import('./db.js').then(({ dbDelete }) => {
+    dbDelete('prints', printId).then(() => {
+      buildCharSelector();
+      // show sky by default after delete
+      renderActiveChar('sky');
+    });
+  });
+};
 
 // ── PRIVATE: STYLE CHIP ───────────────────────────────────────
 function _styleChip(chip, id, active) {

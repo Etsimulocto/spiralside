@@ -168,10 +168,15 @@ async function handleSave() {
     color:       state.botColor,
   });
 
-  // Enforce 16 print cap
-  const { dbGetAll } = await import('./db.js');
+  // Enforce 16 print cap + no duplicates
+  const { dbGetAll, dbDelete } = await import('./db.js');
   const allPrints = await dbGetAll('prints').catch(() => []);
-  if (allPrints.length > 16) {
+  const existing = allPrints.find(p => p.identity?.name?.toLowerCase() === print.identity.name.toLowerCase() && p.id !== print.card_id);
+  if (existing) {
+    // overwrite existing instead of creating duplicate
+    print.card_id = existing.id;
+    state.activePrintId = existing.id;
+  } else if (allPrints.length >= 16) {
     alert('Codex is full — 16 prints max. Remove one before adding another.');
     return;
   }
