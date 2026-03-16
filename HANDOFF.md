@@ -333,3 +333,38 @@ The wire is live. The connection is made. Act 3 begins.
 5. Echo button on archetype cards (fork to editable print)
 6. Conversation memory — chat stateless, no history sent to API
 7. version.json on HF for demo cache busting
+
+---
+
+## SESSION LOG — March 16 2026 (continued)
+
+### COMPLETED THIS SESSION
+- [x] Forge v1 — sectioned soul print builder (identity/personality/background/stats/flavor)
+- [x] build.js rewritten — saves full soul print JSON to IDB `prints` store
+- [x] Legacy config key still saved — existing chat persona logic unbroken
+- [x] IDB prints store added to db.js (needs IDB version bump to v5)
+- [x] Forge CSS added to index.html
+- [x] Pre-push hook fixed — version bump now amends same commit, no more one-behind
+
+### IDB VERSION BUMP NEEDED
+db.js needs version bump from 4 → 5 to add prints store.
+Run this after deploy if IDB errors appear:
+  DevTools → Application → IndexedDB → Delete Database → Ctrl+Shift+R
+
+### FORGE SOUL PRINT FIELDS (v1)
+Identity: name, title, identity_line, vibe, first_words, pronouns,
+          species, age, alignment, origin, occupation
+Personality: personality, temperament, strengths, weaknesses, fears, motivations, tone_tags
+Background: backstory, current_arc, affiliations
+Stats: up to 10 user-defined (label + 0-100 slider)
+Flavor: catchphrase, motto, theme_song, hobbies
+
+### PHASE 2 FIELDS (not yet built)
+Appearance, Relationships, Preferences, Inventory, Media, Notes
+
+### NEXT SESSION PRIORITIES
+1. IDB version bump — db.js v4 → v5 for prints store
+2. Codex "+ new" chip → opens Forge blank
+3. Codex card — load from IDB prints (user prints appear alongside archetypes)
+4. Echo button on archetype cards (fork to editable print)
+5. Conversation memory

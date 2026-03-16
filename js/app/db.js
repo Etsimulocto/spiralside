@@ -21,6 +21,7 @@ export async function initDB() {
       if (!d.objectStoreNames.contains('config')) d.createObjectStore('config', { keyPath: 'key' });
       if (!d.objectStoreNames.contains('panels')) d.createObjectStore('panels', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('books'))  d.createObjectStore('books',  { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('prints')) d.createObjectStore('prints', { keyPath: 'id' });
     };
 
     req.onsuccess = e => { db = e.target.result; res(db); };

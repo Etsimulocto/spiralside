@@ -1338,6 +1338,73 @@
     .mv-queue-name { flex: 1; font-size: 0.78rem; }
     .mv-queue-playing { font-size: 0.6rem; color: var(--teal); flex-shrink: 0; }
 
+
+    /* ── FORGE ── */
+    .forge-section {
+      margin-bottom: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .forge-section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .forge-section-header:hover { background: var(--surface2); }
+    .forge-section-icon {
+      font-size: 0.7rem;
+      color: var(--subtext);
+      width: 12px;
+    }
+    .forge-section-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--subtext);
+    }
+    .forge-section-body { padding: 0 16px 16px; }
+    .forge-field { margin-bottom: 12px; }
+    .forge-label {
+      display: block;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--subtext);
+      margin-bottom: 5px;
+    }
+    .forge-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+      box-sizing: border-box;
+    }
+    .forge-input:focus { border-color: var(--teal); }
+    .forge-input::placeholder { color: var(--subtext); opacity: 0.6; }
+    .forge-row { display: flex; gap: 10px; }
+    .forge-half { flex: 1; }
+    .forge-stat-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
   </style>
 </head>
 <body>
@@ -1440,7 +1507,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.69</div>
+      <div class="version-badge" id="version-badge">v0.8.71</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
@@ -1591,36 +1658,148 @@
 
   <!-- BUILD VIEW -->
   <div class="view" id="view-forge">
-    <div id="build-inner">
-      <div class="build-section">
-        <div class="build-label">companion name</div>
-        <input class="build-input" type="text" id="bot-name" placeholder="give them a name..." />
+  <div style="overflow-y:auto;padding:16px 16px calc(80px + var(--safe-bot));-webkit-overflow-scrolling:touch;">
+
+    <!-- ── FORGE SECTION: IDENTITY ── -->
+    <div class="forge-section">
+      <div class="forge-section-header" onclick="toggleForgeSection('identity')">
+        <span class="forge-section-icon" id="forge-icon-identity">▾</span>
+        <span class="forge-section-title">identity</span>
       </div>
-      <div class="build-section">
-        <div class="build-label">personality</div>
-        <textarea class="build-input" id="bot-personality" rows="4" placeholder="describe how they think, speak, feel..."></textarea>
-      </div>
-      <div class="build-section">
-        <div class="build-label">tone</div>
-        <div class="tone-grid">
-          <button class="tone-chip" data-tone="warm">warm</button>
-          <button class="tone-chip" data-tone="direct">direct</button>
-          <button class="tone-chip" data-tone="curious">curious</button>
-          <button class="tone-chip" data-tone="playful">playful</button>
-          <button class="tone-chip" data-tone="stoic">stoic</button>
-          <button class="tone-chip" data-tone="poetic">poetic</button>
-          <button class="tone-chip" data-tone="chaotic">chaotic</button>
-          <button class="tone-chip" data-tone="fierce">fierce</button>
+      <div class="forge-section-body" id="forge-body-identity">
+        <div class="forge-field"><label class="forge-label">name</label>
+          <input class="forge-input" id="bot-name" placeholder="what are they called?" /></div>
+        <div class="forge-field"><label class="forge-label">title / role</label>
+          <input class="forge-input" id="forge-title" placeholder="The Quiet One, Street Oracle..." /></div>
+        <div class="forge-field"><label class="forge-label">identity line</label>
+          <input class="forge-input" id="forge-identity-line" placeholder="one line. their whole deal." /></div>
+        <div class="forge-field"><label class="forge-label">vibe</label>
+          <input class="forge-input" id="forge-vibe" placeholder="the sky at 4am — still there, no matter what" /></div>
+        <div class="forge-field"><label class="forge-label">first words</label>
+          <input class="forge-input" id="bot-greeting" placeholder="what do they say first?" /></div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">pronouns</label>
+            <input class="forge-input" id="forge-pronouns" placeholder="she/her" /></div>
+          <div class="forge-field forge-half"><label class="forge-label">species / type</label>
+            <input class="forge-input" id="forge-species" placeholder="human, AI, cryptid..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">age</label>
+            <input class="forge-input" id="forge-age" placeholder="ageless" /></div>
+          <div class="forge-field forge-half"><label class="forge-label">alignment</label>
+            <input class="forge-input" id="forge-alignment" placeholder="chaotic good" /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">origin</label>
+            <input class="forge-input" id="forge-origin" placeholder="Spiral City" /></div>
+          <div class="forge-field forge-half"><label class="forge-label">occupation</label>
+            <input class="forge-input" id="forge-occupation" placeholder="what do they do?" /></div>
         </div>
       </div>
-      <div class="build-section">
-        <div class="build-label">first words</div>
-        <input class="build-input" type="text" id="bot-greeting" placeholder="what do they say first?" />
-      </div>
-      <button class="build-save-btn" id="save-bot-btn">save companion</button>
-      <div style="height:100px"></div>
     </div>
+
+    <!-- ── FORGE SECTION: PERSONALITY ── -->
+    <div class="forge-section">
+      <div class="forge-section-header" onclick="toggleForgeSection('personality')">
+        <span class="forge-section-icon" id="forge-icon-personality">▾</span>
+        <span class="forge-section-title">personality</span>
+      </div>
+      <div class="forge-section-body" id="forge-body-personality">
+        <div class="forge-field"><label class="forge-label">personality</label>
+          <textarea class="forge-input" id="bot-personality" rows="3"
+            placeholder="describe how they think, speak, feel..."></textarea></div>
+        <div class="forge-field"><label class="forge-label">temperament</label>
+          <input class="forge-input" id="forge-temperament" placeholder="hot-headed, calm, unpredictable..." /></div>
+        <div class="forge-field"><label class="forge-label">strengths</label>
+          <input class="forge-input" id="forge-strengths" placeholder="what are they great at?" /></div>
+        <div class="forge-field"><label class="forge-label">weaknesses</label>
+          <input class="forge-input" id="forge-weaknesses" placeholder="what trips them up?" /></div>
+        <div class="forge-field"><label class="forge-label">fears</label>
+          <input class="forge-input" id="forge-fears" placeholder="what keeps them up at night?" /></div>
+        <div class="forge-field"><label class="forge-label">motivations</label>
+          <input class="forge-input" id="forge-motivations" placeholder="what drives them?" /></div>
+        <div class="forge-field"><label class="forge-label">tone</label>
+          <div class="tone-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+            <button class="tone-chip" data-tone="warm">warm</button>
+            <button class="tone-chip" data-tone="direct">direct</button>
+            <button class="tone-chip" data-tone="curious">curious</button>
+            <button class="tone-chip" data-tone="playful">playful</button>
+            <button class="tone-chip" data-tone="stoic">stoic</button>
+            <button class="tone-chip" data-tone="poetic">poetic</button>
+            <button class="tone-chip" data-tone="chaotic">chaotic</button>
+            <button class="tone-chip" data-tone="fierce">fierce</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FORGE SECTION: BACKGROUND ── -->
+    <div class="forge-section">
+      <div class="forge-section-header" onclick="toggleForgeSection('background')">
+        <span class="forge-section-icon" id="forge-icon-background">▸</span>
+        <span class="forge-section-title">background</span>
+      </div>
+      <div class="forge-section-body" id="forge-body-background" style="display:none">
+        <div class="forge-field"><label class="forge-label">backstory</label>
+          <textarea class="forge-input" id="forge-backstory" rows="4"
+            placeholder="where did they come from? what shaped them?"></textarea></div>
+        <div class="forge-field"><label class="forge-label">current arc</label>
+          <textarea class="forge-input" id="forge-arc" rows="2"
+            placeholder="what's happening in their story right now?"></textarea></div>
+        <div class="forge-field"><label class="forge-label">affiliations</label>
+          <input class="forge-input" id="forge-affiliations"
+            placeholder="groups, factions, crews they belong to" /></div>
+      </div>
+    </div>
+
+    <!-- ── FORGE SECTION: STATS ── -->
+    <div class="forge-section">
+      <div class="forge-section-header" onclick="toggleForgeSection('stats')">
+        <span class="forge-section-icon" id="forge-icon-stats">▸</span>
+        <span class="forge-section-title">stats</span>
+      </div>
+      <div class="forge-section-body" id="forge-body-stats" style="display:none">
+        <div id="forge-stat-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px"></div>
+        <button id="forge-add-stat" style="
+          width:100%;padding:10px;background:var(--surface2);
+          border:1px dashed var(--border);border-radius:10px;
+          color:var(--subtext);font-family:var(--font-ui);font-size:0.75rem;
+          cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">
+          + add stat (max 10)
+        </button>
+      </div>
+    </div>
+
+    <!-- ── FORGE SECTION: FLAVOR ── -->
+    <div class="forge-section">
+      <div class="forge-section-header" onclick="toggleForgeSection('flavor')">
+        <span class="forge-section-icon" id="forge-icon-flavor">▸</span>
+        <span class="forge-section-title">flavor</span>
+      </div>
+      <div class="forge-section-body" id="forge-body-flavor" style="display:none">
+        <div class="forge-field"><label class="forge-label">catchphrase</label>
+          <input class="forge-input" id="forge-catchphrase" placeholder="something they always say" /></div>
+        <div class="forge-field"><label class="forge-label">personal motto</label>
+          <input class="forge-input" id="forge-motto" placeholder="what do they live by?" /></div>
+        <div class="forge-field"><label class="forge-label">theme song</label>
+          <input class="forge-input" id="forge-theme-song" placeholder="the song that IS them" /></div>
+        <div class="forge-field"><label class="forge-label">hobbies</label>
+          <input class="forge-input" id="forge-hobbies" placeholder="what do they do for fun?" /></div>
+      </div>
+    </div>
+
+    <!-- ── SAVE ── -->
+    <button id="save-bot-btn" style="
+      width:100%;padding:14px;margin-top:8px;
+      background:linear-gradient(135deg,var(--teal),var(--purple));
+      border:none;border-radius:12px;color:#fff;
+      font-family:var(--font-display);font-weight:700;font-size:0.9rem;
+      cursor:pointer;letter-spacing:0.04em;transition:opacity 0.2s">
+      save companion
+    </button>
+
   </div>
+</div>
 
   <!-- IMAGINE VIEW -->
   <div class="view" id="view-imagine"></div>
