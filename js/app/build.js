@@ -49,9 +49,11 @@ window.toggleForgeSection = toggleSection;
 
 // ── INIT ──────────────────────────────────────────────────────
 export function initBuild() {
-  // If opened from Codex edit button — load that print
+  // If editing an existing print — load it. Otherwise clear the form.
   if (state.activePrintId) {
     loadPrintIntoForm();
+  } else {
+    clearForgeForm();
   }
 
   // Wire tone chips
