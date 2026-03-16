@@ -140,6 +140,8 @@ export async function loadUsage() {
 }
 
 export function updateCreditDisplay() {
+  const acctEl = document.getElementById('account-credits');
+  if (acctEl) acctEl.textContent = state.isPaid ? state.credits : Math.max(0, 10 - state.freeToday);
   const badge   = document.getElementById('credits-badge');
   const storeEl = document.getElementById('store-credits');
   const freeEl  = document.getElementById('store-free-msg');
