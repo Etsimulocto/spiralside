@@ -103,6 +103,34 @@ export function renderActiveChar(id) {
     talkBtn.style.display = 'none'; // hide for user's own sheet
   }
 
+  // ── identity line + vibe (from soul print) ──
+  const idLine = document.getElementById('sheet-identity-line');
+  if (idLine) {
+    idLine.textContent = char.identityLine || '';
+    idLine.style.color = char.color + 'cc';
+    idLine.style.display = char.identityLine ? 'block' : 'none';
+  }
+  const vibeEl = document.getElementById('sheet-vibe');
+  if (vibeEl) {
+    vibeEl.textContent = char.vibe ? `"${char.vibe}"` : '';
+    vibeEl.style.display = char.vibe ? 'block' : 'none';
+  }
+
+  // ── talk-to button — sets persona and switches to chat ──
+  const talkBtn = document.getElementById('talk-to-btn');
+  if (talkBtn && !char.isUser) {
+    talkBtn.style.display     = 'block';
+    talkBtn.textContent       = `talk to ${char.name}`;
+    talkBtn.style.background  = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
+    talkBtn.style.border      = `1px solid ${char.color}88`;
+    talkBtn.style.color       = char.color;
+    talkBtn.style.boxShadow   = `0 0 20px ${char.color}22`;
+    // Wire click — sets active persona and navigates to chat
+    talkBtn.onclick = () => _setPersonaAndChat(char);
+  } else if (talkBtn) {
+    talkBtn.style.display = 'none'; // hide for user's own sheet
+  }
+
   // Trait bars
   document.getElementById('trait-list').innerHTML = char.traits.map(t => `
     <div class="trait-row">
@@ -238,6 +266,33 @@ export async function loadSavedSheets(dbGet) {
       if (saved.song)   CHARACTERS.you.song   = saved.song;
     }
   }
+}
+
+// ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────
+// Sets state.botName/botPersonality/botGreeting/botColor
+// then navigates to chat — same effect as build.js handleSave
+// but triggered from a card tap, no form needed
+function _setPersonaAndChat(char) {
+  // Lazy import to avoid circular deps — ui.js and chat.js
+  import('./ui.js').then(({ switchView }) => {
+    import('./chat.js').then(({ addMessage, getChatMsgs }) => {
+      import('./state.js').then(({ state }) => {
+        // Set active persona in state
+        state.botName        = char.name;
+        state.botPersonality = '';   // archetype — personality lives in HF .txt
+        state.botGreeting    = char.firstWords || `Hey. I'm here.`;
+        state.botColor       = char.color;
+
+        // Reset chat with new greeting
+        const chatMsgs = getChatMsgs();
+        if (chatMsgs) chatMsgs.innerHTML = '';
+        addMessage(state.botGreeting, 'bot', char.name, char.color);
+
+        // Navigate to chat
+        switchView('chat');
+      });
+    });
+  });
 }
 
 // ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────

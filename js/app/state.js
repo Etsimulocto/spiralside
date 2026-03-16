@@ -91,7 +91,12 @@ export const CHARACTERS = {
   },
   grit: {
     name: 'GRIT', color: '#FFD93D', initial: 'G',
-    trait: 'Street Oracle', mood: 'grounded',
+    // ── canonical soul print data ──
+    title:        'The Builder',
+    identityLine: 'Nothing worth having came easy. Good.',
+    vibe:         'calluses and coffee, something being made',
+    firstWords:   "What are we building?",
+    trait: 'The Builder', mood: 'grounded',
     traits: [
       { label: 'Street Sense', val: 94 },
       { label: 'Bluntness',    val: 89 },

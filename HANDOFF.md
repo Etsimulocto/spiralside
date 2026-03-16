@@ -301,3 +301,35 @@ The wire is live. The connection is made. Act 3 begins.
 5. Echo button on archetype cards (fork to editable print)
 6. Conversation memory — chat stateless, no history sent to API
 7. version.json on HF for demo cache busting
+
+---
+
+## SESSION LOG — March 16 2026
+
+### COMPLETED THIS SESSION
+- [x] Codex archetypes JSON — codex/archetypes/*.json + index.json pushed to GitHub
+- [x] Tab rename: sheet → codex, build → forge (index.html, ui.js, main.js, build.js)
+- [x] View IDs renamed: sheet-view → codex-view, build-view → forge-view
+- [x] CHARACTERS in state.js — synced with canonical soul print data
+      (title, identityLine, vibe, firstWords added to sky/monday/cold)
+- [x] sheet.js — identity line + vibe render from char data
+- [x] sheet.js — "talk to" button on archetype cards
+      sets state.botName/botGreeting/botColor, resets chat, switchView('chat')
+- [x] index.html — identity line, vibe, talk-to button elements added to card
+
+### ARCHITECTURE NOTES
+- sheet.js = Codex (card browser + persona selector)
+- build.js = Forge (companion builder / soul print editor)
+- library.js = Library (image gallery + comic/book editor — UNTOUCHED)
+- Persona selection now lives in Codex (talk-to btn) NOT Forge
+- Forge is pure creation/editing tool going forward
+- Archetype JSON files: codex/archetypes/*.json (display only, HF .txt = backend)
+
+### NEXT SESSION PRIORITIES
+1. Grit canonical data sync in state.js (manual — need to see exact string)
+2. "+ new" chip in codex → opens Forge (switchView('forge'))
+3. Forge save → creates soul print JSON in IDB, card appears in Codex
+4. Codex Gallery layout — card grid view (currently single card at a time)
+5. Echo button on archetype cards (fork to editable print)
+6. Conversation memory — chat stateless, no history sent to API
+7. version.json on HF for demo cache busting
