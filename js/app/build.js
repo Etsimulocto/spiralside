@@ -10,6 +10,31 @@ import { dbSet, dbGet }               from './db.js';
 import { addMessage, getChatMsgs }    from './chat.js';
 import { updateGreeting, switchView } from './ui.js';
 
+// ── CLEAR FORGE FORM ─────────────────────────────────────────
+// Resets all fields to empty/placeholder state
+function clearForgeForm() {
+  const fields = [
+    'bot-name','forge-title','forge-identity-line','forge-vibe',
+    'bot-greeting','forge-pronouns','forge-species','forge-age',
+    'forge-alignment','forge-origin','forge-occupation',
+    'bot-personality','forge-temperament','forge-strengths',
+    'forge-weaknesses','forge-fears','forge-motivations',
+    'forge-backstory','forge-arc','forge-affiliations',
+    'forge-theme-song','forge-catchphrase','forge-motto','forge-hobbies'
+  ];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  // Clear tone chips
+  document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('selected'));
+  state.botTone = [];
+  // Clear stats
+  const statList = document.getElementById('forge-stat-list');
+  if (statList) statList.innerHTML = '';
+}
+export { clearForgeForm };
+
 // ── SECTION TOGGLE ────────────────────────────────────────────
 // Collapses/expands a forge section by id
 function toggleSection(id) {
@@ -183,8 +208,9 @@ async function handleSave() {
     return;
   }
 
-  // Clear activePrintId so next save creates a new print not overwrite
+  // Clear activePrintId and reset form for next new print
   state.activePrintId = null;
+  clearForgeForm();
 
   // Button feedback
   const btn = document.getElementById('save-bot-btn');

@@ -50,7 +50,11 @@ export function buildCharSelector() {
   const addChip       = document.createElement('div');
   addChip.className   = 'char-add-chip';
   addChip.textContent = '+ new';
-  addChip.onclick     = () => import('./ui.js').then(({ switchView }) => switchView('forge'));
+  addChip.onclick     = () => {
+    import('./state.js').then(({ state }) => { state.activePrintId = null; });
+    import('./build.js').then(({ clearForgeForm }) => clearForgeForm());
+    import('./ui.js').then(({ switchView }) => switchView('forge'));
+  };
   container.appendChild(addChip);
 }
 
