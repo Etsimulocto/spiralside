@@ -56,8 +56,9 @@ export function switchView(id) {
   }
   // Lazy-init view on first visit
   const viewInits = {
-    store:   () => window.initStoreView   && window.initStoreView(),
-    account: () => window.initAccountView && window.initAccountView(),
+    store:   () => updateCreditDisplay(),
+    style:   () => window.initStylePanel  && window.initStylePanel(),
+    account: () => updateCreditDisplay(),
     imagine: () => window.initImagine     && window.initImagine(),
     music:   () => window.initMusicView   && window.initMusicView(),
     library: () => window.initLibrary     && window.initLibrary(),
@@ -84,7 +85,7 @@ export function switchView(id) {
   if (nextTab?.onOpen) nextTab.onOpen();
 
   // Header glow color per view
-  const glowColors = { chat: '#00F6D6', sheet: '#FF4BCB', vault: '#7B5FFF', build: '#FFD93D', music: '#00F6D6', library: '#FF4BCB' };
+  const glowColors = { chat: '#00F6D6', codex: '#FF4BCB', vault: '#7B5FFF', forge: '#FFD93D', music: '#00F6D6', library: '#FF4BCB', store: '#00F6D6', style: '#7B5FFF', account: '#4DA3FF' };
   document.getElementById('header-glow').style.background = glowColors[id] || '#00F6D6';
 
   // Highlight active FAB icon
