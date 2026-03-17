@@ -19,7 +19,7 @@ const DEFAULT_STYLE = {
   text:'#F0F0FF', subtext:'#6060A0', userbubble:'#7B5FFF',
   bubbleRadius:14, msgSpacing:10,
   fontUi:"'DM Mono',monospace", fontDisplay:"'Syne',sans-serif",
-  bgType:'solid', scanlineIntensity:2, particleDensity:30,
+  bgType:'solid', scanlineIntensity:2, particleDensity:30, fontSize:13, subtextSize:11,
 };
 
 let pendingStyle = { ...DEFAULT_STYLE };
