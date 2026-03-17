@@ -120,7 +120,7 @@ function injectPlayerDOM() {
         overflow: hidden;
       }
       #music-icon {
-        font-size: 0.8rem;
+        font-size: var(--font-size-base);
         color: var(--teal, #00F6D6);
         flex-shrink: 0;
         animation: musicPulse 2.4s ease-in-out infinite;
@@ -131,7 +131,7 @@ function injectPlayerDOM() {
       }
       #music-track-name {
         flex: 1;
-        font-size: 0.6rem;
+        font-size: var(--subtext-size);
         letter-spacing: 0.1em;
         color: var(--subtext, #6060A0);
         white-space: nowrap;
@@ -154,7 +154,7 @@ function injectPlayerDOM() {
         cursor: pointer;
         padding: 4px 6px;
         border-radius: 4px;
-        font-size: 0.7rem;
+        font-size: var(--subtext-size);
         line-height: 1;
         transition: color 0.2s;
         font-family: monospace;

@@ -434,13 +434,13 @@ function renderPrintCard(print) {
       flex:1;padding:11px;background:var(--surface2);
       border:1px solid var(--border);border-radius:10px;
       color:var(--subtext);font-family:var(--font-ui);
-      font-size:0.75rem;cursor:pointer;letter-spacing:0.06em;
+      font-size:var(--font-size-base);cursor:pointer;letter-spacing:0.06em;
       transition:all 0.2s">✏ edit</button>
     <button onclick="deletePrint('${print.id}','${char.name}')" style="
       flex:1;padding:11px;background:var(--surface2);
       border:1px solid var(--border);border-radius:10px;
       color:var(--subtext);font-family:var(--font-ui);
-      font-size:0.75rem;cursor:pointer;letter-spacing:0.06em;
+      font-size:var(--font-size-base);cursor:pointer;letter-spacing:0.06em;
       transition:all 0.2s">🗑 delete</button>
   `;
 }

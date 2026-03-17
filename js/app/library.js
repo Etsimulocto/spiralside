@@ -146,7 +146,7 @@ function renderLibrary() {
       <div class="lib-empty">
         <div style="font-size:2.4rem;margin-bottom:12px">🖼</div>
         <div>no images yet</div>
-        <div style="font-size:0.7rem;margin-top:6px;opacity:0.6">tap + to add your first panel</div>
+        <div style="font-size:var(--subtext-size);margin-top:6px;opacity:0.6">tap + to add your first panel</div>
       </div>`;
     return;
   }
@@ -250,7 +250,7 @@ function renderBooksView() {
       <div class="lib-empty">
         <div style="font-size:2rem;margin-bottom:10px">📖</div>
         <div>no books yet</div>
-        <div style="font-size:0.7rem;margin-top:6px;opacity:0.6">create a book and add panels to it</div>
+        <div style="font-size:var(--subtext-size);margin-top:6px;opacity:0.6">create a book and add panels to it</div>
       </div>`;
     return;
   }
