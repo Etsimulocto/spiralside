@@ -41,6 +41,22 @@ export function buildCharSelector() {
       chip.style.color       = 'var(--subtext)';
       chip.style.borderColor = 'var(--border)';
       chip.style.background  = 'var(--surface2)';
+      // Show portrait thumbnail if available
+      if (print.portrait_base64) {
+        chip.style.backgroundImage    = `url(${print.portrait_base64})`;
+        chip.style.backgroundSize     = 'cover';
+        chip.style.backgroundPosition = 'center top';
+        chip.style.color              = '#fff';
+        chip.style.textShadow         = '0 1px 3px rgba(0,0,0,0.8)';
+        chip.style.border             = `2px solid ${color}`;
+        chip.style.minWidth           = '72px';
+        chip.style.height             = '48px';
+        chip.style.borderRadius       = '8px';
+        chip.style.display            = 'flex';
+        chip.style.alignItems         = 'flex-end';
+        chip.style.padding            = '4px 6px';
+        chip.style.fontSize           = '0.6rem';
+      }
       chip.onclick = () => renderPrintCard(print);
       container.insertBefore(chip, addChip);
     });
@@ -305,11 +321,30 @@ function renderPrintCard(print) {
     `linear-gradient(90deg,${char.color},transparent)`;
 
   const av = document.getElementById('sheet-avatar-lg');
-  av.textContent = char.initial;
-  av.style.color = char.color;
-  av.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
-  av.style.border = `2px solid ${char.color}66`;
-  av.style.boxShadow = `0 0 24px ${char.color}44`;
+  if (print.portrait_base64) {
+    // Show portrait image as avatar
+    av.style.backgroundImage = `url(${print.portrait_base64})`;
+    av.style.backgroundSize  = 'cover';
+    av.style.backgroundPosition = 'center';
+    av.textContent = '';
+    av.style.border    = `3px solid ${char.color}`;
+    av.style.boxShadow = `0 0 32px ${char.color}66`;
+    av.style.color     = 'transparent';
+    // Make avatar bigger for portrait cards
+    av.style.width  = '96px';
+    av.style.height = '96px';
+    av.style.borderRadius = '12px';
+  } else {
+    av.style.backgroundImage = '';
+    av.style.width  = '72px';
+    av.style.height = '72px';
+    av.style.borderRadius = '50%';
+    av.textContent = char.initial;
+    av.style.color = char.color;
+    av.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
+    av.style.border = `2px solid ${char.color}66`;
+    av.style.boxShadow = `0 0 24px ${char.color}44`;
+  }
 
   document.getElementById('sheet-char-name').textContent  = char.name;
   document.getElementById('sheet-char-name').style.textShadow = `0 0 20px ${char.color}66`;

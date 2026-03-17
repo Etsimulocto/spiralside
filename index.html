@@ -456,6 +456,8 @@
     #codex-view { overflow-y: auto; padding: 16px; }
     .char-selector { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px; }
     .char-chip {
+      min-width: 64px;
+      font-size: 0.72rem;
       flex-shrink: 0; padding: 6px 14px; background: var(--surface2);
       border: 1px solid var(--border); border-radius: 20px; cursor: pointer;
       color: var(--subtext); font-size: 0.7rem; letter-spacing: 0.08em;
@@ -1507,7 +1509,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.96</div>
+      <div class="version-badge" id="version-badge">v0.8.97</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
