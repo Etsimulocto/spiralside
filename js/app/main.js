@@ -12,7 +12,7 @@ import { sb, checkAuthAndShow, listenAuthChanges,
 import { initDB, dbGet, dbGetAll, dbSet }          from './db.js';
 import { initChat, addMessage }                    from './chat.js';
 import { buildCharSelector, renderActiveChar,
-         saveSummarize, loadSavedSheets }          from './sheet.js';
+         saveSummarize, loadSavedSheets, exportCodex, importCodex }          from './sheet.js';
 import { initVault, renderVault,
          removeFile, loadVaultFromDB }             from './vault.js';
 import { initMusic }          from './music.js';

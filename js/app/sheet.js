@@ -491,6 +491,48 @@ This cannot be undone.`)) return;
   });
 };
 
+// ── EXPORT CODEX ─────────────────────────────────────────────
+// Downloads all user prints as a single codex.json file
+export async function exportCodex() {
+  const { dbGetAll } = await import('./db.js');
+  const prints = await dbGetAll('prints').catch(() => []);
+  if (!prints.length) { alert('No cards to export!'); return; }
+  const data = {
+    schema_version: 'spiralside_codex_v1',
+    exported_at:    new Date().toISOString(),
+    card_count:     prints.length,
+    prints,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `spiralside-codex-${Date.now()}.json`;
+  a.click();
+}
+
+// ── IMPORT CODEX ─────────────────────────────────────────────
+// Uploads a codex.json and merges prints into IDB
+export async function importCodex(file) {
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.prints?.length) { alert('No cards found in file.'); return; }
+    const { dbSet } = await import('./db.js');
+    let count = 0;
+    for (const print of data.prints) {
+      if (!print.id && print.card_id) print.id = print.card_id;
+      if (!print.id) continue;
+      await dbSet('prints', print);
+      count++;
+    }
+    buildCharSelector();
+    alert(`✓ Imported ${count} card${count !== 1 ? 's' : ''} into your Codex!`);
+  } catch(e) {
+    alert('Import failed — invalid file.');
+    console.error(e);
+  }
+}
+
 // ── PRIVATE: STYLE CHIP ───────────────────────────────────────
 function _styleChip(chip, id, active) {
   const c = CHARACTERS[id].color;
