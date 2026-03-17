@@ -88,9 +88,16 @@ window.handlePortraitUpload = function(input) {
 // ── INIT ──────────────────────────────────────────────────────
 export function initBuild() {
   // Register onForgeOpen — called every time forge tab is opened
-  window.onForgeOpen = () => {
+  window.onForgeOpen = async () => {
     if (state.activePrintId) {
-      loadPrintIntoForm();
+      // Load the specific print from IDB by ID
+      const { dbGet } = await import('./db.js');
+      const print = await dbGet('prints', state.activePrintId);
+      if (print) {
+        await _loadPrintDataIntoForm(print);
+      } else {
+        clearForgeForm();
+      }
     } else {
       clearForgeForm();
     }
@@ -367,6 +374,64 @@ async function handleSave() {
 
 // ── LOAD SAVED PRINT INTO FORM ────────────────────────────────
 export async function loadBotIntoForm() { await loadPrintIntoForm(); }
+
+// Loads a print object directly into form (no IDB lookup needed)
+async function _loadPrintDataIntoForm(print) {
+  const s = id => { const el = document.getElementById(id); return (val) => { if (el) el.value = val || ''; }; };
+  const id = print.identity    || {};
+  const p  = print.personality || {};
+  const st = print.story       || {};
+  const fl = print.flavor      || {};
+  const ap = print.appearance  || {};
+
+  s('bot-name')(id.name);
+  s('bot-greeting')(id.first_words);
+  s('bot-personality')(id.personality);
+  s('forge-title')(id.title);
+  s('forge-identity-line')(id.identity_line);
+  s('forge-vibe')(id.vibe);
+  s('forge-pronouns')(id.pronouns);
+  s('forge-species')(id.species);
+  s('forge-age')(id.age);
+  s('forge-alignment')(id.alignment);
+  s('forge-origin')(id.origin);
+  s('forge-occupation')(id.occupation);
+  s('forge-temperament')(p.temperament);
+  s('forge-strengths')(p.strengths);
+  s('forge-weaknesses')(p.weaknesses);
+  s('forge-fears')(p.fears);
+  s('forge-motivations')(p.motivations);
+  s('forge-backstory')(st.backstory);
+  s('forge-arc')(st.current_arc);
+  s('forge-affiliations')(st.affiliations);
+  s('forge-theme-song')(st.theme_song);
+  s('forge-catchphrase')(fl.catchphrase);
+  s('forge-motto')(fl.motto);
+  s('forge-hobbies')(fl.hobbies);
+  s('forge-appearance')(ap.description);
+  s('forge-hair')(ap.hair);
+  s('forge-eyes')(ap.eyes);
+  s('forge-style')(ap.style);
+  s('forge-marks')(ap.marks);
+  s('forge-color-theme')(ap.color_theme);
+
+  // Tone chips
+  document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('selected'));
+  state.botTone = id.tone_tags || [];
+  state.botTone.forEach(t => {
+    document.querySelector(`[data-tone="${t}"]`)?.classList.add('selected');
+  });
+
+  // Stats
+  if (print.stats) {
+    statCount = 0;
+    const statList = document.getElementById('forge-stat-list');
+    if (statList) statList.innerHTML = '';
+    Object.entries(print.stats).forEach(([key, stat]) => {
+      addStatRow(key.replace(/_/g, ' '), stat.value || 50);
+    });
+  }
+}
 
 async function loadPrintIntoForm() {
   // Try loading from legacy config first
