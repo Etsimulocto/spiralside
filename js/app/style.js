@@ -227,6 +227,8 @@ export function applyStyleVars(s) {
   r.setProperty('--msg-spacing',   (s.msgSpacing   || 10)  + 'px');
   r.setProperty('--font-ui',       s.fontUi      || "'DM Mono',monospace");
   r.setProperty('--font-display',  s.fontDisplay || "'Syne',sans-serif");
+  r.setProperty('--font-size-base', (s.fontSize    || 13) + 'px');
+  r.setProperty('--subtext-size',   (s.subtextSize || 11) + 'px');
 }
 
 function updateSwatches() {
