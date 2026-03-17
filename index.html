@@ -1507,7 +1507,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.92</div>
+      <div class="version-badge" id="version-badge">v0.8.93</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
@@ -1695,6 +1695,54 @@
           <div class="forge-field forge-half"><label class="forge-label">occupation</label>
             <input class="forge-input" id="forge-occupation" placeholder="what do they do?" /></div>
         </div>
+      </div>
+    </div>
+
+    <!-- ── FORGE SECTION: APPEARANCE ── -->
+    <div class="forge-section">
+      <div class="forge-section-header" onclick="toggleForgeSection('appearance')">
+        <span class="forge-section-icon" id="forge-icon-appearance">▸</span>
+        <span class="forge-section-title">appearance</span>
+      </div>
+      <div class="forge-section-body" id="forge-body-appearance" style="display:none">
+        <!-- Portrait upload -->
+        <div class="forge-field">
+          <label class="forge-label">portrait / art</label>
+          <div id="forge-portrait-wrap" style="
+            border:2px dashed var(--border);border-radius:10px;
+            padding:16px;text-align:center;cursor:pointer;
+            transition:border-color 0.2s;margin-bottom:4px;
+            position:relative;overflow:hidden;min-height:80px;
+            display:flex;align-items:center;justify-content:center;
+          " onclick="document.getElementById('forge-portrait-input').click()">
+            <img id="forge-portrait-preview" style="
+              display:none;max-width:100%;max-height:160px;
+              border-radius:8px;object-fit:cover;
+            " />
+            <span id="forge-portrait-hint" style="
+              font-size:0.72rem;color:var(--subtext);letter-spacing:0.06em
+            ">tap to upload portrait</span>
+          </div>
+          <input type="file" id="forge-portrait-input" accept="image/*"
+            style="display:none" onchange="handlePortraitUpload(this)" />
+        </div>
+        <div class="forge-field"><label class="forge-label">appearance description</label>
+          <textarea class="forge-input" id="forge-appearance" rows="3"
+            placeholder="describe how they look — hair, eyes, style, energy..."></textarea></div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">hair</label>
+            <input class="forge-input" id="forge-hair" placeholder="long silver, shaved sides..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">eyes</label>
+            <input class="forge-input" id="forge-eyes" placeholder="glowing teal, sharp brown..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">style / clothing</label>
+            <input class="forge-input" id="forge-style" placeholder="tactical hoodie, void black..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">distinguishing marks</label>
+            <input class="forge-input" id="forge-marks" placeholder="spiral tattoo, glowing eyes..." /></div>
+        </div>
+        <div class="forge-field"><label class="forge-label">color theme</label>
+          <input class="forge-input" id="forge-color-theme" placeholder="teal + void black + silver" /></div>
       </div>
     </div>
 

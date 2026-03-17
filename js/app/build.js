@@ -26,6 +26,23 @@ function clearForgeForm() {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
+  // Clear appearance fields
+  ['forge-appearance','forge-hair','forge-eyes','forge-style',
+   'forge-marks','forge-color-theme'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  // Clear portrait
+  _portraitImage = null;
+  const preview = document.getElementById('forge-portrait-preview');
+  const hint    = document.getElementById('forge-portrait-hint');
+  const wrap    = document.getElementById('forge-portrait-wrap');
+  if (preview) { preview.src = ''; preview.style.display = 'none'; }
+  if (hint)    hint.style.display = 'block';
+  if (wrap)    wrap.style.borderColor = 'var(--border)';
+  // Hide card preview
+  const cardPreview = document.getElementById('forge-card-preview');
+  if (cardPreview) cardPreview.style.display = 'none';
   // Clear tone chips
   document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('selected'));
   state.botTone = [];
@@ -46,6 +63,27 @@ function toggleSection(id) {
   if (icon) icon.textContent = open ? '▸' : '▾';
 }
 window.toggleForgeSection = toggleSection;
+
+// ── PORTRAIT UPLOAD ───────────────────────────────────────────
+let _portraitImage = null; // stores the loaded HTMLImageElement
+
+window.handlePortraitUpload = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    _portraitImage = img;
+    // Show preview
+    const preview = document.getElementById('forge-portrait-preview');
+    const hint    = document.getElementById('forge-portrait-hint');
+    const wrap    = document.getElementById('forge-portrait-wrap');
+    if (preview) { preview.src = url; preview.style.display = 'block'; }
+    if (hint)    hint.style.display = 'none';
+    if (wrap)    wrap.style.borderColor = 'var(--teal)';
+  };
+  img.src = url;
+};
 
 // ── INIT ──────────────────────────────────────────────────────
 export function initBuild() {
@@ -161,6 +199,14 @@ function readPrint() {
       alignment:     g('forge-alignment'),
       occupation:    g('forge-occupation'),
     },
+    appearance: {
+      description:  g('forge-appearance'),
+      hair:         g('forge-hair'),
+      eyes:         g('forge-eyes'),
+      style:        g('forge-style'),
+      marks:        g('forge-marks'),
+      color_theme:  g('forge-color-theme'),
+    },
     personality: {
       temperament: g('forge-temperament'),
       strengths:   g('forge-strengths'),
@@ -228,14 +274,20 @@ async function handleCreateCard() {
   wrap.innerHTML = '<div style="color:var(--subtext);font-size:0.75rem;padding:20px">rendering...</div>';
 
   // Check if there's an art image in vault/imagine
-  let artImage = null;
-  const imgEl = document.querySelector('#library-last-image');
-  if (imgEl) artImage = imgEl;
+  // Use uploaded portrait if available
+  let artImage = _portraitImage || null;
 
   const canvas = await renderCard(print, artImage);
   canvas.style.cssText = 'width:100%;max-width:360px;border-radius:8px;display:block;margin:0 auto;box-shadow:0 0 32px rgba(0,246,214,0.2)';
   wrap.innerHTML = '';
   wrap.appendChild(canvas);
+
+  // Save card_id back to print and persist to IDB
+  print.card_id = print.card_id;
+  const { dbSet } = await import('./db.js');
+  await dbSet('prints', { id: print.card_id, ...print });
+  // Refresh codex chips so card appears
+  import('./sheet.js').then(({ buildCharSelector }) => buildCharSelector());
 
   // Scroll to preview
   preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
