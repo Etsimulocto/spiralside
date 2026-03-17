@@ -47,6 +47,13 @@ window.previewFontSize = function(val) {
   if (preview) preview.style.fontSize = val + 'px';
 };
 
+// ── SUBTEXT SIZE PREVIEW ─────────────────────────────────────
+window.previewSubtextSize = function(val) {
+  pendingStyle.subtextSize = parseInt(val);
+  document.documentElement.style.setProperty('--subtext-size', val + 'px');
+  document.getElementById('subtext-size-val').textContent = val + 'px';
+};
+
 // ── LINE HEIGHT PREVIEW ───────────────────────────────────────
 window.previewLineHeight = function(val) {
   const lh = (val / 100).toFixed(2);
