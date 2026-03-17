@@ -33,7 +33,8 @@ function clearForgeForm() {
     if (el) el.value = '';
   });
   // Clear portrait
-  _portraitImage = null;
+  _portraitImage  = null;
+  _portraitBase64 = null;
   const preview = document.getElementById('forge-portrait-preview');
   const hint    = document.getElementById('forge-portrait-hint');
   const wrap    = document.getElementById('forge-portrait-wrap');
@@ -74,11 +75,16 @@ window.handlePortraitUpload = function(input) {
   const img = new Image();
   img.onload = () => {
     _portraitImage = img;
+    // Convert to base64 and store for persistence
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    _portraitBase64 = canvas.toDataURL('image/jpeg', 0.85);
     // Show preview
     const preview = document.getElementById('forge-portrait-preview');
     const hint    = document.getElementById('forge-portrait-hint');
     const wrap    = document.getElementById('forge-portrait-wrap');
-    if (preview) { preview.src = url; preview.style.display = 'block'; }
+    if (preview) { preview.src = _portraitBase64; preview.style.display = 'block'; }
     if (hint)    hint.style.display = 'none';
     if (wrap)    wrap.style.borderColor = 'var(--teal)';
   };
@@ -233,6 +239,7 @@ function readPrint() {
       motto:          g('forge-motto'),
       hobbies:        g('forge-hobbies'),
     },
+    portrait_base64: _portraitBase64 || null,
     custom_fields: [],
     blocks: [],
     metadata: {
@@ -248,7 +255,8 @@ function readPrint() {
 
 // ── CREATE CARD ───────────────────────────────────────────────
 // Generates card visual from current form data + shows preview
-let _lastCardPrint = null;
+let _lastCardPrint  = null;
+let _portraitBase64 = null;  // base64 of portrait for IDB persistence
 
 async function handleCreateCard() {
   const { generateCardId, renderCard, calcRarity } = await import('./card.js');
@@ -256,9 +264,14 @@ async function handleCreateCard() {
   // Read current form into a print object
   const print = readPrint();
 
-  // Generate card ID if not set
+  // Keep existing card_id if editing, generate new one if new card
   if (!print.card_id || print.card_id.startsWith('print_')) {
     print.card_id = generateCardId('companion');
+    print.version = 'v1';
+  } else {
+    // Bump version on update
+    const vNum = parseInt((print.version || 'v1').replace('v','')) || 1;
+    print.version = 'v' + (vNum + 1);
   }
 
   // Set version
@@ -414,6 +427,20 @@ async function _loadPrintDataIntoForm(print) {
   s('forge-style')(ap.style);
   s('forge-marks')(ap.marks);
   s('forge-color-theme')(ap.color_theme);
+
+  // Restore portrait if saved
+  if (print.portrait_base64) {
+    _portraitBase64 = print.portrait_base64;
+    const img2 = new Image();
+    img2.onload = () => { _portraitImage = img2; };
+    img2.src = print.portrait_base64;
+    const preview = document.getElementById('forge-portrait-preview');
+    const hint    = document.getElementById('forge-portrait-hint');
+    const wrap    = document.getElementById('forge-portrait-wrap');
+    if (preview) { preview.src = print.portrait_base64; preview.style.display = 'block'; }
+    if (hint)    hint.style.display = 'none';
+    if (wrap)    wrap.style.borderColor = 'var(--teal)';
+  }
 
   // Tone chips
   document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('selected'));
