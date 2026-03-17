@@ -74,6 +74,7 @@ window.applyAccessPreset = function(preset) {
     large: {
       fontSize: 18, lineHeight: '1.7', bubbleRadius: 18, msgSpacing: 16,
       fontUi: "'Space Grotesk',sans-serif", bubbleMaxWidth: 85,
+      subtextSize: 15,
     },
     contrast: {
       bg: '#000000', surface: '#111111', surface2: '#1a1a1a',
@@ -85,6 +86,7 @@ window.applyAccessPreset = function(preset) {
       fontSize: 17, lineHeight: '1.65', msgSpacing: 14,
       bubbleRadius: 20, bubbleMaxWidth: 88,
       fontUi: "'Outfit',sans-serif",
+      subtextSize: 14,
     },
     default: null,
   };
@@ -99,6 +101,13 @@ window.applyAccessPreset = function(preset) {
     const val    = document.getElementById('font-size-val');
     if (slider) slider.value = p.fontSize;
     if (val)    val.textContent = p.fontSize + 'px';
+  }
+  if (p.subtextSize) {
+    document.documentElement.style.setProperty('--subtext-size', p.subtextSize + 'px');
+    const sslider = document.getElementById('subtext-size-slider');
+    const sval    = document.getElementById('subtext-size-val');
+    if (sslider) sslider.value = p.subtextSize;
+    if (sval)    sval.textContent = p.subtextSize + 'px';
   }
 };
 
