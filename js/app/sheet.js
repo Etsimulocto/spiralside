@@ -369,7 +369,22 @@ function renderPrintCard(print) {
     vibeEl.style.display = char.vibe ? 'block' : 'none';
   }
 
-  document.getElementById('trait-list').innerHTML = char.traits.map(t => `
+  // Build traits — use custom stats if available, fall back to S.H.E.S
+  const rawStats = print.stats || {};
+  const statEntries = Object.entries(rawStats).slice(0, 4);
+  const displayTraits = statEntries.length > 0
+    ? statEntries.map(([k, v]) => ({
+        label: k.replace(/_/g, ' '),
+        val: v.value || v || 50
+      }))
+    : [
+        { label: 'Signal',      val: 50 },
+        { label: 'History',     val: 50 },
+        { label: 'Exploration', val: 50 },
+        { label: 'Style',       val: 50 },
+      ];
+
+  document.getElementById('trait-list').innerHTML = displayTraits.map(t => `
     <div class="trait-row">
       <div class="trait-header">
         <span class="trait-label-text">${t.label}</span>
