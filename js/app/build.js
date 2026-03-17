@@ -302,12 +302,9 @@ async function handleCreateCard() {
   wrap.innerHTML = '';
   wrap.appendChild(canvas);
 
-  // Save card_id back to print and persist to IDB
-  print.card_id = print.card_id;
-  const { dbSet } = await import('./db.js');
-  await dbSet('prints', { id: print.card_id, ...print });
-  // Refresh codex chips so card appears
-  import('./sheet.js').then(({ buildCharSelector }) => buildCharSelector());
+  // Store for download but don't save to codex yet
+  // Codex save happens when user hits "save companion"
+  _lastCardPrint = print;
 
   // Scroll to preview
   preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -340,8 +337,15 @@ async function handleSave() {
   state.botColor       = SPEAKER_COLORS[state.botName.toLowerCase()] || '#00F6D6';
   state.activePrintId  = print.card_id;
 
+  // If card was created in this session, use that print (has card_id + portrait)
+  // Otherwise save the form data as a plain print
+  const printToSave = _lastCardPrint && _lastCardPrint.identity?.name === print.identity.name
+    ? { ..._lastCardPrint, ...print, card_id: _lastCardPrint.card_id, version: _lastCardPrint.version }
+    : print;
+
   // Save full soul print to IDB
-  await dbSet('prints', { id: print.card_id, ...print });
+  await dbSet('prints', { id: printToSave.card_id, ...printToSave });
+  print.card_id = printToSave.card_id;
 
   // Also save legacy config key so existing chat logic still works
   await dbSet('config', {
@@ -379,8 +383,9 @@ async function handleSave() {
   addMessage(state.botGreeting, 'bot', state.botName, state.botColor);
   updateGreeting();
 
-  // Refresh codex chip row so new print appears immediately
+  // Refresh codex chip row once — new print appears
   import('./sheet.js').then(({ buildCharSelector }) => buildCharSelector());
+  _lastCardPrint = null; // clear after save
 
   switchView('chat');
 }
