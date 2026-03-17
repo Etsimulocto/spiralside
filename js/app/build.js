@@ -294,8 +294,8 @@ async function handleCreateCard() {
   wrap.innerHTML = '<div style="color:var(--subtext);font-size:0.75rem;padding:20px">rendering...</div>';
 
   // Check if there's an art image in vault/imagine
-  // Use uploaded portrait if available
-  let artImage = _portraitImage || null;
+  // Use base64 portrait — more reliable than blob URL for canvas
+  let artImage = _portraitBase64 || null;
 
   const canvas = await renderCard(print, artImage);
   canvas.style.cssText = 'width:100%;max-width:360px;border-radius:8px;display:block;margin:0 auto;box-shadow:0 0 32px rgba(0,246,214,0.2)';
@@ -323,7 +323,8 @@ async function handleDownloadCard() {
     return;
   }
   const { downloadCard } = await import('./card.js');
-  await downloadCard(_lastCardPrint);
+  // Pass base64 so canvas can render it correctly for download
+  await downloadCard(_lastCardPrint, _portraitBase64 || null);
 }
 
 // ── SAVE ──────────────────────────────────────────────────────

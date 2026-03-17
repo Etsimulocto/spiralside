@@ -54,6 +54,18 @@ export function calcRarity(lifecycle = {}) {
 // print = soul print JSON object
 // artImage = optional HTMLImageElement for the art
 export async function renderCard(print, artImage = null) {
+  // If artImage is a base64 string, convert to Image element
+  if (typeof artImage === 'string' && artImage.startsWith('data:')) {
+    const img = new Image();
+    await new Promise(res => { img.onload = res; img.src = artImage; });
+    artImage = img;
+  }
+  // Also check print.portrait_base64 if no artImage passed
+  if (!artImage && print.portrait_base64) {
+    const img = new Image();
+    await new Promise(res => { img.onload = res; img.src = print.portrait_base64; });
+    artImage = img;
+  }
   const canvas = document.createElement('canvas');
   canvas.width  = CARD_W;
   canvas.height = CARD_H;
