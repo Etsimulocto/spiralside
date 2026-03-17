@@ -197,7 +197,7 @@ export function selectBubbleShape(el, val) {
 }
 
 export function selectFont(type, el) {
-  document.getElementById('font-grid-' + type).querySelectorAll('.font-chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('#font-grid-' + type + ', #font-grid-' + type + '-v').forEach(g => g.querySelectorAll('.font-chip').forEach(c => c.classList.remove('selected')));
   el.classList.add('selected');
   if (type === 'ui')      pendingStyle.fontUi      = el.dataset.font;
   if (type === 'display') pendingStyle.fontDisplay = el.dataset.font;
