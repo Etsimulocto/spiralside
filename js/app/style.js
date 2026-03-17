@@ -27,6 +27,74 @@ let styleInited  = false;
 let particleAnim = null;
 let particles    = [];
 
+// ── STYLE SECTION TOGGLE ─────────────────────────────────────
+window.toggleStyleSection = function(id) {
+  const body = document.getElementById(`sbody-${id}`);
+  const icon = document.getElementById(`sicon-${id}`);
+  if (!body) return;
+  const open = body.style.display !== 'none';
+  body.style.display = open ? 'none' : 'block';
+  if (icon) icon.textContent = open ? '▸' : '▾';
+};
+
+// ── FONT SIZE PREVIEW ─────────────────────────────────────────
+window.previewFontSize = function(val) {
+  pendingStyle.fontSize = parseInt(val);
+  document.documentElement.style.setProperty('--font-size-base', val + 'px');
+  document.getElementById('font-size-val').textContent = val + 'px';
+  // Update preview text size
+  const preview = document.getElementById('font-size-preview');
+  if (preview) preview.style.fontSize = val + 'px';
+};
+
+// ── LINE HEIGHT PREVIEW ───────────────────────────────────────
+window.previewLineHeight = function(val) {
+  const lh = (val / 100).toFixed(2);
+  pendingStyle.lineHeight = lh;
+  document.documentElement.style.setProperty('--line-height', lh);
+  document.getElementById('line-height-val').textContent = lh;
+};
+
+// ── BUBBLE WIDTH PREVIEW ──────────────────────────────────────
+window.previewBubbleWidth = function(val) {
+  pendingStyle.bubbleMaxWidth = val;
+  document.documentElement.style.setProperty('--bubble-max-width', val + '%');
+};
+
+// ── ACCESSIBILITY PRESETS ─────────────────────────────────────
+window.applyAccessPreset = function(preset) {
+  const presets = {
+    large: {
+      fontSize: 18, lineHeight: '1.7', bubbleRadius: 18, msgSpacing: 16,
+      fontUi: "'Space Grotesk',sans-serif", bubbleMaxWidth: 85,
+    },
+    contrast: {
+      bg: '#000000', surface: '#111111', surface2: '#1a1a1a',
+      border: '#444444', text: '#ffffff', subtext: '#aaaaaa',
+      teal: '#00ffff', pink: '#ff66cc', purple: '#aa88ff',
+      fontSize: 16,
+    },
+    tablet: {
+      fontSize: 17, lineHeight: '1.65', msgSpacing: 14,
+      bubbleRadius: 20, bubbleMaxWidth: 88,
+      fontUi: "'Outfit',sans-serif",
+    },
+    default: null,
+  };
+  if (preset === 'default') { resetStyle(); return; }
+  const p = presets[preset];
+  if (!p) return;
+  pendingStyle = { ...pendingStyle, ...p };
+  applyStyleVars(pendingStyle);
+  if (p.fontSize) {
+    document.documentElement.style.setProperty('--font-size-base', p.fontSize + 'px');
+    const slider = document.getElementById('font-size-slider');
+    const val    = document.getElementById('font-size-val');
+    if (slider) slider.value = p.fontSize;
+    if (val)    val.textContent = p.fontSize + 'px';
+  }
+};
+
 export function initStylePanel() {
   const grid = document.getElementById('theme-grid');
   if (!grid) return;
@@ -56,12 +124,22 @@ export function applyThemePreset(id) {
 
 export function previewColor(key, val) {
   pendingStyle[key] = val;
-  const map = { bg:'sw-bg', surface:'sw-surface', teal:'sw-teal', pink:'sw-pink', userbubble:'sw-userbubble', text:'sw-text' };
-  const mapV = { bg:'sw-bg-v', surface:'sw-surface-v', teal:'sw-teal-v', pink:'sw-pink-v', userbubble:'sw-userbubble-v', text:'sw-text-v' };
-  const el = document.getElementById(map[key]);
-  if (el) el.style.background = val;
-  const elV = document.getElementById(mapV[key]);
-  if (elV) elV.style.background = val;
+  // All swatch IDs — panel (old) + view (new)
+  const swatchIds = {
+    bg:         ['sw-bg',         'sw-bg-v'],
+    surface:    ['sw-surface',    'sw-surface-v'],
+    teal:       ['sw-teal',       'sw-teal-v'],
+    pink:       ['sw-pink',       'sw-pink-v'],
+    userbubble: ['sw-userbubble', 'sw-userbubble-v'],
+    text:       ['sw-text',       'sw-text-v'],
+    subtext:    ['sw-subtext',    'sw-subtext-v'],
+    border:     ['sw-border',     'sw-border-v'],
+    botbubble:  ['sw-botbubble',  'sw-botbubble-v'],
+  };
+  (swatchIds[key] || []).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.background = val;
+  });
   applyStyleVars(pendingStyle);
 }
 

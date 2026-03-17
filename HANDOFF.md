@@ -442,3 +442,26 @@ cd ~/spiralside-api && git add . && git commit -m "msg" && git push
 4. Card import — upload JSON → appears in Codex
 5. Echo button on archetype cards
 6. Conversation memory
+
+---
+
+## SESSION LOG — March 17 2026 (style editor)
+
+### COMPLETED THIS SESSION
+- [x] Style editor v2 — full collapsible sections like Forge
+- [x] Accessibility presets: large text, high contrast, tablet mode, reset
+- [x] Font size slider (12-22px) with live preview — mom friendly
+- [x] Line height slider
+- [x] Bubble max width slider
+- [x] All color pickers fixed — text, subtext, border, bot bubble added
+- [x] CSS vars: --font-size-base, --line-height, --bubble-max-width, --bot-bubble
+- [x] previewColor fixed — updates all swatches correctly
+- [x] applyStyleVars fixed — sets all vars including new ones
+- [x] body uses CSS vars for font-size and line-height
+
+### NEXT SESSION PRIORITIES
+1. Imagine → card art (use generated image as portrait)
+2. Card JSON export alongside PNG
+3. Echo button on archetypes
+4. Conversation memory save/load
+5. Clean up duplicate panel-style divs in old slide panel HTML
