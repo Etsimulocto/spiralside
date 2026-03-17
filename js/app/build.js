@@ -84,6 +84,14 @@ export function initBuild() {
   const saveBtn = document.getElementById('save-bot-btn');
   if (saveBtn) saveBtn.addEventListener('click', handleSave);
 
+  // Wire create card button
+  const cardBtn = document.getElementById('create-card-btn');
+  if (cardBtn) cardBtn.addEventListener('click', handleCreateCard);
+
+  // Wire download button
+  const dlBtn = document.getElementById('forge-download-card-btn');
+  if (dlBtn) dlBtn.addEventListener('click', handleDownloadCard);
+
   // Load saved print into form
   loadPrintIntoForm();
 }
@@ -183,6 +191,70 @@ function readPrint() {
       updated_at:   new Date().toISOString(),
     }
   };
+}
+
+// ── CREATE CARD ───────────────────────────────────────────────
+// Generates card visual from current form data + shows preview
+let _lastCardPrint = null;
+
+async function handleCreateCard() {
+  const { generateCardId, renderCard, calcRarity } = await import('./card.js');
+
+  // Read current form into a print object
+  const print = readPrint();
+
+  // Generate card ID if not set
+  if (!print.card_id || print.card_id.startsWith('print_')) {
+    print.card_id = generateCardId('companion');
+  }
+
+  // Set version
+  print.version = print.version || 'v1';
+
+  // Set display block for rarity/accent
+  print.display = {
+    accent_color: state.botColor || '#00F6D6',
+    rarity:       calcRarity(print.lifecycle || {}),
+  };
+
+  _lastCardPrint = print;
+
+  // Show preview
+  const wrap = document.getElementById('forge-card-canvas-wrap');
+  const preview = document.getElementById('forge-card-preview');
+  if (!wrap || !preview) return;
+
+  preview.style.display = 'block';
+  wrap.innerHTML = '<div style="color:var(--subtext);font-size:0.75rem;padding:20px">rendering...</div>';
+
+  // Check if there's an art image in vault/imagine
+  let artImage = null;
+  const imgEl = document.querySelector('#library-last-image');
+  if (imgEl) artImage = imgEl;
+
+  const canvas = await renderCard(print, artImage);
+  canvas.style.cssText = 'width:100%;max-width:360px;border-radius:8px;display:block;margin:0 auto;box-shadow:0 0 32px rgba(0,246,214,0.2)';
+  wrap.innerHTML = '';
+  wrap.appendChild(canvas);
+
+  // Scroll to preview
+  preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Update button
+  const btn = document.getElementById('create-card-btn');
+  if (btn) {
+    btn.textContent = '✓ card rendered — download below';
+    setTimeout(() => { btn.textContent = '✦ create card'; }, 3000);
+  }
+}
+
+async function handleDownloadCard() {
+  if (!_lastCardPrint) {
+    alert('Create a card first!');
+    return;
+  }
+  const { downloadCard } = await import('./card.js');
+  await downloadCard(_lastCardPrint);
 }
 
 // ── SAVE ──────────────────────────────────────────────────────

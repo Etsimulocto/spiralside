@@ -410,3 +410,35 @@ cd ~/spiralside-api && git add . && git commit -m "msg" && git push
       Then remove from IDB prints store + rebuild chip row
 - [ ] Edit button on Codex card — loads that print into Forge for editing
       state.activePrintId = print.card_id then switchView('forge')
+
+---
+
+## SESSION LOG — March 17 2026
+
+### COMPLETED THIS SESSION
+- [x] js/app/card.js — canvas card renderer
+      - generateCardId() — CHR-XXXX-XXXX format
+      - calcRarity() — auto from lifecycle stats
+      - renderCard(print, artImage) — returns canvas
+      - downloadCard(print) — triggers PNG download
+      - showCardPreview(print, el) — renders into DOM element
+- [x] Forge — "Create Card" button renders preview in-page
+- [x] Forge — "Download Card" button saves PNG
+- [x] Card layout: header / art / identity line / stats / vibe+lifecycle / footer
+- [x] 4 rarity tiers: standard / bloom / signal / sanctum (auto-calculated)
+- [x] S.H.E.S default stats shown if no user stats defined
+
+### CARD SYSTEM ARCHITECTURE
+- card.js is pure renderer — no DOM dependencies except canvas
+- Soul print JSON → card canvas → PNG download
+- Art image optional — gradient placeholder if none
+- Card ID format: CHR-XXXX-XXXX (type prefix + random hex)
+- Rarity auto-calculated from lifecycle stats (usage/transfers/upgrades/age)
+
+### NEXT SESSION PRIORITIES
+1. Wire art image from imagine tab into card renderer
+2. Add card_id + version + lifecycle to soul print JSON schema
+3. Codex card face shows rendered card canvas (trading card view)
+4. Card import — upload JSON → appears in Codex
+5. Echo button on archetype cards
+6. Conversation memory
