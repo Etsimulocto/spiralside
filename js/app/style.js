@@ -163,8 +163,11 @@ export function selectBgType(el, type) {
   document.querySelectorAll('.bg-chip').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   pendingStyle.bgType = type;
-  document.getElementById('scanline-control').style.display = type === 'scanlines' ? 'flex' : 'none';
-  document.getElementById('particle-control').style.display = type === 'particles'  ? 'flex' : 'none';
+  document.getElementById('scanline-control').style.display = type === 'scanlines' ? 'block' : 'none';
+  document.getElementById('particle-control').style.display = type === 'particles' ? 'block' : 'none';
+  document.getElementById('grid-control').style.display    = type === 'grid'      ? 'block' : 'none';
+  document.getElementById('image-control').style.display   = type === 'image'     ? 'block' : 'none';
+  // handled above
   applyBgType(type);
 }
 
@@ -176,11 +179,26 @@ export function applyBgType(type) {
     document.body.style.backgroundImage = 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,246,214,0.03) 2px,rgba(0,246,214,0.03) 4px)';
     document.body.style.backgroundSize = '';
   } else if (type === 'grid') {
-    document.body.style.backgroundImage = 'linear-gradient(rgba(0,246,214,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,246,214,0.04) 1px,transparent 1px)';
-    document.body.style.backgroundSize = '32px 32px';
+    const gc = gridColor || '#00F6D6';
+    const go = (gridOpacity || 6) / 100;
+    const gs = (gridSize || 32) + 'px';
+    const col = gc + Math.round(go*255).toString(16).padStart(2,'0');
+    document.body.style.backgroundImage = 'linear-gradient(' + col + ' 1px,transparent 1px),linear-gradient(90deg,' + col + ' 1px,transparent 1px)';
+    document.body.style.backgroundSize = gs + ' ' + gs;
+  } else if (type === 'image') {
+    if (bgImageData) {
+      document.body.style.backgroundImage = 'url(' + bgImageData + ')';
+      document.body.style.backgroundSize  = bgImageFit === 'repeat' ? 'auto' : bgImageFit;
+      document.body.style.backgroundRepeat = bgImageFit === 'repeat' ? 'repeat' : 'no-repeat';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.opacity = '';
+      const overlay = document.getElementById('bg-overlay');
+      if (overlay) overlay.style.opacity = (1 - (bgImageOpacity||80)/100).toFixed(2);
+    }
   } else {
     document.body.style.backgroundImage = '';
     document.body.style.backgroundSize  = '';
+    document.body.style.backgroundRepeat = '';
   }
 }
 
@@ -391,4 +409,55 @@ export function loadSlot(i) {
   applyStyleVars(pendingStyle);
   applyBgType(pendingStyle.bgType || 'solid');
   updateSwatches();
+}
+
+// ── BACKGROUND EXTENDED CONTROLS ─────────────────────────────
+let particleSpeed = 3;
+let particleSize  = 2;
+let particleColor = '#00F6D6';
+let gridSize      = 32;
+let gridOpacity   = 6;
+let gridColor     = '#00F6D6';
+let bgImageData   = null;
+let bgImageOpacity = 80;
+let bgImageFit    = 'cover';
+
+export function updateParticleSpeed(v) { particleSpeed = parseInt(v); stopParticles(); startParticles(); }
+export function updateParticleSize(v)  { particleSize  = parseFloat(v); stopParticles(); startParticles(); }
+export function updateParticleColor(v) { particleColor = v; stopParticles(); startParticles(); }
+
+export function updateGridSize(v) {
+  gridSize = parseInt(v);
+  document.documentElement.style.setProperty('--grid-size', gridSize + 'px');
+  applyBgType('grid');
+}
+export function updateGridOpacity(v) {
+  gridOpacity = parseInt(v);
+  applyBgType('grid');
+}
+export function updateGridColor(v) {
+  gridColor = v;
+  applyBgType('grid');
+}
+
+export function loadBgImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    bgImageData = e.target.result;
+    const prev = document.getElementById('bg-image-preview');
+    if (prev) { prev.style.backgroundImage = 'url(' + bgImageData + ')'; prev.textContent = ''; }
+    applyBgType('image');
+  };
+  reader.readAsDataURL(file);
+}
+export function updateBgImageOpacity(v) { bgImageOpacity = parseInt(v); applyBgType('image'); }
+export function updateBgImageFit(fit) {
+  bgImageFit = fit;
+  ['cover','contain','repeat'].forEach(f => {
+    const el = document.getElementById('fit-' + f);
+    if (el) el.classList.toggle('selected', f === fit);
+  });
+  applyBgType('image');
 }

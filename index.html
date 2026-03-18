@@ -1512,7 +1512,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.121</div>
+      <div class="version-badge" id="version-badge">v0.8.122</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
@@ -2293,26 +2293,105 @@
       <div class="forge-section-body" id="sbody-background" style="display:none">
         <div class="forge-field">
           <label class="forge-label">background type</label>
-          <div class="bg-type-row">
+          <div class="bg-type-row" style="flex-wrap:wrap;gap:6px">
             <div class="bg-chip selected" data-bg="solid" onclick="selectBgType(this,'solid')">solid</div>
             <div class="bg-chip" data-bg="scanlines" onclick="selectBgType(this,'scanlines')">scanlines</div>
             <div class="bg-chip" data-bg="particles" onclick="selectBgType(this,'particles')">particles</div>
             <div class="bg-chip" data-bg="grid" onclick="selectBgType(this,'grid')">grid</div>
+            <div class="bg-chip" data-bg="image" onclick="selectBgType(this,'image')">image</div>
           </div>
         </div>
-        <div class="scanline-row" id="scanline-control" style="display:none">
-          <span class="scanline-label">intensity</span>
-          <input type="range" min="0" max="6" value="2"
-            style="flex:1;accent-color:var(--teal)"
-            oninput="previewScanlines(this.value);document.getElementById('sl-val').textContent=this.value" />
-          <span class="scanline-val" id="sl-val">2</span>
+
+        <!-- SCANLINES CONTROLS -->
+        <div id="scanline-control" style="display:none">
+          <div class="scanline-row">
+            <span class="scanline-label">intensity</span>
+            <input type="range" min="0" max="6" value="2" style="flex:1;accent-color:var(--teal)"
+              oninput="previewScanlines(this.value);document.getElementById('sl-val').textContent=this.value" />
+            <span class="scanline-val" id="sl-val">2</span>
+          </div>
         </div>
-        <div class="scanline-row" id="particle-control" style="display:none">
-          <span class="scanline-label">density</span>
-          <input type="range" min="10" max="80" value="30"
-            style="flex:1;accent-color:var(--teal)"
-            oninput="updateParticleDensity(this.value);document.getElementById('pd-val').textContent=this.value" />
-          <span class="scanline-val" id="pd-val">30</span>
+
+        <!-- PARTICLE CONTROLS -->
+        <div id="particle-control" style="display:none">
+          <div class="scanline-row">
+            <span class="scanline-label">density</span>
+            <input type="range" min="10" max="120" value="30" style="flex:1;accent-color:var(--teal)"
+              oninput="updateParticleDensity(this.value);document.getElementById('pd-val').textContent=this.value" />
+            <span class="scanline-val" id="pd-val">30</span>
+          </div>
+          <div class="scanline-row">
+            <span class="scanline-label">speed</span>
+            <input type="range" min="1" max="10" value="3" style="flex:1;accent-color:var(--teal)"
+              oninput="updateParticleSpeed(this.value);document.getElementById('ps-val').textContent=this.value" />
+            <span class="scanline-val" id="ps-val">3</span>
+          </div>
+          <div class="scanline-row">
+            <span class="scanline-label">size</span>
+            <input type="range" min="1" max="6" value="2" style="flex:1;accent-color:var(--teal)"
+              oninput="updateParticleSize(this.value);document.getElementById('pz-val').textContent=this.value" />
+            <span class="scanline-val" id="pz-val">2</span>
+          </div>
+          <div class="color-row" style="padding:8px 0">
+            <span class="color-label">particle color</span>
+            <div class="color-swatch"><div class="color-swatch-bg" id="sw-particle" style="background:#00F6D6"></div>
+            <input type="color" value="#00F6D6" oninput="updateParticleColor(this.value);document.getElementById('sw-particle').style.background=this.value" /></div>
+          </div>
+        </div>
+
+        <!-- GRID CONTROLS -->
+        <div id="grid-control" style="display:none">
+          <div class="scanline-row">
+            <span class="scanline-label">grid size</span>
+            <input type="range" min="16" max="80" value="32" style="flex:1;accent-color:var(--teal)"
+              oninput="updateGridSize(this.value);document.getElementById('gs-val').textContent=this.value" />
+            <span class="scanline-val" id="gs-val">32</span>
+          </div>
+          <div class="scanline-row">
+            <span class="scanline-label">opacity</span>
+            <input type="range" min="1" max="20" value="6" style="flex:1;accent-color:var(--teal)"
+              oninput="updateGridOpacity(this.value);document.getElementById('go-val').textContent=this.value" />
+            <span class="scanline-val" id="go-val">6</span>
+          </div>
+          <div class="color-row" style="padding:8px 0">
+            <span class="color-label">grid color</span>
+            <div class="color-swatch"><div class="color-swatch-bg" id="sw-grid" style="background:#00F6D6"></div>
+            <input type="color" value="#00F6D6" oninput="updateGridColor(this.value);document.getElementById('sw-grid').style.background=this.value" /></div>
+          </div>
+        </div>
+
+        <!-- IMAGE CONTROLS -->
+        <div id="image-control" style="display:none">
+          <div class="forge-field" style="margin-top:8px">
+            <label class="forge-label">background image</label>
+            <div id="bg-image-preview" style="
+              width:100%;height:80px;border-radius:8px;border:1px solid var(--border);
+              background:var(--surface2);display:flex;align-items:center;justify-content:center;
+              margin-bottom:8px;background-size:cover;background-position:center;
+              color:var(--subtext);font-size:var(--subtext-size)">no image</div>
+            <button onclick="document.getElementById('bg-image-input').click()" style="
+              width:100%;padding:10px;background:var(--surface);border:1px solid var(--border);
+              border-radius:8px;color:var(--text);font-family:var(--font-ui);
+              font-size:var(--subtext-size);cursor:pointer;letter-spacing:0.06em">
+              + upload image
+            </button>
+            <input type="file" id="bg-image-input" accept="image/*" style="display:none"
+              onchange="loadBgImage(this)" />
+          </div>
+          <div class="scanline-row" style="margin-top:4px">
+            <span class="scanline-label">opacity</span>
+            <input type="range" min="10" max="100" value="80" style="flex:1;accent-color:var(--teal)"
+              oninput="updateBgImageOpacity(this.value);document.getElementById('bi-val').textContent=this.value+'%'" />
+            <span class="scanline-val" id="bi-val">80%</span>
+          </div>
+          <div class="forge-field" style="margin-top:8px">
+            <label class="forge-label">fit</label>
+            <div style="display:flex;gap:6px">
+              <div class="bg-chip selected" id="fit-cover" onclick="updateBgImageFit('cover')">cover</div>
+              <div class="bg-chip" id="fit-contain" onclick="updateBgImageFit('contain')">contain</div>
+              <div class="bg-chip" id="fit-repeat" onclick="updateBgImageFit('repeat')">tile</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
