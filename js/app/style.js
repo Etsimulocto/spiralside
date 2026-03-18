@@ -361,11 +361,28 @@ function renderSlot(i) {
   if (slotEl) slotEl.style.borderColor = s.teal || 'var(--border)';
 }
 export function saveSlot(i) {
-  const name = prompt('Name this preset:', 'preset ' + (i+1));
-  if (name === null) return;
-  const data = { ...pendingStyle, _name: name || ('preset ' + (i+1)) };
-  localStorage.setItem('ss_slot_' + i, JSON.stringify(data));
-  renderSlot(i);
+  const slotEl = document.getElementById('slot-' + i);
+  if (!slotEl) return;
+  // Remove any existing input
+  const existing = slotEl.querySelector('.slot-input');
+  if (existing) { existing.remove(); return; }
+  const inp = document.createElement('input');
+  inp.className = 'slot-input';
+  inp.value = 'preset ' + (i+1);
+  inp.style.cssText = 'width:100%;background:var(--surface2);border:1px solid var(--teal);border-radius:6px;padding:4px 8px;color:var(--text);font-family:var(--font-ui);font-size:var(--subtext-size);margin-top:4px;outline:none;box-sizing:border-box';
+  slotEl.appendChild(inp);
+  inp.focus(); inp.select();
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const name = inp.value.trim() || ('preset ' + (i+1));
+      const data = { ...pendingStyle, _name: name };
+      localStorage.setItem('ss_slot_' + i, JSON.stringify(data));
+      inp.remove();
+      renderSlot(i);
+    }
+    if (e.key === 'Escape') inp.remove();
+  });
+  inp.addEventListener('blur', () => setTimeout(() => inp.remove(), 200));
 }
 export function loadSlot(i) {
   const raw = localStorage.getItem('ss_slot_' + i);
