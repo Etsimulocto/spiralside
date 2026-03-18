@@ -283,6 +283,10 @@ export function applyAndSaveStyle() {
   const _save = { ...pendingStyle };
   delete _save.bgImageData;
   localStorage.setItem('ss_style', JSON.stringify(_save));
+  // Keep IDB bg_image in sync
+  if (bgImageData) {
+    import('./db.js').then(({ dbSet }) => dbSet('bg_image', bgImageData));
+  }
   applyAllBgLayers();
 }
 
