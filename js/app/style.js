@@ -297,7 +297,18 @@ export function updateParticleDensity(val) {
 export function loadSavedStyle() {
   try {
     const saved = localStorage.getItem('ss_style');
-    if (saved) { const s = { ...DEFAULT_STYLE, ...JSON.parse(saved) }; applyStyleVars(s); applyBgType(s.bgType||'solid'); }
+    if (saved) {
+      const s = { ...DEFAULT_STYLE, ...JSON.parse(saved) };
+      applyStyleVars(s);
+      applyBgType(s.bgType||'solid');
+      if (s.bgImageData) {
+        bgImageData = s.bgImageData;
+        bgImageOpacity = s.bgImageOpacity || 80;
+        bgImageFit = s.bgImageFit || 'cover';
+        const prev = document.getElementById('bg-image-preview');
+        if (prev) { prev.style.backgroundImage = 'url(' + bgImageData + ')'; prev.textContent = ''; }
+      }
+    }
   } catch {}
 }
 
@@ -455,6 +466,9 @@ export function loadBgImage(input) {
   const reader = new FileReader();
   reader.onload = e => {
     bgImageData = e.target.result;
+    pendingStyle.bgImageData = bgImageData;
+    pendingStyle.bgImageOpacity = bgImageOpacity;
+    pendingStyle.bgImageFit = bgImageFit;
     const prev = document.getElementById('bg-image-preview');
     if (prev) { prev.style.backgroundImage = 'url(' + bgImageData + ')'; prev.textContent = ''; }
     applyBgType('image');
@@ -511,7 +525,7 @@ export function applyAllBgLayers() {
   if (!gridEl) {
     gridEl = document.createElement('div');
     gridEl.id = 'grid-layer';
-    gridEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:-1;';
+    gridEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1;';
     document.body.appendChild(gridEl);
   }
   if (bgLayers.grid) {
@@ -527,7 +541,7 @@ export function applyAllBgLayers() {
   if (!slEl) {
     slEl = document.createElement('div');
     slEl.id = 'scanline-layer';
-    slEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:-1;';
+    slEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:1;';
     document.body.appendChild(slEl);
   }
   if (bgLayers.scanlines) {
