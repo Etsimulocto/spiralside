@@ -640,7 +640,7 @@ export function syncBgToggles() {
 }
 
 // ── BG PRESET PICKER ─────────────────────────────────────────
-const HF_BG = 'https://huggingface.co/spaces/quarterbitgames/spiralside/raw/main/backgrounds/';
+const HF_BG = 'https://huggingface.co/spaces/quarterbitgames/spiralside/resolve/main/backgrounds/';
 
 export async function loadBgPresets() {
   const grid = document.getElementById('bg-preset-grid');
