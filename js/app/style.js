@@ -24,6 +24,17 @@ const DEFAULT_STYLE = {
 
 let pendingStyle = { ...DEFAULT_STYLE };
 let styleInited  = false;
+
+// ── BG CONTROL VARS (must be declared before startParticles) ──
+let particleSpeed  = 3;
+let particleSize   = 2;
+let particleColor  = '#00F6D6';
+let gridSize       = 32;
+let gridOpacity    = 6;
+let gridColor      = '#00F6D6';
+let bgImageData    = null;
+let bgImageOpacity = 80;
+let bgImageFit     = 'cover';
 let particleAnim = null;
 let particles    = [];
 
@@ -414,15 +425,7 @@ export function loadSlot(i) {
 }
 
 // ── BACKGROUND EXTENDED CONTROLS ─────────────────────────────
-let particleSpeed = 3;
-let particleSize  = 2;
-let particleColor = '#00F6D6';
-let gridSize      = 32;
-let gridOpacity   = 6;
-let gridColor     = '#00F6D6';
-let bgImageData   = null;
-let bgImageOpacity = 80;
-let bgImageFit    = 'cover';
+// particle/grid/image vars moved to top
 
 export function updateParticleSpeed(v) { particleSpeed = parseInt(v); stopParticles(); startParticles(); }
 export function updateParticleSize(v)  { particleSize  = parseFloat(v); stopParticles(); startParticles(); }
