@@ -302,10 +302,19 @@ export function loadSavedStyle() {
       const s = { ...DEFAULT_STYLE, ...JSON.parse(saved) };
       applyStyleVars(s);
       applyBgType(s.bgType||'solid');
-      if (s.bgImageData) {
-        bgImageData = s.bgImageData;
-        bgImageOpacity = s.bgImageOpacity || 80;
-        bgImageFit = s.bgImageFit || 'cover';
+      // bgImageData loaded from IDB below
+      bgImageOpacity = s.bgImageOpacity || 80;
+      bgImageFit = s.bgImageFit || 'cover';
+      // Load bg image from IDB if it was saved
+      if (s.hasBgImage) {
+        import('./db.js').then(({ dbGet }) => dbGet('bg_image').then(data => {
+          if (data) {
+            bgImageData = data;
+            const prev = document.getElementById('bg-image-preview');
+            if (prev) { prev.style.backgroundImage = 'url(' + data + ')'; prev.textContent = ''; }
+            applyAllBgLayers();
+          }
+        }));
       }
       if (s.bgLayers) {
         Object.assign(bgLayers, s.bgLayers);
