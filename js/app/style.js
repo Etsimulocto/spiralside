@@ -292,21 +292,23 @@ function startParticles() {
   resize();
   window.addEventListener('resize', resize);
   const count = parseInt(pendingStyle.particleDensity) || 30;
+  const spd   = (particleSpeed || 3) * 0.1;
+  const sz    = particleSize  || 2;
+  const col   = particleColor || pendingStyle.teal || '#00F6D6';
   particles = Array.from({ length: count }, () => ({
     x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-    r: Math.random() * 1.5 + 0.4,
-    vx: (Math.random() - 0.5) * 0.3, vy: -Math.random() * 0.4 - 0.1,
+    r: Math.random() * sz + 0.4,
+    vx: (Math.random() - 0.5) * spd, vy: -Math.random() * spd - spd * 0.3,
     life: Math.random(),
   }));
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const color = pendingStyle.teal || '#00F6D6';
     particles.forEach(p => {
       p.x += p.vx; p.y += p.vy; p.life -= 0.003;
       if (p.life <= 0 || p.y < 0) { p.x = Math.random() * canvas.width; p.y = canvas.height + 5; p.life = 0.6 + Math.random() * 0.4; }
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = color + Math.floor(p.life * 180).toString(16).padStart(2, '0');
+      ctx.fillStyle = col + Math.floor(p.life * 180).toString(16).padStart(2, '0');
       ctx.fill();
     });
     particleAnim = requestAnimationFrame(draw);
