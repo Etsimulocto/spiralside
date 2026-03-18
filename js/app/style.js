@@ -434,6 +434,13 @@ function renderSlot(i) {
   if (slotEl) slotEl.style.borderColor = s.teal || 'var(--border)';
 }
 export function saveSlot(i) {
+  // Save bg image to IDB with slot-specific key
+  if (bgImageData) {
+    import('./db.js').then(({ dbSet }) => {
+      dbSet('bg_image_slot_' + i, bgImageData);
+      console.log('[slot] saved bg image to slot', i);
+    });
+  }
   const slotEl = document.getElementById('slot-' + i);
   if (!slotEl) return;
   // Remove any existing input
@@ -460,10 +467,36 @@ export function saveSlot(i) {
 export function loadSlot(i) {
   const raw = localStorage.getItem('ss_slot_' + i);
   if (!raw) return;
-  pendingStyle = { ...DEFAULT_STYLE, ...JSON.parse(raw) };
+  const saved = JSON.parse(raw);
+  pendingStyle = { ...DEFAULT_STYLE, ...saved };
+  if (saved.bgLayers) Object.assign(bgLayers, saved.bgLayers);
+  bgImageOpacity = saved.bgImageOpacity || 80;
+  bgImageFit = saved.bgImageFit || 'cover';
   applyStyleVars(pendingStyle);
-  applyBgType(pendingStyle.bgType || 'solid');
   updateSwatches();
+  applyAllBgLayers();
+  // Load slot-specific bg image from IDB
+  import('./db.js').then(({ dbGet, dbSet }) => {
+    dbGet('bg_image_slot_' + i).then(data => {
+      if (data) {
+        bgImageData = data;
+        dbSet('bg_image', data); // update main key too
+        if (bgLayers.image) {
+          const fit = bgImageFit || 'cover';
+          document.body.style.backgroundImage = 'url(' + data + ')';
+          document.body.style.backgroundSize = fit === 'repeat' ? 'auto' : fit;
+          document.body.style.backgroundRepeat = fit === 'repeat' ? 'repeat' : 'no-repeat';
+          document.body.style.backgroundPosition = 'center';
+          document.body.style.backgroundAttachment = 'fixed';
+          const op = (bgImageOpacity || 80) / 100;
+          document.documentElement.style.setProperty('--bg-overlay-opacity', (1-op).toFixed(2));
+        }
+      } else {
+        bgImageData = null;
+        document.body.style.backgroundImage = '';
+      }
+    });
+  });
 }
 
 // ── BACKGROUND EXTENDED CONTROLS ─────────────────────────────
