@@ -121,7 +121,7 @@ initComic(() => checkAuthAndShow(onAppReady));
 // ── STYLE MODULE ──────────────────────────────────────────────
 import {
   initStylePanel, applyThemePreset, previewColor, selectBgType,
-  previewScanlines, selectBubbleShape, selectFont, previewSlider,
+  previewScanlines, selectBubbleShape, selectFont, previewSlider, setFontRole, selectFontUnified,
   applyAndSaveStyle, resetStyle, updateParticleDensity, loadSavedStyle
 } from './style.js';
 
@@ -132,6 +132,8 @@ window.selectBgType         = selectBgType;
 window.previewScanlines     = previewScanlines;
 window.selectBubbleShape    = selectBubbleShape;
 window.selectFont           = selectFont;
+window.setFontRole          = setFontRole;
+window.selectFontUnified    = selectFontUnified;
 window.previewSlider        = previewSlider;
 window.applyAndSaveStyle    = applyAndSaveStyle;
 window.resetStyle           = resetStyle;

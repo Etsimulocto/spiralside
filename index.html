@@ -1512,7 +1512,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.116</div>
+      <div class="version-badge" id="version-badge">v0.8.117</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
@@ -2138,29 +2138,50 @@
 
         <!-- UI Font -->
         <div class="forge-field">
-          <label class="forge-label">ui font</label>
-          <div class="font-grid" id="font-grid-ui-v">
-            <div class="font-chip" data-font="'DM Mono',monospace" style="font-family:'DM Mono',monospace" onclick="selectFont('ui',this)">DM Mono</div>
-            <div class="font-chip" data-font="'JetBrains Mono',monospace" style="font-family:'JetBrains Mono',monospace" onclick="selectFont('ui',this)">JetBrains</div>
-            <div class="font-chip" data-font="'IBM Plex Mono',monospace" style="font-family:'IBM Plex Mono',monospace" onclick="selectFont('ui',this)">IBM Plex</div>
-            <div class="font-chip" data-font="'Inter',sans-serif" style="font-family:'Inter',sans-serif" onclick="selectFont('ui',this)">Inter</div>
-            <div class="font-chip" data-font="'Plus Jakarta Sans',sans-serif" style="font-family:'Plus Jakarta Sans',sans-serif" onclick="selectFont('ui',this)">Jakarta</div>
-            <div class="font-chip" data-font="'Nunito',sans-serif" style="font-family:'Nunito',sans-serif" onclick="selectFont('ui',this)">Nunito</div>
-            <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFont('ui',this)">Outfit</div>
-            <div class="font-chip" data-font="'Kanit',sans-serif" style="font-family:'Kanit',sans-serif" onclick="selectFont('ui',this)">Kanit</div>
+          <label class="forge-label">fonts</label>
+          <!-- Role selector -->
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <button id="font-role-display" onclick="setFontRole('display')" style="
+              flex:1;padding:8px 4px;background:var(--teal);border:1px solid var(--teal);
+              border-radius:8px;color:#000;font-family:var(--font-ui);font-size:var(--subtext-size);
+              font-weight:700;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">
+              DISPLAY
+            </button>
+            <button id="font-role-ui" onclick="setFontRole('ui')" style="
+              flex:1;padding:8px 4px;background:var(--surface);border:1px solid var(--border);
+              border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:var(--subtext-size);
+              font-weight:700;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">
+              UI
+            </button>
+            <button id="font-role-body" onclick="setFontRole('body')" style="
+              flex:1;padding:8px 4px;background:var(--surface);border:1px solid var(--border);
+              border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:var(--subtext-size);
+              font-weight:700;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">
+              BODY
+            </button>
           </div>
-        </div>
-
-        <!-- Display Font -->
-        <div class="forge-field">
-          <label class="forge-label">display / logo font</label>
-          <div class="font-grid" id="font-grid-display-v">
-            <div class="font-chip" data-font="'Syne',sans-serif" style="font-family:'Syne',sans-serif" onclick="selectFont('display',this)">Syne</div>
-            <div class="font-chip" data-font="'Bebas Neue',sans-serif" style="font-family:'Bebas Neue',sans-serif" onclick="selectFont('display',this)">BEBAS</div>
-            <div class="font-chip" data-font="'Bricolage Grotesque',sans-serif" style="font-family:'Bricolage Grotesque',sans-serif" onclick="selectFont('display',this)">Bricolage</div>
-            <div class="font-chip" data-font="'Kanit',sans-serif" style="font-family:'Kanit',sans-serif" onclick="selectFont('display',this)">Kanit</div>
-            <div class="font-chip" data-font="'Raleway',sans-serif" style="font-family:'Raleway',sans-serif" onclick="selectFont('display',this)">Raleway</div>
-            <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFont('display',this)">Playfair</div>
+          <!-- Role labels -->
+          <div id="font-role-label" style="
+            font-size:var(--subtext-size);color:var(--subtext);letter-spacing:0.08em;
+            margin-bottom:8px;text-transform:uppercase">
+            display — logo &amp; section headers
+          </div>
+          <!-- Unified font grid -->
+          <div class="font-grid" id="font-grid-unified" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="font-chip" data-font="'Syne',sans-serif" style="font-family:'Syne',sans-serif" onclick="selectFontUnified(this)">Syne</div>
+            <div class="font-chip" data-font="'Bebas Neue',sans-serif" style="font-family:'Bebas Neue',sans-serif" onclick="selectFontUnified(this)">BEBAS</div>
+            <div class="font-chip" data-font="'Bricolage Grotesque',sans-serif" style="font-family:'Bricolage Grotesque',sans-serif" onclick="selectFontUnified(this)">Bricolage</div>
+            <div class="font-chip" data-font="'Kanit',sans-serif" style="font-family:'Kanit',sans-serif" onclick="selectFontUnified(this)">Kanit</div>
+            <div class="font-chip" data-font="'Raleway',sans-serif" style="font-family:'Raleway',sans-serif" onclick="selectFontUnified(this)">Raleway</div>
+            <div class="font-chip" data-font="'Playfair Display',serif" style="font-family:'Playfair Display',serif" onclick="selectFontUnified(this)">Playfair</div>
+            <div class="font-chip" data-font="'DM Mono',monospace" style="font-family:'DM Mono',monospace" onclick="selectFontUnified(this)">DM Mono</div>
+            <div class="font-chip" data-font="'JetBrains Mono',monospace" style="font-family:'JetBrains Mono',monospace" onclick="selectFontUnified(this)">JetBrains</div>
+            <div class="font-chip" data-font="'IBM Plex Mono',monospace" style="font-family:'IBM Plex Mono',monospace" onclick="selectFontUnified(this)">IBM Plex</div>
+            <div class="font-chip" data-font="'Inter',sans-serif" style="font-family:'Inter',sans-serif" onclick="selectFontUnified(this)">Inter</div>
+            <div class="font-chip" data-font="'Plus Jakarta Sans',sans-serif" style="font-family:'Plus Jakarta Sans',sans-serif" onclick="selectFontUnified(this)">Jakarta</div>
+            <div class="font-chip" data-font="'Nunito',sans-serif" style="font-family:'Nunito',sans-serif" onclick="selectFontUnified(this)">Nunito</div>
+            <div class="font-chip" data-font="'Outfit',sans-serif" style="font-family:'Outfit',sans-serif" onclick="selectFontUnified(this)">Outfit</div>
+            <div class="font-chip" data-font="'Space Grotesk',sans-serif" style="font-family:'Space Grotesk',sans-serif" onclick="selectFontUnified(this)">Grotesk</div>
           </div>
         </div>
 

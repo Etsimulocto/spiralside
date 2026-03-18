@@ -302,3 +302,39 @@ function stopParticles() {
   if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
   particles = [];
 }
+
+// ── UNIFIED FONT PICKER ───────────────────────────────────────
+let activeFontRole = 'display';
+const ROLE_LABELS = {
+  display: 'display — logo & section headers',
+  ui:      'ui — tabs, buttons, labels',
+  body:    'body — chat text & inputs',
+};
+export function setFontRole(role) {
+  activeFontRole = role;
+  ['display','ui','body'].forEach(r => {
+    const btn = document.getElementById('font-role-' + r);
+    if (!btn) return;
+    const on = r === role;
+    btn.style.background  = on ? 'var(--teal)' : 'var(--surface)';
+    btn.style.borderColor = on ? 'var(--teal)' : 'var(--border)';
+    btn.style.color       = on ? '#000' : 'var(--subtext)';
+  });
+  const lbl = document.getElementById('font-role-label');
+  if (lbl) lbl.textContent = ROLE_LABELS[role] || '';
+  const cur = role === 'display' ? pendingStyle.fontDisplay
+            : role === 'ui'      ? pendingStyle.fontUi
+            :                     (pendingStyle.fontBody || "'Inter',sans-serif");
+  document.querySelectorAll('#font-grid-unified .font-chip').forEach(c => {
+    c.classList.toggle('selected', c.dataset.font === cur);
+  });
+}
+export function selectFontUnified(el) {
+  document.querySelectorAll('#font-grid-unified .font-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const font = el.dataset.font;
+  if (activeFontRole === 'display')      pendingStyle.fontDisplay = font;
+  else if (activeFontRole === 'ui')      pendingStyle.fontUi = font;
+  else { pendingStyle.fontBody = font; document.documentElement.style.setProperty('--font-body', font); }
+  applyStyleVars(pendingStyle);
+}
