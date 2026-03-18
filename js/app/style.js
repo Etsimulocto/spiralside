@@ -311,30 +311,20 @@ export function loadSavedStyle() {
       bgImageOpacity = s.bgImageOpacity || 80;
       bgImageFit = s.bgImageFit || 'cover';
       // Load bg image from IDB if it was saved
+      // Restore bgLayers first so applyAllBgLayers knows what to show
+      if (s.bgLayers) Object.assign(bgLayers, s.bgLayers);
+      // Non-image layers apply immediately
+      applyAllBgLayers();
+      // Image loads async from IDB — apply after data arrives
       if (s.hasBgImage) {
         import('./db.js').then(({ dbGet }) => dbGet('bg_image').then(data => {
           if (data) {
             bgImageData = data;
             const prev = document.getElementById('bg-image-preview');
             if (prev) { prev.style.backgroundImage = 'url(' + data + ')'; prev.textContent = ''; }
-            applyAllBgLayers();
+            applyAllBgLayers(); // re-run now that image is loaded
           }
         }));
-      }
-      if (s.bgLayers) {
-        Object.assign(bgLayers, s.bgLayers);
-        // Sync toggle UI to restored state
-        ['image','particles','grid','scanlines'].forEach(layer => {
-          const tog = document.getElementById('toggle-' + layer);
-          if (!tog) return;
-          const on = bgLayers[layer];
-          tog.style.background = on ? 'var(--teal)' : 'var(--muted)';
-          tog.querySelector('div').style.transform = on ? 'translateX(18px)' : 'translateX(0)';
-          const ctrls = {image:'image-control',particles:'particle-control',grid:'grid-control',scanlines:'scanline-control'};
-          const el = document.getElementById(ctrls[layer]);
-          if (el) el.style.display = on ? 'block' : 'none';
-        });
-        applyAllBgLayers();
       }
     }
   } catch {}
