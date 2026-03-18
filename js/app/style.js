@@ -183,10 +183,11 @@ export function selectBgType(el, type) {
 }
 
 export function applyBgType(type) {
+  // Legacy no-op — bg layers now handled by applyAllBgLayers + toggleBgLayer
+  // Only handle particles canvas for backward compat
   const canvas = document.getElementById('particles-canvas');
   if (type === 'particles') { canvas.classList.add('active'); startParticles(); }
-  else { canvas.classList.remove('active'); stopParticles(); }
-  if (type === 'scanlines') {
+  if (false && type === 'scanlines') {
     document.body.style.backgroundImage = 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,246,214,0.03) 2px,rgba(0,246,214,0.03) 4px)';
     document.body.style.backgroundSize = '';
   } else if (type === 'grid') {
@@ -215,6 +216,9 @@ export function applyBgType(type) {
 }
 
 export function previewScanlines(val) {
+  pendingStyle.scanlineIntensity = parseInt(val);
+  if (bgLayers.scanlines) applyAllBgLayers();
+  return; // old direct body style removed
   const v = (val / 100).toFixed(3);
   document.body.style.backgroundImage = 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,246,214,' + v + ') 2px,rgba(0,246,214,' + v + ') 4px)';
 }
