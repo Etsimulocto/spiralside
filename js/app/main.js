@@ -19,6 +19,8 @@ import { initMusic }          from './music.js';
 import { initImagine, injectImagineStyles }    from './imagine2.js';
 import { initMusicView, destroyMusicView } from './musicview.js';
 import { initBuild, loadBotIntoForm }              from './build.js';
+import { initCodex, openSceneForm, openWorldForm,
+         downloadCodexCard, deleteCodexCard }          from './codex.js';
 import { initLibrary, openPanelEditor, deletePanel,
          openBookBuilder, addPanelToBook,
          removePanelFromBook, movePanelInBook,
@@ -63,7 +65,11 @@ window.addPanelToBook    = addPanelToBook;
 window.removePanelFromBook = removePanelFromBook;
 window.movePanelInBook   = movePanelInBook;
 window.deleteBook        = deleteBook;
-window.playCustomComic   = playCustomComic;
+window.playCustomComic      = playCustomComic;
+window.openSceneForm        = openSceneForm;
+window.openWorldForm        = openWorldForm;
+window.downloadCodexCard    = downloadCodexCard;
+window.deleteCodexCard      = deleteCodexCard;
 
 // ── APP READY ─────────────────────────────────────────────────
 // Called after auth check confirms a valid session
@@ -93,6 +99,7 @@ async function onAppReady() {
   initVault();
   initBuild();
   initLibrary();
+  initCodex();
   buildFAB();
 
   // 6. Populate forms and UI
