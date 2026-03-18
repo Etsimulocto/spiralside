@@ -198,13 +198,14 @@ export function applyBgType(type) {
     document.body.style.backgroundSize = gs + ' ' + gs;
   } else if (type === 'image') {
     if (bgImageData) {
-      document.body.style.backgroundImage = 'url(' + bgImageData + ')';
-      document.body.style.backgroundSize  = bgImageFit === 'repeat' ? 'auto' : bgImageFit;
-      document.body.style.backgroundRepeat = bgImageFit === 'repeat' ? 'repeat' : 'no-repeat';
+      const op = (bgImageOpacity || 80) / 100;
+      document.body.style.backgroundImage    = 'url(' + bgImageData + ')';
+      document.body.style.backgroundSize     = bgImageFit === 'repeat' ? 'auto' : bgImageFit;
+      document.body.style.backgroundRepeat   = bgImageFit === 'repeat' ? 'repeat' : 'no-repeat';
       document.body.style.backgroundPosition = 'center';
-      document.body.style.opacity = '';
-      const overlay = document.getElementById('bg-overlay');
-      if (overlay) overlay.style.opacity = (1 - (bgImageOpacity||80)/100).toFixed(2);
+      document.body.style.backgroundAttachment = 'fixed';
+      // Use a dark overlay via --bg-overlay CSS var so UI stays visible
+      document.documentElement.style.setProperty('--bg-overlay-opacity', (1 - op).toFixed(2));
     }
   } else {
     document.body.style.backgroundImage = '';
