@@ -209,9 +209,11 @@ export function applyBgType(type) {
       document.documentElement.style.setProperty('--bg-overlay-opacity', (1 - op).toFixed(2));
     }
   } else {
-    document.body.style.backgroundImage = '';
-    document.body.style.backgroundSize  = '';
-    document.body.style.backgroundRepeat = '';
+    if (!bgLayers.image) {
+      document.body.style.backgroundImage = '';
+      document.body.style.backgroundSize  = '';
+      document.body.style.backgroundRepeat = '';
+    }
   }
 }
 
@@ -281,6 +283,7 @@ export function applyAndSaveStyle() {
   const _save = { ...pendingStyle };
   delete _save.bgImageData;
   localStorage.setItem('ss_style', JSON.stringify(_save));
+  applyAllBgLayers();
 }
 
 export function resetStyle() {
