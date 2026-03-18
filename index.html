@@ -1512,7 +1512,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.118</div>
+      <div class="version-badge" id="version-badge">v0.8.119</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
@@ -2078,6 +2078,32 @@
       </div>
       <div class="forge-section-body" id="sbody-themes">
         <div class="theme-grid" id="theme-grid-view"></div>
+        <!-- Custom save slots -->
+        <div style="margin-top:12px">
+          <div style="font-size:var(--subtext-size);color:var(--subtext);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px">my presets</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="custom-slot" id="slot-0" onclick="loadSlot(0)" style="position:relative;padding:12px 10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.2s;min-height:52px">
+              <div class="slot-preview" id="slot-preview-0" style="display:flex;gap:4px;margin-bottom:6px"></div>
+              <div class="slot-name" id="slot-name-0" style="font-size:var(--subtext-size);color:var(--subtext);letter-spacing:0.06em">empty</div>
+              <button onclick="event.stopPropagation();saveSlot(0)" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--subtext);font-size:0.7rem;cursor:pointer;padding:2px 4px;border-radius:4px" title="save to slot">💾</button>
+            </div>
+            <div class="custom-slot" id="slot-1" onclick="loadSlot(1)" style="position:relative;padding:12px 10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.2s;min-height:52px">
+              <div class="slot-preview" id="slot-preview-1" style="display:flex;gap:4px;margin-bottom:6px"></div>
+              <div class="slot-name" id="slot-name-1" style="font-size:var(--subtext-size);color:var(--subtext);letter-spacing:0.06em">empty</div>
+              <button onclick="event.stopPropagation();saveSlot(1)" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--subtext);font-size:0.7rem;cursor:pointer;padding:2px 4px;border-radius:4px" title="save to slot">💾</button>
+            </div>
+            <div class="custom-slot" id="slot-2" onclick="loadSlot(2)" style="position:relative;padding:12px 10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.2s;min-height:52px">
+              <div class="slot-preview" id="slot-preview-2" style="display:flex;gap:4px;margin-bottom:6px"></div>
+              <div class="slot-name" id="slot-name-2" style="font-size:var(--subtext-size);color:var(--subtext);letter-spacing:0.06em">empty</div>
+              <button onclick="event.stopPropagation();saveSlot(2)" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--subtext);font-size:0.7rem;cursor:pointer;padding:2px 4px;border-radius:4px" title="save to slot">💾</button>
+            </div>
+            <div class="custom-slot" id="slot-3" onclick="loadSlot(3)" style="position:relative;padding:12px 10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.2s;min-height:52px">
+              <div class="slot-preview" id="slot-preview-3" style="display:flex;gap:4px;margin-bottom:6px"></div>
+              <div class="slot-name" id="slot-name-3" style="font-size:var(--subtext-size);color:var(--subtext);letter-spacing:0.06em">empty</div>
+              <button onclick="event.stopPropagation();saveSlot(3)" style="position:absolute;top:6px;right:6px;background:none;border:none;color:var(--subtext);font-size:0.7rem;cursor:pointer;padding:2px 4px;border-radius:4px" title="save to slot">💾</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

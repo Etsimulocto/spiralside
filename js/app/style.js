@@ -239,6 +239,8 @@ function updateSwatches() {
 }
 
 export function applyAndSaveStyle() {
+  const btn = document.querySelector('[onclick="applyAndSaveStyle()"]');
+  if (btn) { btn.textContent = '✓ saved'; btn.style.opacity = '0.7'; setTimeout(() => { btn.textContent = 'apply + save theme'; btn.style.opacity = '1'; }, 1200); }
   applyStyleVars(pendingStyle);
   applyBgType(pendingStyle.bgType || 'solid');
   localStorage.setItem('ss_style', JSON.stringify(pendingStyle));
@@ -337,4 +339,39 @@ export function selectFontUnified(el) {
   else if (activeFontRole === 'ui')      pendingStyle.fontUi = font;
   else { pendingStyle.fontBody = font; document.documentElement.style.setProperty('--font-body', font); }
   applyStyleVars(pendingStyle);
+}
+
+// ── CUSTOM THEME SLOTS ────────────────────────────────────────
+export function initSlots() {
+  for (let i = 0; i < 4; i++) renderSlot(i);
+}
+function renderSlot(i) {
+  const raw = localStorage.getItem('ss_slot_' + i);
+  const nameEl    = document.getElementById('slot-name-' + i);
+  const previewEl = document.getElementById('slot-preview-' + i);
+  const slotEl    = document.getElementById('slot-' + i);
+  if (!nameEl) return;
+  if (!raw) { nameEl.textContent = 'empty'; previewEl.innerHTML = ''; return; }
+  const s = JSON.parse(raw);
+  nameEl.textContent = s._name || ('preset ' + (i+1));
+  nameEl.style.color = 'var(--text)';
+  previewEl.innerHTML = [s.bg, s.teal, s.pink, s.purple].map(c =>
+    '<div style="width:12px;height:12px;border-radius:50%;background:' + (c||'#333') + '"></div>'
+  ).join('');
+  if (slotEl) slotEl.style.borderColor = s.teal || 'var(--border)';
+}
+export function saveSlot(i) {
+  const name = prompt('Name this preset:', 'preset ' + (i+1));
+  if (name === null) return;
+  const data = { ...pendingStyle, _name: name || ('preset ' + (i+1)) };
+  localStorage.setItem('ss_slot_' + i, JSON.stringify(data));
+  renderSlot(i);
+}
+export function loadSlot(i) {
+  const raw = localStorage.getItem('ss_slot_' + i);
+  if (!raw) return;
+  pendingStyle = { ...DEFAULT_STYLE, ...JSON.parse(raw) };
+  applyStyleVars(pendingStyle);
+  applyBgType(pendingStyle.bgType || 'solid');
+  updateSwatches();
 }

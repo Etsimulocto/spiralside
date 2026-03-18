@@ -122,7 +122,7 @@ initComic(() => checkAuthAndShow(onAppReady));
 import {
   initStylePanel, applyThemePreset, previewColor, selectBgType,
   previewScanlines, selectBubbleShape, selectFont, previewSlider, setFontRole, selectFontUnified,
-  applyAndSaveStyle, resetStyle, updateParticleDensity, loadSavedStyle
+  applyAndSaveStyle, resetStyle, updateParticleDensity, loadSavedStyle, initSlots, saveSlot, loadSlot
 } from './style.js';
 
 window.initStylePanel       = initStylePanel;
@@ -137,6 +137,9 @@ window.selectFontUnified    = selectFontUnified;
 window.previewSlider        = previewSlider;
 window.applyAndSaveStyle    = applyAndSaveStyle;
 window.resetStyle           = resetStyle;
+window.saveSlot             = saveSlot;
+window.loadSlot             = loadSlot;
 window.updateParticleDensity = updateParticleDensity;
 
 loadSavedStyle();
+initSlots();
