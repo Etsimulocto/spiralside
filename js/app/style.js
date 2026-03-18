@@ -511,7 +511,7 @@ export function applyAllBgLayers() {
   if (!gridEl) {
     gridEl = document.createElement('div');
     gridEl.id = 'grid-layer';
-    gridEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:2;';
+    gridEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:-1;';
     document.body.appendChild(gridEl);
   }
   if (bgLayers.grid) {
@@ -527,7 +527,7 @@ export function applyAllBgLayers() {
   if (!slEl) {
     slEl = document.createElement('div');
     slEl.id = 'scanline-layer';
-    slEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:3;';
+    slEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:-1;';
     document.body.appendChild(slEl);
   }
   if (bgLayers.scanlines) {

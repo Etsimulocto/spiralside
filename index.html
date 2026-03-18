@@ -804,7 +804,7 @@
 
     /* ── PARTICLES CANVAS ── */
     #particles-canvas {
-      position: fixed; inset: 0; z-index: 4;
+      position: fixed; inset: 0; z-index: -1;
       pointer-events: none;
       opacity: 0;
       transition: opacity 1s ease;
@@ -1433,7 +1433,7 @@
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- COMIC INTRO                                               -->
 <!-- ══════════════════════════════════════════════════════════ -->
-<canvas id="particles-canvas"></canvas><div id="bg-overlay" style="position:fixed;inset:0;background:var(--bg);opacity:var(--bg-overlay-opacity,0);pointer-events:none;z-index:1;transition:opacity 0.3s"></div><div id="screen-comic">
+<canvas id="particles-canvas"></canvas><div id="bg-overlay" style="position:fixed;inset:0;background:var(--bg);opacity:var(--bg-overlay-opacity,0);pointer-events:none;z-index:-1;transition:opacity 0.3s"></div><div id="screen-comic">
   <div id="comic-panel">
     <div id="comic-bg"></div>
     <div id="comic-scanlines"></div>
@@ -1513,7 +1513,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.130</div>
+      <div class="version-badge" id="version-badge">v0.8.131</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
