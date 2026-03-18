@@ -309,6 +309,17 @@ export function loadSavedStyle() {
       }
       if (s.bgLayers) {
         Object.assign(bgLayers, s.bgLayers);
+        // Sync toggle UI to restored state
+        ['image','particles','grid','scanlines'].forEach(layer => {
+          const tog = document.getElementById('toggle-' + layer);
+          if (!tog) return;
+          const on = bgLayers[layer];
+          tog.style.background = on ? 'var(--teal)' : 'var(--muted)';
+          tog.querySelector('div').style.transform = on ? 'translateX(18px)' : 'translateX(0)';
+          const ctrls = {image:'image-control',particles:'particle-control',grid:'grid-control',scanlines:'scanline-control'};
+          const el = document.getElementById(ctrls[layer]);
+          if (el) el.style.display = on ? 'block' : 'none';
+        });
         applyAllBgLayers();
       }
     }
@@ -553,4 +564,18 @@ export function applyAllBgLayers() {
     slEl.style.backgroundImage = 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,246,214,' + v + ') 2px,rgba(0,246,214,' + v + ') 4px)';
     slEl.style.display = 'block';
   } else { slEl.style.display = 'none'; }
+}
+
+export function syncBgToggles() {
+  ['image','particles','grid','scanlines'].forEach(layer => {
+    const tog = document.getElementById('toggle-' + layer);
+    if (!tog) return;
+    const on = bgLayers[layer];
+    tog.style.background = on ? 'var(--teal)' : 'var(--muted)';
+    tog.querySelector('div').style.transform = on ? 'translateX(18px)' : 'translateX(0)';
+    const ctrls = {image:'image-control',particles:'particle-control',grid:'grid-control',scanlines:'scanline-control'};
+    const el = document.getElementById(ctrls[layer]);
+    if (el) el.style.display = on ? 'block' : 'none';
+  });
+  if (bgLayers.image || bgLayers.particles || bgLayers.grid || bgLayers.scanlines) applyAllBgLayers();
 }

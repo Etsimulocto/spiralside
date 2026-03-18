@@ -100,7 +100,7 @@ export function openPanel(tab = 'store') {
   document.getElementById('panel-overlay').classList.add('open');
   document.getElementById('slide-panel').classList.add('open');
   switchPanelTab(tab);
-  if (tab === 'style') { window.initStylePanel && window.initStylePanel(); window.initSlots && window.initSlots(); }
+  if (tab === 'style') { window.initStylePanel && window.initStylePanel(); window.initSlots && window.initSlots(); window.syncBgToggles && window.syncBgToggles(); }
 }
 
 export function closePanel() {
