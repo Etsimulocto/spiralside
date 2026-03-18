@@ -278,7 +278,9 @@ export function applyAndSaveStyle() {
   if (btn) { btn.textContent = '✓ saved'; btn.style.opacity = '0.7'; setTimeout(() => { btn.textContent = 'apply + save theme'; btn.style.opacity = '1'; }, 1200); }
   applyStyleVars(pendingStyle);
   applyBgType(pendingStyle.bgType || 'solid');
-  localStorage.setItem('ss_style', JSON.stringify(pendingStyle));
+  const _save = { ...pendingStyle };
+  delete _save.bgImageData;
+  localStorage.setItem('ss_style', JSON.stringify(_save));
 }
 
 export function resetStyle() {
@@ -489,7 +491,6 @@ export function loadBgImage(input) {
   const reader = new FileReader();
   reader.onload = e => {
     bgImageData = e.target.result;
-    pendingStyle.bgImageData = bgImageData;
     pendingStyle.bgImageOpacity = bgImageOpacity;
     pendingStyle.bgImageFit = bgImageFit;
     pendingStyle.bgLayers = { ...bgLayers };
