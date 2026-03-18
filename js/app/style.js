@@ -273,6 +273,7 @@ function updateSwatches() {
 }
 
 export function applyAndSaveStyle() {
+  pendingStyle.bgLayers = { ...bgLayers };
   const btn = document.querySelector('[onclick="applyAndSaveStyle()"]');
   if (btn) { btn.textContent = '✓ saved'; btn.style.opacity = '0.7'; setTimeout(() => { btn.textContent = 'apply + save theme'; btn.style.opacity = '1'; }, 1200); }
   applyStyleVars(pendingStyle);
@@ -305,8 +306,10 @@ export function loadSavedStyle() {
         bgImageData = s.bgImageData;
         bgImageOpacity = s.bgImageOpacity || 80;
         bgImageFit = s.bgImageFit || 'cover';
-        const prev = document.getElementById('bg-image-preview');
-        if (prev) { prev.style.backgroundImage = 'url(' + bgImageData + ')'; prev.textContent = ''; }
+      }
+      if (s.bgLayers) {
+        Object.assign(bgLayers, s.bgLayers);
+        applyAllBgLayers();
       }
     }
   } catch {}
@@ -469,13 +472,14 @@ export function loadBgImage(input) {
     pendingStyle.bgImageData = bgImageData;
     pendingStyle.bgImageOpacity = bgImageOpacity;
     pendingStyle.bgImageFit = bgImageFit;
+    pendingStyle.bgLayers = { ...bgLayers };
     const prev = document.getElementById('bg-image-preview');
     if (prev) { prev.style.backgroundImage = 'url(' + bgImageData + ')'; prev.textContent = ''; }
     applyBgType('image');
   };
   reader.readAsDataURL(file);
 }
-export function updateBgImageOpacity(v) { bgImageOpacity = parseInt(v); applyAllBgLayers(); }
+export function updateBgImageOpacity(v) { bgImageOpacity = parseInt(v); pendingStyle.bgImageOpacity = bgImageOpacity; applyAllBgLayers(); }
 export function updateBgImageFit(fit) {
   bgImageFit = fit;
   ['cover','contain','repeat'].forEach(f => {
