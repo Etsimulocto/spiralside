@@ -64,6 +64,33 @@
     *::-webkit-scrollbar-thumb { background: rgba(0,246,214,0.7); border-radius: 4px; }
     *::-webkit-scrollbar-thumb:hover { background: rgba(0,246,214,0.3); }
 
+    /* CODEX */
+    #codex-view { display:flex; flex-direction:column; height:100%; overflow:hidden; }
+    .codex-tabs { display:flex; gap:6px; padding:12px 16px 0; flex-shrink:0; }
+    .codex-tab { padding:7px 18px; background:transparent; border:1px solid var(--border); border-radius:6px; color:var(--subtext); font-size:0.68rem; cursor:pointer; transition:all 0.2s; }
+    .codex-tab:hover { border-color:var(--teal); color:var(--text); }
+    .codex-tab.active { background:rgba(0,246,214,0.08); border-color:var(--teal); color:var(--teal); }
+    .codex-body { flex:1; overflow-y:auto; padding:12px 16px calc(16px + var(--safe-bot)); }
+    .codex-toolbar { display:flex; justify-content:flex-end; margin-bottom:12px; }
+    .codex-new-btn { display:flex; align-items:center; gap:6px; padding:8px 14px; background:linear-gradient(135deg,var(--teal),var(--purple)); border:none; border-radius:8px; color:#fff; font-size:0.7rem; cursor:pointer; }
+    .codex-scene-grid, .codex-world-grid { display:grid; grid-template-columns:1fr; gap:16px; }
+    .codex-card-wrap { display:flex; flex-direction:column; gap:6px; }
+    .codex-card-bar { display:flex; gap:6px; justify-content:flex-end; }
+    .codex-card-action { padding:5px 12px; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--subtext); font-size:0.65rem; cursor:pointer; transition:all 0.2s; }
+    .codex-card-action:hover { border-color:var(--teal); color:var(--teal); }
+    .codex-card-action.danger:hover { border-color:var(--pink); color:var(--pink); }
+    .codex-empty { text-align:center; padding:48px 20px; color:var(--subtext); font-size:0.78rem; line-height:1.7; }
+    .codex-field { margin-bottom:12px; }
+    .codex-field label { display:block; font-size:0.6rem; letter-spacing:0.12em; color:var(--subtext); text-transform:uppercase; margin-bottom:5px; }
+    .codex-field input, .codex-field textarea, .codex-field select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-family:var(--font-ui); font-size:0.78rem; outline:none; }
+    .codex-field input:focus, .codex-field textarea:focus, .codex-field select:focus { border-color:var(--teal); }
+    .codex-field textarea { resize:vertical; min-height:60px; line-height:1.5; }
+    .codex-field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .codex-img-slot { width:100%; aspect-ratio:16/9; background:var(--surface); border:2px dashed var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative; font-size:0.68rem; color:var(--subtext); }
+    .codex-img-slot:hover { border-color:var(--teal); }
+    .codex-img-slot.world { aspect-ratio:4/3; }
+    #codex-scene-img-preview, #codex-world-img-preview { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+    .codex-save-btn { width:100%; padding:12px; background:linear-gradient(135deg,var(--teal),var(--purple)); border:none; border-radius:10px; color:#fff; font-family:var(--font-display); font-weight:700; font-size:0.88rem; cursor:pointer; margin-top:8px; }
     /* ── IMAGINE VIEW ── */
     #view-imagine { overflow-y:auto; overflow-x:hidden; padding:20px 16px calc(80px + var(--safe-bot,0px)); height:100%; -webkit-overflow-scrolling:touch; }
     #imagine-inner { display:flex; flex-direction:column; gap:12px; width:100%; margin:0 auto; }
@@ -1513,7 +1540,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.155</div>
+      <div class="version-badge" id="version-badge">v0.8.156</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
@@ -2769,5 +2796,60 @@
   </div>
 </div>
 
+
+  <!-- CODEX VIEW -->
+  <div class="view" id="codex-view">
+    <div class="codex-tabs">
+      <button class="codex-tab active" data-tab="scenes">scenes</button>
+      <button class="codex-tab" data-tab="worlds">worlds</button>
+    </div>
+    <div class="codex-body">
+      <div class="codex-toolbar">
+        <button class="codex-new-btn" id="codex-new-scene-btn">+ new scene</button>
+        <button class="codex-new-btn" id="codex-new-world-btn" style="display:none">+ new world</button>
+      </div>
+      <div class="codex-scene-grid" id="codex-scene-grid"></div>
+      <div class="codex-world-grid" id="codex-world-grid" style="display:none"></div>
+    </div>
+  </div>
+  <!-- CODEX SCENE FORM -->
+  <div class="codex-form-overlay" id="codex-scene-form-overlay">
+    <div class="codex-form-sheet">
+      <div class="codex-form-title">scene card<button class="codex-form-close" id="codex-scene-form-close">x</button></div>
+      <div class="codex-field"><label>scene name</label><input type="text" id="codex-scene-name" placeholder="The Collapse at Station 7"/></div>
+      <div class="codex-field"><label>caption / dialogue</label><textarea id="codex-scene-caption" placeholder="She found the signal in the static."></textarea></div>
+      <div class="codex-field-row">
+        <div class="codex-field"><label>mood</label><select id="codex-scene-mood"><option value="">select</option><option>tense</option><option>quiet</option><option>electric</option><option>melancholic</option><option>surreal</option><option>triumphant</option><option>ominous</option><option>tender</option><option>chaotic</option></select></div>
+        <div class="codex-field"><label>time of day</label><select id="codex-scene-time"><option value="">select</option><option>dawn</option><option>morning</option><option>midday</option><option>dusk</option><option>night</option><option>void</option></select></div>
+      </div>
+      <div class="codex-field-row">
+        <div class="codex-field"><label>camera</label><select id="codex-scene-camera"><option value="">select</option><option>wide</option><option>medium</option><option>close-up</option><option>low angle</option><option>high angle</option><option>birds-eye</option><option>dutch tilt</option><option>POV</option></select></div>
+        <div class="codex-field"><label>location</label><input type="text" id="codex-scene-location" placeholder="Spiral City rooftop"/></div>
+      </div>
+      <div class="codex-field"><label>linked world</label><input type="text" id="codex-scene-world" placeholder="world name or ID"/></div>
+      <div class="codex-field"><label>panel image</label><div class="codex-img-slot" id="codex-scene-img-btn">tap to upload image<img id="codex-scene-img-preview" alt=""/></div><input type="file" id="codex-scene-img-input" accept="image/*" style="display:none"/></div>
+      <button class="codex-save-btn" id="codex-scene-save">save scene card</button>
+    </div>
+  </div>
+  <!-- CODEX WORLD FORM -->
+  <div class="codex-form-overlay" id="codex-world-form-overlay">
+    <div class="codex-form-sheet">
+      <div class="codex-form-title">world card<button class="codex-form-close" id="codex-world-form-close">x</button></div>
+      <div class="codex-field"><label>world name</label><input type="text" id="codex-world-name" placeholder="Spiral City"/></div>
+      <div class="codex-field"><label>tagline</label><input type="text" id="codex-world-tagline" placeholder="Where the signal never sleeps."/></div>
+      <div class="codex-field-row">
+        <div class="codex-field"><label>biome / type</label><select id="codex-world-biome"><option value="">select</option><option>cyberpunk city</option><option>void station</option><option>forest archive</option><option>deep ocean</option><option>neon desert</option><option>sky archipelago</option><option>ruined megastructure</option><option>pocket dimension</option><option>dreamspace</option><option>underground network</option></select></div>
+        <div class="codex-field"><label>threat (0-100)</label><input type="number" id="codex-world-threat" min="0" max="100" value="50"/></div>
+      </div>
+      <div class="codex-field"><label>lore</label><textarea id="codex-world-lore" placeholder="A city built on layered signals..."></textarea></div>
+      <div class="codex-field"><label>key locations</label>
+        <input type="text" id="codex-world-loc1" placeholder="Location 1" style="margin-bottom:6px"/>
+        <input type="text" id="codex-world-loc2" placeholder="Location 2" style="margin-bottom:6px"/>
+        <input type="text" id="codex-world-loc3" placeholder="Location 3"/>
+      </div>
+      <div class="codex-field"><label>cover image</label><div class="codex-img-slot world" id="codex-world-img-btn">tap to upload image<img id="codex-world-img-preview" alt=""/></div><input type="file" id="codex-world-img-input" accept="image/*" style="display:none"/></div>
+      <button class="codex-save-btn" id="codex-world-save">save world card</button>
+    </div>
+  </div>
 </body>
 </html>
