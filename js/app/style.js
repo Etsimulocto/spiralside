@@ -320,9 +320,16 @@ export function loadSavedStyle() {
         import('./db.js').then(({ dbGet }) => dbGet('bg_image').then(data => {
           if (data) {
             bgImageData = data;
-            const prev = document.getElementById('bg-image-preview');
-            if (prev) { prev.style.backgroundImage = 'url(' + data + ')'; prev.textContent = ''; }
-            applyAllBgLayers(); // re-run now that image is loaded
+            if (bgLayers.image) {
+              const fit = bgImageFit || 'cover';
+              document.body.style.backgroundImage = 'url(' + data + ')';
+              document.body.style.backgroundSize = fit === 'repeat' ? 'auto' : fit;
+              document.body.style.backgroundRepeat = fit === 'repeat' ? 'repeat' : 'no-repeat';
+              document.body.style.backgroundPosition = 'center';
+              document.body.style.backgroundAttachment = 'fixed';
+              const op = (bgImageOpacity || 80) / 100;
+              document.documentElement.style.setProperty('--bg-overlay-opacity', (1-op).toFixed(2));
+            }
           }
         }));
       }
