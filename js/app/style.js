@@ -285,7 +285,7 @@ export function applyAndSaveStyle() {
   localStorage.setItem('ss_style', JSON.stringify(_save));
   // Keep IDB bg_image in sync
   if (bgImageData) {
-    import('./db.js').then(({ dbSet }) => dbSet('bg_image', bgImageData));
+    import('./db.js').then(({ dbSet }) => dbSet('config', { key: 'bg_image', data: bgImageData }));
   }
   applyAllBgLayers();
 }
@@ -321,7 +321,7 @@ export function loadSavedStyle() {
       applyAllBgLayers();
       // Image loads async from IDB — apply after data arrives
       if (s.hasBgImage) {
-        import('./db.js').then(({ dbGet }) => dbGet('bg_image').then(data => {
+        import('./db.js').then(({ dbGet }) => dbGet('config', 'bg_image').then(rec => { const data = rec?.data;
           console.log('[bg] IDB load result:', data ? 'found, size:' + data.length : 'null');
           if (data) {
             bgImageData = data;
@@ -441,7 +441,7 @@ export function saveSlot(i) {
   // Save bg image to IDB with slot-specific key
   if (bgImageData) {
     import('./db.js').then(({ dbSet }) => {
-      dbSet('bg_image_slot_' + i, bgImageData);
+      dbSet('config', { key: 'bg_image_slot_' + i, data: bgImageData });
       console.log('[slot] saved bg image to slot', i);
     });
   }
@@ -481,10 +481,10 @@ export function loadSlot(i) {
   applyAllBgLayers();
   // Load slot-specific bg image from IDB
   import('./db.js').then(({ dbGet, dbSet }) => {
-    dbGet('bg_image_slot_' + i).then(data => {
+    dbGet('config', 'bg_image_slot_' + i).then(rec => { const data = rec?.data;
       if (data) {
         bgImageData = data;
-        dbSet('bg_image', data); // update main key too
+        dbSet('config', { key: 'bg_image', data: data }); // update main key too
         if (bgLayers.image) {
           const fit = bgImageFit || 'cover';
           document.body.style.backgroundImage = 'url(' + data + ')';
