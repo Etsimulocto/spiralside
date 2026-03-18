@@ -318,6 +318,7 @@ export function loadSavedStyle() {
       // Image loads async from IDB — apply after data arrives
       if (s.hasBgImage) {
         import('./db.js').then(({ dbGet }) => dbGet('bg_image').then(data => {
+          console.log('[bg] IDB load result:', data ? 'found, size:' + data.length : 'null');
           if (data) {
             bgImageData = data;
             if (bgLayers.image) {
