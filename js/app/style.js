@@ -438,16 +438,15 @@ export function updateParticleColor(v) { particleColor = v; stopParticles(); sta
 
 export function updateGridSize(v) {
   gridSize = parseInt(v);
-  document.documentElement.style.setProperty('--grid-size', gridSize + 'px');
-  applyBgType('grid');
+  applyAllBgLayers();
 }
 export function updateGridOpacity(v) {
   gridOpacity = parseInt(v);
-  applyBgType('grid');
+  applyAllBgLayers();
 }
 export function updateGridColor(v) {
   gridColor = v;
-  applyBgType('grid');
+  applyAllBgLayers();
 }
 
 export function loadBgImage(input) {
@@ -462,14 +461,14 @@ export function loadBgImage(input) {
   };
   reader.readAsDataURL(file);
 }
-export function updateBgImageOpacity(v) { bgImageOpacity = parseInt(v); applyBgType('image'); }
+export function updateBgImageOpacity(v) { bgImageOpacity = parseInt(v); applyAllBgLayers(); }
 export function updateBgImageFit(fit) {
   bgImageFit = fit;
   ['cover','contain','repeat'].forEach(f => {
     const el = document.getElementById('fit-' + f);
     if (el) el.classList.toggle('selected', f === fit);
   });
-  applyBgType('image');
+  applyAllBgLayers();
 }
 
 // ── STACKABLE BG LAYERS ───────────────────────────────────────
