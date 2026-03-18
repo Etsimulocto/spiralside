@@ -70,6 +70,8 @@ window.openSceneForm        = openSceneForm;
 window.openWorldForm        = openWorldForm;
 window.downloadCodexCard    = downloadCodexCard;
 window.deleteCodexCard      = deleteCodexCard;
+window.closeSceneForm       = () => document.getElementById('codex-scene-form-overlay')?.classList.remove('open');
+window.closeWorldForm       = () => document.getElementById('codex-world-form-overlay')?.classList.remove('open');
 
 // ── APP READY ─────────────────────────────────────────────────
 // Called after auth check confirms a valid session

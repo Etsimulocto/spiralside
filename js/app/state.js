@@ -127,6 +127,7 @@ export const FAB_TABS = [
   { id: 'vault',   label: 'vault',   icon: '🗂',  color: '#7B5FFF' },
   { id: 'forge',   label: 'forge',   icon: '⚙',  color: '#FFD93D',
     onOpen: () => window.onForgeOpen && window.onForgeOpen() },
+  { id: 'studio',  label: 'studio',  icon: '✦',   color: '#7c6af7' },
   { id: 'library', label: 'library', icon: '🖼',  color: '#FF4BCB',
     onOpen: () => {} },
   { id: 'imagine', label: 'imagine', icon: '✦',  color: '#FF4BCB',
