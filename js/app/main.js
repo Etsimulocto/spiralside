@@ -122,7 +122,7 @@ initComic(() => checkAuthAndShow(onAppReady));
 import {
   initStylePanel, applyThemePreset, previewColor, selectBgType,
   previewScanlines, selectBubbleShape, selectFont, previewSlider, setFontRole, selectFontUnified,
-  applyAndSaveStyle, resetStyle, updateParticleDensity, loadSavedStyle, initSlots, saveSlot, loadSlot, updateParticleSpeed, updateParticleSize, updateParticleColor, updateGridSize, updateGridOpacity, updateGridColor, loadBgImage, updateBgImageOpacity, updateBgImageFit, toggleBgLayer, applyAllBgLayers, syncBgToggles
+  applyAndSaveStyle, resetStyle, updateParticleDensity, loadSavedStyle, initSlots, saveSlot, loadSlot, updateParticleSpeed, updateParticleSize, updateParticleColor, updateGridSize, updateGridOpacity, updateGridColor, loadBgImage, updateBgImageOpacity, updateBgImageFit, toggleBgLayer, applyAllBgLayers, syncBgToggles, loadBgPresets, selectBgPreset
 } from './style.js';
 
 window.initStylePanel       = initStylePanel;
@@ -151,6 +151,8 @@ window.updateBgImageFit     = updateBgImageFit;
 window.toggleBgLayer        = toggleBgLayer;
 window.applyAllBgLayers     = applyAllBgLayers;
 window.syncBgToggles        = syncBgToggles;
+window.loadBgPresets        = loadBgPresets;
+window.selectBgPreset       = selectBgPreset;
 window.updateParticleDensity = updateParticleDensity;
 
 loadSavedStyle();

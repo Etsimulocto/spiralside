@@ -317,6 +317,17 @@ export function loadSavedStyle() {
       // Load bg image from IDB if it was saved
       // Restore bgLayers first so applyAllBgLayers knows what to show
       if (s.bgLayers) Object.assign(bgLayers, s.bgLayers);
+      // Restore bgUrl preset if saved
+      if (s.bgUrl && bgLayers.image) {
+        const fit = s.bgImageFit || 'cover';
+        document.body.style.backgroundImage = 'url(' + s.bgUrl + ')';
+        document.body.style.backgroundSize = fit;
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+        const op = (s.bgImageOpacity || 80) / 100;
+        document.documentElement.style.setProperty('--bg-overlay-opacity', (1-op).toFixed(2));
+      }
       // Non-image layers apply immediately
       applyAllBgLayers();
       // Image loads async from IDB — apply after data arrives
@@ -626,4 +637,47 @@ export function syncBgToggles() {
     if (el) el.style.display = on ? 'block' : 'none';
   });
   if (bgLayers.image || bgLayers.particles || bgLayers.grid || bgLayers.scanlines) applyAllBgLayers();
+}
+
+// ── BG PRESET PICKER ─────────────────────────────────────────
+const HF_BG = 'https://huggingface.co/spaces/quarterbitgames/spiralside/raw/main/backgrounds/';
+
+export async function loadBgPresets() {
+  const grid = document.getElementById('bg-preset-grid');
+  if (!grid) return;
+  try {
+    const r = await fetch(HF_BG + 'backgrounds.json?t=' + Date.now());
+    const data = await r.json();
+    grid.innerHTML = data.backgrounds.map(bg => `
+      <div onclick="selectBgPreset('${HF_BG}${bg.id}.png','${bg.name}')" style="
+        cursor:pointer;border-radius:8px;overflow:hidden;
+        border:2px solid ${pendingStyle.bgUrl === HF_BG+bg.id+'.png' ? 'var(--teal)' : 'var(--border)'};
+        aspect-ratio:16/9;background:var(--surface2);
+        background-image:url(${HF_BG}${bg.id}.png);
+        background-size:cover;background-position:center;
+        transition:border-color 0.2s;position:relative">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:3px 5px;
+          background:rgba(0,0,0,0.6);font-size:var(--subtext-size);
+          color:var(--text);letter-spacing:0.04em">${bg.name}</div>
+      </div>`).join('');
+  } catch(e) {
+    if (grid) grid.innerHTML = '<div style="color:var(--subtext);font-size:var(--subtext-size)">failed to load</div>';
+  }
+}
+
+export function selectBgPreset(url, name) {
+  pendingStyle.bgUrl = url;
+  pendingStyle.hasBgImage = true;
+  bgImageData = null; // clear any uploaded image
+  // Apply directly to body
+  const fit = bgImageFit || 'cover';
+  document.body.style.backgroundImage = 'url(' + url + ')';
+  document.body.style.backgroundSize = fit;
+  document.body.style.backgroundRepeat = 'no-repeat';
+  document.body.style.backgroundPosition = 'center';
+  document.body.style.backgroundAttachment = 'fixed';
+  const op = (bgImageOpacity || 80) / 100;
+  document.documentElement.style.setProperty('--bg-overlay-opacity', (1-op).toFixed(2));
+  // Update grid selection highlight
+  loadBgPresets();
 }
