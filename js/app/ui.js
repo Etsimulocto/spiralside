@@ -58,6 +58,7 @@ export function switchView(id) {
   const viewInits = {
     store:   () => updateCreditDisplay(),
     studio:  () => window.initStudioView && window.initStudioView(),
+    spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
     style:   () => window.initStylePanel  && window.initStylePanel(),
     account: () => updateCreditDisplay(),
     imagine: () => window.initImagine     && window.initImagine(),

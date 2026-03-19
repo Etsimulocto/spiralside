@@ -33,6 +33,7 @@ import { buildFAB, toggleFAB, switchView, setFontSize, loadFontSize,
 import { state }                                   from './state.js';
 import { selectModel, toggleInputMenu, updateInputMenu } from './models.js';
 import { initStoreView, updateStoreView }          from './views/store.js';
+import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initStudioView }                          from './views/studio.js';
 import { initAccountView }                         from './views/account.js';
 
@@ -72,6 +73,7 @@ window.openWorldForm        = openWorldForm;
 window.downloadCodexCard    = downloadCodexCard;
 window.deleteCodexCard      = deleteCodexCard;
 window.initStudioView       = initStudioView;
+window.initSpiralCutView    = initSpiralCutView;
 window.closeSceneForm       = () => document.getElementById('codex-scene-form-overlay')?.classList.remove('open');
 window.closeWorldForm       = () => document.getElementById('codex-world-form-overlay')?.classList.remove('open');
 
