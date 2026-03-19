@@ -27,19 +27,19 @@ export function initStoreView() {
       <div class="pack-grid">
         <div class="pack-card" onclick="window.buyPack('5')">
           <div class="pack-price">$5</div>
-          <div class="pack-credits">50,000 cr</div>
+          <div class="pack-credits">500,000 cr</div>
           <div class="pack-bonus">starter</div>
         </div>
         <div class="pack-card popular" onclick="window.buyPack('10')">
           <div class="pack-tag">✦ popular</div>
           <div class="pack-price">$10</div>
-          <div class="pack-credits">110,000 cr</div>
-          <div class="pack-bonus">+10,000 bonus</div>
+          <div class="pack-credits">1,100,000 cr</div>
+          <div class="pack-bonus">+100,000 bonus</div>
         </div>
         <div class="pack-card" onclick="window.buyPack('20')">
           <div class="pack-price">$20</div>
-          <div class="pack-credits">240,000 cr</div>
-          <div class="pack-bonus">+40,000 bonus</div>
+          <div class="pack-credits">2,400,000 cr</div>
+          <div class="pack-bonus">+400,000 bonus</div>
         </div>
       </div>
       <div class="view-section-title">live feature pricing</div>

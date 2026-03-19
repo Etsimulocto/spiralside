@@ -3,7 +3,7 @@ export let selectedModel = 'haiku';
 let panelOpen=false,sttEnabled=true,ttsEnabled=false,recognition=null,isRecording=false;
 export const MODELS={haiku:{label:'Haiku',cost_in:0.80,cost_out:4.00},'4o':{label:'Sky / 4o',cost_in:0.15,cost_out:0.60},sonnet:{label:'Sonnet',cost_in:3.00,cost_out:15.00}};
 const MARGIN=1.17,AVG_IN=500,AVG_OUT=200;
-function estimateCost(k){const m=MODELS[k];if(!m)return '';return ((m.cost_in*AVG_IN+m.cost_out*AVG_OUT)/1000000*MARGIN/0.0001).toFixed(1);}
+function estimateCost(k){const m=MODELS[k];if(!m)return '';return ((m.cost_in*AVG_IN+m.cost_out*AVG_OUT)/1000000*MARGIN/0.00001).toFixed(1);}
 export function selectModel(m){selectedModel=m;window.selectedModel=m;_renderRows();_updateIndicator();}
 export function toggleInputMenu(){panelOpen=!panelOpen;
   const panel=document.getElementById('options-panel');const btn=document.getElementById('plus-btn');
