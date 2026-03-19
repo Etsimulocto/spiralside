@@ -1,4 +1,4 @@
-# SPIRALSIDE HANDOFF v8
+# SPIRALSIDE HANDOFF v9
 # March 19 2026
 
 ## ORIENTATION
@@ -29,7 +29,7 @@ Always use:
   git pull --no-rebase && git push
 
 If stuck/diverged:
-  git commit --allow-empty -m "chore: trigger redeploy" && git push --force
+  git push origin main --force
 
 Config (run once):
   git config pull.rebase false
@@ -55,7 +55,7 @@ Tab IDs map to view divs: tab-{id} -> view-{id} inside #screen-app
 3. index.html — add view div INSIDE #screen-app (before </div><!-- end #screen-app -->): <div class="view" id="view-{id}"></div>
 4. js/app/views/{id}.js — create view module with export function init{Name}View()
 5. js/app/ui.js — add to viewInits: {id}: () => window.init{Name}View && window.init{Name}View()
-6. js/app/main.js — import init{Name}View, expose as window.init{Name}View
+6. js/app/main.js — expose as window.init{Name}View via dynamic import
 
 CRITICAL: view div MUST be inside #screen-app or it renders invisibly (parent = BODY)
 
@@ -102,46 +102,6 @@ js/app/
 
 ---
 
-## CODE TAB (views/code.js) v1.0
-Live at: </> code tab, far right of tab bar.
-Lazy-init via window.initCodeView -> import('./views/code.js')
-
-FEATURES:
-- 5 mode chips: general, bloomcore, debug, refactor, explain
-  Each injects a system prompt preset into the API call
-- 3 model tiers (model picker dropdown):
-    haiku  — 1 cr  (free users allowed)
-    sonnet — 6 cr  (paid only)
-    opus   — 15 cr (paid only)
-- 10-pair circular history buffer (session-only, JS memory)
-  [N/10] badge shows current fill, refresh resets
-  ctx toggle sends history with each run (off by default)
-- Side-by-side panes desktop / stacked mobile
-- Copy to clipboard on output pane
-- Fenced code blocks rendered with lang badge
-
-BACKEND: POST /code on Railway
-  Request: { messages: [{role,content}], mode, model, system }
-  Response: { result, usage: {is_paid, credits_remaining, free_messages_today, free_limit} }
-  Model routing in CODE_MODELS dict in main.py
-  Free users: haiku only, capped at FREE_DAILY_LIMIT
-  Paid users: all models, credit deducted per run
-
-STATE (module-level in code.js):
-  history[]      — circular buffer, max 20 entries (10 pairs)
-  carryContext   — bool, whether to send history
-  selectedMode   — active mode chip
-  selectedModel  — active model value
-  isRunning      — debounce flag
-
-BLOOMCORE MODE system prompt encodes:
-  Nimbis anchor comment format
-  Section dividers: // ── NAME ──
-  Module header pattern
-  2-space indent, 80 char lines, grouped exports
-
----
-
 ## IDB STORES (db.js v6)
 sheets, vault, config, panels, books, prints, scenes, worlds
 Bump version to 7 if adding new stores.
@@ -170,6 +130,64 @@ To update spiralcut.js:
 
 ---
 
+## CODE TAB (views/code.js) v1.0
+Live at: </> code tab, far right of tab bar.
+Lazy-init: window.initCodeView -> dynamic import('./views/code.js') in main.js
+
+FEATURES:
+- 5 mode chips: general, bloomcore, debug, refactor, explain
+  Each injects a system prompt preset into the API call
+- 3 model tiers (dropdown, right side of toolbar):
+    haiku  — 1 cr  (free users allowed)
+    sonnet — 6 cr  (paid only)
+    opus   — 15 cr (paid only)
+- 10-pair circular history buffer (session-only, JS memory, gone on tab close)
+  [N/10] badge shows current fill, ↺ button clears
+  ctx toggle (off by default) sends full history with each run
+- Side-by-side panes desktop / stacked mobile (600px breakpoint)
+- Copy to clipboard on output pane
+- Fenced code blocks rendered with language badge
+- Thinking spinner during API call
+
+BACKEND: POST /code on Railway (main.py)
+  Request:  { messages: [{role,content}], mode, model, system }
+  Response: { result, usage: {is_paid, credits_remaining, free_messages_today, free_limit} }
+  Model routing: CODE_MODELS dict in main.py
+  Free users: haiku only, capped at FREE_DAILY_LIMIT
+  Paid users: all models, credit deducted per run
+  Timeout: 60s (longer than chat — code responses can be large)
+
+STATE (module-level in code.js):
+  history[]      — circular buffer, max 20 entries (10 pairs)
+  carryContext   — bool, send history with run
+  selectedMode   — active mode chip key
+  selectedModel  — active model value string
+  isRunning      — debounce flag
+
+BLOOMCORE MODE injects full Bloomcore style guide as system prompt:
+  Nimbis anchor header format
+  Section dividers: // ── NAME ──
+  Module header pattern (all fields)
+  2-space indent, 80-char lines, grouped exports
+  Works on any language — tested with Lua, JS, Python
+
+KEY GOTCHA: uses state.session?.access_token — NOT getSession()
+  state.js does not export getSession. Import state from '../state.js'
+
+---
+
+## BLOOMCORE FORMAT (BLOOMCORE_TEMPLATE.md in repo root)
+Universal script formatting standard. Works for JS, TS, Python, Lua, Bash, CSS, SQL.
+Key rules:
+  - Every file has a header block (name, placement, type, purpose, version, deps, linked, date)
+  - Section dividers: // ── SECTION ── (adapt comment syntax per language)
+  - Comment the WHY not the WHAT
+  - Standard section order: CONFIG, IMPORTS, STATE, TYPES, HELPERS, CORE LOGIC, EVENTS, RENDER, EXPORTS
+  - Naming: camelCase vars/fns, SCREAMING_SNAKE constants, PascalCase classes, kebab-case IDs
+See BLOOMCORE_TEMPLATE.md for full skeletons and examples.
+
+---
+
 ## PRODUCTION VISION: SPIRALCUT PIPELINE
 Character prints (forge)
   + Scene cards -> shots/panels
@@ -192,5 +210,6 @@ Video limit: ~3-10s per clip. Spiralside = clip maker, not full video editor.
 - style.js bg layers on body: z-index image < overlay < grid < scanlines < particles < UI
 - PayPal capture uses DB lookup (paypal_orders table), not custom_id
 - AudioContext auto-suspends, resume() needs user gesture
-- code.js uses state.session?.access_token (NOT getSession — state.js doesn't export that)
-- code tab lazy-init: window.initCodeView wired in main.js, calls import('./views/code.js')
+- code.js: use state.session?.access_token, NOT getSession (not exported from state.js)
+- code.js lazy-init: window.initCodeView wired in main.js via dynamic import
+- Vercel CDN lag: always hard refresh (Ctrl+Shift+R) after deploy to see latest
