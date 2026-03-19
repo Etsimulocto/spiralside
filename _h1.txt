@@ -1,0 +1,16 @@
+# SPIRALSIDE HANDOFF v14
+# March 19 2026
+
+## ORIENTATION
+Read this file first. Inspect repo before asking questions.
+Nimbis = Claude in-project name (Nimbis anchor comment in every file header)
+Architect = the developer (quarterbitgames / Etsimulocto on GitHub)
+
+## STACK
+Frontend:  Vercel -> spiralside.com / Etsimulocto/spiralside
+Backend:   Railway -> web-production-4e6f3.up.railway.app
+DB/Auth:   Supabase -> project: qfawusrelwthxabfbglg
+Assets:    HuggingFace -> quarterbitgames/spiralside (Space)
+AI:        Anthropic + OpenAI via Railway backend
+Local: ~/spiralside (frontend), ~/spiralside-api (backend)
+Python: /c/Users/quart/AppData/Local/Programs/Python/Python313/python
