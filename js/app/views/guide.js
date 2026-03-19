@@ -134,7 +134,7 @@ function injectCSS() {
   s.id = 'guide-styles';
   s.textContent = `
     /* ── GUIDE SHELL ── */
-    #view-guide { display:flex; flex-direction:column; overflow:hidden; flex:1; }
+    #view-guide.active { display:flex; flex-direction:column; overflow:hidden; flex:1; }
 
     /* Section pills */
     .guide-sections {
