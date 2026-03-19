@@ -50,6 +50,22 @@ export function initStoreView() {
       <div class="feature-row"><div class="feature-icon">🖣️</div><div class="feature-name">text to speech<div class="feature-sub">chatterbox</div></div><div class="feature-cost">200 cr</div></div>
       <div class="feature-row"><div class="feature-icon">🎤</div><div class="feature-name">speech to text<div class="feature-sub">browser native · free</div></div><div class="feature-cost">0 cr</div></div>
       <div class="feature-row"><div class="feature-icon">📹</div><div class="feature-name">video generation<div class="feature-sub">wan 2.2</div></div><div class="feature-cost">2,000 cr</div></div>
+      <div class="view-section-title" style="margin-top:24px;">gift credits</div>
+      <div class="gift-box">
+        <div class="gift-desc">Send credits from your balance to a friend. Or buy a fresh $5 gift. They redeem the code in their account.</div>
+        <div class="gift-send-row">
+          <input class="gift-input" id="gift-amount-input" type="number" placeholder="credits to send" min="1000" style="letter-spacing:0;text-transform:none;" />
+          <button class="gift-redeem-btn" onclick="window.sendGift()">send from balance</button>
+        </div>
+        <button class="gift-buy-btn" onclick="window.buyGift()">buy $5 gift → 500,000 cr</button>
+        <div class="gift-divider">redeem a code</div>
+        <div class="gift-redeem-row">
+          <input class="gift-input" id="gift-code-input" placeholder="SPIRAL-XXXX-XXXX" maxlength="14" />
+          <button class="gift-redeem-btn" onclick="window.redeemGift()">redeem</button>
+        </div>
+        <div class="gift-msg" id="gift-msg"></div>
+      </div>
+
     </div>`;
   updateStoreView();
 }
