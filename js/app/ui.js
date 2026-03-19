@@ -72,7 +72,6 @@ export function initTabDrag() {
     });
   });
 }
-import { dbSet, dbGet }           from './db.js';
 
 // ── TAB DRAG REORDER ──────────────────────────────────────────
 // Saves user-defined tab order to IDB config store
