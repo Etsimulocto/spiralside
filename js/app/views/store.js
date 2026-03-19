@@ -13,6 +13,7 @@ export function initStoreView() {
   const el = document.getElementById('view-store');
   if (!el) return;
 
+  initialized = false; initialized = false;
   if (!initialized) {
     el.innerHTML = `
       <div class="view-scroll-body">
