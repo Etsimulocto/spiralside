@@ -1,4 +1,4 @@
-# SPIRALSIDE HANDOFF v12
+# SPIRALSIDE HANDOFF v13
 # March 19 2026
 
 ## ORIENTATION
@@ -41,35 +41,41 @@ Python: /c/Users/quart/AppData/Local/Programs/Python/Python313/python
 
 NEVER create downloadable patch files.
 NEVER ask Architect to move files anywhere.
-NEVER run a patch twice — always grep to verify before patching.
-ALWAYS verify anchors with grep BEFORE writing the patch.
-ALWAYS run patches inline:
+NEVER run a patch twice — grep to verify before patching.
+NEVER transport JS through edge functions — escape sequences mangle.
+ALWAYS write JS files directly with inline Python:
 
-  cd ~/spiralside   (or ~/spiralside-api for backend)
+  cd ~/spiralside  (or ~/spiralside-api for backend)
+  /c/Users/quart/AppData/Local/Programs/Python/Python313/python.exe - << 'PYEOF'
+  content = r"""
+  // js content here — raw string, no escaping needed
+  """
+  open('path/to/file.js', 'w', encoding='utf-8').write(content)
+  print('written')
+  PYEOF
+
+For targeted patches (find/replace):
   /c/Users/quart/AppData/Local/Programs/Python/Python313/python.exe - << 'EOF'
-  # python patch code here
+  src = open('file.js', encoding='utf-8').read()
+  src = src.replace('old', 'new', 1)
+  open('file.js', 'w', encoding='utf-8').write(src)
   EOF
-
-For large JS files (>4096 chars): deploy via Supabase MCP edge function, curl down.
 
 GIT PUSH:
   Frontend: git add . && git commit -m "msg" && git push origin main --force
   Backend:  git add . && git commit -m "msg" && git push
-  (backend has no HF bumper — no --force needed)
 
-IF PATCH LANDS TWICE: grep for duplicates, remove second block with Python inline.
-IF BLANK SCREEN: always a JS syntax error — check browser console first.
+HF auto-bumps version on every frontend push — diverge is normal.
+If stuck: git push origin main --force
 
 ---
 
-## TAB BAR — BLOOMCORE OS MAP (v0.8.192)
-chat | forge | cards | codex | imagine | cut | vault | library | music | code | pi | style | store | account
+## TAB BAR — BLOOMCORE OS MAP (v0.8.198)
+chat | pi | forge | cards | codex | imagine | cut | library | vault | music | code | style | store | account
+(user draggable — order persists to IDB config key 'tab_order')
 
-Tabs are USER DRAGGABLE — order persists to IDB config key 'tab_order'
-restoreTabOrder() called on boot, initTabDrag() wires drag events
-Both exported from ui.js, called in main.js after buildFAB()
-
-Tab IDs map to view divs: tab-{id} -> view-{id} inside #screen-app
+restoreTabOrder() + initTabDrag() called in main.js after buildFAB()
+Both exported from ui.js
 
 ---
 
@@ -80,7 +86,7 @@ Tab IDs map to view divs: tab-{id} -> view-{id} inside #screen-app
 4. js/app/main.js — expose window.init{Name}View via dynamic import
 5. js/app/views/{id}.js — create view module, export init{Name}View()
 CRITICAL: view div MUST be inside #screen-app or renders invisibly
-NOTE: tab drag auto-applies to all .tab-btn elements — no extra wiring needed
+NOTE: tab drag auto-wires to all .tab-btn elements
 
 View module pattern:
   let initialized = false;
@@ -114,7 +120,7 @@ js/app/
   models.js     — model selection
   style.js      — theme editor, bg layers, IDB persistence
   vault.js      — file vault
-  db.js         — IDB wrapper v6: sheets,vault,config,panels,books,prints,scenes,worlds
+  db.js         — IDB wrapper v6
   demo.js       — demo mode scripted responses
   comic.js      — intro comic player
   views/
@@ -123,7 +129,7 @@ js/app/
     studio.js     — cards tab
     spiralcut.js  — SpiralCut mockup v0.1
     code.js       — coding assistant LIVE v1.0
-    pi.js         — Bloomslice Studio Pi tab — STUB (placeholder only)
+    pi.js         — Bloomslice Studio Pi tab LIVE v1.0
 
 ---
 
@@ -134,79 +140,94 @@ World:     renderWorldCard(world)           400x560  LIVE
 Build:     renderBuildCard(build)           400x560  LIVE
 IDs:       generateCardId(type): CHR/WRD/EVT/SCN/CMP/BCK
 
-All renderers: same 400x560, #08080d bg, border glow, header gradient,
-art area (cover-fit + clip + bottom fade), footer (ID / label / SPIRALSIDE)
-Helpers _roundRect + _wrapText at bottom of card.js — reuse, never redefine
+All renderers: #08080d bg, border glow, header gradient,
+art area (cover-fit+clip+fade), footer (ID/label/SPIRALSIDE)
+Helpers _roundRect + _wrapText at bottom — reuse, never redefine
 
-Build card: #FF4BCB pink, difficulty badge, components list, what-you-learn,
-author strip above footer, circuit dot-grid placeholder
+Build card: #FF4BCB pink, difficulty badge, components,
+what-you-learn, author strip, circuit dot-grid placeholder
+
+Build card schema:
+{ id, type:'build', title, author, description, platform,
+  language, difficulty, time_minutes, components[],
+  what_you_learn[], next_steps[], code, image, tags[], created_at }
 
 ---
 
 ## CODE TAB (views/code.js) v1.0 — LIVE
-5 mode chips: general, bloomcore, debug, refactor, explain
+5 modes: general, bloomcore, debug, refactor, explain
 3 models: haiku 1cr (free), sonnet 6cr (paid), opus 15cr (paid)
-10-pair circular history buffer, ctx toggle, side-by-side panes
-Backend: POST /code on Railway
-KEY GOTCHA: state.session?.access_token — NOT getSession()
+10-pair circular history, ctx toggle, side-by-side panes
+Backend: POST /code
+GOTCHA: state.session?.access_token — NOT getSession()
 
 ---
 
-## PI TAB (views/pi.js) — STUB ONLY — NEXT BUILD TARGET
-Currently shows: strawberry + "Bloomslice Studio" + "Coming soon" + 6 starter chips
-Next session build order:
-1. Starter card chips become clickable — pre-fill prompt
-2. Prompt input + generate button
-3. Pi mode AI — educational script output format
-4. Piston execution: POST https://emkc.org/api/v2/piston/execute
-   { language:"python", version:"3.10", files:[{content:code}] }
-5. Save as Build Card — renderBuildCard() already in card.js
-6. IDB builds store — bump db.js to v7
+## PI TAB (views/pi.js) v1.0 — LIVE
+Bloomslice Studio — maker/STEM tab. WORKING as of v0.8.198.
 
-Pi mode AI output format (every response must include):
-  Header: name / difficulty / time / platform / author
-  WHAT YOU WILL LEARN
-  COMPONENTS NEEDED (with quantities)
-  WIRING DIAGRAM (ASCII)
-  HOW IT WORKS (plain English)
-  THE CODE (every line commented)
-  NEXT STEPS / challenges
-  GPIO safety warning (always, before any pin code)
-  Reading level: grade 6-8, Sky's voice, warm + patient
+FEATURES LIVE:
+- 6 starter cards (Blink LED, Read Sensor, Web Server,
+  Camera Snap, Servo, Data Logger) — click to pre-fill + generate
+- Free-text prompt + generate button
+- Sky-voiced educational script output (Sky char + Pi educator prompt)
+- Line-by-line code block renderer (NO regex — safe from mangling)
+- Piston execution: POST https://emkc.org/api/v2/piston/execute
+  GPIO/hardware imports fail in sandbox — shows yellow warning, expected
+- Auto-renders Build Card preview (right pane) after generation
+- Save as Build Card to IDB (needs v7 upgrade for builds store)
+- Download card as PNG
+- Side-by-side panes, mobile stacks at 640px
 
-Piston note: GPIO/hardware imports fail in sandbox — expected, note in UI
+BACKEND: POST /pi on Railway
+- Free users: haiku, capped at FREE_DAILY_LIMIT
+- Paid users: sonnet (better for long edu scripts), 90s timeout
+- System: Sky character file + PI_EDUCATOR_PROMPT
+- PI_EDUCATOR_PROMPT enforces: header format, WHAT YOU'LL LEARN,
+  COMPONENTS NEEDED, WIRING DIAGRAM (ASCII), HOW IT WORKS,
+  THE CODE (every line commented), NEXT STEPS, GPIO safety warning
+
+GOTCHA: pi.js written directly via Python raw string — NEVER
+transport through edge functions (escape sequences mangle)
+
+NEXT STEPS FOR PI TAB:
+- IDB v7: add 'builds' store (currently save fails gracefully)
+- Saved cards gallery below the panes
+- Public share URL: spiralside.com/build/BCK-XXXX
+- Model picker (let paid users choose sonnet vs opus)
 
 ---
 
 ## IDB (db.js v6)
 Stores: sheets, vault, config, panels, books, prints, scenes, worlds
-config store: keyPath='key', writes need {key:'x', data:value}, reads return {key,data}
+config: keyPath='key', writes {key:'x',data:value}, reads return {key,data}
 Bump to v7 when adding: builds
-Helpers: dbSet(store, val), dbGet(store, key), dbGetAll(store)
+Helpers: dbSet(store,val), dbGet(store,key), dbGetAll(store)
 
 ---
 
 ## BLOOMCORE FORMAT
 See BLOOMCORE_TEMPLATE.md in repo root.
-Header block on every file. Section dividers: // ── NAME ──
+Header on every file. Section dividers // ── NAME ──
 Comment the WHY not the WHAT.
 
 ---
 
 ## KNOWN GOTCHAS
-- PATCH WORKFLOW: inline python only, grep anchors first, never patch twice
-- Blank screen = JS syntax error — check console before anything else
+- PATCH WORKFLOW: inline python only, grep anchors first, never twice
+- JS files: write with Python raw string — NEVER via edge function transport
+- Blank screen = JS syntax error — check console first
 - HF bumper: git push origin main --force if diverged
-- Git Bash 4096 char limit: use Supabase edge fn for large JS
+- Git Bash 4096 char limit on inline commands (not Python stdin)
 - view-{id} MUST be inside #screen-app or invisible
 - IDB v6, bump to v7 for builds store
-- config store reads return {key, data} — must access .data
+- config store reads return {key,data} — must access .data
 - PayPal capture: paypal_orders DB table, NOT custom_id
 - AudioContext: auto-suspends, resume() needs user gesture
 - code.js: state.session?.access_token NOT getSession()
 - Vercel CDN lag: Ctrl+Shift+R after deploy
-- Piston: GPIO imports fail (no hardware) — expected
+- Piston: GPIO imports fail (no hardware) — expected, yellow warning
 - card.js helpers at bottom — reuse _roundRect/_wrapText, never redefine
 - Tab drag: initTabDrag() only wires tabs present at call time
-  If tabs added dynamically later, call initTabDrag() again
 - Backend push: no --force needed (no HF bumper on api repo)
+- pi.js apostrophes: use \' in JS strings or textContent= instead of innerHTML
