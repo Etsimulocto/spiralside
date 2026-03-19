@@ -83,8 +83,19 @@ function _ph(type,count){
   const lb={scene:"scene",world:"world",char:"char"};
   let h="";
   for(let i=1;i<=count;i++){
-    const id=type+"_"+i,nm=lb[type]+" "+i;
-    h+="<div style='background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;'><div style='font-size:0.65rem;color:var(--text);margin-bottom:4px;'>"+nm+"</div><button onclick='window._scAdd("'"+id+"'","'"+nm+"'","electric")' style='width:100%;padding:3px;background:rgba(0,246,214,0.08);border:1px solid rgba(0,246,214,0.2);border-radius:4px;color:var(--teal);font-size:0.52rem;cursor:pointer;'>+ add</button></div>";
+    const id=type+"_"+i;
+    const nm=lb[type]+" "+i;
+    const div=document.createElement("div");
+    div.style.cssText="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;";
+    const label=document.createElement("div");
+    label.style.cssText="font-size:0.65rem;color:var(--text);margin-bottom:4px;";
+    label.textContent=nm;
+    const btn=document.createElement("button");
+    btn.style.cssText="width:100%;padding:3px;background:rgba(0,246,214,0.08);border:1px solid rgba(0,246,214,0.2);border-radius:4px;color:var(--teal);font-size:0.52rem;cursor:pointer;";
+    btn.textContent="+ add";
+    btn.onclick=()=>window._scAdd(id,nm,"electric");
+    div.appendChild(label);div.appendChild(btn);
+    h+=div.outerHTML;
   }
   return h;
 }
@@ -116,7 +127,20 @@ function _wire(){
       const d=document.createElement("div");
       d.className="sc-tl-clip";
       d.style.cssText="flex-shrink:0;width:78px;height:72px;background:var(--surface2);border:1px solid var(--teal);border-radius:6px;padding:6px;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-content:space-between;";
-      d.innerHTML="<div style='font-size:0.58rem;color:var(--teal);'>#"+(i+1)+"</div><div style='font-size:0.56rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>"+c.name+"</div><div style='font-size:0.48rem;color:var(--subtext);'>~5s</div><button onclick='event.stopPropagation();this.parentElement.remove()' style='position:absolute;top:3px;right:3px;background:none;border:none;color:var(--subtext);font-size:0.58rem;cursor:pointer;'>✕</button>";
+      const n=document.createElement("div");
+      n.style.cssText="font-size:0.58rem;color:var(--teal);";
+      n.textContent="#"+(i+1);
+      const nm=document.createElement("div");
+      nm.style.cssText="font-size:0.56rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;";
+      nm.textContent=c.name;
+      const dur=document.createElement("div");
+      dur.style.cssText="font-size:0.48rem;color:var(--subtext);";
+      dur.textContent="~5s";
+      const del=document.createElement("button");
+      del.style.cssText="position:absolute;top:3px;right:3px;background:none;border:none;color:var(--subtext);font-size:0.58rem;cursor:pointer;";
+      del.textContent="✕";
+      del.onclick=e=>{e.stopPropagation();d.remove();};
+      d.appendChild(n);d.appendChild(nm);d.appendChild(dur);d.appendChild(del);
       d.onclick=()=>{document.getElementById("sc-insp-name").textContent=c.name;document.getElementById("sc-insp-mood").textContent=c.mood||"—";};
       tl.appendChild(d);
     });
