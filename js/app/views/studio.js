@@ -23,7 +23,7 @@ export async function initStudioView() {
 
   if (!initialized) {
     el.innerHTML = `
-      <div class="view-scroll-body" style="padding-bottom:80px">
+      <div style="overflow-y:auto;height:100%;padding-bottom:80px;-webkit-overflow-scrolling:touch;">
 
         <!-- STUDIO TABS -->
         <div style="display:flex;gap:6px;padding:16px 16px 0">
