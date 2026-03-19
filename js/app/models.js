@@ -1,64 +1,146 @@
 // ============================================================
-// SPIRALSIDE — MODEL SELECTOR v1.0
-// Handles model selection, input menu state, credit display
-// All model UI logic lives here — no inline script needed
+// SPIRALSIDE — MODEL SELECTOR v2.0
+// Options Panel: models, tools, voice (STT/TTS), settings
+// Spiral send button, mic button, Web Speech API STT
 // Nimbis anchor: js/app/models.js
 // ============================================================
 
-// ── STATE ─────────────────────────────────────────────────
 export let selectedModel = 'haiku';
-let inputMenuOpen = false;
+let panelOpen   = false;
+let sttEnabled  = true;
+let ttsEnabled  = false;
+let recognition = null;
+let isRecording = false;
 
-// ── MODEL COSTS ───────────────────────────────────────────
-export const MODEL_COSTS = {
-  haiku:  1,
-  '4o':   2,
-  sonnet: 6,
+export const MODELS = {
+  haiku:  { label: 'Haiku',    desc: 'fast · haiku-4-5',        icon: '⚡', color: '#00F6D6', cost_in: 0.80,  cost_out: 4.00  },
+  '4o':  { label: 'Sky / 4o', desc: 'character · gpt-4o-mini', icon: '◎', color: '#7c6af7', cost_in: 0.15,  cost_out: 0.60  },
+  sonnet: { label: 'Sonnet',    desc: 'smart · sonnet-4-5',       icon: '✦', color: '#f76a8a', cost_in: 3.00,  cost_out: 15.00 },
 };
 
-// ── SELECT MODEL ──────────────────────────────────────────
-export function selectModel(m) {
-  selectedModel = m;
-  window.selectedModel = m;
-  updateInputMenu();
+const MARGIN  = 1.17;
+const AVG_IN  = 500;
+const AVG_OUT = 200;
+
+function estimateCost(k) {
+  const m = MODELS[k]; if (!m) return '?';
+  return ((m.cost_in * AVG_IN + m.cost_out * AVG_OUT) / 1_000_000 * MARGIN).toFixed(4);
 }
 
-// ── TOGGLE INPUT MENU ─────────────────────────────────────
+export function selectModel(m) {
+  selectedModel = m; window.selectedModel = m;
+  _renderRows(); _updateIndicator();
+}
+
 export function toggleInputMenu() {
-  inputMenuOpen = !inputMenuOpen;
-  const menu = document.getElementById('input-menu');
-  if (!menu) return;
-  menu.classList.toggle('open', inputMenuOpen);
-  if (inputMenuOpen) {
-    setTimeout(() => {
-      document.addEventListener('click', function handler(e) {
-        const menu = document.getElementById('input-menu');
-        const btn  = document.getElementById('plus-btn');
-        if (menu && btn && !menu.contains(e.target) && e.target !== btn) {
-          inputMenuOpen = false;
-          menu.classList.remove('open');
-        }
-        document.removeEventListener('click', handler);
-      });
-    }, 10);
+  panelOpen = !panelOpen;
+  const panel = document.getElementById('options-panel');
+  const btn   = document.getElementById('plus-btn');
+  if (!panel) return;
+  panel.classList.toggle('open', panelOpen);
+  if (btn) btn.classList.toggle('active', panelOpen);
+  if (panelOpen) setTimeout(() => document.addEventListener('click', _outside), 10);
+  else document.removeEventListener('click', _outside);
+}
+
+function _outside(e) {
+  const panel = document.getElementById('options-panel');
+  const btn   = document.getElementById('plus-btn');
+  if (panel && btn && !panel.contains(e.target) && e.target !== btn) {
+    panelOpen = false;
+    panel.classList.remove('open');
+    btn.classList.remove('active');
+    document.removeEventListener('click', _outside);
   }
 }
 
-// ── UPDATE INPUT MENU ─────────────────────────────────────
-export function updateInputMenu() {
-  const m = selectedModel || 'haiku';
-  ['haiku', '4o', 'sonnet'].forEach(id => {
-    const btn = document.getElementById('iopt-' + id);
-    if (btn) btn.classList.toggle('active', m === id);
-  });
-  // hide model options for free users
-  const section = document.getElementById('input-menu-models');
-  if (section) section.style.display = window._isPaid ? 'flex' : 'none';
+export function togglePanelSection(id) {
+  const body = document.getElementById('psec-' + id);
+  const chev = document.getElementById('pchev-' + id);
+  if (!body) return;
+  const open = body.classList.toggle('open');
+  if (chev) chev.textContent = open ? '▲' : '▼';
 }
 
-// ── EXPOSE TO WINDOW ──────────────────────────────────────
-// Called from onclick attributes in index.html
-window.selectModel      = selectModel;
-window.toggleInputMenu  = toggleInputMenu;
-window.updateInputMenu  = updateInputMenu;
-window.selectedModel    = selectedModel;
+export function updateInputMenu() { _renderRows(); _updateIndicator(); }
+
+function _renderRows() {
+  Object.keys(MODELS).forEach(k => {
+    const row = document.getElementById('mrow-' + k);
+    const chk = document.getElementById('mcheck-' + k);
+    if (row) row.classList.toggle('active', k === selectedModel);
+    if (chk) chk.classList.toggle('on', k === selectedModel);
+  });
+}
+
+function _updateIndicator() {
+  const el = document.getElementById('model-indicator-label');
+  if (!el) return;
+  const m = MODELS[selectedModel];
+  el.textContent = m ? m.label.toLowerCase() + '  ·  ~' + estimateCost(selectedModel) + '  cr' : '';
+}
+
+function _initSTT() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  recognition = new SR();
+  recognition.continuous     = false;
+  recognition.interimResults = false;
+  recognition.lang           = 'en-US';
+  recognition.onresult = e => {
+    const t = e.results[0][0].transcript;
+    const inp = document.getElementById('msg-input');
+    if (inp) { inp.value = t; inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight,100)+'px'; }
+  };
+  recognition.onend  = () => { isRecording = false; _updateMic(); };
+  recognition.onerror = () => { isRecording = false; _updateMic(); };
+}
+
+export function toggleMic() {
+  if (!sttEnabled) return;
+  if (!recognition) _initSTT();
+  if (!recognition) return;
+  if (isRecording) { recognition.stop(); isRecording = false; }
+  else { recognition.start(); isRecording = true; }
+  _updateMic();
+}
+
+function _updateMic() {
+  const btn = document.getElementById('mic-btn');
+  if (!btn) return;
+  btn.classList.toggle('recording', isRecording);
+  btn.title = isRecording ? 'stop recording' : 'speak';
+}
+
+export function speakReply(text) {
+  if (!ttsEnabled || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate = 0.95; u.pitch = 1.0;
+  window.speechSynthesis.speak(u);
+}
+
+export function toggleSTT() {
+  sttEnabled = !sttEnabled;
+  const tog = document.getElementById('tog-stt');
+  const mic = document.getElementById('mic-btn');
+  if (tog) tog.classList.toggle('on', sttEnabled);
+  if (mic) mic.style.display = sttEnabled ? 'flex' : 'none';
+}
+
+export function toggleTTS() {
+  ttsEnabled = !ttsEnabled;
+  const tog = document.getElementById('tog-tts');
+  if (tog) tog.classList.toggle('on', ttsEnabled);
+}
+
+export function initModels() { _initSTT(); _renderRows(); _updateIndicator(); }
+
+window.selectModel        = selectModel;
+window.toggleInputMenu    = toggleInputMenu;
+window.updateInputMenu    = updateInputMenu;
+window.togglePanelSection = togglePanelSection;
+window.toggleMic          = toggleMic;
+window.toggleSTT          = toggleSTT;
+window.toggleTTS          = toggleTTS;
+window.selectedModel      = selectedModel;

@@ -642,48 +642,57 @@
     .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
 
     /* ── INPUT POPUP MENU ─────────────────────────────────────── */
-    .input-menu {
-      display: none;
-      flex-direction: column;
-      position: absolute;
-      bottom: calc(100% + 8px);
-      left: 16px;
-      width: 220px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 8px;
-      z-index: 100;
-      box-shadow: 0 -8px 32px rgba(0,0,0,0.4);
+    /* options panel */
+    .options-panel {
+      position: absolute; bottom: calc(100% + 8px); left: 0; right: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      max-height: 0; opacity: 0; pointer-events: none;
+      transition: max-height 0.3s ease, opacity 0.2s;
+      z-index: 50;
     }
-    .input-menu.open { display: flex; }
-    .input-menu-section { display: flex; flex-direction: column; gap: 2px; }
-    .input-menu-divider { height: 1px; background: var(--border); margin: 6px 0; }
-    .input-menu-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      background: transparent;
-      border: none;
-      border-radius: 9px;
-      color: var(--text);
-      font-family: var(--font-ui);
-      font-size: 0.75rem;
-      cursor: pointer;
-      transition: background 0.15s;
-      text-align: left;
+    .options-panel.open { max-height: 520px; opacity: 1; pointer-events: all; }
+    .panel-sec-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 14px; cursor: pointer;
+      font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--subtext); border-bottom: 1px solid var(--border);
+      user-select: none;
     }
-    .input-menu-btn:hover { background: var(--muted); }
-    .input-menu-btn.active { background: rgba(0,246,214,0.1); color: var(--teal); }
-    .iopt-icon { width: 20px; text-align: center; font-size: 0.9rem; }
-    .iopt-label { flex: 1; }
-    .iopt-cost {
-      font-size: 0.62rem;
-      color: var(--subtext);
-      letter-spacing: 0.06em;
-    }
-    .input-menu-btn.active .iopt-cost { color: var(--teal); }
+    .panel-sec-header:hover { background: rgba(255,255,255,0.02); }
+    .panel-sec-body { display: none; padding: 4px 10px 8px; }
+    .panel-sec-body.open { display: block; }
+    .mrow { display: flex; align-items: center; gap: 10px; padding: 7px 4px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+    .mrow:hover { background: rgba(255,255,255,0.04); }
+    .mrow.active { background: rgba(0,246,214,0.07); }
+    .mrow-icon { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+    .mrow-name { flex: 1; font-size: 0.8rem; color: var(--text); }
+    .mrow-desc { font-size: 0.62rem; color: var(--subtext); }
+    .mrow-cost { font-size: 0.68rem; color: var(--teal); letter-spacing: 0.04em; }
+    .mrow-check { width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--muted); flex-shrink: 0; transition: background 0.15s; }
+    .mrow-check.on { background: var(--teal); border-color: var(--teal); }
+    .tool-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; }
+    .tool-row-icon { width: 26px; height: 26px; border-radius: 7px; background: var(--muted); display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; flex-shrink: 0; transition: background 0.15s; }
+    .tool-row-icon:hover { background: var(--border); }
+    .tool-row-label { flex: 1; font-size: 0.8rem; color: var(--text); }
+    .tool-row-sub { font-size: 0.62rem; color: var(--subtext); }
+    .stog-row { display: flex; align-items: center; gap: 10px; padding: 6px 4px; }
+    .stog-label { flex: 1; font-size: 0.8rem; color: var(--text); }
+    .stog-sub { font-size: 0.62rem; color: var(--subtext); }
+    .s-toggle { width: 34px; height: 18px; border-radius: 9px; background: var(--muted); position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+    .s-toggle.on { background: var(--teal); }
+    .s-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; transition: transform 0.2s; }
+    .s-toggle.on::after { transform: translateX(16px); }
+    .mic-btn { width: 32px; height: 32px; border-radius: 50%; background: var(--muted); border: 1px solid var(--border); color: var(--subtext); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .mic-btn:hover { background: var(--border); color: var(--text); }
+    .mic-btn.recording { background: rgba(247,106,138,0.15); border-color: var(--pink); color: var(--pink); animation: micPulse 1s infinite; }
+    @keyframes micPulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+    .send-btn { width: 34px; height: 34px; border-radius: 50%; border: none; background: linear-gradient(135deg, var(--accent), var(--teal)); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s, transform 0.15s; flex-shrink: 0; }
+    .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
+    .plus-btn { width: 34px; height: 34px; border-radius: 50%; background: var(--muted); border: 1px solid var(--border); color: var(--subtext); font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+    .plus-btn:hover, .plus-btn.active { background: var(--border); color: var(--teal); border-color: var(--teal); }
+    .model-indicator { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; color: var(--subtext); padding: 3px 2px 5px; letter-spacing: 0.06em; }
+    .model-indicator-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); flex-shrink: 0; }
 
     /* ── FAB ────────────────────────────────────────────────── */
     #fab-container { display: none; }
@@ -1462,7 +1471,89 @@
 <!-- ══════════════════════════════════════════════════════════ -->
 <canvas id="particles-canvas"></canvas><div id="bg-overlay" style="position:fixed;inset:0;background:var(--bg);opacity:var(--bg-overlay-opacity,0);pointer-events:none;z-index:0;transition:opacity 0.3s"></div><div id="screen-comic">
   <div id="comic-panel">
-    <div id="comic-bg"></div>
+    <div class="chat-input-area" style="position:relative;">
+      <div id="options-panel" class="options-panel">
+        <div class="panel-sec-header" onclick="togglePanelSection('models')">
+          models <span id="pchev-models">▲</span>
+        </div>
+        <div class="panel-sec-body open" id="psec-models">
+          <div class="mrow active" id="mrow-haiku" onclick="selectModel('haiku')">
+            <div class="mrow-icon" style="background:rgba(0,246,214,0.1);color:#00F6D6;">⚡</div>
+            <div style="flex:1"><div class="mrow-name">Haiku</div><div class="mrow-desc">fast · haiku-4-5</div></div>
+            <div class="mrow-cost">~0.001 cr</div>
+            <div class="mrow-check on" id="mcheck-haiku"></div>
+          </div>
+          <div class="mrow" id="mrow-4o" onclick="selectModel('4o')">
+            <div class="mrow-icon" style="background:rgba(124,106,247,0.1);color:#7c6af7;">◎</div>
+            <div style="flex:1"><div class="mrow-name">Sky / 4o</div><div class="mrow-desc">character · gpt-4o-mini</div></div>
+            <div class="mrow-cost">~0.000 cr</div>
+            <div class="mrow-check" id="mcheck-4o"></div>
+          </div>
+          <div class="mrow" id="mrow-sonnet" onclick="selectModel('sonnet')">
+            <div class="mrow-icon" style="background:rgba(247,106,138,0.1);color:#f76a8a;">✦</div>
+            <div style="flex:1"><div class="mrow-name">Sonnet</div><div class="mrow-desc">smart · sonnet-4-5</div></div>
+            <div class="mrow-cost">~0.006 cr</div>
+            <div class="mrow-check" id="mcheck-sonnet"></div>
+          </div>
+        </div>
+        <div class="panel-sec-header" onclick="togglePanelSection('tools')">
+          tools <span id="pchev-tools">▼</span>
+        </div>
+        <div class="panel-sec-body" id="psec-tools">
+          <div class="tool-row">
+            <div class="tool-row-icon" onclick="document.getElementById('file-input-chat').click();toggleInputMenu()">📎</div>
+            <div><div class="tool-row-label">attach file</div><div class="tool-row-sub">txt, md, pdf, image</div></div>
+          </div>
+          <div class="tool-row">
+            <div class="tool-row-icon" onclick="switchView('imagine');toggleInputMenu()">🎨</div>
+            <div><div class="tool-row-label">imagine</div><div class="tool-row-sub">generate image · 5 cr</div></div>
+          </div>
+          <div class="tool-row">
+            <div class="tool-row-icon" onclick="switchView('spiralcut');toggleInputMenu()">✂️</div>
+            <div><div class="tool-row-label">cut / edit image</div><div class="tool-row-sub">flux kontext · 3 cr</div></div>
+          </div>
+        </div>
+        <div class="panel-sec-header" onclick="togglePanelSection('voice')">
+          voice <span id="pchev-voice">▼</span>
+        </div>
+        <div class="panel-sec-body" id="psec-voice">
+          <div class="stog-row">
+            <div><div class="stog-label">speech to text</div><div class="stog-sub">mic button · browser STT</div></div>
+            <div class="s-toggle on" id="tog-stt" onclick="toggleSTT()"></div>
+          </div>
+          <div class="stog-row">
+            <div><div class="stog-label">text to speech</div><div class="stog-sub">auto-read replies · free</div></div>
+            <div class="s-toggle" id="tog-tts" onclick="toggleTTS()"></div>
+          </div>
+        </div>
+      </div>
+      <div class="model-indicator">
+        <div class="model-indicator-dot"></div>
+        <span id="model-indicator-label">haiku</span>
+      </div>
+      <div class="input-row">
+        <textarea id="msg-input" rows="1" placeholder="say something..."></textarea>
+        <div class="input-actions">
+          <button class="plus-btn" id="plus-btn" onclick="toggleInputMenu()" title="options">+</button>
+          <button class="mic-btn" id="mic-btn" onclick="toggleMic()" title="speak">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="9" y="2" width="6" height="12" rx="3"/>
+              <path d="M5 10a7 7 0 0014 0M12 19v3M9 22h6"/>
+            </svg>
+          </button>
+          <button class="send-btn" id="send-btn" title="send">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3 C9 8 8 11 8 14 C8 18 10 21 12 21 C14 21 16 18 16 14 C16 11 15 8 12 3 Z" fill="rgba(255,255,255,0.25)" stroke="white" stroke-width="1.2"/>
+              <path d="M12 3 C11 7 10.5 10 10.5 14" stroke="white" stroke-width="0.8" fill="none"/>
+              <path d="M12 3 C13 7 13.5 10 13.5 14" stroke="white" stroke-width="0.8" fill="none"/>
+              <circle cx="12" cy="13" r="2" fill="white"/>
+              <path d="M12 3 L12 1" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <input type="file" id="file-input-chat" style="display:none" accept=".txt,.md,.pdf,.png,.jpg,.jpeg,.webp" />
+    </div>v id="comic-bg"></div>
     <div id="comic-scanlines"></div>
     <div id="comic-crack"></div>
     <div id="comic-vignette"></div>
@@ -1540,7 +1631,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.199</div>
+      <div class="version-badge" id="version-badge">v0.8.200</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="openPanel('store')">∞ free</div>
       </div>
