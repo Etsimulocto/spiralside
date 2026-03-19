@@ -51,6 +51,15 @@ window.closePanel        = () => {};
 window.switchPanelTab    = (tab) => window.switchView(tab);
 window.toggleFAB         = toggleFAB;
 window.switchView        = switchView;
+window.initCodeView      = () => {
+  const el = document.getElementById('view-code');
+  if (!el || el.dataset.initialized) return;
+  el.dataset.initialized = '1';
+  import('./views/code.js').then(({ injectCodeStyles, renderCode }) => {
+    injectCodeStyles();
+    renderCode(el);
+  });
+};
 window.buyPack           = buyPack;
 window.saveSummarize     = saveSummarize;
 window.initMusicView     = initMusicView;
