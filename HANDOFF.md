@@ -1,4 +1,4 @@
-# SPIRALSIDE HANDOFF v7
+# SPIRALSIDE HANDOFF v8
 # March 19 2026
 
 ## ORIENTATION
@@ -41,8 +41,8 @@ Deploy new files via Supabase MCP deploy_edge_function tool.
 
 ---
 
-## TAB BAR ORDER (v0.8.175)
-chat | forge | cards | codex | imagine | cut | vault | library | music | style | store | account
+## TAB BAR ORDER (v0.8.180)
+chat | forge | cards | codex | imagine | cut | vault | library | music | style | store | account | </> code
 
 Tab IDs map to view divs: tab-{id} -> view-{id} inside #screen-app
 
@@ -98,6 +98,47 @@ js/app/
     account.js    — account info
     studio.js     — cards tab (scene + world card builder)
     spiralcut.js  — SpiralCut editor mockup v0.1
+    code.js       — coding assistant tab (v1.0)
+
+---
+
+## CODE TAB (views/code.js) v1.0
+Live at: </> code tab, far right of tab bar.
+Lazy-init via window.initCodeView -> import('./views/code.js')
+
+FEATURES:
+- 5 mode chips: general, bloomcore, debug, refactor, explain
+  Each injects a system prompt preset into the API call
+- 3 model tiers (model picker dropdown):
+    haiku  — 1 cr  (free users allowed)
+    sonnet — 6 cr  (paid only)
+    opus   — 15 cr (paid only)
+- 10-pair circular history buffer (session-only, JS memory)
+  [N/10] badge shows current fill, refresh resets
+  ctx toggle sends history with each run (off by default)
+- Side-by-side panes desktop / stacked mobile
+- Copy to clipboard on output pane
+- Fenced code blocks rendered with lang badge
+
+BACKEND: POST /code on Railway
+  Request: { messages: [{role,content}], mode, model, system }
+  Response: { result, usage: {is_paid, credits_remaining, free_messages_today, free_limit} }
+  Model routing in CODE_MODELS dict in main.py
+  Free users: haiku only, capped at FREE_DAILY_LIMIT
+  Paid users: all models, credit deducted per run
+
+STATE (module-level in code.js):
+  history[]      — circular buffer, max 20 entries (10 pairs)
+  carryContext   — bool, whether to send history
+  selectedMode   — active mode chip
+  selectedModel  — active model value
+  isRunning      — debounce flag
+
+BLOOMCORE MODE system prompt encodes:
+  Nimbis anchor comment format
+  Section dividers: // ── NAME ──
+  Module header pattern
+  2-space indent, 80 char lines, grouped exports
 
 ---
 
@@ -112,9 +153,6 @@ Character: renderCard(print, artImage)  400x560 canvas, takes soul print JSON
 Scene:     renderSceneCard(scene)        560x360 canvas
 World:     renderWorldCard(world)        400x560 canvas
 IDs:       generateCardId(type)          SCN-XXXX / WLD-XXXX / CHR-XXXX
-
-Scene fields: id, name, caption, mood, time, camera, location, world, image
-World fields: id, name, tagline, biome, lore, threat, locations[], palette[], image
 
 ---
 
@@ -146,14 +184,6 @@ Video limit: ~3-10s per clip. Spiralside = clip maker, not full video editor.
 
 ---
 
-## NEXT PRIORITIES
-1. Wire SpiralCut asset bin to real IDB scenes/worlds/prints
-2. Wire gen image button -> Imagine with scene card prompt pre-filled
-3. Storyboard persistence to IDB
-4. Character card export from codex tab
-
----
-
 ## KNOWN GOTCHAS
 - HF bumper races every push -> git pull --no-rebase && git push
 - Git Bash 4096 char limit -> use Supabase edge fn for large JS files
@@ -162,3 +192,5 @@ Video limit: ~3-10s per clip. Spiralside = clip maker, not full video editor.
 - style.js bg layers on body: z-index image < overlay < grid < scanlines < particles < UI
 - PayPal capture uses DB lookup (paypal_orders table), not custom_id
 - AudioContext auto-suspends, resume() needs user gesture
+- code.js uses state.session?.access_token (NOT getSession — state.js doesn't export that)
+- code tab lazy-init: window.initCodeView wired in main.js, calls import('./views/code.js')
