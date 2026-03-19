@@ -29,7 +29,8 @@ import { buildFAB, toggleFAB, switchView, setFontSize, loadFontSize,
 
          loadUsage, updateCreditDisplay,
          updateGreeting, updateUserUI,
-         buyPack, handlePayPalReturn }             from './ui.js';
+         buyPack, handlePayPalReturn,
+         restoreTabOrder, initTabDrag }        from './ui.js';
 import { state }                                   from './state.js';
 import { selectModel, toggleInputMenu, updateInputMenu } from './models.js';
 import { initStoreView, updateStoreView }          from './views/store.js';
@@ -121,6 +122,8 @@ async function onAppReady() {
   initBuild();
   initLibrary();
   buildFAB();
+  await restoreTabOrder();  // restore saved tab order from IDB
+  initTabDrag();            // wire drag-to-reorder
 
   // 6. Populate forms and UI
   loadBotIntoForm();

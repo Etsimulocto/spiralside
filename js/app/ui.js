@@ -10,6 +10,71 @@ import { getToken }               from './auth.js';
 import { dbSet, dbGet }           from './db.js';
 
 // ── TAB DRAG REORDER ──────────────────────────────────────────
+// Drag tabs left/right to reorder — persists to IDB config store
+
+let _dragging = null;  // tab btn currently being dragged
+
+async function saveTabOrder() {
+  const order = [...document.querySelectorAll('#tab-bar .tab-btn')]
+    .map(t => t.id.replace('tab-', ''));
+  try { await dbSet('config', { key: 'tab_order', data: order }); }
+  catch(e) { console.warn('[tabOrder] save failed:', e); }
+}
+
+export async function restoreTabOrder() {
+  try {
+    const rec = await dbGet('config', 'tab_order');
+    if (!rec?.data?.length) return;
+    const bar = document.getElementById('tab-bar');
+    if (!bar) return;
+    rec.data.forEach(id => {
+      const btn = document.getElementById('tab-' + id);
+      if (btn) bar.appendChild(btn);  // move to end in saved order
+    });
+  } catch(e) { console.warn('[tabOrder] restore failed:', e); }
+}
+
+export function initTabDrag() {
+  const bar = document.getElementById('tab-bar');
+  if (!bar) return;
+
+  bar.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.draggable = true;
+
+    btn.addEventListener('dragstart', e => {
+      _dragging = btn;
+      setTimeout(() => btn.style.opacity = '0.4', 0);  // defer so drag image renders first
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    btn.addEventListener('dragend', () => {
+      btn.style.opacity = '';
+      bar.querySelectorAll('.tab-btn').forEach(b => b.style.outline = '');
+      _dragging = null;
+      saveTabOrder();
+    });
+
+    btn.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!_dragging || btn === _dragging) return;
+      bar.querySelectorAll('.tab-btn').forEach(b => b.style.outline = '');
+      btn.style.outline = '2px solid #00F6D6';  // drop target indicator
+      const kids = [...bar.querySelectorAll('.tab-btn')];
+      const from = kids.indexOf(_dragging);
+      const to   = kids.indexOf(btn);
+      if (from < to) bar.insertBefore(_dragging, btn.nextSibling);
+      else           bar.insertBefore(_dragging, btn);
+    });
+
+    btn.addEventListener('drop', e => {
+      e.preventDefault();
+      bar.querySelectorAll('.tab-btn').forEach(b => b.style.outline = '');
+    });
+  });
+}
+import { dbSet, dbGet }           from './db.js';
+
+// ── TAB DRAG REORDER ──────────────────────────────────────────
 // Saves user-defined tab order to IDB config store
 // Restores order on app load — purely cosmetic, switchView still works by ID
 
