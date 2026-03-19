@@ -5,7 +5,7 @@
 // Nimbis anchor: js/app/views/code.js
 // ============================================================
 
-import { getSession } from '../state.js';
+import { state } from '../state.js';
 
 // ── CONFIG ────────────────────────────────────────────────
 const RAIL = 'https://web-production-4e6f3.up.railway.app';
@@ -323,8 +323,7 @@ async function runCode() {
 
   try {
     // Get auth token
-    const session = await getSession();
-    const token = session?.access_token;
+    const token = state.session?.access_token;
     if (!token) {
       showOutputError('Not signed in.');
       return;
