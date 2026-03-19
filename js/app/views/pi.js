@@ -1,27 +1,25 @@
 // ============================================================
 // SPIRALSIDE — PI VIEW v1.0
 // Bloomslice Studio — maker/STEM tab
-// Sky-voiced Pi educator: starter cards, prompt, educational
-// script output, Piston execution, Save as Build Card
 // Nimbis anchor: js/app/views/pi.js
 // ============================================================
 
-import { state }                    from '../state.js';
+import { state }               from '../state.js';
 import { renderBuildCard,
-         generateCardId }           from '../card.js';
-import { dbSet, dbGetAll }          from '../db.js';
+         generateCardId }      from '../card.js';
+import { dbSet, dbGetAll }     from '../db.js';
 
 // ── CONFIG ────────────────────────────────────────────────
 const PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
 
 // ── STARTER PROJECTS ──────────────────────────────────────
 const STARTERS = [
-  { icon: '🔴', label: 'Blink LED',     prompt: 'Write a beginner Raspberry Pi Python script that blinks an LED on GPIO 17 every second. Include full educational format with wiring diagram.' },
-  { icon: '📡', label: 'Read Sensor',   prompt: 'Write a beginner Raspberry Pi Python script that reads temperature from a DHT11 sensor on GPIO 4. Include full educational format.' },
-  { icon: '🌐', label: 'Web Server',    prompt: 'Write a beginner Raspberry Pi Python script that creates a simple Flask web server on port 5000. Include full educational format.' },
-  { icon: '📷', label: 'Camera Snap',  prompt: 'Write a beginner Raspberry Pi Python script that takes a photo with picamera2 and saves it. Include full educational format.' },
-  { icon: '🎛️', label: 'Servo',        prompt: 'Write a beginner Raspberry Pi Python script that sweeps a servo motor on GPIO 18 using PWM. Include full educational format.' },
-  { icon: '📊', label: 'Data Logger',  prompt: 'Write a beginner Raspberry Pi Python script that logs CPU temperature to a CSV file every 5 seconds. Include full educational format.' },
+  { icon: '🔴', label: 'Blink LED',    prompt: 'Write a beginner Raspberry Pi Python script that blinks an LED on GPIO 17 every second. Include full educational format with wiring diagram.' },
+  { icon: '📡', label: 'Read Sensor',  prompt: 'Write a beginner Raspberry Pi Python script that reads temperature from a DHT11 sensor on GPIO 4. Include full educational format.' },
+  { icon: '🌐', label: 'Web Server',   prompt: 'Write a beginner Raspberry Pi Python script that creates a simple Flask web server on port 5000. Include full educational format.' },
+  { icon: '📷', label: 'Camera Snap', prompt: 'Write a beginner Raspberry Pi Python script that takes a photo with picamera2 and saves it. Include full educational format.' },
+  { icon: '🎛️', label: 'Servo',        prompt: 'Write a beginner Raspberry Pi Python script that sweeps a servo on GPIO 18 using PWM. Include full educational format.' },
+  { icon: '📊', label: 'Data Logger', prompt: 'Write a beginner Raspberry Pi Python script that logs CPU temperature to a CSV every 5 seconds. Include full educational format.' },
 ];
 
 // ── MODULE STATE ──────────────────────────────────────────
@@ -43,13 +41,19 @@ export function initPiView() {
   wireEvents(wrap);
 }
 
-// ── DOM ────────────────────────────────────────────────────
+// ── DOM ───────────────────────────────────────────────────
 function renderDOM(wrap) {
   // Header
   const header = document.createElement('div');
   header.id = 'pi-header';
-  header.innerHTML = '<div id="pi-title">🍓 Bloomslice Studio</div>' +
-    '<div id="pi-sky-msg">Tell me what you want to build and I\'ll write the code, explain every line, and show you how to wire it up.</div>';
+  const title = document.createElement('div');
+  title.id = 'pi-title';
+  title.textContent = '🍓 Bloomslice Studio';
+  const msg = document.createElement('div');
+  msg.id = 'pi-sky-msg';
+  msg.textContent = 'Tell me what you want to build and I\'ll write the code, explain every line, and show you how to wire it up.';
+  header.appendChild(title);
+  header.appendChild(msg);
   wrap.appendChild(header);
 
   // Starter cards
@@ -59,8 +63,14 @@ function renderDOM(wrap) {
     const btn = document.createElement('button');
     btn.className = 'pi-starter';
     btn.dataset.prompt = s.prompt;
-    btn.innerHTML = '<span class="pi-starter-icon">' + s.icon + '</span>' +
-      '<span class="pi-starter-label">' + s.label + '</span>';
+    const icon = document.createElement('span');
+    icon.className = 'pi-starter-icon';
+    icon.textContent = s.icon;
+    const label = document.createElement('span');
+    label.className = 'pi-starter-label';
+    label.textContent = s.label;
+    btn.appendChild(icon);
+    btn.appendChild(label);
     starters.appendChild(btn);
   });
   wrap.appendChild(starters);
@@ -69,19 +79,52 @@ function renderDOM(wrap) {
   const panes = document.createElement('div');
   panes.id = 'pi-panes';
 
-  // Left pane — output
+  // Left — output
   const left = document.createElement('div');
   left.id = 'pi-left';
-  left.innerHTML =
-    '<div class="pi-pane-label">output <button class="pi-pane-action" id="pi-copy-btn">copy</button></div>' +
-    '<div id="pi-output"><div id="pi-output-ph"><div style="font-size:2rem">🍓</div><div>pick a starter or describe your project</div></div></div>';
+  const leftLabel = document.createElement('div');
+  leftLabel.className = 'pi-pane-label';
+  leftLabel.textContent = 'output';
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'pi-pane-action';
+  copyBtn.id = 'pi-copy-btn';
+  copyBtn.textContent = 'copy';
+  leftLabel.appendChild(copyBtn);
+  const output = document.createElement('div');
+  output.id = 'pi-output';
+  const outPh = document.createElement('div');
+  outPh.id = 'pi-output-ph';
+  const phIcon = document.createElement('div');
+  phIcon.style.fontSize = '2rem';
+  phIcon.textContent = '🍓';
+  const phTxt = document.createElement('div');
+  phTxt.textContent = 'pick a starter or describe your project';
+  outPh.appendChild(phIcon);
+  outPh.appendChild(phTxt);
+  output.appendChild(outPh);
+  left.appendChild(leftLabel);
+  left.appendChild(output);
 
-  // Right pane — card preview
+  // Right — card preview
   const right = document.createElement('div');
   right.id = 'pi-right';
-  right.innerHTML =
-    '<div class="pi-pane-label">build card <button class="pi-pane-action" id="pi-dl-btn">save PNG</button></div>' +
-    '<div id="pi-card-preview"><div id="pi-card-ph" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:0.3;font-size:0.65rem;color:var(--subtext);text-align:center;gap:6px"><div>BCK-????</div><div>card appears after generation</div></div></div>';
+  const rightLabel = document.createElement('div');
+  rightLabel.className = 'pi-pane-label';
+  rightLabel.textContent = 'build card';
+  const dlBtn = document.createElement('button');
+  dlBtn.className = 'pi-pane-action';
+  dlBtn.id = 'pi-dl-btn';
+  dlBtn.textContent = 'save PNG';
+  rightLabel.appendChild(dlBtn);
+  const cardPrev = document.createElement('div');
+  cardPrev.id = 'pi-card-preview';
+  const cardPh = document.createElement('div');
+  cardPh.id = 'pi-card-ph';
+  cardPh.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:0.3;font-size:0.65rem;color:var(--subtext);text-align:center;gap:6px;';
+  cardPh.innerHTML = '<div>BCK-????</div><div>card appears after generation</div>';
+  cardPrev.appendChild(cardPh);
+  right.appendChild(rightLabel);
+  right.appendChild(cardPrev);
 
   panes.appendChild(left);
   panes.appendChild(right);
@@ -90,13 +133,20 @@ function renderDOM(wrap) {
   // Action bar
   const bar = document.createElement('div');
   bar.id = 'pi-action-bar';
-  bar.innerHTML =
-    '<button id="pi-run-btn"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> run python</button>' +
-    '<div id="pi-run-out"></div>' +
-    '<button id="pi-save-btn">🎴 save build card</button>';
+  const runBtn = document.createElement('button');
+  runBtn.id = 'pi-run-btn';
+  runBtn.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> run python';
+  const runOut = document.createElement('div');
+  runOut.id = 'pi-run-out';
+  const saveBtn = document.createElement('button');
+  saveBtn.id = 'pi-save-btn';
+  saveBtn.textContent = '🎴 save build card';
+  bar.appendChild(runBtn);
+  bar.appendChild(runOut);
+  bar.appendChild(saveBtn);
   wrap.appendChild(bar);
 
-  // Footer prompt
+  // Footer
   const footer = document.createElement('div');
   footer.id = 'pi-footer';
   const ta = document.createElement('textarea');
@@ -114,7 +164,6 @@ function renderDOM(wrap) {
 
 // ── EVENTS ────────────────────────────────────────────────
 function wireEvents(wrap) {
-  // Starter cards
   wrap.querySelectorAll('.pi-starter').forEach(btn => {
     btn.addEventListener('click', () => {
       document.getElementById('pi-prompt').value = btn.dataset.prompt;
@@ -122,7 +171,6 @@ function wireEvents(wrap) {
     });
   });
 
-  // Prompt auto-resize + enter to generate
   const ta = document.getElementById('pi-prompt');
   ta.addEventListener('input', () => {
     ta.style.height = 'auto';
@@ -142,35 +190,41 @@ function wireEvents(wrap) {
 // ── GENERATE ──────────────────────────────────────────────
 async function generate() {
   if (isRunning) return;
-  const ta     = document.getElementById('pi-prompt');
-  const outEl  = document.getElementById('pi-output');
-  const genBtn = document.getElementById('pi-gen-btn');
-  const userPrompt = ta.value.trim();
-  if (!userPrompt) { ta.style.borderColor = '#FF4BCB'; setTimeout(() => ta.style.borderColor = '', 1000); return; }
+  const ta      = document.getElementById('pi-prompt');
+  const outEl   = document.getElementById('pi-output');
+  const genBtn  = document.getElementById('pi-gen-btn');
+  const prompt  = ta.value.trim();
+  if (!prompt) { ta.style.borderColor = '#FF4BCB'; setTimeout(() => ta.style.borderColor = '', 1000); return; }
 
   isRunning = true;
   genBtn.disabled = true;
   genBtn.innerHTML = '<span class="pi-spin"></span> thinking...';
-  outEl.innerHTML = '<div id="pi-thinking"><div class="pi-spin-lg"></div><div class="pi-think-txt">Sky is writing your project...</div></div>';
+
+  const thinking = document.createElement('div');
+  thinking.id = 'pi-thinking';
+  thinking.innerHTML = '<div class="pi-spin-lg"></div><div class="pi-think-txt">Sky is writing your project...</div>';
+  outEl.innerHTML = '';
+  outEl.appendChild(thinking);
 
   try {
     const token = state.session && state.session.access_token;
     if (!token) { showErr('Please sign in.'); return; }
 
-    const resp = await fetch((state.RAIL || 'https://web-production-4e6f3.up.railway.app') + '/pi', {
+    const rail = state.RAIL || 'https://web-production-4e6f3.up.railway.app';
+    const resp = await fetch(rail + '/pi', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ prompt: userPrompt }),
+      body: JSON.stringify({ prompt }),
     });
     const data = await resp.json();
     if (!resp.ok) { showErr(data.detail || 'Something went wrong.'); return; }
 
     renderOutput(outEl, data.result);
     lastCode  = extractCode(data.result);
-    lastBuild = parseCard(userPrompt, data.result);
+    lastBuild = parseCard(prompt, data.result);
     renderCardPreview(lastBuild);
-
     if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
+
   } catch(e) {
     showErr('Connection error. Try again.');
   } finally {
@@ -180,14 +234,11 @@ async function generate() {
   }
 }
 
-// ── RENDER OUTPUT ──────────────────────────────────────────
-// Splits on fenced code blocks — same pattern as code.js
-// Uses string splitting instead of regex to avoid transport mangling
+// ── RENDER OUTPUT ─────────────────────────────────────────
+// Line-by-line parser — no regex, safe from transport mangling
 function renderOutput(el, text) {
   el.innerHTML = '';
-  // Split on triple backtick lines manually
-  const lines  = text.split('
-');
+  const lines  = text.split('\n');
   let inCode   = false;
   let lang     = '';
   let codeBuf  = [];
@@ -195,13 +246,15 @@ function renderOutput(el, text) {
 
   function flushText() {
     if (!textBuf.length) return;
+    const joined = textBuf.join('\n').trim();
+    if (!joined) { textBuf = []; return; }
     const p = document.createElement('p');
     p.className = 'pi-prose';
-    p.textContent = textBuf.join('
-');
+    p.textContent = joined;
     el.appendChild(p);
     textBuf = [];
   }
+
   function flushCode() {
     if (!codeBuf.length) return;
     const wrap = document.createElement('div');
@@ -212,11 +265,10 @@ function renderOutput(el, text) {
       badge.textContent = lang;
       wrap.appendChild(badge);
     }
-    const pre  = document.createElement('pre');
+    const pre = document.createElement('pre');
     pre.className = 'pi-code-block';
     const code = document.createElement('code');
-    code.textContent = codeBuf.join('
-');
+    code.textContent = codeBuf.join('\n');
     pre.appendChild(code);
     wrap.appendChild(pre);
     el.appendChild(wrap);
@@ -225,14 +277,8 @@ function renderOutput(el, text) {
 
   lines.forEach(line => {
     if (line.startsWith('```')) {
-      if (!inCode) {
-        flushText();
-        inCode = true;
-        lang   = line.slice(3).trim();
-      } else {
-        flushCode();
-        inCode = false;
-      }
+      if (!inCode) { flushText(); inCode = true; lang = line.slice(3).trim(); }
+      else         { flushCode(); inCode = false; }
     } else if (inCode) {
       codeBuf.push(line);
     } else {
@@ -240,7 +286,7 @@ function renderOutput(el, text) {
     }
   });
   flushText();
-  if (inCode) flushCode();  // unclosed fence fallback
+  if (inCode) flushCode();
 }
 
 function showErr(msg) {
@@ -249,27 +295,24 @@ function showErr(msg) {
   el.innerHTML = '';
   const d = document.createElement('div');
   d.className = 'pi-error';
-  d.textContent = '⚠ ' + msg;
+  d.textContent = '\u26a0 ' + msg;
   el.appendChild(d);
 }
 
-// ── EXTRACT CODE BLOCK ─────────────────────────────────────
-// Pulls first fenced code block for Piston execution
+// ── EXTRACT CODE ──────────────────────────────────────────
 function extractCode(text) {
-  const lines  = text.split('
-');
-  let inCode   = false;
-  let buf      = [];
+  const lines = text.split('\n');
+  let inCode  = false;
+  let buf     = [];
   for (const line of lines) {
     if (line.startsWith('```') && !inCode) { inCode = true; continue; }
     if (line.startsWith('```') && inCode)  { break; }
     if (inCode) buf.push(line);
   }
-  return buf.length ? buf.join('
-') : text;
+  return buf.length ? buf.join('\n') : text;
 }
 
-// ── RUN VIA PISTON ─────────────────────────────────────────
+// ── RUN VIA PISTON ────────────────────────────────────────
 async function runPiston() {
   if (!lastCode) return;
   const runBtn = document.getElementById('pi-run-btn');
@@ -291,7 +334,7 @@ async function runPiston() {
 
     if (stderr && stderr.indexOf('ModuleNotFoundError') !== -1) {
       runOut.style.color = '#FFD93D';
-      runOut.textContent = '⚠ GPIO/hardware modules need a real Pi. Pure Python runs fine here.';
+      runOut.textContent = '\u26a0 GPIO/hardware modules need a real Pi. Pure Python runs fine here.';
     } else if (out) {
       runOut.style.color = stderr ? '#FF4BCB' : '#00F6D6';
       runOut.textContent = out.slice(0, 300);
@@ -308,7 +351,7 @@ async function runPiston() {
   }
 }
 
-// ── COPY OUTPUT ────────────────────────────────────────────
+// ── COPY OUTPUT ───────────────────────────────────────────
 function copyOutput() {
   const el  = document.getElementById('pi-output');
   const btn = document.getElementById('pi-copy-btn');
@@ -319,51 +362,43 @@ function copyOutput() {
   });
 }
 
-// ── PARSE CARD FROM SCRIPT ─────────────────────────────────
-// Extracts structured fields from AI educational output
+// ── PARSE CARD FROM SCRIPT ────────────────────────────────
 function parseCard(prompt, text) {
-  // Title from prompt — strip common preamble words
   const title = prompt.replace(/write a.*?that/i, '').replace(/beginner|python|script|raspberry pi/gi, '').trim().slice(0, 40) || prompt.slice(0, 40);
 
-  // Difficulty
   let difficulty = 'Beginner';
   if (text.indexOf('Intermediate') !== -1) difficulty = 'Intermediate';
-  if (text.indexOf('Advanced') !== -1)     difficulty = 'Advanced';
+  if (text.indexOf('Advanced')     !== -1) difficulty = 'Advanced';
 
-  // Time
   let time_minutes = 15;
-  const tMatch = text.match(/(d+)s*min/);
+  const tMatch = text.match(/(\d+)\s*min/);
   if (tMatch) time_minutes = parseInt(tMatch[1]);
 
-  // Components — lines after COMPONENTS NEEDED
+  const lines = text.split('\n');
   const components = [];
-  const lines = text.split('
-');
   let inComp = false;
   for (const line of lines) {
     if (line.indexOf('COMPONENTS NEEDED') !== -1) { inComp = true; continue; }
     if (inComp && line.trim() === '') { inComp = false; continue; }
     if (inComp) {
-      const c = line.replace(/^[-*#d.s•]+/, '').trim();
+      const c = line.replace(/^[-*#\d.\s\u2022]+/, '').trim();
       if (c) components.push(c);
       if (components.length >= 6) inComp = false;
     }
   }
 
-  // What you'll learn
   const what_you_learn = [];
   let inLearn = false;
   for (const line of lines) {
-    if (line.indexOf("WHAT YOU") !== -1 && line.indexOf('LEARN') !== -1) { inLearn = true; continue; }
+    if (line.indexOf('WHAT YOU') !== -1 && line.indexOf('LEARN') !== -1) { inLearn = true; continue; }
     if (inLearn && line.trim() === '') { inLearn = false; continue; }
     if (inLearn) {
-      const c = line.replace(/^[-*#d.s•]+/, '').trim();
+      const c = line.replace(/^[-*#\d.\s\u2022]+/, '').trim();
       if (c) what_you_learn.push(c);
       if (what_you_learn.length >= 4) inLearn = false;
     }
   }
 
-  // Description — first non-header line
   const desc = lines.find(l => l.trim() && !l.startsWith('#') && !l.startsWith('=') && l.length > 10) || prompt;
 
   return {
@@ -386,7 +421,7 @@ function parseCard(prompt, text) {
   };
 }
 
-// ── CARD PREVIEW ───────────────────────────────────────────
+// ── CARD PREVIEW ──────────────────────────────────────────
 async function renderCardPreview(build) {
   const preview = document.getElementById('pi-card-preview');
   if (!preview) return;
@@ -400,18 +435,18 @@ async function renderCardPreview(build) {
   }
 }
 
-// ── SAVE CARD ──────────────────────────────────────────────
+// ── SAVE CARD ─────────────────────────────────────────────
 async function saveCard() {
   if (!lastBuild) { setRunMsg('Generate a project first!', '#FFD93D'); return; }
   try {
     await dbSet('builds', { key: lastBuild.id, data: lastBuild });
-    setRunMsg('✓ Saved — ' + lastBuild.id, '#00F6D6');
+    setRunMsg('\u2713 Saved \u2014 ' + lastBuild.id, '#00F6D6');
   } catch(e) {
-    setRunMsg('⚠ IDB needs v7 upgrade for builds store', '#FF4BCB');
+    setRunMsg('\u26a0 IDB needs v7 upgrade for builds store', '#FF4BCB');
   }
 }
 
-// ── DOWNLOAD CARD PNG ──────────────────────────────────────
+// ── DOWNLOAD CARD PNG ─────────────────────────────────────
 async function downloadCard() {
   if (!lastBuild) { setRunMsg('Generate a project first!', '#FFD93D'); return; }
   const canvas = await renderBuildCard(lastBuild);
@@ -424,8 +459,8 @@ async function downloadCard() {
 function setRunMsg(msg, color) {
   const el = document.getElementById('pi-run-out');
   if (!el) return;
-  el.style.color   = color || '#9090c0';
-  el.textContent   = msg;
+  el.style.color  = color || '#9090c0';
+  el.textContent  = msg;
 }
 
 // ── STYLES ────────────────────────────────────────────────
@@ -479,7 +514,7 @@ function injectPiStyles() {
     '.pi-spin{display:inline-block;width:10px;height:10px;border:1.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:piSpin 0.7s linear infinite;}',
     '@keyframes piSpin{to{transform:rotate(360deg);}}',
     '@keyframes piPulse{0%,100%{opacity:0.4;}50%{opacity:1;}}',
-    '@media(max-width:640px){#pi-panes{flex-direction:column;}#pi-left{flex:none;height:55%;border-right:none;border-bottom:1px solid var(--border);}#pi-right{flex:none;height:45%;}}'  
+    '@media(max-width:640px){#pi-panes{flex-direction:column;}#pi-left{flex:none;height:55%;border-right:none;border-bottom:1px solid var(--border);}#pi-right{flex:none;height:45%;}}'
   ].join('');
   document.head.appendChild(s);
 }
