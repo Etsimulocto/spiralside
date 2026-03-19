@@ -75,6 +75,7 @@ window.initImagine        = initImagine;
 window.initStoreView      = initStoreView;
 window.updateStoreView    = updateStoreView;
 window.initAccountView    = initAccountView;
+window.initGuideView      = initGuide;
 window.destroyMusicView  = destroyMusicView;
 window.removeFile        = removeFile;
 window.openPanelEditor   = openPanelEditor;

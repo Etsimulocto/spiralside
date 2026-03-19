@@ -130,6 +130,7 @@ export function switchView(id) {
     music:   () => window.initMusicView   && window.initMusicView(),
     library: () => window.initLibrary     && window.initLibrary(),
     code:    () => window.initCodeView     && window.initCodeView(),
+    guide:   () => window.initGuideView   && window.initGuideView(),
     pi:      () => window.initPiView        && window.initPiView(),
   };
   if (viewInits[id]) viewInits[id]();
