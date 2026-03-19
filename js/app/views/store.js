@@ -6,7 +6,7 @@
 import { state } from '../state.js';
 import { buyPack } from '../ui.js';
 
-let initialized = false;
+let initialized = false; // v2 — rebased credits
 
 // Called by switchView('store') — renders once, updates on revisit
 export function initStoreView() {
@@ -62,7 +62,7 @@ export function updateStoreView() {
     const cr = Number.isInteger(state.credits)
       ? state.credits
       : Math.round(state.credits);
-    amountEl.textContent = cr;
+    amountEl.textContent = Math.round(cr).toLocaleString();
     if (subEl) subEl.textContent = 'paid account';
   } else {
     amountEl.textContent = '0';
