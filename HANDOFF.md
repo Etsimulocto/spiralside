@@ -85,15 +85,15 @@ speakReply() imported in chat.js and called after addMessage(data.reply)
 
 ### CREDIT SYSTEM REBASE
 Old: 1 cr = $0.01 flat CREDIT_COST per message
-New: 1 cr = $0.0001 (one hundredth of a penny) cost plus 17% margin
+New: 1 cr = $0.00001 (one hundredth of a penny) cost plus 17% margin
 Philosophy: cost plus 17% covers hosting/tax/maintenance — no profit motive
 Architect wants cheapest possible AI for users
 
 Pack sizes: $5 = 50000cr / $10 = 110000cr / $20 = 240000cr
 Per-message costs at avg 500 input + 200 output tokens:
-  Haiku:  (0.80*500 + 4.00*200) / 1e6 * 1.17 / 0.0001 = ~14 cr/msg
-  Sky 4o: (0.15*500 + 0.60*200) / 1e6 * 1.17 / 0.0001 = ~2 cr/msg
-  Sonnet: (3.00*500 + 15.00*200) / 1e6 * 1.17 / 0.0001 = ~53 cr/msg
+  Haiku:  (0.80*500 + 4.00*200) / 1e6 * 1.17 / 0.0001 = ~110 cr/msg
+  Sky 4o: (0.15*500 + 0.60*200) / 1e6 * 1.17 / 0.0001 = ~18 cr/msg
+  Sonnet: (3.00*500 + 15.00*200) / 1e6 * 1.17 / 0.0001 = ~530 cr/msg
   Image gen: 500 cr flat
   TTS: 200 cr flat
   STT: 0 cr (browser native)
