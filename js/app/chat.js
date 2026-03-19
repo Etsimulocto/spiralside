@@ -7,6 +7,7 @@
 // ============================================================
 
 import { state }           from './state.js';
+import { speakReply }          from './models.js';
 import { getDemoResponse, loadDemoResponses } from './demo.js';
 
 // ── DOM REFS ──────────────────────────────────────────────
@@ -194,6 +195,7 @@ export async function sendMessage() {
     }
 
     addMessage(data.reply, 'bot');
+    speakReply(data.reply);
 
     // Update credit/usage display if main.js exposed updateCreditDisplay globally
     if (data.usage && typeof updateCreditDisplay === 'function') {

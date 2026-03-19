@@ -32,7 +32,7 @@ import { buildFAB, toggleFAB, switchView, setFontSize, loadFontSize,
          buyPack, handlePayPalReturn,
          restoreTabOrder, initTabDrag }        from './ui.js';
 import { state }                                   from './state.js';
-import { selectModel, toggleInputMenu, updateInputMenu } from './models.js';
+import { selectModel, toggleInputMenu, updateInputMenu, initModels } from './models.js';
 import { initStoreView, updateStoreView }          from './views/store.js';
 import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initStudioView }                          from './views/studio.js';
@@ -117,6 +117,7 @@ async function onAppReady() {
   await loadSavedSheets(dbGet);
 
   // 5. Init all modules
+  initModels();
   initChat(openPanel);
   initVault();
   initBuild();
