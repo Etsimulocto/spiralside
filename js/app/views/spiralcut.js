@@ -5,8 +5,10 @@ export function initSpiralCutView(){
   const el=document.getElementById("view-spiralcut");
   if(!el||initialized)return;
   initialized=true;
-  el.style.cssText="display:flex;flex-direction:column;height:100%;overflow:hidden;";
-  _top(el);_mid(el);_tl(el);_wire();
+  const wrap=document.createElement("div");
+  wrap.style.cssText="display:flex;flex-direction:column;height:100%;overflow:hidden;";
+  el.appendChild(wrap);
+  _top(wrap);_mid(wrap);_tl(wrap);_wire();
 }
 function _top(el){
   const d=document.createElement("div");
@@ -54,11 +56,11 @@ function _mid(el){
   rc.style.cssText="flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;";
   const pv=document.createElement("div");
   pv.style.cssText="flex:1;background:#050508;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-height:0;";
-  pv.innerHTML="<div style='text-align:center;'><div style='font-size:2rem;opacity:0.2;margin-bottom:8px;'>&#x29C6;</div><div style='font-size:0.62rem;color:var(--subtext);letter-spacing:0.1em;'>no clip selected</div></div><div style='position:absolute;top:10px;right:10px;font-size:0.52rem;color:var(--subtext);background:rgba(8,8,16,0.8);border:1px solid var(--border);border-radius:4px;padding:3px 7px;'><span id='sc-clip-count'>0</span> clips</div>";
+  pv.innerHTML="<div style='text-align:center;'><div style='font-size:2rem;opacity:0.2;margin-bottom:8px;'>⧆</div><div style='font-size:0.62rem;color:var(--subtext);letter-spacing:0.1em;'>no clip selected</div></div><div style='position:absolute;top:10px;right:10px;font-size:0.52rem;color:var(--subtext);background:rgba(8,8,16,0.8);border:1px solid var(--border);border-radius:4px;padding:3px 7px;'><span id='sc-clip-count'>0</span> clips</div>";
   rc.appendChild(pv);
   const ins=document.createElement("div");
   ins.style.cssText="border-top:1px solid var(--border);background:var(--surface);padding:10px 14px;flex-shrink:0;";
-  ins.innerHTML="<div style='font-size:0.52rem;color:var(--subtext);text-transform:uppercase;margin-bottom:8px;'>selected clip</div><div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;'><div><div style='font-size:0.52rem;color:var(--subtext);'>name</div><div id='sc-insp-name' style='font-size:0.7rem;color:var(--text);'>&#x2014;</div></div><div><div style='font-size:0.52rem;color:var(--subtext);'>mood</div><div id='sc-insp-mood' style='font-size:0.7rem;color:var(--teal);'>&#x2014;</div></div><div><div style='font-size:0.52rem;color:var(--subtext);'>est.</div><div id='sc-insp-dur' style='font-size:0.7rem;color:var(--subtext);'>~5s</div></div></div><div style='display:flex;gap:6px;'><button style='flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--subtext);font-size:0.6rem;cursor:pointer;'>gen image</button><button style='flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--subtext);font-size:0.6rem;cursor:pointer;'>gen clip</button><button style='flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--subtext);font-size:0.6rem;cursor:pointer;'>&#x2193; export</button></div>";
+  ins.innerHTML="<div style='font-size:0.52rem;color:var(--subtext);text-transform:uppercase;margin-bottom:8px;'>selected clip</div><div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;'><div><div style='font-size:0.52rem;color:var(--subtext);'>name</div><div id='sc-insp-name' style='font-size:0.7rem;color:var(--text);'>—</div></div><div><div style='font-size:0.52rem;color:var(--subtext);'>mood</div><div id='sc-insp-mood' style='font-size:0.7rem;color:var(--teal);'>—</div></div><div><div style='font-size:0.52rem;color:var(--subtext);'>est.</div><div id='sc-insp-dur' style='font-size:0.7rem;color:var(--subtext);'>~5s</div></div></div><div style='display:flex;gap:6px;'><button style='flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--subtext);font-size:0.6rem;cursor:pointer;'>gen image</button><button style='flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--subtext);font-size:0.6rem;cursor:pointer;'>gen clip</button><button style='flex:1;padding:7px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--subtext);font-size:0.6rem;cursor:pointer;'>↓ export</button></div>";
   rc.appendChild(ins);m.appendChild(rc);el.appendChild(m);
 }
 function _tl(el){
@@ -66,7 +68,7 @@ function _tl(el){
   d.style.cssText="border-top:2px solid var(--border);background:var(--surface);flex-shrink:0;height:110px;display:flex;flex-direction:column;overflow:hidden;";
   const hdr=document.createElement("div");
   hdr.style.cssText="display:flex;align-items:center;justify-content:space-between;padding:5px 12px;border-bottom:1px solid var(--border);flex-shrink:0;";
-  hdr.innerHTML="<div style='font-size:0.52rem;color:var(--subtext);text-transform:uppercase;'>storyboard</div><div style='display:flex;gap:6px;'><button id='sc-clear-btn' style='padding:3px 10px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--subtext);font-size:0.56rem;cursor:pointer;'>clear</button><button id='sc-render-btn' style='padding:3px 10px;background:rgba(0,246,214,0.1);border:1px solid var(--teal);border-radius:4px;color:var(--teal);font-size:0.56rem;cursor:pointer;'>&#x2736; render all</button></div>";
+  hdr.innerHTML="<div style='font-size:0.52rem;color:var(--subtext);text-transform:uppercase;'>storyboard</div><div style='display:flex;gap:6px;'><button id='sc-clear-btn' style='padding:3px 10px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--subtext);font-size:0.56rem;cursor:pointer;'>clear</button><button id='sc-render-btn' style='padding:3px 10px;background:rgba(0,246,214,0.1);border:1px solid var(--teal);border-radius:4px;color:var(--teal);font-size:0.56rem;cursor:pointer;'>✶ render all</button></div>";
   d.appendChild(hdr);
   const track=document.createElement("div");
   track.id="sc-timeline";
@@ -74,7 +76,7 @@ function _tl(el){
   const hint=document.createElement("div");
   hint.id="sc-tl-empty";
   hint.style.cssText="font-size:0.6rem;color:var(--subtext);opacity:0.5;white-space:nowrap;";
-  hint.textContent="&#x29C6; tap + on a scene to add";
+  hint.textContent="⧆ tap + on a scene to add";
   track.appendChild(hint);d.appendChild(track);el.appendChild(d);
 }
 function _ph(type,count){
@@ -82,7 +84,7 @@ function _ph(type,count){
   let h="";
   for(let i=1;i<=count;i++){
     const id=type+"_"+i,nm=lb[type]+" "+i;
-    h+="<div style='background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;'><div style='font-size:0.65rem;color:var(--text);margin-bottom:4px;'>"+nm+"</div><button onclick='window._scAdd(\"'"+id+"'\",'\"'"+nm+"'\",\"electric\")' style='width:100%;padding:3px;background:rgba(0,246,214,0.08);border:1px solid rgba(0,246,214,0.2);border-radius:4px;color:var(--teal);font-size:0.52rem;cursor:pointer;'>+ add</button></div>";
+    h+="<div style='background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;'><div style='font-size:0.65rem;color:var(--text);margin-bottom:4px;'>"+nm+"</div><button onclick='window._scAdd("'"+id+"'","'"+nm+"'","electric")' style='width:100%;padding:3px;background:rgba(0,246,214,0.08);border:1px solid rgba(0,246,214,0.2);border-radius:4px;color:var(--teal);font-size:0.52rem;cursor:pointer;'>+ add</button></div>";
   }
   return h;
 }
@@ -114,7 +116,7 @@ function _wire(){
       const d=document.createElement("div");
       d.className="sc-tl-clip";
       d.style.cssText="flex-shrink:0;width:78px;height:72px;background:var(--surface2);border:1px solid var(--teal);border-radius:6px;padding:6px;cursor:pointer;position:relative;display:flex;flex-direction:column;justify-content:space-between;";
-      d.innerHTML="<div style='font-size:0.58rem;color:var(--teal);'>#"+(i+1)+"</div><div style='font-size:0.56rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>"+c.name+"</div><div style='font-size:0.48rem;color:var(--subtext);'>~5s</div><button onclick='event.stopPropagation();this.parentElement.remove()' style='position:absolute;top:3px;right:3px;background:none;border:none;color:var(--subtext);font-size:0.58rem;cursor:pointer;'>&#x2715;</button>";
+      d.innerHTML="<div style='font-size:0.58rem;color:var(--teal);'>#"+(i+1)+"</div><div style='font-size:0.56rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>"+c.name+"</div><div style='font-size:0.48rem;color:var(--subtext);'>~5s</div><button onclick='event.stopPropagation();this.parentElement.remove()' style='position:absolute;top:3px;right:3px;background:none;border:none;color:var(--subtext);font-size:0.58rem;cursor:pointer;'>✕</button>";
       d.onclick=()=>{document.getElementById("sc-insp-name").textContent=c.name;document.getElementById("sc-insp-mood").textContent=c.mood||"—";};
       tl.appendChild(d);
     });
