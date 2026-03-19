@@ -25,24 +25,24 @@ export function initStoreView() {
         <div class="pack-grid">
           <div class="pack-card" onclick="window.buyPack('5')">
             <div class="pack-price">$5</div>
-            <div class="pack-credits">500 credits</div>
+            <div class="pack-credits">50,000 credits</div>
             <div class="pack-bonus">starter</div>
           </div>
           <div class="pack-card popular" onclick="window.buyPack('10')">
             <div class="pack-tag">✦ popular</div>
             <div class="pack-price">$10</div>
-            <div class="pack-credits">1,100 credits</div>
-            <div class="pack-bonus">+100 bonus</div>
+            <div class="pack-credits">110,000 credits</div>
+            <div class="pack-bonus">+10,000 bonus</div>
           </div>
           <div class="pack-card" onclick="window.buyPack('20')">
             <div class="pack-price">$20</div>
-            <div class="pack-credits">2,400 credits</div>
-            <div class="pack-bonus">+400 bonus</div>
+            <div class="pack-credits">240,000 credits</div>
+            <div class="pack-bonus">+40,000 bonus</div>
           </div>
         </div>
         <div class="view-section-title">feature pricing</div>
-        <div class="feature-row"><div class="feature-icon">💬</div><div class="feature-name">chat — haiku</div><div class="feature-cost">1 cr</div></div>
-        <div class="feature-row"><div class="feature-icon">💬</div><div class="feature-name">chat — sonnet</div><div class="feature-cost">6 cr</div></div>
+        <div class="feature-row"><div class="feature-icon">💬</div><div class="feature-name">chat — haiku</div><div class="feature-cost">~11 cr</div></div>
+        <div class="feature-row"><div class="feature-icon">💬</div><div class="feature-name">chat — sonnet</div><div class="feature-cost">~53 cr</div></div>
         <div class="feature-row"><div class="feature-icon">🎨</div><div class="feature-name">image generation</div><div class="feature-cost">5 cr</div></div>
         <div class="feature-row"><div class="feature-icon">🗣️</div><div class="feature-name">text to speech</div><div class="feature-cost">2 cr</div></div>
         <div class="feature-row"><div class="feature-icon">🎤</div><div class="feature-name">speech to text</div><div class="feature-cost">1 cr</div></div>
@@ -61,7 +61,7 @@ export function updateStoreView() {
   if (state.isPaid) {
     const cr = Number.isInteger(state.credits)
       ? state.credits
-      : parseFloat(state.credits.toFixed(1));
+      : Math.round(state.credits);
     amountEl.textContent = cr;
     if (subEl) subEl.textContent = 'paid account';
   } else {
