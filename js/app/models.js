@@ -1,5 +1,5 @@
 // SPIRALSIDE - MODEL SELECTOR v2.0 // Nimbis anchor: js/app/models.js
-export let selectedModel = 'haiku';
+export let selectedModel = '4o';
 let panelOpen=false,sttEnabled=true,ttsEnabled=false,recognition=null,isRecording=false;
 export const MODELS={haiku:{label:'Haiku',cost_in:0.80,cost_out:4.00},'4o':{label:'Sky / 4o',cost_in:0.15,cost_out:0.60},sonnet:{label:'Sonnet',cost_in:3.00,cost_out:15.00}};
 const MARGIN=1.17,AVG_IN=500,AVG_OUT=200;
