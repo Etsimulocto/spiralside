@@ -188,3 +188,50 @@ window.updateParticleDensity = updateParticleDensity;
 
 loadSavedStyle();
 initSlots();
+
+window.sendGift = async function() {
+  const amtEl = document.getElementById('gift-amount-input');
+  const msg = document.getElementById('gift-msg');
+  const credits = parseInt(amtEl?.value);
+  if (!credits || credits < 1000) { if(msg){msg.textContent='Min 1,000 cr.';msg.className='gift-msg err';} return; }
+  if (!state.user){alert('Sign in first.');return;}
+  try {
+    let token = state.session?.access_token;
+    if (!token){const{data}=await sb.auth.getSession();token=data?.session?.access_token;}
+    const r = await fetch('https://web-production-4e6f3.up.railway.app/send-gift',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({credits})});
+    const d = await r.json();
+    if(!r.ok){if(msg){msg.textContent=d.detail||'Error.';msg.className='gift-msg err';}return;}
+    if(msg){msg.textContent='Code: '+d.code+' — '+credits.toLocaleString()+' cr sent!';msg.className='gift-msg ok';}
+    if(amtEl)amtEl.value='';
+    loadUsage();
+  } catch(e){if(msg){msg.textContent='Connection error.';msg.className='gift-msg err';}}
+};
+window.redeemGift = async function() {
+  const codeEl = document.getElementById('gift-code-input');
+  const msg = document.getElementById('gift-msg');
+  const code = codeEl?.value?.trim().toUpperCase();
+  if (!code || code.length < 12){if(msg){msg.textContent='Enter a valid code.';msg.className='gift-msg err';}return;}
+  if (!state.user){alert('Sign in first.');return;}
+  try {
+    let token = state.session?.access_token;
+    if (!token){const{data}=await sb.auth.getSession();token=data?.session?.access_token;}
+    const r = await fetch('https://web-production-4e6f3.up.railway.app/redeem-gift',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({code})});
+    const d = await r.json();
+    if(!r.ok){if(msg){msg.textContent=d.detail||'Error.';msg.className='gift-msg err';}return;}
+    if(msg){msg.textContent=d.credits_added.toLocaleString()+' credits added!';msg.className='gift-msg ok';}
+    if(codeEl)codeEl.value='';
+    loadUsage();
+  } catch(e){if(msg){msg.textContent='Connection error.';msg.className='gift-msg err';}}
+};
+window.buyGift = async function() {
+  if (!state.user){alert('Sign in first.');return;}
+  try {
+    let token = state.session?.access_token;
+    if (!token){const{data}=await sb.auth.getSession();token=data?.session?.access_token;}
+    const r = await fetch('https://web-production-4e6f3.up.railway.app/create-order',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({amount:'5',gift:true})});
+    const d = await r.json();
+    if(!r.ok){alert(d.detail||'Payment error.');return;}
+    localStorage.setItem('pending_gift_order',d.order_id);
+    window.location.href = d.approve_url;
+  } catch(e){alert('Payment error. Try again.');}
+};
