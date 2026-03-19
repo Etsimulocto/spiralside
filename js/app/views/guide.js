@@ -432,5 +432,5 @@ function clearOverlay() {
 // ── PUBLIC INIT ────────────────────────────────────────────────
 export function initGuide() {
   injectCSS();
-  // renderGuide() called by switchView when tab becomes active
+  renderGuide();
 }
