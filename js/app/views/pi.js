@@ -49,7 +49,7 @@ function renderDOM(wrap) {
   const header = document.createElement('div');
   header.id = 'pi-header';
   header.innerHTML = '<div id="pi-title">🍓 Bloomslice Studio</div>' +
-    '<div id="pi-sky-msg">Tell me what you want to build and I'll write the code, explain every line, and show you how to wire it up.</div>';
+    '<div id="pi-sky-msg">Tell me what you want to build and I\'ll write the code, explain every line, and show you how to wire it up.</div>';
   wrap.appendChild(header);
 
   // Starter cards
