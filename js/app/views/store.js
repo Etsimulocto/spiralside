@@ -43,9 +43,9 @@ export function initStoreView() {
         </div>
       </div>
       <div class="view-section-title">live feature pricing</div>
-      <div class="feature-row"><div class="feature-icon">⚡</div><div class="feature-name">chat — haiku<div class="feature-sub">fast · cost+17%</div></div><div class="feature-cost">~14 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">◎</div><div class="feature-name">chat — sky / 4o<div class="feature-sub">character · cost+17%</div></div><div class="feature-cost">~2 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">✦</div><div class="feature-name">chat — sonnet<div class="feature-sub">smart · cost+17%</div></div><div class="feature-cost">~53 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">⚡</div><div class="feature-name">chat — haiku<div class="feature-sub">fast · cost+17%</div></div><div class="feature-cost">~110 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">◎</div><div class="feature-name">chat — sky / 4o<div class="feature-sub">character · cost+17%</div></div><div class="feature-cost">~18 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">✦</div><div class="feature-name">chat — sonnet<div class="feature-sub">smart · cost+17%</div></div><div class="feature-cost">~530 cr</div></div>
       <div class="feature-row"><div class="feature-icon">🎨</div><div class="feature-name">image generation<div class="feature-sub">flux schnell</div></div><div class="feature-cost">500 cr</div></div>
       <div class="feature-row"><div class="feature-icon">🖣️</div><div class="feature-name">text to speech<div class="feature-sub">chatterbox</div></div><div class="feature-cost">200 cr</div></div>
       <div class="feature-row"><div class="feature-icon">🎤</div><div class="feature-name">speech to text<div class="feature-sub">browser native · free</div></div><div class="feature-cost">0 cr</div></div>
