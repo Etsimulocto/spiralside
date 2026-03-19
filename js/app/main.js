@@ -51,6 +51,12 @@ window.closePanel        = () => {};
 window.switchPanelTab    = (tab) => window.switchView(tab);
 window.toggleFAB         = toggleFAB;
 window.switchView        = switchView;
+window.initPiView        = () => {
+  const el = document.getElementById('view-pi');
+  if (!el || el.dataset.initialized) return;
+  el.dataset.initialized = '1';
+  import('./views/pi.js').then(({ initPiView }) => initPiView());
+};
 window.initCodeView      = () => {
   const el = document.getElementById('view-code');
   if (!el || el.dataset.initialized) return;

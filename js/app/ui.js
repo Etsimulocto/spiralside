@@ -65,6 +65,7 @@ export function switchView(id) {
     music:   () => window.initMusicView   && window.initMusicView(),
     library: () => window.initLibrary     && window.initLibrary(),
     code:    () => window.initCodeView     && window.initCodeView(),
+    pi:      () => window.initPiView        && window.initPiView(),
   };
   if (viewInits[id]) viewInits[id]();
   const prevViewId = state.activeView;
