@@ -101,7 +101,6 @@ async function onAppReady() {
   initVault();
   initBuild();
   initLibrary();
-  initCodex();
   buildFAB();
 
   // 6. Populate forms and UI
