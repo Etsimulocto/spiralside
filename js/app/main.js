@@ -36,6 +36,7 @@ import { selectModel, toggleInputMenu, updateInputMenu, initModels } from './mod
 import { initStoreView, updateStoreView }          from './views/store.js';
 import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initStudioView }                          from './views/studio.js';
+import { initGuide, renderGuide } from './views/guide.js';
 import { initAccountView }                         from './views/account.js';
 
 // ── EXPOSE GLOBALS ────────────────────────────────────────────
