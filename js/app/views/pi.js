@@ -1,4 +1,3 @@
-
 // ============================================================
 // SPIRALSIDE — PI VIEW v1.0
 // Bloomslice Studio — maker/STEM tab
@@ -10,214 +9,170 @@
 import { state }                    from '../state.js';
 import { renderBuildCard,
          generateCardId }           from '../card.js';
-import { dbSet, dbGet, dbGetAll }   from '../db.js';
+import { dbSet, dbGetAll }          from '../db.js';
 
 // ── CONFIG ────────────────────────────────────────────────
-const RAIL         = state.RAIL || 'https://web-production-4e6f3.up.railway.app';
-const PISTON_URL   = 'https://emkc.org/api/v2/piston/execute';
-const CARD_COLOR   = '#FF4BCB';  // Bloomslice pink
+const PISTON_URL = 'https://emkc.org/api/v2/piston/execute';
 
-// ── STARTER PROJECTS ─────────────────────────────────────
-// Each card pre-fills the prompt when clicked
+// ── STARTER PROJECTS ──────────────────────────────────────
 const STARTERS = [
-  { icon: '🔴', label: 'Blink LED',      prompt: 'Write a beginner Python script for Raspberry Pi that blinks an LED on GPIO 17 every second.' },
-  { icon: '📡', label: 'Read Sensor',    prompt: 'Write a beginner Python script for Raspberry Pi that reads temperature and humidity from a DHT11 sensor on GPIO 4.' },
-  { icon: '🌐', label: 'Web Server',      prompt: 'Write a beginner Python script for Raspberry Pi that creates a simple Flask web server showing a Hello World page on port 5000.' },
-  { icon: '📷', label: 'Camera Snap',    prompt: 'Write a beginner Python script for Raspberry Pi that takes a photo with the Pi Camera and saves it as photo.jpg.' },
-  { icon: '🎛', label: 'Servo Control',  prompt: 'Write a beginner Python script for Raspberry Pi that sweeps a servo motor back and forth using GPIO 18 and PWM.' },
-  { icon: '📊', label: 'Data Logger',    prompt: 'Write a beginner Python script for Raspberry Pi that logs CPU temperature to a CSV file every 5 seconds.' },
+  { icon: '🔴', label: 'Blink LED',     prompt: 'Write a beginner Raspberry Pi Python script that blinks an LED on GPIO 17 every second. Include full educational format with wiring diagram.' },
+  { icon: '📡', label: 'Read Sensor',   prompt: 'Write a beginner Raspberry Pi Python script that reads temperature from a DHT11 sensor on GPIO 4. Include full educational format.' },
+  { icon: '🌐', label: 'Web Server',    prompt: 'Write a beginner Raspberry Pi Python script that creates a simple Flask web server on port 5000. Include full educational format.' },
+  { icon: '📷', label: 'Camera Snap',  prompt: 'Write a beginner Raspberry Pi Python script that takes a photo with picamera2 and saves it. Include full educational format.' },
+  { icon: '🎛️', label: 'Servo',        prompt: 'Write a beginner Raspberry Pi Python script that sweeps a servo motor on GPIO 18 using PWM. Include full educational format.' },
+  { icon: '📊', label: 'Data Logger',  prompt: 'Write a beginner Raspberry Pi Python script that logs CPU temperature to a CSV file every 5 seconds. Include full educational format.' },
 ];
 
-// ── MODULE STATE ─────────────────────────────────────────
-let initialized  = false;   // prevent double-init
-let isRunning    = false;   // debounce AI call
-let lastCode     = '';      // last generated code block — for Piston + card
-let lastScript   = '';      // full raw script output — for card description
-let savedCards   = [];      // in-memory build cards this session
+// ── MODULE STATE ──────────────────────────────────────────
+let initialized = false;  // prevent double-init
+let isRunning   = false;  // debounce AI call
+let lastCode    = '';     // last extracted code block for Piston
+let lastBuild   = null;   // last parsed build card object
 
 // ── INIT ──────────────────────────────────────────────────
 export function initPiView() {
   const el = document.getElementById('view-pi');
   if (!el || initialized) return;
   initialized = true;
-
   injectPiStyles();
-
   const wrap = document.createElement('div');
   wrap.id = 'pi-wrap';
   el.appendChild(wrap);
-
-  wrap.innerHTML = buildDOM();
+  renderDOM(wrap);
   wireEvents(wrap);
-  loadSavedCards();
 }
 
-// ── DOM BUILDER ───────────────────────────────────────────
-function buildDOM() {
-  return `
-    <!-- HEADER -->
-    <div id="pi-header">
-      <div id="pi-title">\u{1F353} Bloomslice Studio</div>
-      <div id="pi-sky-msg">Hey. Tell me what you want to build and I'll write the code, explain every line, and show you how to wire it up.</div>
-    </div>
+// ── DOM ────────────────────────────────────────────────────
+function renderDOM(wrap) {
+  // Header
+  const header = document.createElement('div');
+  header.id = 'pi-header';
+  header.innerHTML = '<div id="pi-title">🍓 Bloomslice Studio</div>' +
+    '<div id="pi-sky-msg">Tell me what you want to build and I'll write the code, explain every line, and show you how to wire it up.</div>';
+  wrap.appendChild(header);
 
-    <!-- STARTER CARDS -->
-    <div id="pi-starters">
-      ${STARTERS.map(s => `
-        <button class="pi-starter" data-prompt="${escHtml(s.prompt)}">
-          <span class="pi-starter-icon">${s.icon}</span>
-          <span class="pi-starter-label">${s.label}</span>
-        </button>
-      `).join('')}
-    </div>
+  // Starter cards
+  const starters = document.createElement('div');
+  starters.id = 'pi-starters';
+  STARTERS.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'pi-starter';
+    btn.dataset.prompt = s.prompt;
+    btn.innerHTML = '<span class="pi-starter-icon">' + s.icon + '</span>' +
+      '<span class="pi-starter-label">' + s.label + '</span>';
+    starters.appendChild(btn);
+  });
+  wrap.appendChild(starters);
 
-    <!-- MAIN PANES -->
-    <div id="pi-panes">
+  // Panes
+  const panes = document.createElement('div');
+  panes.id = 'pi-panes';
 
-      <!-- LEFT: prompt + output -->
-      <div id="pi-left">
-        <div class="pi-pane-label">output
-          <button class="pi-pane-action" id="pi-copy-btn">copy</button>
-        </div>
-        <div id="pi-output">
-          <div id="pi-output-placeholder">
-            <div class="pi-placeholder-icon">\u{1F353}</div>
-            <div>pick a starter or describe your project below</div>
-          </div>
-        </div>
-      </div>
+  // Left pane — output
+  const left = document.createElement('div');
+  left.id = 'pi-left';
+  left.innerHTML =
+    '<div class="pi-pane-label">output <button class="pi-pane-action" id="pi-copy-btn">copy</button></div>' +
+    '<div id="pi-output"><div id="pi-output-ph"><div style="font-size:2rem">🍓</div><div>pick a starter or describe your project</div></div></div>';
 
-      <!-- RIGHT: card preview -->
-      <div id="pi-right">
-        <div class="pi-pane-label">build card
-          <button class="pi-pane-action" id="pi-download-btn">save PNG</button>
-        </div>
-        <div id="pi-card-preview">
-          <div id="pi-card-placeholder">
-            <div class="pi-placeholder-icon" style="font-size:1rem;opacity:0.3">BCK-????</div>
-            <div style="font-size:0.65rem;opacity:0.3;margin-top:6px">card appears after generation</div>
-          </div>
-        </div>
-      </div>
+  // Right pane — card preview
+  const right = document.createElement('div');
+  right.id = 'pi-right';
+  right.innerHTML =
+    '<div class="pi-pane-label">build card <button class="pi-pane-action" id="pi-dl-btn">save PNG</button></div>' +
+    '<div id="pi-card-preview"><div id="pi-card-ph" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:0.3;font-size:0.65rem;color:var(--subtext);text-align:center;gap:6px"><div>BCK-????</div><div>card appears after generation</div></div></div>';
 
-    </div>
+  panes.appendChild(left);
+  panes.appendChild(right);
+  wrap.appendChild(panes);
 
-    <!-- RUN + SAVE BAR -->
-    <div id="pi-action-bar">
-      <button id="pi-run-btn" title="Run code in sandbox (Python only, no GPIO hardware)">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        run python
-      </button>
-      <div id="pi-run-output"></div>
-      <button id="pi-save-card-btn">\u{1F3A0} save build card</button>
-    </div>
+  // Action bar
+  const bar = document.createElement('div');
+  bar.id = 'pi-action-bar';
+  bar.innerHTML =
+    '<button id="pi-run-btn"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> run python</button>' +
+    '<div id="pi-run-out"></div>' +
+    '<button id="pi-save-btn">🎴 save build card</button>';
+  wrap.appendChild(bar);
 
-    <!-- FOOTER PROMPT -->
-    <div id="pi-footer">
-      <textarea id="pi-prompt" rows="1"
-        placeholder="What do you want to build? (e.g. blink an LED, read a temperature sensor...)"
-        spellcheck="false"></textarea>
-      <button id="pi-generate-btn">
-        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        generate
-      </button>
-    </div>
-  `;
+  // Footer prompt
+  const footer = document.createElement('div');
+  footer.id = 'pi-footer';
+  const ta = document.createElement('textarea');
+  ta.id = 'pi-prompt';
+  ta.rows = 1;
+  ta.placeholder = 'What do you want to build? (e.g. blink an LED, read a temperature sensor...)';
+  ta.spellcheck = false;
+  const genBtn = document.createElement('button');
+  genBtn.id = 'pi-gen-btn';
+  genBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> generate';
+  footer.appendChild(ta);
+  footer.appendChild(genBtn);
+  wrap.appendChild(footer);
 }
 
 // ── EVENTS ────────────────────────────────────────────────
 function wireEvents(wrap) {
-
-  // Starter card clicks — pre-fill prompt and auto-generate
+  // Starter cards
   wrap.querySelectorAll('.pi-starter').forEach(btn => {
     btn.addEventListener('click', () => {
-      const prompt = btn.dataset.prompt;
-      document.getElementById('pi-prompt').value = prompt;
+      document.getElementById('pi-prompt').value = btn.dataset.prompt;
       generate();
     });
   });
 
-  // Prompt textarea auto-resize
-  const promptEl = document.getElementById('pi-prompt');
-  promptEl.addEventListener('input', () => {
-    promptEl.style.height = 'auto';
-    promptEl.style.height = Math.min(promptEl.scrollHeight, 100) + 'px';
+  // Prompt auto-resize + enter to generate
+  const ta = document.getElementById('pi-prompt');
+  ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
   });
-  promptEl.addEventListener('keydown', e => {
+  ta.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generate(); }
   });
 
-  // Generate button
-  document.getElementById('pi-generate-btn').addEventListener('click', generate);
-
-  // Copy output
-  document.getElementById('pi-copy-btn').addEventListener('click', () => {
-    const out = document.getElementById('pi-output');
-    navigator.clipboard.writeText(out?.innerText || '').then(() => {
-      const btn = document.getElementById('pi-copy-btn');
-      btn.textContent = 'copied!';
-      setTimeout(() => btn.textContent = 'copy', 1400);
-    });
-  });
-
-  // Run via Piston
-  document.getElementById('pi-run-btn').addEventListener('click', runCode);
-
-  // Save as Build Card
-  document.getElementById('pi-save-card-btn').addEventListener('click', saveCard);
-
-  // Download card PNG
-  document.getElementById('pi-download-btn').addEventListener('click', downloadCard);
+  document.getElementById('pi-gen-btn').addEventListener('click', generate);
+  document.getElementById('pi-copy-btn').addEventListener('click', copyOutput);
+  document.getElementById('pi-run-btn').addEventListener('click', runPiston);
+  document.getElementById('pi-save-btn').addEventListener('click', saveCard);
+  document.getElementById('pi-dl-btn').addEventListener('click', downloadCard);
 }
 
 // ── GENERATE ──────────────────────────────────────────────
 async function generate() {
   if (isRunning) return;
-
-  const promptEl  = document.getElementById('pi-prompt');
-  const outputEl  = document.getElementById('pi-output');
-  const genBtn    = document.getElementById('pi-generate-btn');
-  const userPrompt = promptEl.value.trim();
-
-  if (!userPrompt) {
-    promptEl.placeholder = 'describe your project first...';
-    setTimeout(() => promptEl.placeholder = 'What do you want to build?', 2000);
-    return;
-  }
+  const ta     = document.getElementById('pi-prompt');
+  const outEl  = document.getElementById('pi-output');
+  const genBtn = document.getElementById('pi-gen-btn');
+  const userPrompt = ta.value.trim();
+  if (!userPrompt) { ta.style.borderColor = '#FF4BCB'; setTimeout(() => ta.style.borderColor = '', 1000); return; }
 
   isRunning = true;
   genBtn.disabled = true;
-  genBtn.innerHTML = '<span class="pi-spinner"></span> thinking...';
-
-  // Thinking state
-  outputEl.innerHTML = `<div id="pi-thinking">
-    <div class="pi-spinner-lg"></div>
-    <div class="pi-thinking-text">Sky is writing your project...</div>
-  </div>`;
+  genBtn.innerHTML = '<span class="pi-spin"></span> thinking...';
+  outEl.innerHTML = '<div id="pi-thinking"><div class="pi-spin-lg"></div><div class="pi-think-txt">Sky is writing your project...</div></div>';
 
   try {
-    const token = state.session?.access_token;
-    if (!token) { showOutputError('Please sign in to use Bloomslice Studio.'); return; }
+    const token = state.session && state.session.access_token;
+    if (!token) { showErr('Please sign in.'); return; }
 
-    const resp = await fetch(RAIL + '/pi', {
+    const resp = await fetch((state.RAIL || 'https://web-production-4e6f3.up.railway.app') + '/pi', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ prompt: userPrompt }),
     });
-
     const data = await resp.json();
-    if (!resp.ok) { showOutputError(data.detail || 'Something went wrong.'); return; }
+    if (!resp.ok) { showErr(data.detail || 'Something went wrong.'); return; }
 
-    lastScript = data.result;
-    lastCode   = extractCodeBlock(data.result);  // pull first fenced code block
-    renderOutput(data.result);
-    renderCardPreview(userPrompt, data.result);   // auto-render card preview
+    renderOutput(outEl, data.result);
+    lastCode  = extractCode(data.result);
+    lastBuild = parseCard(userPrompt, data.result);
+    renderCardPreview(lastBuild);
 
-    // Update credits if returned
     if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
-
-  } catch(err) {
-    showOutputError('Connection error. Try again.');
+  } catch(e) {
+    showErr('Connection error. Try again.');
   } finally {
     isRunning = false;
     genBtn.disabled = false;
@@ -225,158 +180,204 @@ async function generate() {
   }
 }
 
-// ── RENDER OUTPUT ─────────────────────────────────────────
-// Same pattern as code.js renderOutput — splits on fenced code blocks
-function renderOutput(text) {
-  const out = document.getElementById('pi-output');
-  if (!out) return;
+// ── RENDER OUTPUT ──────────────────────────────────────────
+// Splits on fenced code blocks — same pattern as code.js
+// Uses string splitting instead of regex to avoid transport mangling
+function renderOutput(el, text) {
+  el.innerHTML = '';
+  // Split on triple backtick lines manually
+  const lines  = text.split('
+');
+  let inCode   = false;
+  let lang     = '';
+  let codeBuf  = [];
+  let textBuf  = [];
 
-  const parts = text.split(/(```[\w]*\n[\s\S]*?```)/g);
-  out.innerHTML = parts.map(part => {
-    const fenceMatch = part.match(/^```([\w]*)\n([\s\S]*?)```$/);
-    if (fenceMatch) {
-      const lang = fenceMatch[1] || '';
-      const code = escHtml(fenceMatch[2]);
-      const badge = lang ? `<span class="pi-lang-badge">${lang}</span>` : '';
-      return `<div class="pi-code-wrap">${badge}<pre class="pi-code-block"><code>${code}</code></pre></div>`;
+  function flushText() {
+    if (!textBuf.length) return;
+    const p = document.createElement('p');
+    p.className = 'pi-prose';
+    p.textContent = textBuf.join('
+');
+    el.appendChild(p);
+    textBuf = [];
+  }
+  function flushCode() {
+    if (!codeBuf.length) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'pi-code-wrap';
+    if (lang) {
+      const badge = document.createElement('span');
+      badge.className = 'pi-lang-badge';
+      badge.textContent = lang;
+      wrap.appendChild(badge);
     }
-    return `<p class="pi-prose">${escHtml(part).replace(/\n/g, '<br>')}</p>`;
-  }).join('');
+    const pre  = document.createElement('pre');
+    pre.className = 'pi-code-block';
+    const code = document.createElement('code');
+    code.textContent = codeBuf.join('
+');
+    pre.appendChild(code);
+    wrap.appendChild(pre);
+    el.appendChild(wrap);
+    codeBuf = []; lang = '';
+  }
+
+  lines.forEach(line => {
+    if (line.startsWith('```')) {
+      if (!inCode) {
+        flushText();
+        inCode = true;
+        lang   = line.slice(3).trim();
+      } else {
+        flushCode();
+        inCode = false;
+      }
+    } else if (inCode) {
+      codeBuf.push(line);
+    } else {
+      textBuf.push(line);
+    }
+  });
+  flushText();
+  if (inCode) flushCode();  // unclosed fence fallback
 }
 
-function showOutputError(msg) {
-  const out = document.getElementById('pi-output');
-  if (out) out.innerHTML = `<div class="pi-error">⚠ ${escHtml(msg)}</div>`;
+function showErr(msg) {
+  const el = document.getElementById('pi-output');
+  if (!el) return;
+  el.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'pi-error';
+  d.textContent = '⚠ ' + msg;
+  el.appendChild(d);
 }
 
-// ── EXTRACT CODE BLOCK ────────────────────────────────────
-// Pulls the first fenced code block from AI output for Piston
-function extractCodeBlock(text) {
-  const m = text.match(/```[\w]*\n([\s\S]*?)```/);
-  return m ? m[1].trim() : text.trim();
+// ── EXTRACT CODE BLOCK ─────────────────────────────────────
+// Pulls first fenced code block for Piston execution
+function extractCode(text) {
+  const lines  = text.split('
+');
+  let inCode   = false;
+  let buf      = [];
+  for (const line of lines) {
+    if (line.startsWith('```') && !inCode) { inCode = true; continue; }
+    if (line.startsWith('```') && inCode)  { break; }
+    if (inCode) buf.push(line);
+  }
+  return buf.length ? buf.join('
+') : text;
 }
 
-// ── RUN VIA PISTON ────────────────────────────────────────
-async function runCode() {
+// ── RUN VIA PISTON ─────────────────────────────────────────
+async function runPiston() {
   if (!lastCode) return;
-
-  const runBtn   = document.getElementById('pi-run-btn');
-  const runOut   = document.getElementById('pi-run-output');
-
+  const runBtn = document.getElementById('pi-run-btn');
+  const runOut = document.getElementById('pi-run-out');
   runBtn.disabled = true;
-  runBtn.innerHTML = '<span class="pi-spinner"></span> running...';
+  runBtn.innerHTML = '<span class="pi-spin"></span> running...';
   runOut.textContent = '';
-  runOut.style.color = 'var(--subtext)';
 
   try {
     const resp = await fetch(PISTON_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        language: 'python',
-        version:  '3.10',
-        files:    [{ content: lastCode }],
-      }),
+      body: JSON.stringify({ language: 'python', version: '3.10', files: [{ content: lastCode }] }),
     });
-    const data = await resp.json();
-    const stdout = data?.run?.stdout || '';
-    const stderr = data?.run?.stderr || '';
-    const output = (stdout + stderr).trim();
+    const data   = await resp.json();
+    const stdout = (data && data.run && data.run.stdout) || '';
+    const stderr = (data && data.run && data.run.stderr) || '';
+    const out    = (stdout + stderr).trim();
 
-    if (stderr && stderr.includes('ModuleNotFoundError')) {
-      // GPIO/hardware module — expected in sandbox
+    if (stderr && stderr.indexOf('ModuleNotFoundError') !== -1) {
       runOut.style.color = '#FFD93D';
-      runOut.textContent = '⚠ GPIO/hardware modules need a real Pi to run. Pure Python logic works here.';
-    } else if (output) {
+      runOut.textContent = '⚠ GPIO/hardware modules need a real Pi. Pure Python runs fine here.';
+    } else if (out) {
       runOut.style.color = stderr ? '#FF4BCB' : '#00F6D6';
-      runOut.textContent = output.slice(0, 400);  // cap display length
+      runOut.textContent = out.slice(0, 300);
     } else {
       runOut.style.color = '#9090c0';
       runOut.textContent = '(no output)';
     }
-  } catch(err) {
+  } catch(e) {
     runOut.style.color = '#FF4BCB';
-    runOut.textContent = 'Piston error: ' + err.message;
+    runOut.textContent = 'Piston error: ' + e.message;
   } finally {
     runBtn.disabled = false;
     runBtn.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> run python';
   }
 }
 
-// ── CARD PREVIEW ──────────────────────────────────────────
-// Auto-renders a Build Card preview after generation
-async function renderCardPreview(prompt, scriptText) {
-  const preview = document.getElementById('pi-card-preview');
-  if (!preview) return;
-
-  // Extract fields from the AI output
-  const build = parseScriptToBuildCard(prompt, scriptText);
-
-  try {
-    const canvas = await renderBuildCard(build);
-    canvas.style.cssText = 'width:100%;max-width:280px;border-radius:8px;display:block;margin:0 auto;cursor:pointer;';
-    canvas.title = 'Click to save as PNG';
-    preview.innerHTML = '';
-    preview.appendChild(canvas);
-    // Store for download
-    preview.dataset.buildJson = JSON.stringify(build);
-  } catch(e) {
-    preview.innerHTML = '<div style="color:#9090c0;font-size:0.7rem;padding:20px;text-align:center">card preview failed</div>';
-  }
+// ── COPY OUTPUT ────────────────────────────────────────────
+function copyOutput() {
+  const el  = document.getElementById('pi-output');
+  const btn = document.getElementById('pi-copy-btn');
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText || '').then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 1400);
+  });
 }
 
-// ── PARSE SCRIPT TO BUILD CARD ────────────────────────────
-// Extracts structured fields from AI educational script output
-function parseScriptToBuildCard(prompt, text) {
-  // Extract title from prompt (first 5 words)
-  const title = prompt.split(' ').slice(0, 5).join(' ').replace(/write a.*?script.*?that/i, '').trim() ||
-                prompt.slice(0, 40);
+// ── PARSE CARD FROM SCRIPT ─────────────────────────────────
+// Extracts structured fields from AI educational output
+function parseCard(prompt, text) {
+  // Title from prompt — strip common preamble words
+  const title = prompt.replace(/write a.*?that/i, '').replace(/beginner|python|script|raspberry pi/gi, '').trim().slice(0, 40) || prompt.slice(0, 40);
 
-  // Extract difficulty
-  const diffMatch = text.match(/difficultys*[:-]s*(Beginner|Intermediate|Advanced)/i);
-  const difficulty = diffMatch ? diffMatch[1] : 'Beginner';
+  // Difficulty
+  let difficulty = 'Beginner';
+  if (text.indexOf('Intermediate') !== -1) difficulty = 'Intermediate';
+  if (text.indexOf('Advanced') !== -1)     difficulty = 'Advanced';
 
-  // Extract time
-  const timeMatch = text.match(/(d+)s*min/i);
-  const time_minutes = timeMatch ? parseInt(timeMatch[1]) : 15;
+  // Time
+  let time_minutes = 15;
+  const tMatch = text.match(/(d+)s*min/);
+  if (tMatch) time_minutes = parseInt(tMatch[1]);
 
-  // Extract components — lines after COMPONENTS NEEDED section
-  const compMatch = text.match(/COMPONENTS NEEDED[sS]*?
-([sS]*?)
-
-/);
-  const components = compMatch
-    ? compMatch[1].split('
-').map(l => l.replace(/^[-*•#d.s]+/, '').trim()).filter(Boolean).slice(0, 6)
-    : ['Raspberry Pi', 'jumper wires'];
-
-  // Extract what you'll learn
-  const learnMatch = text.match(/WHAT YOU.{0,10}LEARN[sS]*?
-([sS]*?)
-
-/);
-  const what_you_learn = learnMatch
-    ? learnMatch[1].split('
-').map(l => l.replace(/^[-*•#d.s]+/, '').trim()).filter(Boolean).slice(0, 4)
-    : ['Python basics', 'GPIO pin control'];
-
-  // Description — first non-empty line after the header
+  // Components — lines after COMPONENTS NEEDED
+  const components = [];
   const lines = text.split('
-').filter(l => l.trim() && !l.startsWith('#') && !l.startsWith('='));
-  const description = lines[0]?.slice(0, 80) || prompt.slice(0, 80);
+');
+  let inComp = false;
+  for (const line of lines) {
+    if (line.indexOf('COMPONENTS NEEDED') !== -1) { inComp = true; continue; }
+    if (inComp && line.trim() === '') { inComp = false; continue; }
+    if (inComp) {
+      const c = line.replace(/^[-*#d.s•]+/, '').trim();
+      if (c) components.push(c);
+      if (components.length >= 6) inComp = false;
+    }
+  }
+
+  // What you'll learn
+  const what_you_learn = [];
+  let inLearn = false;
+  for (const line of lines) {
+    if (line.indexOf("WHAT YOU") !== -1 && line.indexOf('LEARN') !== -1) { inLearn = true; continue; }
+    if (inLearn && line.trim() === '') { inLearn = false; continue; }
+    if (inLearn) {
+      const c = line.replace(/^[-*#d.s•]+/, '').trim();
+      if (c) what_you_learn.push(c);
+      if (what_you_learn.length >= 4) inLearn = false;
+    }
+  }
+
+  // Description — first non-header line
+  const desc = lines.find(l => l.trim() && !l.startsWith('#') && !l.startsWith('=') && l.length > 10) || prompt;
 
   return {
     id:            generateCardId('build'),
     type:          'build',
     title,
-    author:        state.user?.email?.split('@')[0] || 'maker',
-    description,
+    author:        (state.user && state.user.email && state.user.email.split('@')[0]) || 'maker',
+    description:   desc.slice(0, 80),
     platform:      'Raspberry Pi',
     language:      'Python',
     difficulty,
     time_minutes,
-    components,
-    what_you_learn,
+    components:    components.length ? components : ['Raspberry Pi', 'jumper wires'],
+    what_you_learn: what_you_learn.length ? what_you_learn : ['Python basics', 'GPIO control'],
     next_steps:    [],
     code:          lastCode,
     image:         null,
@@ -385,61 +386,46 @@ function parseScriptToBuildCard(prompt, text) {
   };
 }
 
-// ── SAVE CARD TO IDB ──────────────────────────────────────
-async function saveCard() {
+// ── CARD PREVIEW ───────────────────────────────────────────
+async function renderCardPreview(build) {
   const preview = document.getElementById('pi-card-preview');
-  if (!preview?.dataset.buildJson) {
-    showRunMsg('Generate a project first!', '#FFD93D'); return;
-  }
-  const build = JSON.parse(preview.dataset.buildJson);
+  if (!preview) return;
   try {
-    await dbSet('builds', { key: build.id, data: build });
-    savedCards.push(build);
-    showRunMsg('✓ Build Card saved! — ' + build.id, '#00F6D6');
+    const canvas = await renderBuildCard(build);
+    canvas.style.cssText = 'width:100%;max-width:260px;border-radius:8px;display:block;margin:0 auto;';
+    preview.innerHTML = '';
+    preview.appendChild(canvas);
   } catch(e) {
-    // builds store may not exist yet (IDB v6 — needs v7)
-    showRunMsg('⚠ Save failed — IDB needs upgrade to v7', '#FF4BCB');
-    console.warn('[pi] saveCard IDB error:', e);
+    preview.innerHTML = '<div style="color:#9090c0;font-size:0.7rem;padding:20px;text-align:center">card preview failed</div>';
   }
 }
 
-// ── DOWNLOAD CARD PNG ────────────────────────────────────
-async function downloadCard() {
-  const preview = document.getElementById('pi-card-preview');
-  if (!preview?.dataset.buildJson) {
-    showRunMsg('Generate a project first!', '#FFD93D'); return;
+// ── SAVE CARD ──────────────────────────────────────────────
+async function saveCard() {
+  if (!lastBuild) { setRunMsg('Generate a project first!', '#FFD93D'); return; }
+  try {
+    await dbSet('builds', { key: lastBuild.id, data: lastBuild });
+    setRunMsg('✓ Saved — ' + lastBuild.id, '#00F6D6');
+  } catch(e) {
+    setRunMsg('⚠ IDB needs v7 upgrade for builds store', '#FF4BCB');
   }
-  const build   = JSON.parse(preview.dataset.buildJson);
-  const canvas  = await renderBuildCard(build);
-  const link    = document.createElement('a');
-  link.download = build.id + '.png';
+}
+
+// ── DOWNLOAD CARD PNG ──────────────────────────────────────
+async function downloadCard() {
+  if (!lastBuild) { setRunMsg('Generate a project first!', '#FFD93D'); return; }
+  const canvas = await renderBuildCard(lastBuild);
+  const link   = document.createElement('a');
+  link.download = lastBuild.id + '.png';
   link.href     = canvas.toDataURL('image/png');
   link.click();
 }
 
-// ── LOAD SAVED CARDS ─────────────────────────────────────
-async function loadSavedCards() {
-  try {
-    const all = await dbGetAll('builds');
-    savedCards = all.map(r => r.data).filter(Boolean);
-  } catch(e) {
-    // builds store not yet created — will be added in IDB v7
-    savedCards = [];
-  }
-}
-
-// ── HELPERS ───────────────────────────────────────────────
-function showRunMsg(msg, color) {
-  const el = document.getElementById('pi-run-output');
+function setRunMsg(msg, color) {
+  const el = document.getElementById('pi-run-out');
   if (!el) return;
   el.style.color   = color || '#9090c0';
   el.textContent   = msg;
-}
-
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── STYLES ────────────────────────────────────────────────
@@ -447,349 +433,53 @@ function injectPiStyles() {
   if (document.getElementById('pi-styles')) return;
   const s = document.createElement('style');
   s.id = 'pi-styles';
-  s.textContent = `
-
-    /* ── WRAP ── */
-    #pi-wrap {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      overflow: hidden;
-      background: var(--bg);
-      font-family: var(--font-ui);
-    }
-
-    /* ── HEADER ── */
-    #pi-header {
-      padding: 12px 16px 8px;
-      flex-shrink: 0;
-      border-bottom: 1px solid var(--border);
-    }
-    #pi-title {
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 1rem;
-      background: linear-gradient(135deg, #FF4BCB, #00F6D6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 4px;
-    }
-    #pi-sky-msg {
-      font-size: 0.7rem;
-      color: var(--subtext);
-      line-height: 1.5;
-    }
-
-    /* ── STARTER CARDS ── */
-    #pi-starters {
-      display: flex;
-      gap: 6px;
-      padding: 10px 14px;
-      overflow-x: auto;
-      flex-shrink: 0;
-      scrollbar-width: none;
-      border-bottom: 1px solid var(--border);
-    }
-    #pi-starters::-webkit-scrollbar { display: none; }
-    .pi-starter {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      padding: 8px 12px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      cursor: pointer;
-      white-space: nowrap;
-      flex-shrink: 0;
-      transition: all 0.15s;
-    }
-    .pi-starter:hover { border-color: #FF4BCB; transform: translateY(-1px); }
-    .pi-starter-icon  { font-size: 1.1rem; }
-    .pi-starter-label { font-size: 0.62rem; color: var(--subtext); letter-spacing: 0.06em; }
-
-    /* ── PANES ── */
-    #pi-panes {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-      min-height: 0;
-    }
-    #pi-left {
-      flex: 1.4;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border-right: 1px solid var(--border);
-      min-width: 0;
-    }
-    #pi-right {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      min-width: 0;
-    }
-    .pi-pane-label {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 5px 12px;
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--subtext);
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      flex-shrink: 0;
-    }
-    .pi-pane-action {
-      background: none;
-      border: none;
-      color: var(--subtext);
-      font-family: var(--font-ui);
-      font-size: 0.65rem;
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: all 0.15s;
-    }
-    .pi-pane-action:hover { color: var(--text); background: var(--muted); }
-
-    /* ── OUTPUT ── */
-    #pi-output {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      font-size: 0.76rem;
-      line-height: 1.65;
-      scrollbar-width: thin;
-      scrollbar-color: var(--muted) transparent;
-    }
-    #pi-output-placeholder {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      color: var(--subtext);
-      opacity: 0.4;
-      font-size: 0.7rem;
-      letter-spacing: 0.06em;
-      text-align: center;
-      padding: 20px;
-    }
-    .pi-placeholder-icon { font-size: 2rem; }
-
-    /* ── CODE BLOCKS ── */
-    .pi-code-wrap {
-      position: relative;
-      margin: 8px 0;
-      border-radius: 6px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .pi-lang-badge {
-      position: absolute;
-      top: 0; right: 0;
-      background: var(--muted);
-      color: var(--subtext);
-      font-size: 0.56rem;
-      letter-spacing: 0.1em;
-      padding: 2px 7px;
-      border-bottom-left-radius: 5px;
-    }
-    .pi-code-block {
-      margin: 0;
-      padding: 12px 10px;
-      background: var(--surface);
-      overflow-x: auto;
-      font-family: 'JetBrains Mono', 'DM Mono', monospace;
-      font-size: 0.72rem;
-      line-height: 1.6;
-      color: var(--text);
-      scrollbar-width: thin;
-    }
-    .pi-prose {
-      color: var(--text);
-      margin: 4px 0;
-      line-height: 1.65;
-    }
-    .pi-prose:empty { display: none; }
-    .pi-error {
-      color: #FF4BCB;
-      font-size: 0.76rem;
-      padding: 10px;
-      background: rgba(255,75,203,0.08);
-      border: 1px solid rgba(255,75,203,0.2);
-      border-radius: 6px;
-    }
-
-    /* ── CARD PREVIEW ── */
-    #pi-card-preview {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px 8px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      scrollbar-width: thin;
-    }
-    #pi-card-placeholder {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--subtext);
-      text-align: center;
-    }
-
-    /* ── ACTION BAR ── */
-    #pi-action-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 14px;
-      border-top: 1px solid var(--border);
-      background: var(--bg);
-      flex-shrink: 0;
-      flex-wrap: wrap;
-    }
-    #pi-run-btn {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 7px 12px;
-      background: var(--surface);
-      border: 1px solid #00F6D6;
-      border-radius: 8px;
-      color: #00F6D6;
-      font-family: var(--font-ui);
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-    }
-    #pi-run-btn:hover    { background: rgba(0,246,214,0.08); }
-    #pi-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    #pi-run-output {
-      flex: 1;
-      font-size: 0.68rem;
-      color: var(--subtext);
-      font-family: 'DM Mono', monospace;
-      letter-spacing: 0.04em;
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    #pi-save-card-btn {
-      padding: 7px 12px;
-      background: linear-gradient(135deg, #FF4BCB, #7c6af7);
-      border: none;
-      border-radius: 8px;
-      color: #fff;
-      font-family: var(--font-ui);
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.15s;
-    }
-    #pi-save-card-btn:hover { opacity: 0.85; }
-
-    /* ── FOOTER PROMPT ── */
-    #pi-footer {
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
-      padding: 8px 14px calc(8px + var(--safe-bot, 0px));
-      border-top: 1px solid var(--border);
-      background: var(--bg);
-      flex-shrink: 0;
-    }
-    #pi-prompt {
-      flex: 1;
-      resize: none;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--text);
-      font-family: var(--font-ui);
-      font-size: 0.8rem;
-      line-height: 1.5;
-      padding: 9px 13px;
-      outline: none;
-      transition: border-color 0.2s;
-      max-height: 100px;
-      overflow-y: auto;
-    }
-    #pi-prompt:focus { border-color: #FF4BCB; }
-    #pi-prompt::placeholder { color: var(--subtext); }
-    #pi-generate-btn {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      padding: 9px 14px;
-      background: #FF4BCB;
-      border: none;
-      border-radius: 12px;
-      color: #fff;
-      font-family: var(--font-ui);
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 0.06em;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.2s;
-      flex-shrink: 0;
-    }
-    #pi-generate-btn:hover    { opacity: 0.85; }
-    #pi-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── THINKING / SPINNER ── */
-    #pi-thinking {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 12px;
-    }
-    .pi-spinner-lg {
-      width: 26px; height: 26px;
-      border: 2px solid rgba(255,75,203,0.2);
-      border-top-color: #FF4BCB;
-      border-radius: 50%;
-      animation: piSpin 0.7s linear infinite;
-    }
-    .pi-thinking-text {
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      color: var(--subtext);
-      animation: piPulse 1.5s ease-in-out infinite;
-    }
-    .pi-spinner {
-      display: inline-block;
-      width: 10px; height: 10px;
-      border: 1.5px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: piSpin 0.7s linear infinite;
-    }
-    @keyframes piSpin  { to { transform: rotate(360deg); } }
-    @keyframes piPulse { 0%,100%{opacity:0.4;} 50%{opacity:1;} }
-
-    /* ── MOBILE STACK ── */
-    @media (max-width: 640px) {
-      #pi-panes { flex-direction: column; }
-      #pi-left  { flex: none; height: 55%; border-right: none; border-bottom: 1px solid var(--border); }
-      #pi-right { flex: none; height: 45%; }
-    }
-  `;
+  s.textContent = [
+    '#pi-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font-ui);}',
+    '#pi-header{padding:10px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--border);}',
+    '#pi-title{font-family:var(--font-display);font-weight:800;font-size:1rem;background:linear-gradient(135deg,#FF4BCB,#00F6D6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:3px;}',
+    '#pi-sky-msg{font-size:0.68rem;color:var(--subtext);line-height:1.5;}',
+    '#pi-starters{display:flex;gap:6px;padding:8px 14px;overflow-x:auto;flex-shrink:0;border-bottom:1px solid var(--border);scrollbar-width:none;}',
+    '#pi-starters::-webkit-scrollbar{display:none;}',
+    '.pi-starter{display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 11px;background:var(--surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;}',
+    '.pi-starter:hover{border-color:#FF4BCB;transform:translateY(-1px);}',
+    '.pi-starter-icon{font-size:1rem;}',
+    '.pi-starter-label{font-size:0.6rem;color:var(--subtext);letter-spacing:0.06em;}',
+    '#pi-panes{display:flex;flex:1;overflow:hidden;min-height:0;}',
+    '#pi-left{flex:1.4;display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border);min-width:0;}',
+    '#pi-right{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}',
+    '.pi-pane-label{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--subtext);border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}',
+    '.pi-pane-action{background:none;border:none;color:var(--subtext);font-family:var(--font-ui);font-size:0.65rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:all 0.15s;}',
+    '.pi-pane-action:hover{color:var(--text);background:var(--muted);}',
+    '#pi-output{flex:1;overflow-y:auto;padding:12px;font-size:0.75rem;line-height:1.65;scrollbar-width:thin;scrollbar-color:var(--muted) transparent;}',
+    '#pi-output-ph{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--subtext);opacity:0.4;font-size:0.68rem;text-align:center;padding:20px;}',
+    '.pi-code-wrap{position:relative;margin:6px 0;border-radius:6px;overflow:hidden;border:1px solid var(--border);}',
+    '.pi-lang-badge{position:absolute;top:0;right:0;background:var(--muted);color:var(--subtext);font-size:0.56rem;letter-spacing:0.1em;padding:2px 7px;border-bottom-left-radius:5px;}',
+    '.pi-code-block{margin:0;padding:10px;background:var(--surface);overflow-x:auto;font-family:"JetBrains Mono","DM Mono",monospace;font-size:0.7rem;line-height:1.6;color:var(--text);}',
+    '.pi-prose{color:var(--text);margin:3px 0;line-height:1.65;}',
+    '.pi-prose:empty{display:none;}',
+    '.pi-error{color:#FF4BCB;font-size:0.75rem;padding:10px;background:rgba(255,75,203,0.08);border:1px solid rgba(255,75,203,0.2);border-radius:6px;}',
+    '#pi-card-preview{flex:1;overflow-y:auto;padding:10px 6px;display:flex;flex-direction:column;align-items:center;scrollbar-width:thin;}',
+    '#pi-action-bar{display:flex;align-items:center;gap:8px;padding:7px 14px;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;flex-wrap:wrap;}',
+    '#pi-run-btn{display:flex;align-items:center;gap:5px;padding:6px 11px;background:var(--surface);border:1px solid #00F6D6;border-radius:8px;color:#00F6D6;font-family:var(--font-ui);font-size:0.67rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.15s;white-space:nowrap;}',
+    '#pi-run-btn:hover{background:rgba(0,246,214,0.08);}',
+    '#pi-run-btn:disabled{opacity:0.5;cursor:not-allowed;}',
+    '#pi-run-out{flex:1;font-size:0.67rem;color:var(--subtext);font-family:"DM Mono",monospace;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+    '#pi-save-btn{padding:6px 11px;background:linear-gradient(135deg,#FF4BCB,#7c6af7);border:none;border-radius:8px;color:#fff;font-family:var(--font-ui);font-size:0.67rem;cursor:pointer;white-space:nowrap;transition:opacity 0.15s;}',
+    '#pi-save-btn:hover{opacity:0.85;}',
+    '#pi-footer{display:flex;align-items:flex-end;gap:8px;padding:8px 14px calc(8px + var(--safe-bot,0px));border-top:1px solid var(--border);background:var(--bg);flex-shrink:0;}',
+    '#pi-prompt{flex:1;resize:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:var(--font-ui);font-size:0.78rem;line-height:1.5;padding:8px 12px;outline:none;transition:border-color 0.2s;max-height:100px;overflow-y:auto;}',
+    '#pi-prompt:focus{border-color:#FF4BCB;}',
+    '#pi-prompt::placeholder{color:var(--subtext);}',
+    '#pi-gen-btn{display:flex;align-items:center;gap:5px;padding:8px 13px;background:#FF4BCB;border:none;border-radius:12px;color:#fff;font-family:var(--font-ui);font-size:0.73rem;font-weight:600;letter-spacing:0.06em;cursor:pointer;white-space:nowrap;transition:opacity 0.2s;flex-shrink:0;}',
+    '#pi-gen-btn:hover{opacity:0.85;}',
+    '#pi-gen-btn:disabled{opacity:0.5;cursor:not-allowed;}',
+    '#pi-thinking{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;}',
+    '.pi-spin-lg{width:24px;height:24px;border:2px solid rgba(255,75,203,0.2);border-top-color:#FF4BCB;border-radius:50%;animation:piSpin 0.7s linear infinite;}',
+    '.pi-think-txt{font-size:0.63rem;letter-spacing:0.1em;color:var(--subtext);animation:piPulse 1.5s ease-in-out infinite;}',
+    '.pi-spin{display:inline-block;width:10px;height:10px;border:1.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:piSpin 0.7s linear infinite;}',
+    '@keyframes piSpin{to{transform:rotate(360deg);}}',
+    '@keyframes piPulse{0%,100%{opacity:0.4;}50%{opacity:1;}}',
+    '@media(max-width:640px){#pi-panes{flex-direction:column;}#pi-left{flex:none;height:55%;border-right:none;border-bottom:1px solid var(--border);}#pi-right{flex:none;height:45%;}}'  
+  ].join('');
   document.head.appendChild(s);
 }
