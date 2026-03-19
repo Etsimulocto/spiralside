@@ -57,6 +57,7 @@ export function switchView(id) {
   // Lazy-init view on first visit
   const viewInits = {
     store:   () => updateCreditDisplay(),
+    studio:  () => window.initStudioView && window.initStudioView(),
     style:   () => window.initStylePanel  && window.initStylePanel(),
     account: () => updateCreditDisplay(),
     imagine: () => window.initImagine     && window.initImagine(),
