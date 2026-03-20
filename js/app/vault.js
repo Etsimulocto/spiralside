@@ -6,7 +6,8 @@
 // ============================================================
 
 import { state }           from './state.js';
-import { dbSet, dbDelete } from './db.js';
+import { dbSet, dbDelete, dbGet } from './db.js';
+const dbGetOne = dbGet;
 
 // Accent colors cycle across vault items
 const VAULT_COLORS = ['#00F6D6', '#FF4BCB', '#7B5FFF', '#FFD93D', '#4DA3FF'];
@@ -42,10 +43,23 @@ async function handleFileInput(e) {
     // Dynamically import music module to add track
     import('./music.js').then(m => m.addVaultTrack(f.name, blobUrl));
   }
-  const content = isAudio ? '[audio file — added to music player]' : await f.text().catch(() => '[binary]');
-    const entry   = { name: f.name, size: f.size, content, type: f.type };
-    state.vaultFiles.push(entry);
-    await dbSet('vault', entry);
+  const isImage = f.type && f.type.startsWith('image/');
+  let content;
+  if (isAudio) {
+    content = '[audio file — added to music player]';
+  } else if (isImage) {
+    // Read full dataURL for IDB storage but DON'T keep in state (freeze risk)
+    content = await new Promise(res => {
+      const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(f);
+    });
+  } else {
+    content = await f.text().catch(() => '[binary]');
+  }
+  // IDB entry has full content; state entry is lean (no image data)
+  const idbEntry   = { name: f.name, size: f.size, content, type: f.type };
+  const stateEntry = { name: f.name, size: f.size, content: isImage ? '' : content, type: f.type };
+  state.vaultFiles.push(stateEntry);
+  await dbSet('vault', idbEntry);
   }
   renderVault();
   e.target.value = ''; // reset so same file can be re-added
@@ -113,8 +127,10 @@ function showVaultPreview(f) {
   // Build content
   let body = '';
   if (isImg) {
-    body = `<img src="${f.content}" style="max-width:100%;max-height:60dvh;
-              border-radius:8px;display:block;margin:0 auto;" />`;
+    // Load full image from IDB (state entry has content='' for images)
+    body = `<div id="vault-preview-img-wrap" style="text-align:center;">
+              <div style="color:var(--subtext);font-size:0.72rem;padding:20px;">loading...</div>
+            </div>`;
   } else {
     const preview = (f.content || '[no content]').slice(0, 2000);
     const safe = preview.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -155,6 +171,40 @@ function showVaultPreview(f) {
   // Close handlers
   document.getElementById('vault-preview-close').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  // If image, load from IDB now that modal is in DOM
+  if (isImg) {
+    dbGetOne('vault', f.name).then(record => {
+      const wrap = document.getElementById('vault-preview-img-wrap');
+      if (!wrap) return;
+      if (record && record.content) {
+        wrap.innerHTML = `<img src="${record.content}"
+          style="max-width:100%;max-height:60dvh;border-radius:8px;display:block;margin:0 auto;" />`;
+      } else {
+        wrap.innerHTML = `<div style="color:var(--subtext);font-size:0.72rem;padding:20px;">image not available locally</div>`;
+      }
+    }).catch(() => {});
+  }
+}
+
+
+// ── LAZY THUMBNAIL LOADER ─────────────────────────────────
+// Loads image content from IDB after grid is rendered
+// so the main thread isn't blocked by base64 strings
+async function loadVaultThumbs() {
+  const imgs = document.querySelectorAll('.vault-thumb');
+  for (const img of imgs) {
+    const name = img.dataset.vaultName;
+    if (!name) continue;
+    try {
+      // dbGet from IDB vault store by name (keyPath)
+      const record = await dbGetOne('vault', name);
+      if (record && record.content && record.content.startsWith('data:')) {
+        img.src = record.content;
+        img.style.opacity = '1';
+      }
+    } catch { /* skip if not found */ }
+  }
 }
 
 export function renderVault() {
@@ -179,10 +229,14 @@ export function renderVault() {
     const isImg = f.type && f.type.startsWith('image/');
     const color = VAULT_COLORS[i % VAULT_COLORS.length];
 
-    // Thumbnail: image preview or emoji icon
+    // Thumbnail: lazy-loaded image or emoji icon
+    // Images use a placeholder — src loaded async after render to avoid freeze
     const thumb = isImg
-      ? `<div style="width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;margin-bottom:6px;background:var(--muted);">
-           <img src="${f.content}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />
+      ? `<div style="width:100%;aspect-ratio:1;border-radius:8px;overflow:hidden;
+                     margin-bottom:6px;background:var(--muted);">
+           <img data-vault-name="${escHtml(f.name)}"
+                style="width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.3s;"
+                loading="lazy" class="vault-thumb" />
          </div>`
       : `<div style="width:100%;aspect-ratio:1;border-radius:8px;margin-bottom:6px;
                      background:var(--muted);display:flex;align-items:center;
@@ -213,19 +267,17 @@ export function renderVault() {
           class="vault-del-btn">✕</button>
       </div>`;
   }).join('');
+
+  // Lazy-load image thumbnails from IDB after render
+  requestAnimationFrame(() => loadVaultThumbs());
 }
 
 
 export function loadVaultFromDB(files) {
-  state.vaultFiles = files || [];
-  renderVault();
+  // Strip image content from state — images stay in IDB, loaded lazily for preview
+  state.vaultFiles = files.map(f => ({
+    ...f,
+    content: (f.type && f.type.startsWith('image/')) ? '' : f.content
+  }));
 }
 
-// ── REMOVE FILE ───────────────────────────────────────────
-export async function removeFile(i) {
-  const file = state.vaultFiles[i];
-  if (!file) return;
-  state.vaultFiles.splice(i, 1);
-  await dbDelete('vault', file.name);
-  renderVault();
-}
