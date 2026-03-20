@@ -131,6 +131,7 @@ export function switchView(id) {
     library: () => window.initLibrary     && window.initLibrary(),
     code:    () => window.initCodeView     && window.initCodeView(),
     guide:   () => window.initGuideView   && window.initGuideView(),
+    forge:   () => window.initForgeView   && window.initForgeView(),
     pi:      () => window.initPiView        && window.initPiView(),
   };
   if (viewInits[id]) viewInits[id]();
