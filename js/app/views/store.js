@@ -119,6 +119,7 @@ export function initStoreView() {
     </div>`;
   }
   updateStoreView();
+  if (window.updateCreditDisplay) window.updateCreditDisplay();
 }
 
 

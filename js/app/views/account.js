@@ -29,4 +29,5 @@ export function initAccountView() {
   // Always refresh email
   const emailEl = document.getElementById('account-email');
   if (emailEl && state.user?.email) emailEl.textContent = state.user.email;
+  if (window.updateCreditDisplay) window.updateCreditDisplay();
 }
