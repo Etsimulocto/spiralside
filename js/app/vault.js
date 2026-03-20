@@ -7,7 +7,6 @@
 
 import { state }           from './state.js';
 import { dbSet, dbDelete, dbGet } from './db.js';
-const dbGetOne = dbGet;
 
 // Accent colors cycle across vault items
 const VAULT_COLORS = ['#00F6D6', '#FF4BCB', '#7B5FFF', '#FFD93D', '#4DA3FF'];
@@ -117,73 +116,93 @@ function fmtSize(b) {
 }
 
 // ── VAULT PREVIEW OVERLAY ─────────────────────────────────
-// Safe inline preview — no window.open, no alert, no page freeze
-function showVaultPreview(f) {
-  // Remove any existing preview
-  document.getElementById('vault-preview-modal')?.remove();
+// Slide-up panel — safe, no window.open, no alert, no freeze
+// Close: ✕ button OR tap backdrop
+async function showVaultPreview(f) {
+  // Remove any existing preview first
+  const existing = document.getElementById('vault-preview-modal');
+  if (existing) existing.remove();
 
   const isImg = f.type && f.type.startsWith('image/');
 
-  // Build content
-  let body = '';
-  if (isImg) {
-    // Load full image from IDB (state entry has content='' for images)
-    body = `<div id="vault-preview-img-wrap" style="text-align:center;">
-              <div style="color:var(--subtext);font-size:0.72rem;padding:20px;">loading...</div>
-            </div>`;
-  } else {
-    const preview = (f.content || '[no content]').slice(0, 2000);
-    const safe = preview.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    body = `<pre style="font-size:0.72rem;line-height:1.6;color:var(--text);
-              white-space:pre-wrap;word-break:break-word;margin:0;
-              font-family:var(--font-ui);">${safe}</pre>`;
-  }
-
+  // Build a placeholder modal immediately — don't block on IDB
   const modal = document.createElement('div');
   modal.id = 'vault-preview-modal';
-  modal.style.cssText = `position:fixed;inset:0;z-index:9000;
-    background:rgba(10,10,15,0.88);backdrop-filter:blur(6px);
-    display:flex;align-items:flex-end;justify-content:center;`;
+  modal.style.cssText = [
+    'position:fixed', 'inset:0', 'z-index:9000',
+    'background:rgba(10,10,15,0.88)', 'backdrop-filter:blur(6px)',
+    'display:flex', 'align-items:flex-end', 'justify-content:center'
+  ].join(';');
 
   modal.innerHTML = `
-    <div style="width:100%;max-width:480px;background:var(--surface);
-                border:1px solid var(--border);border-radius:20px 20px 0 0;
-                max-height:85dvh;display:flex;flex-direction:column;overflow:hidden;">
+    <div id="vault-preview-panel" style="
+      width:100%;max-width:600px;background:var(--surface);
+      border:1px solid var(--border);border-radius:20px 20px 0 0;
+      max-height:85dvh;display:flex;flex-direction:column;overflow:hidden;">
       <div style="display:flex;align-items:center;justify-content:space-between;
                   padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
         <div>
           <div style="font-size:0.85rem;font-weight:600;color:var(--text);
-                      word-break:break-all;">${f.name}</div>
+                      word-break:break-all;">${escHtml(f.name)}</div>
           <div style="font-size:0.62rem;color:var(--subtext);margin-top:2px;">
-            ${(f.size/1024).toFixed(1)} KB · ${f.type || 'unknown'}</div>
+            ${fmtSize(f.size)} · ${f.type || 'unknown'}</div>
         </div>
-        <button id="vault-preview-close"
-          style="background:var(--muted);border:none;border-radius:50%;
-                 width:32px;height:32px;color:var(--subtext);font-size:1rem;
-                 cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+        <button id="vp-close-btn" style="
+          background:var(--muted);border:1px solid var(--border);border-radius:50%;
+          width:32px;height:32px;color:var(--text);font-size:0.9rem;
+          cursor:pointer;display:flex;align-items:center;justify-content:center;
+          flex-shrink:0;line-height:1;">✕</button>
       </div>
-      <div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px;
-                  -webkit-overflow-scrolling:touch;">${body}</div>
+      <div id="vp-body" style="
+        flex:1;min-height:0;overflow-y:auto;padding:16px 20px;
+        -webkit-overflow-scrolling:touch;display:flex;align-items:center;
+        justify-content:center;">
+        <div style="color:var(--subtext);font-size:0.72rem;">loading…</div>
+      </div>
     </div>`;
 
   document.body.appendChild(modal);
 
-  // Close handlers
-  document.getElementById('vault-preview-close').addEventListener('click', () => modal.remove());
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  // ── CLOSE HANDLERS ── wire by direct reference, not getElementById
+  const closeBtn = modal.querySelector('#vp-close-btn');
+  const closeModal = () => modal.remove();
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 
-  // If image, load from IDB now that modal is in DOM
-  if (isImg) {
-    dbGetOne('vault', f.name).then(record => {
-      const wrap = document.getElementById('vault-preview-img-wrap');
-      if (!wrap) return;
-      if (record && record.content) {
-        wrap.innerHTML = `<img src="${record.content}"
-          style="max-width:100%;max-height:60dvh;border-radius:8px;display:block;margin:0 auto;" />`;
+  // ── LOAD CONTENT ──
+  const body = modal.querySelector('#vp-body');
+  try {
+    if (isImg) {
+      // Load dataURL from IDB
+      const record = await dbGet('vault', f.name);
+      const src = record?.content || '';
+      if (src && src.startsWith('data:')) {
+        body.innerHTML = `<img src="${src}"
+          style="max-width:100%;max-height:60dvh;border-radius:8px;display:block;" />`;
       } else {
-        wrap.innerHTML = `<div style="color:var(--subtext);font-size:0.72rem;padding:20px;">image not available locally</div>`;
+        body.innerHTML = `<div style="color:var(--subtext);font-size:0.78rem;text-align:center;">
+          Image not available locally.<br>Re-upload to view.</div>`;
       }
-    }).catch(() => {});
+    } else {
+      // Load text from IDB
+      const record = await dbGet('vault', f.name);
+      const text = record?.content || f.content || '[no content]';
+      if (text.startsWith('data:')) {
+        // Binary file stored as dataURL — not previewable as text
+        body.innerHTML = `<div style="color:var(--subtext);font-size:0.78rem;text-align:center;">
+          Binary file — not previewable as text.</div>`;
+      } else {
+        const safe = text.slice(0, 3000)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const trunc = text.length > 3000 ? '\n… [truncated]' : '';
+        body.innerHTML = `<pre style="font-size:0.72rem;line-height:1.6;color:var(--text);
+          white-space:pre-wrap;word-break:break-word;margin:0;
+          font-family:var(--font-ui);width:100%;">${safe}${trunc}</pre>`;
+      }
+    }
+  } catch (err) {
+    body.innerHTML = `<div style="color:var(--subtext);font-size:0.78rem;">
+      Error loading file: ${err.message}</div>`;
   }
 }
 
@@ -198,7 +217,7 @@ async function loadVaultThumbs() {
     if (!name) continue;
     try {
       // dbGet from IDB vault store by name (keyPath)
-      const record = await dbGetOne('vault', name);
+      const record = await dbGet('vault', name);
       if (record && record.content && record.content.startsWith('data:')) {
         img.src = record.content;
         img.style.opacity = '1';
