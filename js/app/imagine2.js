@@ -156,9 +156,6 @@ async function _generate() {
 export function getImagineModel() { return _model; }
 export function getImagineSize()  { return { w: _selW, h: _selH }; }
 
-export function getImagineModel() { return _model; }
-export function getImagineSize()  { return { w: _selW, h: _selH }; }
-
 export function injectImagineStyles() {
   if (document.getElementById('imagine-styles')) return;
   const s = document.createElement('style');
