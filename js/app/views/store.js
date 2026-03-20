@@ -108,7 +108,7 @@ export function initStoreView() {
         <button class="gift-buy-btn" onclick="window.buyGift()">buy $5 gift → 500,000 cr</button>
         <div class="gift-divider">redeem a code</div>
         <div class="gift-redeem-row">
-          <input class="gift-input" id="gift-code-input" placeholder="SPIRAL-XXXX-XXXX" maxlength="14" />
+          <input class="gift-input" id="gift-code-input" placeholder="SPIRAL-XXXX-XXXX" maxlength="16" />
           <button class="gift-redeem-btn" onclick="window.redeemGift()">redeem</button>
         </div>
         <div class="gift-msg" id="gift-msg"></div>
