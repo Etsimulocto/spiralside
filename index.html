@@ -298,7 +298,7 @@
     }
 
     /* ── APP SHELL ──────────────────────────────────────────── */
-    #screen-app { max-width: min(480px, 100vw); margin: 0 auto; position: relative; overflow-x: hidden; }
+    #screen-app { max-width: min(480px, 100vw); margin: 0 auto; position: relative; overflow-x: hidden; display:flex; flex-direction:column; flex:1; min-height:0; }
     @media (min-width: 600px)  { #screen-app { max-width: min(600px, 100vw); } }
     @media (min-width: 900px)  { #screen-app { max-width: min(740px, 100vw); } }
     @media (min-width: 1200px) { #screen-app { max-width: min(900px, 100vw); } }
@@ -1537,7 +1537,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.282</div>
+      <div class="version-badge" id="version-badge">v0.8.283</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
       </div>
