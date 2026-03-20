@@ -15,8 +15,10 @@ export function initForgeView() {
   if (!el || el.dataset.initialized) return;
   el.dataset.initialized = '1';
 
+  // Make view-forge itself the scroll container
+  el.style.cssText = "overflow-y:auto;-webkit-overflow-scrolling:touch;";
   el.innerHTML = `
-  <div style="overflow-y:auto;padding:16px 16px calc(80px + var(--safe-bot));-webkit-overflow-scrolling:touch;">
+  <div style="padding:16px 16px calc(80px + var(--safe-bot));">
 
     <!-- IDENTITY -->
     <div class="forge-section">
