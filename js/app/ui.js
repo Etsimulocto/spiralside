@@ -210,6 +210,14 @@ export async function loadUsage() {
 }
 
 export function updateCreditDisplay() {
+  // write directly to any rendered credit elements
+  const _sc = document.getElementById("store-credits");
+  const _ac = document.getElementById("account-credits");
+  const _sf = document.getElementById("store-free-msg");
+  const _cr = state.isPaid ? Math.round(state.credits).toLocaleString() : "0";
+  if (_sc) _sc.textContent = _cr;
+  if (_ac) _ac.textContent = state.isPaid ? _cr : Math.max(0, 10 - state.freeToday);
+  if (_sf) _sf.textContent = state.isPaid ? "paid account" : "free demo — buy credits to unlock real AI";
   const acctEl = document.getElementById('account-credits');
   if (acctEl) acctEl.textContent = state.isPaid ? Math.round(state.credits).toLocaleString() : Math.max(0, 10 - state.freeToday);
   const badge   = document.getElementById('credits-badge');

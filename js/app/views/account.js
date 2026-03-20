@@ -12,6 +12,7 @@ export function initAccountView() {
   if (!el) return;
 
   if (!initialized) {
+    initialized = true;
     el.innerHTML = `
       <div class="view-scroll-body">
         <div class="credit-hero" style="margin-bottom:20px;">
