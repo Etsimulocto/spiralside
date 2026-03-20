@@ -1537,7 +1537,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.275</div>
+      <div class="version-badge" id="version-badge">v0.8.276</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
       </div>
@@ -1782,6 +1782,10 @@
         <!-- Portrait upload -->
         <div class="forge-field">
           <label class="forge-label">portrait / art</label>
+          <div style="display:flex;gap:8px;margin-bottom:6px">
+            <button onclick="window.handleForgeGenImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer">❆ generate from fields</button>
+            <button onclick="document.getElementById('forge-portrait-input').click()" style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer">↑ upload</button>
+          </div>
           <div id="forge-portrait-wrap" style="
             border:2px dashed var(--border);border-radius:10px;
             padding:16px;text-align:center;cursor:pointer;
