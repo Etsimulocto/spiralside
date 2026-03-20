@@ -1,13 +1,8 @@
-// ============================================================
-// SPIRALSIDE — ACCOUNT VIEW v1.1
-// Updates existing index.html account elements — no innerHTML overwrite
+// SPIRALSIDE — ACCOUNT VIEW v1.2
+// HTML lives in index.html — this just refreshes values
 // Nimbis anchor: js/app/views/account.js
-// ============================================================
 import { state } from '../state.js';
-
 export function initAccountView() {
-  const el = document.getElementById('view-account');
-  if (!el) return;
   const emailEl = document.getElementById('account-email');
   if (emailEl && state.user?.email) emailEl.textContent = state.user.email;
   const avatarEl = document.getElementById('account-fab-initial');
