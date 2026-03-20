@@ -31,6 +31,12 @@ export function initImagine() {
     _initialized = true;
   }
   _syncCostBar();
+  // sync forge-gen-btn on first init
+  document.querySelectorAll(".forge-gen-btn").forEach(b => {
+    const m = MODELS.find(x => x.id === _model) || MODELS[0];
+    b.textContent = `❆ generate from fields · ${m.label} · ${m.cost.toLocaleString()} cr`;
+    b.style.background = `linear-gradient(135deg,${m.color},var(--purple))`;
+  });
 }
 
 function _buildHTML() {
