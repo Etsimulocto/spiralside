@@ -14,7 +14,11 @@ export function initAccountView() {
   if (!initialized) {
     el.innerHTML = `
       <div class="view-scroll-body">
-        <div class="view-section-title">account</div>
+        <div class="credit-hero" style="margin-bottom:20px;">
+        <div class="credit-amount" id="account-credits" style="font-family:var(--font-display);font-size:2.4rem;font-weight:800;color:var(--teal);text-align:center;">—</div>
+        <div class="credit-label" style="font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--subtext);text-align:center;margin-top:6px;">credits remaining</div>
+      </div>
+      <div class="view-section-title">account</div>
         <div class="account-email" id="account-email">—</div>
         <button class="signout-btn" onclick="window.handleSignout()">sign out</button>
       </div>`;

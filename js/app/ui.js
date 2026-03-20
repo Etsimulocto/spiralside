@@ -121,7 +121,7 @@ export function switchView(id) {
   }
   // Lazy-init view on first visit
   const viewInits = {
-    store:   () => { window.initStoreView && window.initStoreView(); setTimeout(updateCreditDisplay, 300); },
+    store:   () => { window.initStoreView && window.initStoreView(); setTimeout(updateCreditDisplay, 600); },
     studio:  () => window.initStudioView && window.initStudioView(),
     spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
     style:   () => window.initStylePanel  && window.initStylePanel(),
@@ -212,7 +212,7 @@ export async function loadUsage() {
 export function updateCreditDisplay() {
   if (typeof window.updateStoreView === 'function') window.updateStoreView();
   const acctEl = document.getElementById('account-credits');
-  if (acctEl) acctEl.textContent = state.isPaid ? state.credits : Math.max(0, 10 - state.freeToday);
+  if (acctEl) acctEl.textContent = state.isPaid ? Math.round(state.credits).toLocaleString() : Math.max(0, 10 - state.freeToday);
   const badge   = document.getElementById('credits-badge');
   const storeEl = document.getElementById('store-credits');
   const freeEl  = document.getElementById('store-free-msg');
