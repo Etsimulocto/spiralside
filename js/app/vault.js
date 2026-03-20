@@ -21,18 +21,11 @@ export function initVault() {
   // Wire add-file-btn to trigger the hidden file input
   const addBtn = document.getElementById('add-file-btn');
   if (addBtn) addBtn.addEventListener('click', () => document.getElementById('file-input').click());
-  // Expose file preview opener for grid item clicks
+  // Expose file preview opener for grid item clicks — inline overlay, no popups
   window._vaultOpenFile = (i) => {
     const f = state.vaultFiles[i];
     if (!f) return;
-    // Simple preview: open image in new tab, show text in alert for now
-    if (f.type && f.type.startsWith('image/')) {
-      const w = window.open();
-      w.document.write(`<img src="${f.content}" style="max-width:100%;background:#000;" />`);
-    } else {
-      // Could expand to a modal — for now just a peek
-      alert(f.name + '\n\n' + (f.content || '').slice(0, 500));
-    }
+    showVaultPreview(f);
   };
 
   // Folder picker button (uses File System Access API where available)
@@ -108,6 +101,62 @@ function fmtSize(b) {
   if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
   return (b/1048576).toFixed(1) + ' MB';
 }
+
+// ── VAULT PREVIEW OVERLAY ─────────────────────────────────
+// Safe inline preview — no window.open, no alert, no page freeze
+function showVaultPreview(f) {
+  // Remove any existing preview
+  document.getElementById('vault-preview-modal')?.remove();
+
+  const isImg = f.type && f.type.startsWith('image/');
+
+  // Build content
+  let body = '';
+  if (isImg) {
+    body = `<img src="${f.content}" style="max-width:100%;max-height:60dvh;
+              border-radius:8px;display:block;margin:0 auto;" />`;
+  } else {
+    const preview = (f.content || '[no content]').slice(0, 2000);
+    const safe = preview.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    body = `<pre style="font-size:0.72rem;line-height:1.6;color:var(--text);
+              white-space:pre-wrap;word-break:break-word;margin:0;
+              font-family:var(--font-ui);">${safe}</pre>`;
+  }
+
+  const modal = document.createElement('div');
+  modal.id = 'vault-preview-modal';
+  modal.style.cssText = `position:fixed;inset:0;z-index:9000;
+    background:rgba(10,10,15,0.88);backdrop-filter:blur(6px);
+    display:flex;align-items:flex-end;justify-content:center;`;
+
+  modal.innerHTML = `
+    <div style="width:100%;max-width:480px;background:var(--surface);
+                border:1px solid var(--border);border-radius:20px 20px 0 0;
+                max-height:85dvh;display:flex;flex-direction:column;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;
+                  padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <div>
+          <div style="font-size:0.85rem;font-weight:600;color:var(--text);
+                      word-break:break-all;">${f.name}</div>
+          <div style="font-size:0.62rem;color:var(--subtext);margin-top:2px;">
+            ${(f.size/1024).toFixed(1)} KB · ${f.type || 'unknown'}</div>
+        </div>
+        <button id="vault-preview-close"
+          style="background:var(--muted);border:none;border-radius:50%;
+                 width:32px;height:32px;color:var(--subtext);font-size:1rem;
+                 cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <div style="flex:1;min-height:0;overflow-y:auto;padding:16px 20px;
+                  -webkit-overflow-scrolling:touch;">${body}</div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  // Close handlers
+  document.getElementById('vault-preview-close').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
 export function renderVault() {
   const list = document.getElementById('vault-list');
   if (!list) return;  // view not mounted yet
