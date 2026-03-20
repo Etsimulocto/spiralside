@@ -12,7 +12,7 @@ function injectAccountStyles() {
   const s = document.createElement('style');
   s.id = 'ss-account-styles';
   s.textContent = `
-    #view-account { display: flex; flex-direction: column; overflow: hidden; }
+    #view-account { flex-direction: column; overflow: hidden; }
     .acct-scroll { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 16px 40px; }
     .acct-avatar-wrap { text-align: center; padding: 32px 0 24px; }
     .acct-avatar { width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, var(--teal), var(--accent)); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.8rem; font-weight: 800; border: 3px solid var(--border); color: #0a0a0f; }
