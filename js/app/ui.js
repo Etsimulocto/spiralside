@@ -210,42 +210,31 @@ export async function loadUsage() {
 }
 
 export function updateCreditDisplay() {
-  // write directly to any rendered credit elements
-  const _sc = document.getElementById("store-credits");
-  const _ac = document.getElementById("account-credits");
-  const _sf = document.getElementById("store-free-msg");
-  const _cr = state.isPaid ? Math.round(state.credits).toLocaleString() : "0";
-  if (_sc) _sc.textContent = _cr;
-  if (_ac) _ac.textContent = state.isPaid ? _cr : Math.max(0, 10 - state.freeToday);
-  if (_sf) _sf.textContent = state.isPaid ? "paid account" : "free demo — buy credits to unlock real AI";
-  const acctEl = document.getElementById('account-credits');
-  if (acctEl) acctEl.textContent = state.isPaid ? Math.round(state.credits).toLocaleString() : Math.max(0, 10 - state.freeToday);
   const badge   = document.getElementById('credits-badge');
   const storeEl = document.getElementById('store-credits');
+  const acctEl  = document.getElementById('account-credits');
   const freeEl  = document.getElementById('store-free-msg');
   const toggle  = document.getElementById('model-toggle');
   if (state.isPaid) {
     const cr = Math.round(state.credits).toLocaleString();
-    badge.textContent   = `${cr} cr`;
+    if (badge)   badge.textContent  = cr + ' cr';
     if (storeEl) storeEl.textContent = cr;
-    if (freeEl) freeEl.textContent  = 'paid account';
-    if (window.updateStoreView) window.updateStoreView();
-    if (toggle) toggle.classList.add('visible');
+    if (acctEl)  acctEl.textContent  = cr;
+    if (freeEl)  freeEl.textContent  = 'paid account';
+    if (toggle)  toggle.classList.add('visible');
     window._isPaid = true;
-    if (window.updateInputMenu) window.updateInputMenu();
   } else {
-    badge.textContent   = 'demo';
-    if (storeEl) storeEl.textContent = 0;
-    if (freeEl) freeEl.textContent  = 'free demo — buy credits to unlock real AI';
-    if (window.updateStoreView) window.updateStoreView();
-    if (toggle) toggle.classList.remove('visible');
+    const left = Math.max(0, 10 - state.freeToday);
+    if (badge)   badge.textContent  = left + ' free left';
+    if (storeEl) storeEl.textContent = '0';
+    if (acctEl)  acctEl.textContent  = left;
+    if (freeEl)  freeEl.textContent  = 'free demo — buy credits to unlock real AI';
+    if (toggle)  toggle.classList.remove('visible');
     window._isPaid = false;
-    if (window.updateInputMenu) window.updateInputMenu();
   }
+  if (window.updateInputMenu) window.updateInputMenu();
 }
 
-// ── GREETING MESSAGE UPDATE ───────────────────────────────────
-// Refreshes the first bot message in chat with current bot config
 export function updateGreeting() {
   const bubble = document.getElementById('greeting-bubble');
   const icon   = document.getElementById('bot-avatar-icon');
