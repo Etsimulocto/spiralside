@@ -281,3 +281,11 @@ export function loadVaultFromDB(files) {
   }));
 }
 
+// ── REMOVE FILE ───────────────────────────────────────────
+export async function removeFile(i) {
+  const file = state.vaultFiles[i];
+  if (!file) return;
+  state.vaultFiles.splice(i, 1);
+  try { await dbDelete('vault', file.name); } catch {}
+  renderVault();
+}
