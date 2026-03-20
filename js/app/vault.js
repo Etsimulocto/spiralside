@@ -13,6 +13,9 @@ const VAULT_COLORS = ['#00F6D6', '#FF4BCB', '#7B5FFF', '#FFD93D', '#4DA3FF'];
 
 // ── INIT ──────────────────────────────────────────────────────
 export function initVault() {
+  // Guard — view may not be mounted yet (called at startup before tab visited)
+  if (!document.getElementById('file-input')) return;
+
   // File picker input
   document.getElementById('file-input').addEventListener('change', handleFileInput);
 
