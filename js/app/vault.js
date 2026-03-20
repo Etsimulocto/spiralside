@@ -131,13 +131,14 @@ async function showVaultPreview(f) {
   modal.style.cssText = [
     'position:fixed', 'inset:0', 'z-index:9000',
     'background:rgba(10,10,15,0.88)', 'backdrop-filter:blur(6px)',
-    'display:flex', 'align-items:flex-end', 'justify-content:center'
+    'display:flex', 'align-items:center', 'justify-content:center',
+    'padding:20px'
   ].join(';');
 
   modal.innerHTML = `
     <div id="vault-preview-panel" style="
       width:100%;max-width:600px;background:var(--surface);
-      border:1px solid var(--border);border-radius:20px 20px 0 0;
+      border:1px solid var(--border);border-radius:12px;
       max-height:85dvh;display:flex;flex-direction:column;overflow:hidden;">
       <div style="display:flex;align-items:center;justify-content:space-between;
                   padding:16px 20px 12px;border-bottom:1px solid var(--border);flex-shrink:0;">
