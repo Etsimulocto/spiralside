@@ -69,6 +69,7 @@ window.initCodeView      = () => {
   });
 };
 window.buyPack           = buyPack;
+window.updateCreditDisplay = updateCreditDisplay;
 window.saveSummarize     = saveSummarize;
 window.initMusicView     = initMusicView;
 window.initImagine        = initImagine;
