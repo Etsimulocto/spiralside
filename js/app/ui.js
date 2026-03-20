@@ -210,7 +210,6 @@ export async function loadUsage() {
 }
 
 export function updateCreditDisplay() {
-  if (window.updateAccountView) window.updateAccountView();
   const badge   = document.getElementById('credits-badge');
   const storeEl = document.getElementById('store-credits');
   const acctEl  = document.getElementById('account-credits');
