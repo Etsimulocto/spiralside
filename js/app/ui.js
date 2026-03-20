@@ -125,7 +125,7 @@ export function switchView(id) {
     studio:  () => window.initStudioView && window.initStudioView(),
     spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
     style:   () => window.initStylePanel  && window.initStylePanel(),
-    account: () => { window.initAccountView && window.initAccountView(); window.updateCreditDisplay && window.updateCreditDisplay(); },
+    account: () => window.initAccountView && window.initAccountView(),
     imagine: () => window.initImagine     && window.initImagine(),
     music:   () => window.initMusicView   && window.initMusicView(),
     library: () => window.initLibrary     && window.initLibrary(),
@@ -210,6 +210,7 @@ export async function loadUsage() {
 }
 
 export function updateCreditDisplay() {
+  if (window.updateAccountView) window.updateAccountView();
   const badge   = document.getElementById('credits-badge');
   const storeEl = document.getElementById('store-credits');
   const acctEl  = document.getElementById('account-credits');
