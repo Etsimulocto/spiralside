@@ -80,9 +80,24 @@ window.handleForgeGenImg = async function() {
   const eyes    = g('forge-eyes');
   const style   = g('forge-style');
   const vibe    = g('forge-vibe');
-  const parts   = [name, title, species, appear,
-    hair ? 'hair: '+hair : '', eyes ? 'eyes: '+eyes : '',
-    style, vibe, 'character portrait', 'bloomcore art style', 'detailed'
+  const artStyle  = g('forge-art-style');
+  const pose      = g('forge-pose');
+  const lighting  = g('forge-lighting');
+  const background = g('forge-background');
+  const renderStyle = g('forge-render-style');
+  const parts   = [
+    name, title, species,
+    appear,
+    hair    ? 'hair: '+hair         : '',
+    eyes    ? 'eyes: '+eyes         : '',
+    style   ? 'wearing: '+style     : '',
+    pose    ? 'pose: '+pose         : '',
+    lighting ? lighting+' lighting' : '',
+    background ? 'background: '+background : '',
+    artStyle  || 'bloomcore art style',
+    renderStyle || 'character portrait',
+    vibe,
+    'detailed', 'high quality'
   ].filter(Boolean);
   const prompt  = parts.join(', ');
   const wrap    = document.getElementById('forge-portrait-wrap');

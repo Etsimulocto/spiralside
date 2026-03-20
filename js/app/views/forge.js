@@ -69,7 +69,7 @@ export function initForgeView() {
           <div style="display:flex;gap:8px;margin-bottom:6px">
             <button class="forge-gen-btn" onclick="window.handleForgeGenImg()"
               style="flex:1;padding:9px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer">
-              generate from fields
+              ❆ generate from fields · flux schnell · 500 cr
             </button>
             <button onclick="document.getElementById('forge-portrait-input').click()"
               style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer">
@@ -104,6 +104,20 @@ export function initForgeView() {
         </div>
         <div class="forge-field"><label class="forge-label">color theme</label>
           <input class="forge-input" id="forge-color-theme" placeholder="teal + void black + silver" /></div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">art style</label>
+            <input class="forge-input" id="forge-art-style" placeholder="anime, painterly, pixel art..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">pose / expression</label>
+            <input class="forge-input" id="forge-pose" placeholder="looking away, smiling, arms crossed..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">lighting</label>
+            <input class="forge-input" id="forge-lighting" placeholder="neon rim light, soft golden, dramatic..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">background</label>
+            <input class="forge-input" id="forge-background" placeholder="void, city rooftop, forest..." /></div>
+        </div>
+        <div class="forge-field"><label class="forge-label">rendering style</label>
+          <input class="forge-input" id="forge-render-style" placeholder="cinematic, concept art, illustration, photograph..." /></div>
       </div>
     </div>
 
