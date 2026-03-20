@@ -60,6 +60,8 @@ export function initStoreView() {
   const el = document.getElementById('view-store');
   if (!el) return;
   injectStoreStyles();
+  if (!initialized) {
+  initialized = true;
   el.innerHTML = `
     <div class="view-scroll-body">
       <div class="credit-hero">
@@ -115,6 +117,7 @@ export function initStoreView() {
       </div>
 
     </div>`;
+  }
   updateStoreView();
 }
 
