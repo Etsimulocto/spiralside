@@ -15,10 +15,9 @@ export function initForgeView() {
   if (!el || el.dataset.initialized) return;
   el.dataset.initialized = '1';
 
-  // Make view-forge itself the scroll container
-  el.style.cssText = "overflow-y:auto;-webkit-overflow-scrolling:touch;";
   el.innerHTML = `
-  <div style="padding:16px 16px calc(80px + var(--safe-bot));">
+  <div style="display:flex;flex-direction:column;flex:1;min-height:0;">
+  <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(80px + var(--safe-bot));">
 
     <!-- IDENTITY -->
     <div class="forge-section">
@@ -213,6 +212,7 @@ export function initForgeView() {
       save companion
     </button>
 
+  </div>
   </div>
   `;
 
