@@ -216,7 +216,8 @@ export function updateCreditDisplay() {
   const freeEl  = document.getElementById('store-free-msg');
   const toggle  = document.getElementById('model-toggle');
   if (state.isPaid) {
-    const cr = Math.round(state.credits).toLocaleString();
+    window._currentCredits = state.credits;
+  const cr = Math.round(state.credits).toLocaleString();
     if (badge)   badge.textContent  = cr + ' cr';
     if (storeEl) storeEl.textContent = cr;
     if (acctEl)  acctEl.textContent  = cr;
