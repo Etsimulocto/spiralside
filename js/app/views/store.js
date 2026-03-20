@@ -15,7 +15,7 @@ function injectStoreStyles() {
   s.id = 'ss-store-styles';
   s.textContent = `
     #view-store { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .view-scroll-body { padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 0; }
+    .view-scroll-body { padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 0; flex: 1; min-height: 0; overflow-y: auto; }
     .credit-hero { background: linear-gradient(135deg, rgba(0,246,214,0.08), rgba(124,106,247,0.08)); border: 1px solid var(--border); border-radius: 16px; padding: 28px 20px; text-align: center; margin-bottom: 20px; }
     .credit-amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 800; background: linear-gradient(135deg, var(--teal), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
     .credit-label { font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--subtext); margin-top: 6px; }
