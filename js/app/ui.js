@@ -121,7 +121,7 @@ export function switchView(id) {
   }
   // Lazy-init view on first visit
   const viewInits = {
-    store:   () => { window.initStoreView && window.initStoreView(); setTimeout(updateCreditDisplay, 600); },
+    store:   () => { window.initStoreView && window.initStoreView(); setTimeout(() => { window.updateStoreView && window.updateStoreView(); updateCreditDisplay(); }, 100); },
     studio:  () => window.initStudioView && window.initStudioView(),
     spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
     style:   () => window.initStylePanel  && window.initStylePanel(),
@@ -219,15 +219,17 @@ export function updateCreditDisplay() {
   if (state.isPaid) {
     const cr = Math.round(state.credits).toLocaleString();
     badge.textContent   = `${cr} cr`;
-    storeEl.textContent = cr;
-    freeEl.textContent  = 'paid account';
+    if (storeEl) storeEl.textContent = cr;
+    if (freeEl) freeEl.textContent  = 'paid account';
+    if (window.updateStoreView) window.updateStoreView();
     if (toggle) toggle.classList.add('visible');
     window._isPaid = true;
     if (window.updateInputMenu) window.updateInputMenu();
   } else {
     badge.textContent   = 'demo';
-    storeEl.textContent = 0;
-    freeEl.textContent  = 'free demo — buy credits to unlock real AI';
+    if (storeEl) storeEl.textContent = 0;
+    if (freeEl) freeEl.textContent  = 'free demo — buy credits to unlock real AI';
+    if (window.updateStoreView) window.updateStoreView();
     if (toggle) toggle.classList.remove('visible');
     window._isPaid = false;
     if (window.updateInputMenu) window.updateInputMenu();

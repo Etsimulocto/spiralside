@@ -124,8 +124,8 @@ export function initStoreView() {
 
 export function updateStoreView() {
   const amountEl = document.getElementById('store-credits');
-  const subEl    = document.getElementById('store-free-msg');
   if (!amountEl) return;
+  const subEl    = document.getElementById('store-free-msg');
   if (state.isPaid) {
     const cr = Number.isInteger(state.credits)
       ? state.credits
