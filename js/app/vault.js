@@ -70,6 +70,7 @@ async function handleFolderPick() {
 // ── RENDER VAULT LIST ─────────────────────────────────────────
 export function renderVault() {
   const list = document.getElementById('vault-list');
+  if (!list) return;  // view not mounted yet
 
   if (!state.vaultFiles.length) {
     list.innerHTML = `
