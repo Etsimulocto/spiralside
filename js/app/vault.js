@@ -155,7 +155,7 @@ export function renderVault() {
         <div style="font-size:0.55rem;color:var(--subtext);margin-top:2px;">
           ${fmtSize(f.size)}
         </div>
-        <button onclick="event.stopPropagation();removeFile(${i})"
+        <button onclick="event.stopPropagation();window.removeFile(${i})"
           style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;
                  background:rgba(10,10,15,0.75);border:1px solid var(--border);
                  color:var(--subtext);font-size:0.6rem;cursor:pointer;display:flex;
@@ -172,3 +172,11 @@ export function loadVaultFromDB(files) {
   renderVault();
 }
 
+// ── REMOVE FILE ───────────────────────────────────────────
+export async function removeFile(i) {
+  const file = state.vaultFiles[i];
+  if (!file) return;
+  state.vaultFiles.splice(i, 1);
+  await dbDelete('vault', file.name);
+  renderVault();
+}
