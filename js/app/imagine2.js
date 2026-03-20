@@ -12,7 +12,7 @@ let _initialized = false;
 
 const MODELS = [
   { id:'schnell', label:'flux schnell', sub:'fastest · draft quality · HuggingFace', cost:500,  color:'var(--teal)',   icon:'⚡' },
-  { id:'dev',     label:'flux dev',     sub:'better detail · slower · HuggingFace',   cost:1000, color:'var(--purple)', icon:'❆' },
+  { id:'lightning', label:'sdxl lightning', sub:'fast · crisp · HuggingFace', cost:1000, color:'var(--purple)', icon:'⚡⚡' },
   { id:'sdxl',   label:'stable diffusion xl', sub:'cinematic · versatile · HuggingFace', cost:1500, color:'var(--pink)', icon:'🎨' },
   { id:'dalle3', label:'dall·e 3',     sub:'highest quality · OpenAI',               cost:3000, color:'#FFD93D',      icon:'🌟' },
 ];
