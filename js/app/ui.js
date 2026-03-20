@@ -256,7 +256,7 @@ export function updateUserUI() {
   const initial = (state.user?.email?.[0] || '?').toUpperCase();
   const fabEl = document.getElementById('account-fab-initial');
   if (fabEl) fabEl.textContent = initial;
-  document.getElementById('account-email').textContent = state.user?.email || '—';
+  const _ae = document.getElementById('account-email'); if (_ae) _ae.textContent = state.user?.email || '—';
 }
 
 // ── PAYPAL ────────────────────────────────────────────────────
