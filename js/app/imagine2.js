@@ -97,6 +97,12 @@ function _syncCostBar() {
   const btn = document.getElementById('im-go');
   if (lbl) { lbl.textContent = `this will use ${m.cost.toLocaleString()} cr`; lbl.style.color = m.color; }
   if (btn)  btn.style.background = `linear-gradient(135deg,${m.color},var(--purple))`;
+  // sync all generate-from-fields buttons across forge + studio
+  const label = `❆ generate from fields · ${m.label} · ${m.cost.toLocaleString()} cr`;
+  document.querySelectorAll(".forge-gen-btn").forEach(b => {
+    b.textContent = label;
+    b.style.background = `linear-gradient(135deg,${m.color},var(--purple))`;
+  });
   const cr = window._currentCredits ?? null;
   if (bal && cr !== null) {
     const after = cr - m.cost;

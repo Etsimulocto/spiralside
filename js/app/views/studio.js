@@ -88,7 +88,7 @@ export async function initStudioView() {
                 <input class="forge-input" id="st-scene-world" placeholder="world name or ID"/></div>
               <div class="forge-field"><label class="forge-label">panel image</label>
                 <div style="display:flex;gap:8px;margin-bottom:6px">
-                  <button onclick="window._studioGenSceneImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer">✦ generate from fields</button>
+                  <button onclick="window._studioGenSceneImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer"class="forge-gen-btn">✦ generate from fields · flux schnell · 500 cr</button>
                   <button onclick="document.getElementById('st-scene-img-input').click()" style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer">↑ upload</button>
                 </div>
                 <div id="st-scene-img-wrap" style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;transition:border-color 0.2s;min-height:70px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
@@ -144,7 +144,7 @@ export async function initStudioView() {
                 <input class="forge-input" id="st-world-loc3" placeholder="Location 3"/></div>
               <div class="forge-field"><label class="forge-label">cover image</label>
                 <div style="display:flex;gap:8px;margin-bottom:6px">
-                  <button onclick="window._studioGenWorldImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer">✦ generate from fields</button>
+                  <button onclick="window._studioGenWorldImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer"class="forge-gen-btn">✦ generate from fields · flux schnell · 500 cr</button>
                   <button onclick="document.getElementById('st-world-img-input').click()" style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer">↑ upload</button>
                 </div>
                 <div id="st-world-img-wrap" style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;transition:border-color 0.2s;min-height:70px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
