@@ -158,7 +158,7 @@ export function injectImagineStyles() {
   const s = document.createElement('style');
   s.id = 'imagine-styles';
   s.textContent = `
-    #view-imagine { flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch; width:100vw; position:relative; left:50%; right:50%; margin-left:-50vw; margin-right:-50vw; }
+    #view-imagine { flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch; }
     .im-scroll { padding:20px 16px calc(80px + var(--safe-bot,0px)); display:flex; flex-direction:column; gap:12px; }
     .im-section-title { font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); font-family:var(--font-ui); font-weight:600; }
     .im-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
