@@ -136,6 +136,10 @@ export function switchView(id) {
     pi:      () => window.initPiView        && window.initPiView(),
   };
   if (viewInits[id]) viewInits[id]();
+  // Fire onOpen hook so modules can refresh state on revisit
+  if (window[`on${id[0].toUpperCase()}${id.slice(1)}Open`]) {
+    window[`on${id[0].toUpperCase()}${id.slice(1)}Open`]();
+  }
   const prevViewId = state.activeView;
   state.activeView = id;
 

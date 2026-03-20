@@ -165,6 +165,8 @@ import {
 
 window.initStylePanel       = initStylePanel;
 window.initVaultView = initVaultView;
+window.initVault    = initVault;
+window.renderVault  = renderVault;
 window.applyThemePreset     = applyThemePreset;
 window.previewColor         = previewColor;
 window.selectBgType         = selectBgType;
