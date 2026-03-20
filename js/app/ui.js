@@ -125,7 +125,7 @@ export function switchView(id) {
     studio:  () => window.initStudioView && window.initStudioView(),
     spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
     style:   () => window.initStylePanel  && window.initStylePanel(),
-    account: () => updateCreditDisplay(),
+    account: () => { window.initAccountView && window.initAccountView(); window.updateCreditDisplay && window.updateCreditDisplay(); },
     imagine: () => window.initImagine     && window.initImagine(),
     music:   () => window.initMusicView   && window.initMusicView(),
     library: () => window.initLibrary     && window.initLibrary(),
