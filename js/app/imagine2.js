@@ -44,15 +44,18 @@ function _buildHTML() {
   return `
   <div class="im-scroll">
     <div class="im-section-title">❆ IMAGINE</div>
-    <div class="im-card"><div class="im-label">model</div><div id="im-model-list">${cards}</div></div>
     <div class="im-card">
       <div class="im-label">prompt</div>
       <textarea class="im-input" id="im-prompt" rows="3" placeholder="Sky floating above a neon city at night, bloomcore art style..."></textarea>
     </div>
+    <button class="im-generate-btn" id="im-go">❆ generate</button>
+    <div class="im-error" id="im-error"></div>
+    <div id="im-result"></div>
     <div class="im-card">
       <div class="im-label">negative prompt <span class="im-sublabel">optional</span></div>
       <textarea class="im-input" id="im-neg" rows="2" placeholder="blurry, low quality, ugly, deformed"></textarea>
     </div>
+    <div class="im-card"><div class="im-label">model</div><div id="im-model-list">${cards}</div></div>
     <div class="im-card">
       <div class="im-label">size</div>
       <div class="im-size-grid">
@@ -66,9 +69,6 @@ function _buildHTML() {
       <span id="im-cost-label">this will use 500 cr</span>
       <span id="im-balance-label" class="im-balance"></span>
     </div>
-    <button class="im-generate-btn" id="im-go">❆ generate</button>
-    <div class="im-error" id="im-error"></div>
-    <div id="im-result"></div>
     <div style="height:60px"></div>
   </div>`;
 }
