@@ -18,6 +18,9 @@ export function initVault() {
 
   // File picker input
   document.getElementById('file-input').addEventListener('change', handleFileInput);
+  // Wire add-file-btn to trigger the hidden file input
+  const addBtn = document.getElementById('add-file-btn');
+  if (addBtn) addBtn.addEventListener('click', () => document.getElementById('file-input').click());
 
   // Folder picker button (uses File System Access API where available)
   document.getElementById('open-folder-btn').addEventListener('click', handleFolderPick);
