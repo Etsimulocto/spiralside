@@ -121,7 +121,7 @@ export function switchView(id) {
   }
   // Lazy-init view on first visit
   const viewInits = {
-    store:   () => { window.initStoreView && window.initStoreView(); setTimeout(() => { window.updateStoreView && window.updateStoreView(); updateCreditDisplay(); }, 100); },
+    store:   () => { window.initStoreView && window.initStoreView(); updateCreditDisplay(); },
     studio:  () => window.initStudioView && window.initStudioView(),
     spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
     style:   () => window.initStylePanel  && window.initStylePanel(),
