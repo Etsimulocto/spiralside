@@ -79,6 +79,7 @@ window.updateStoreView    = updateStoreView;
 window.initAccountView    = initAccountView;
 window.updateAccountView   = updateAccountView;
 window.initGuideView      = initGuide;
+window.initForgeView      = initForgeView;
 window.destroyMusicView  = destroyMusicView;
 window.removeFile        = removeFile;
 window.openPanelEditor   = openPanelEditor;
