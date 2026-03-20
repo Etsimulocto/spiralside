@@ -1537,7 +1537,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.287</div>
+      <div class="version-badge" id="version-badge">v0.8.288</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
       </div>
@@ -1713,21 +1713,8 @@
   </div>
 
   <!-- VAULT VIEW -->
-  <div class="view" id="view-vault">
-    <div id="vault-inner">
-      <div class="vault-toolbar">
-        <button class="vault-tool-btn" onclick="document.getElementById('file-input').click()">📄 add file</button>
-        <button class="vault-tool-btn" id="open-folder-btn">📁 folder</button>
-      </div>
-      <div id="vault-list">
-        <div class="empty-state">
-          <div class="empty-icon">🗂</div>
-          No files yet.<br>Add docs and your companion will remember them.
-        </div>
-      </div>
-      <div style="height:100px"></div>
-    </div>
-    <input type="file" id="file-input" style="display:none" accept=".txt,.md,.pdf" multiple />
+  <div class="view" id="view-vault" data-vault-module="1">
+    <!-- vault module stamps content here -->
   </div>
 
   <!-- FORGE VIEW -->

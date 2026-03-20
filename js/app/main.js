@@ -39,6 +39,7 @@ import { initStudioView }                          from './views/studio.js';
 import { initGuide, renderGuide } from './views/guide.js';
 import { initForgeView }           from './views/forge.js';
 import { initAccountView, updateAccountView }      from './views/account.js';
+import { initVaultView } from './views/vault.js';
 
 // ── EXPOSE GLOBALS ────────────────────────────────────────────
 // HTML onclick attributes need these on window.
@@ -163,6 +164,7 @@ import {
 } from './style.js';
 
 window.initStylePanel       = initStylePanel;
+window.initVaultView = initVaultView;
 window.applyThemePreset     = applyThemePreset;
 window.previewColor         = previewColor;
 window.selectBgType         = selectBgType;

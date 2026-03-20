@@ -132,6 +132,7 @@ export function switchView(id) {
     code:    () => window.initCodeView     && window.initCodeView(),
     guide:   () => window.initGuideView   && window.initGuideView(),
     forge:   () => window.initForgeView   && window.initForgeView(),
+    'vault': () => window.initVaultView && window.initVaultView(),
     pi:      () => window.initPiView        && window.initPiView(),
   };
   if (viewInits[id]) viewInits[id]();
