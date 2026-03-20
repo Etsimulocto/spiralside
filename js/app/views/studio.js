@@ -6,6 +6,9 @@
 // ============================================================
 
 import { dbSet, dbGetAll, dbDelete } from '../db.js';
+import { getImagineModel, getImagineSize } from '../imagine2.js';
+import { RAIL } from '../state.js';
+import { sb } from '../auth.js';
 import { renderSceneCard, renderWorldCard, generateCardId } from '../card.js';
 
 let initialized = false;
@@ -84,17 +87,15 @@ export async function initStudioView() {
               <div class="forge-field"><label class="forge-label">linked world</label>
                 <input class="forge-input" id="st-scene-world" placeholder="world name or ID"/></div>
               <div class="forge-field"><label class="forge-label">panel image</label>
-                <div id="st-scene-img-wrap" style="
-                  border:2px dashed var(--border);border-radius:10px;padding:16px;
-                  text-align:center;cursor:pointer;transition:border-color 0.2s;
-                  min-height:70px;display:flex;align-items:center;justify-content:center;
-                  position:relative;overflow:hidden;
-                " onclick="document.getElementById('st-scene-img-input').click()">
-                  <img id="st-scene-img-preview" style="display:none;max-width:100%;max-height:140px;border-radius:6px;object-fit:cover"/>
-                  <span id="st-scene-img-hint" style="font-size:0.72rem;color:var(--subtext)">tap to upload panel image</span>
+                <div style="display:flex;gap:8px;margin-bottom:6px">
+                  <button onclick="window._studioGenSceneImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer">✦ generate from fields</button>
+                  <button onclick="document.getElementById('st-scene-img-input').click()" style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer">↑ upload</button>
                 </div>
-                <input type="file" id="st-scene-img-input" accept="image/*" style="display:none"
-                  onchange="window._studioSceneImg(this)"/></div>
+                <div id="st-scene-img-wrap" style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;transition:border-color 0.2s;min-height:70px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+                  <img id="st-scene-img-preview" style="display:none;max-width:100%;max-height:140px;border-radius:6px;object-fit:cover"/>
+                  <span id="st-scene-img-hint" style="font-size:0.72rem;color:var(--subtext)">tap generate or upload</span>
+                </div>
+                <input type="file" id="st-scene-img-input" accept="image/*" style="display:none" onchange="window._studioSceneImg(this)"/></div>
               <button onclick="window._studioSaveScene()" style="
                 width:100%;padding:12px;background:linear-gradient(135deg,var(--teal),var(--purple));
                 border:none;border-radius:10px;color:#fff;font-family:var(--font-display);
@@ -142,17 +143,15 @@ export async function initStudioView() {
                 <input class="forge-input" id="st-world-loc2" placeholder="Location 2" style="margin-bottom:6px"/>
                 <input class="forge-input" id="st-world-loc3" placeholder="Location 3"/></div>
               <div class="forge-field"><label class="forge-label">cover image</label>
-                <div id="st-world-img-wrap" style="
-                  border:2px dashed var(--border);border-radius:10px;padding:16px;
-                  text-align:center;cursor:pointer;transition:border-color 0.2s;
-                  min-height:70px;display:flex;align-items:center;justify-content:center;
-                  position:relative;overflow:hidden;
-                " onclick="document.getElementById('st-world-img-input').click()">
-                  <img id="st-world-img-preview" style="display:none;max-width:100%;max-height:140px;border-radius:6px;object-fit:cover"/>
-                  <span id="st-world-img-hint" style="font-size:0.72rem;color:var(--subtext)">tap to upload cover image</span>
+                <div style="display:flex;gap:8px;margin-bottom:6px">
+                  <button onclick="window._studioGenWorldImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer">✦ generate from fields</button>
+                  <button onclick="document.getElementById('st-world-img-input').click()" style="padding:9px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer">↑ upload</button>
                 </div>
-                <input type="file" id="st-world-img-input" accept="image/*" style="display:none"
-                  onchange="window._studioWorldImg(this)"/></div>
+                <div id="st-world-img-wrap" style="border:2px dashed var(--border);border-radius:10px;padding:16px;text-align:center;transition:border-color 0.2s;min-height:70px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+                  <img id="st-world-img-preview" style="display:none;max-width:100%;max-height:140px;border-radius:6px;object-fit:cover"/>
+                  <span id="st-world-img-hint" style="font-size:0.72rem;color:var(--subtext)">tap generate or upload</span>
+                </div>
+                <input type="file" id="st-world-img-input" accept="image/*" style="display:none" onchange="window._studioWorldImg(this)"/></div>
               <button onclick="window._studioSaveWorld()" style="
                 width:100%;padding:12px;background:linear-gradient(135deg,var(--purple),var(--pink));
                 border:none;border-radius:10px;color:#fff;font-family:var(--font-display);
@@ -287,7 +286,62 @@ function _wireStudio() {
     await _renderSceneGrid();
   };
 
+  // ── GENERATE IMAGE FROM FIELDS ──
+  async function _callGenerate(prompt, wrapId, previewId, hintId, onDone) {
+    const wrap = document.getElementById(wrapId);
+    const preview = document.getElementById(previewId);
+    const hint = document.getElementById(hintId);
+    if (!wrap) return;
+    const origHint = hint ? hint.textContent : '';
+    if (hint) hint.textContent = '🌀 generating...';
+    if (preview) preview.style.display = 'none';
+    wrap.style.borderColor = 'var(--teal)';
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token;
+      if (!token) { if (hint) hint.textContent = 'sign in required'; return; }
+      const model = getImagineModel() || 'schnell';
+      const size  = getImagineSize()  || { w: 512, h: 512 };
+      const r = await fetch(RAIL + '/generate-image', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, model, width: size.w, height: size.h, negative_prompt: 'blurry, low quality, ugly, deformed' }),
+      });
+      const data = await r.json();
+      if (!r.ok) { if (hint) hint.textContent = data.detail || 'error'; return; }
+      const dataUrl = 'data:image/png;base64,' + data.image;
+      if (preview) { preview.src = dataUrl; preview.style.display = 'block'; }
+      if (hint)    hint.style.display = 'none';
+      if (window.updateCreditDisplay) window.updateCreditDisplay();
+      onDone(dataUrl);
+    } catch(e) {
+      if (hint) hint.textContent = e.message;
+    }
+  }
+
+  window._studioGenSceneImg = async () => {
+    const g = id => document.getElementById(id)?.value?.trim() || '';
+    const name     = g('st-scene-name')     || 'scene';
+    const mood     = g('st-scene-mood');
+    const time     = g('st-scene-time');
+    const camera   = g('st-scene-camera');
+    const location = g('st-scene-location') || 'Spiral City';
+    const parts = [name, mood, time ? time + ' lighting' : '', camera ? camera + ' shot' : '', location, 'bloomcore art style', 'cinematic', 'detailed'].filter(Boolean);
+    await _callGenerate(parts.join(', '), 'st-scene-img-wrap', 'st-scene-img-preview', 'st-scene-img-hint', url => { _sceneImgData = url; });
+  };
+
+  window._studioGenWorldImg = async () => {
+    const g = id => document.getElementById(id)?.value?.trim() || '';
+    const name    = g('st-world-name')    || 'world';
+    const tagline = g('st-world-tagline');
+    const biome   = g('st-world-biome')   || 'environment';
+    const lore    = g('st-world-lore').slice(0, 80);
+    const parts = [biome + ' environment', 'called ' + name, tagline, lore, 'concept art', 'bloomcore art style', 'dramatic lighting', 'detailed'].filter(Boolean);
+    await _callGenerate(parts.join(', '), 'st-world-img-wrap', 'st-world-img-preview', 'st-world-img-hint', url => { _worldImgData = url; });
+  };
+
   window._studioDeleteWorld = async (id) => {
+
     worlds = worlds.filter(w => w.id !== id);
     await dbDelete('worlds', id);
     await _renderWorldGrid();
