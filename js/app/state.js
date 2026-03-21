@@ -129,6 +129,8 @@ export const FAB_TABS = [
     onOpen: () => window.onForgeOpen && window.onForgeOpen() },
   { id: 'spiralcut', label: 'cut',  icon: '✂',  color: '#FF4BCB',
     onOpen: () => window.initSpiralCutView && window.initSpiralCutView() },
+  { id: 'quest',     label: 'quest', icon: '⚔',  color: '#FFD93D',
+    onOpen: () => window.initQuestView && window.initQuestView() },
   { id: 'studio',  label: 'studio',  icon: '✦',   color: '#7c6af7',
     onOpen: () => window.initStudioView && window.initStudioView() },
   { id: 'library', label: 'library', icon: '🖼',  color: '#FF4BCB',

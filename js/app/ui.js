@@ -124,6 +124,7 @@ export function switchView(id) {
     store:   () => { window.initStoreView && window.initStoreView(); updateCreditDisplay(); },
     studio:  () => window.initStudioView && window.initStudioView(),
     spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
+    quest:     () => window.initQuestView     && window.initQuestView(),
     style:   () => { window.initStylePanel && window.initStylePanel(); setTimeout(() => window.initColorSketches && window.initColorSketches(), 400); },
     account: () => window.initAccountView && window.initAccountView(),
     imagine: () => window.initImagine     && window.initImagine(),

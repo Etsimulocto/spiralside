@@ -38,6 +38,7 @@ import { state }                                   from './state.js';
 import { selectModel, toggleInputMenu, updateInputMenu, initModels } from './models.js';
 import { initStoreView, updateStoreView }          from './views/store.js';
 import { initSpiralCutView }                       from './views/spiralcut.js';
+import { initQuestView }                           from './views/quest.js';
 import { initStudioView }                          from './views/studio.js';
 import { initGuide, renderGuide } from './views/guide.js';
 import { initForgeView }           from './views/forge.js';
@@ -104,6 +105,7 @@ window.downloadCodexCard    = downloadCodexCard;
 window.deleteCodexCard      = deleteCodexCard;
 window.initStudioView       = initStudioView;
 window.initSpiralCutView    = initSpiralCutView;
+window.initQuestView    = initQuestView;
 window.closeSceneForm       = () => document.getElementById('codex-scene-form-overlay')?.classList.remove('open');
 window.closeWorldForm       = () => document.getElementById('codex-world-form-overlay')?.classList.remove('open');
 
