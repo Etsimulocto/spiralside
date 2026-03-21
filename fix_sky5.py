@@ -1,4 +1,10 @@
-// ============================================================
+# ============================================================
+# SPIRALSIDE — SKY REWRITE
+# Overwrites js/app/sky.js with NaN-safe version
+# Run from ~/spiralside
+# ============================================================
+
+SKY_JS = r"""// ============================================================
 // SPIRALSIDE — LIVING SKY v1.1
 // Animated gradient canvas behind the header
 // NaN-safe: guards all zero-dimension edge cases
@@ -124,3 +130,11 @@ export function initSky() {
 export function stopSky() {
   if (_raf) { cancelAnimationFrame(_raf); _raf = null; }
 }
+"""
+
+with open('js/app/sky.js', 'w', encoding='utf-8') as f:
+    f.write(SKY_JS)
+print('[sky.js] rewritten with NaN guards')
+print()
+print('=== DONE ===')
+print('git add . && git commit -m "fix: sky NaN-safe rewrite v1.1" && git push --force origin main')
