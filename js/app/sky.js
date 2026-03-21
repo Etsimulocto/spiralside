@@ -70,12 +70,12 @@ function getStates() {
   const blue = cssVar('--blue');
   const yell = cssVar('--yellow');
   return [
-    [bg,   teal, bg  ],   // teal sweep
-    [bg,   purp, bg  ],   // purple sweep
-    [teal, bg,   purp],   // teal → purple cross
-    [bg,   pink, bg  ],   // pink sweep
-    [purp, bg,   blue],   // purple → blue cross
-    [bg,   blue, bg  ],   // blue sweep
+    [bg,   teal, bg  ],   // teal center
+    [purp, bg,   purp],   // purple wings
+    [bg,   pink, bg  ],   // pink center
+    [teal, bg,   blue],   // teal→blue sweep
+    [bg,   purp, teal],   // purp→teal
+    [pink, bg,   purp],   // pink→purple
   ];
 }
 
