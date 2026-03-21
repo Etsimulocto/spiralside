@@ -915,9 +915,13 @@ function playTimeline() {
       };
     }
   }).filter(p => p.dialogue?.length || p.image);
+  const returnId = viewingBookId;
   closeTimeline();
-  if (window.playCustomComic) window.playCustomComic(comicPanels);
-  else alert('Comic engine not ready.');
+  if (window.playCustomComic) {
+    window.playCustomComic(comicPanels, () => openBookTimeline(returnId));
+  } else {
+    alert('Comic engine not ready.');
+  }
 }
 
 // ── SLOT UPLOAD ───────────────────────────────────────────────

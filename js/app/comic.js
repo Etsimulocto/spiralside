@@ -31,7 +31,7 @@ let comicPanel   = 0;
 let comicTyping  = null;
 let comicLineIdx = 0;
 
-export function playCustomComic(customPanels) {
+export function playCustomComic(customPanels, onDone) {
   if (!customPanels || !customPanels.length) return;
   PANELS = customPanels;
   comicPanel = 0;
@@ -42,7 +42,10 @@ export function playCustomComic(customPanels) {
   if (skipBtn) skipBtn.classList.remove('visible');
   const onFinish = () => {
     screen.classList.add('fade-out');
-    setTimeout(() => { screen.style.display = 'none'; }, 500);
+    setTimeout(() => {
+      screen.style.display = 'none';
+      if (onDone) onDone();  // jump back to wherever we came from
+    }, 500);
   };
   if (screen._customTap) screen.removeEventListener('click', screen._customTap);
   screen._customTap = () => comicTap(onFinish);
