@@ -1557,7 +1557,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.314</div>
+      <div class="version-badge" id="version-badge">v0.8.315</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
       </div>
@@ -2049,15 +2049,15 @@
         <span class="forge-section-title">🌈 colors</span>
       </div>
       <div class="forge-section-body" id="sbody-colors" style="display:none">
-        <div class="color-row"><span class="color-label">background</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg-v" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">surface / cards</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface-v" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">border</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-border-v" style="background:#1e1e35"></div><input type="color" value="#1e1e35" oninput="previewColor('border',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (primary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal-v" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (secondary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink-v" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">text color</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-text-v" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">subtext color</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-subtext-v" style="background:#6060A0"></div><input type="color" value="#6060A0" oninput="previewColor('subtext',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">user bubble</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble-v" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">bot bubble</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-botbubble-v" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('botbubble',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">background</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg-v" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">surface / cards</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface-v" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">border</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-border-v" style="background:#1e1e35"></div><input type="color" value="#1e1e35" oninput="previewColor('border',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (primary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal-v" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (secondary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink-v" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">text color</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-text-v" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">subtext color</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-subtext-v" style="background:#6060A0"></div><input type="color" value="#6060A0" oninput="previewColor('subtext',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">user bubble</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble-v" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">bot bubble</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-botbubble-v" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('botbubble',this.value)" /></div></div>
       </div>
     </div>
 
@@ -2428,12 +2428,12 @@
       </div>
       <div class="style-section">
         <div class="style-section-title">colors</div>
-        <div class="color-row"><span class="color-label">background</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">surface</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (primary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (secondary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">user bubble</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">text</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-text" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">background</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">surface</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (primary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (secondary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">user bubble</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">text</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-text" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
       </div>
       <div class="style-section">
         <div class="style-section-title">background</div>
@@ -2473,12 +2473,12 @@
       </div>
       <div class="style-section">
         <div class="style-section-title">colors</div>
-        <div class="color-row"><span class="color-label">background</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">surface</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (primary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (secondary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">user bubble</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">text</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-text" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">background</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">surface</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (primary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (secondary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">user bubble</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">text</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-text" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
       </div>
       <div class="style-section">
         <div class="style-section-title">background</div>
@@ -2518,12 +2518,12 @@
       </div>
       <div class="style-section">
         <div class="style-section-title">colors</div>
-        <div class="color-row"><span class="color-label">background</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">surface</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (primary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">accent (secondary)</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">user bubble</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
-        <div class="color-row"><span class="color-label">text</span><div class="color-swatch"><div class="color-swatch-bg" id="sw-text" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">background</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-bg" style="background:#08080d"></div><input type="color" value="#08080d" oninput="previewColor('bg',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">surface</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-surface" style="background:#0f0f18"></div><input type="color" value="#0f0f18" oninput="previewColor('surface',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (primary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-teal" style="background:#00F6D6"></div><input type="color" value="#00F6D6" oninput="previewColor('teal',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">accent (secondary)</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-pink" style="background:#FF4BCB"></div><input type="color" value="#FF4BCB" oninput="previewColor('pink',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">user bubble</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-userbubble" style="background:#7B5FFF"></div><input type="color" value="#7B5FFF" oninput="previewColor('userbubble',this.value)" /></div></div>
+        <div class="color-row"><span class="color-label">text</span><canvas class="color-sketch-canvas" width="120" height="32"></canvas><div class="color-swatch"><div class="color-swatch-bg" id="sw-text" style="background:#F0F0FF"></div><input type="color" value="#F0F0FF" oninput="previewColor('text',this.value)" /></div></div>
       </div>
       <div class="style-section">
         <div class="style-section-title">background</div>
