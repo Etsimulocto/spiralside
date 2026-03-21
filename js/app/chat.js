@@ -7,6 +7,7 @@
 // ============================================================
 
 import { state }           from './state.js';
+import { buildYouContext }  from './sheet.js';
 import { speakReply }          from './models.js';
 import { getDemoResponse, loadDemoResponses } from './demo.js';
 
@@ -162,7 +163,8 @@ export async function sendMessage() {
       .join('\n\n');
 
     // Build system prompt from bot config
-    let sys = `You are ${state.botName}.`;
+    const youCtx = buildYouContext();
+    let sys = youCtx + `You are ${state.botName}.`;
     if (state.botPersonality) sys += ` ${state.botPersonality}`;
     if (state.botTone?.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
     sys += ' Be genuine and concise. Never break character.';

@@ -552,6 +552,10 @@
       font-size: 0.78rem; outline: none; resize: none; transition: border-color 0.2s;
     }
     .sheet-field-input:focus { border-color: var(--teal); }
+    .you-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+    .you-tags{display:flex;flex-wrap:wrap;gap:6px;padding:8px 18px 14px;}
+    .you-tag{padding:5px 12px;border-radius:20px;font-size:0.68rem;letter-spacing:0.06em;cursor:pointer;background:var(--surface2);border:1px solid var(--border);color:var(--subtext);transition:all 0.15s;user-select:none;}
+    .you-tag.on{background:rgba(123,95,255,0.15);border-color:var(--purple);color:var(--purple);}
     .save-summarize-btn {
       width: 100%; padding: 13px; border: none; border-radius: 12px;
       font-family: var(--font-display); font-weight: 700; font-size: 0.88rem;
@@ -1572,7 +1576,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.365</div>
+        <div class="version-badge" id="version-badge">v0.8.366</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
@@ -1727,22 +1731,42 @@
       <div class="comic-card" id="user-sheet-card" style="display:none">
         <div class="comic-card-accent" style="background:linear-gradient(90deg,var(--purple),transparent)"></div>
         <div class="section-label" style="padding-top:14px">YOUR PROFILE</div>
-        <div class="sheet-field-row">
-          <div class="sheet-field-label">handle / name</div>
-          <input class="sheet-field-input" id="user-handle" placeholder="what do they call you?" type="text" />
+        <div class="you-grid">
+          <div class="sheet-field-row"><div class="sheet-field-label">handle / name</div><input class="sheet-field-input" id="user-handle" placeholder="what do they call you?" type="text" /></div>
+          <div class="sheet-field-row"><div class="sheet-field-label">pronouns</div><input class="sheet-field-input" id="user-pronouns" placeholder="she/her, they, he..." type="text" /></div>
+          <div class="sheet-field-row"><div class="sheet-field-label">vibe / aesthetic</div><input class="sheet-field-input" id="user-vibe" placeholder="chaotic soft goth?" type="text" /></div>
+          <div class="sheet-field-row"><div class="sheet-field-label">location (loose)</div><input class="sheet-field-input" id="user-location" placeholder="pacific coast, UK..." type="text" /></div>
         </div>
-        <div class="sheet-field-row">
-          <div class="sheet-field-label">vibe / aesthetic</div>
-          <input class="sheet-field-input" id="user-vibe" placeholder="chaotic soft goth? cozy cryptid?" type="text" />
+        <div class="section-label" style="padding:14px 18px 0">LIFE RIGHT NOW</div>
+        <div class="sheet-field-row"><div class="sheet-field-label">current arc</div><textarea class="sheet-field-input" id="user-arc" rows="2" placeholder="what are you actually going through right now..."></textarea></div>
+        <div class="you-grid">
+          <div class="sheet-field-row"><div class="sheet-field-label">working on</div><input class="sheet-field-input" id="user-project" placeholder="a game, a zine, getting through the week..." type="text" /></div>
+          <div class="sheet-field-row"><div class="sheet-field-label">theme song right now</div><input class="sheet-field-input" id="user-song" placeholder="the one living in your head" type="text" /></div>
         </div>
-        <div class="sheet-field-row">
-          <div class="sheet-field-label">current arc</div>
-          <textarea class="sheet-field-input" id="user-arc" rows="2" placeholder="what are you going through right now?"></textarea>
+        <div class="section-label" style="padding:14px 18px 0">THE IMPORTANT STUFF</div>
+        <div class="you-grid">
+          <div class="sheet-field-row"><div class="sheet-field-label">pet name(s)</div><input class="sheet-field-input" id="user-pets" placeholder="Luna, Mochi, Mr. Beans..." type="text" /></div>
+          <div class="sheet-field-row"><div class="sheet-field-label">fav food / drink</div><input class="sheet-field-input" id="user-food" placeholder="boba, birria, instant ramen" type="text" /></div>
+          <div class="sheet-field-row"><div class="sheet-field-label">comfort show / game</div><input class="sheet-field-input" id="user-comfort" placeholder="Stardew, Bob's Burgers..." type="text" /></div>
+          <div class="sheet-field-row"><div class="sheet-field-label">hates / dealbreakers</div><input class="sheet-field-input" id="user-hates" placeholder="loud chewing, comic sans..." type="text" /></div>
         </div>
-        <div class="sheet-field-row">
-          <div class="sheet-field-label">theme song</div>
-          <input class="sheet-field-input" id="user-song" placeholder="the song that's living in your head" type="text" />
+        <div class="section-label" style="padding:14px 18px 0">HOW YOU WORK</div>
+        <div class="you-tags" id="you-work-tags">
+          <div class="you-tag" data-tag="night owl">night owl</div>
+          <div class="you-tag" data-tag="morning person">morning person</div>
+          <div class="you-tag" data-tag="hyperfocus mode">hyperfocus</div>
+          <div class="you-tag" data-tag="needs breaks">needs breaks</div>
+          <div class="you-tag" data-tag="visual thinker">visual thinker</div>
+          <div class="you-tag" data-tag="list maker">list maker</div>
+          <div class="you-tag" data-tag="voice processor">voice processor</div>
+          <div class="you-tag" data-tag="chaotic good">chaotic good</div>
+          <div class="you-tag" data-tag="overthinker">overthinker</div>
+          <div class="you-tag" data-tag="ADHD">ADHD</div>
+          <div class="you-tag" data-tag="introvert">introvert</div>
+          <div class="you-tag" data-tag="extrovert">extrovert</div>
         </div>
+        <div class="section-label" style="padding:14px 18px 0">TELL SKY ANYTHING</div>
+        <div class="sheet-field-row"><div class="sheet-field-label">stuff sky should just know</div><textarea class="sheet-field-input" id="user-freetext" rows="3" placeholder="I have ADHD. my cat knocks things off tables. I hate when people say circle back..."></textarea></div>
       </div>
       <button id="talk-to-btn" style="display:none;width:100%;padding:13px;border:none;border-radius:12px;font-family:var(--font-ui);font-size:0.82rem;letter-spacing:0.06em;cursor:pointer;margin-bottom:10px;transition:all 0.2s;text-transform:lowercase;"></button>
       <button class="save-summarize-btn" id="save-summarize-btn" onclick="saveSummarize()">✦ save + summarize thread</button>

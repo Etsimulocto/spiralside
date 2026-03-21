@@ -222,10 +222,24 @@ export function renderActiveChar(id) {
   const userCard = document.getElementById('user-sheet-card');
   userCard.style.display = char.isUser ? 'block' : 'none';
   if (char.isUser) {
-    document.getElementById('user-handle').value = char.handle || '';
-    document.getElementById('user-vibe').value   = char.vibe   || '';
-    document.getElementById('user-arc').value    = char.arc    || '';
-    document.getElementById('user-song').value   = char.song   || '';
+    document.getElementById('user-handle').value   = char.handle   || '';
+    document.getElementById('user-pronouns').value = char.pronouns || '';
+    document.getElementById('user-vibe').value     = char.vibe     || '';
+    document.getElementById('user-location').value = char.location || '';
+    document.getElementById('user-arc').value      = char.arc      || '';
+    document.getElementById('user-project').value  = char.project  || '';
+    document.getElementById('user-song').value     = char.song     || '';
+    document.getElementById('user-pets').value     = char.pets     || '';
+    document.getElementById('user-food').value     = char.food     || '';
+    document.getElementById('user-comfort').value  = char.comfort  || '';
+    document.getElementById('user-hates').value    = char.hates    || '';
+    document.getElementById('user-freetext').value = char.freetext || '';
+    // Restore work tags
+    const workTags = char.workTags || [];
+    document.querySelectorAll('#you-work-tags .you-tag').forEach(t => {
+      t.classList.toggle('on', workTags.includes(t.dataset.tag));
+      t.onclick = () => t.classList.toggle('on');
+    });
   }
 
   // Save+summarize button color
@@ -253,10 +267,19 @@ export async function saveSummarize() {
 
   // If user's own sheet, also read extra profile fields
   if (char.isUser) {
-    char.handle = document.getElementById('user-handle').value;
-    char.vibe   = document.getElementById('user-vibe').value;
-    char.arc    = document.getElementById('user-arc').value;
-    char.song   = document.getElementById('user-song').value;
+    char.handle   = document.getElementById('user-handle').value;
+    char.pronouns = document.getElementById('user-pronouns').value;
+    char.vibe     = document.getElementById('user-vibe').value;
+    char.location = document.getElementById('user-location').value;
+    char.arc      = document.getElementById('user-arc').value;
+    char.project  = document.getElementById('user-project').value;
+    char.song     = document.getElementById('user-song').value;
+    char.pets     = document.getElementById('user-pets').value;
+    char.food     = document.getElementById('user-food').value;
+    char.comfort  = document.getElementById('user-comfort').value;
+    char.hates    = document.getElementById('user-hates').value;
+    char.freetext = document.getElementById('user-freetext').value;
+    char.workTags = Array.from(document.querySelectorAll('#you-work-tags .you-tag.on')).map(t => t.dataset.tag);
   }
 
   // Persist to IndexedDB
@@ -265,8 +288,17 @@ export async function saveSummarize() {
     arc:             char.arc,
     traits:          char.traits,
     handle:          char.handle,
-    vibe:            char.vibe,
-    song:            char.song,
+    pronouns:        char.pronouns  || null,
+    vibe:            char.vibe      || null,
+    location:        char.location  || null,
+    project:         char.project   || null,
+    song:            char.song      || null,
+    pets:            char.pets      || null,
+    food:            char.food      || null,
+    comfort:         char.comfort   || null,
+    hates:           char.hates     || null,
+    freetext:        char.freetext  || null,
+    workTags:        char.workTags  || [],
     portrait_base64: char.portrait_base64 || null,
   });
 
@@ -333,11 +365,22 @@ export async function loadSavedSheets(dbGet) {
     if (!saved) continue;
     if (saved.arc)    CHARACTERS[id].arc    = saved.arc;
     if (saved.traits) CHARACTERS[id].traits = saved.traits;
-    // User-specific fields
+    // User-specific fields — restore all You card fields from IDB
     if (id === 'you') {
-      if (saved.handle) CHARACTERS.you.handle = saved.handle;
-      if (saved.vibe)   CHARACTERS.you.vibe   = saved.vibe;
-      if (saved.song)   CHARACTERS.you.song   = saved.song;
+      if (saved.handle)   CHARACTERS.you.handle   = saved.handle;
+      if (saved.pronouns) CHARACTERS.you.pronouns = saved.pronouns;
+      if (saved.vibe)     CHARACTERS.you.vibe     = saved.vibe;
+      if (saved.location) CHARACTERS.you.location = saved.location;
+      if (saved.project)  CHARACTERS.you.project  = saved.project;
+      if (saved.song)     CHARACTERS.you.song     = saved.song;
+      if (saved.pets)     CHARACTERS.you.pets     = saved.pets;
+      if (saved.food)     CHARACTERS.you.food     = saved.food;
+      if (saved.comfort)  CHARACTERS.you.comfort  = saved.comfort;
+      if (saved.hates)    CHARACTERS.you.hates    = saved.hates;
+      if (saved.freetext) CHARACTERS.you.freetext = saved.freetext;
+      if (saved.workTags) CHARACTERS.you.workTags = saved.workTags;
+      // FIX: restore portrait so You card shows photo after refresh
+      if (saved.portrait_base64) CHARACTERS.you.portrait_base64 = saved.portrait_base64;
     }
   }
 }
@@ -500,6 +543,30 @@ function renderPrintCard(print) {
       font-size:var(--font-size-base);cursor:pointer;letter-spacing:0.06em;
       transition:all 0.2s">🗑 delete</button>
   `;
+}
+
+// ── BUILD YOU CONTEXT ────────────────────────────────────────
+// Serializes the You card into a compact system prompt prefix
+// Called by chat.js to inject into every message's system prompt
+export function buildYouContext() {
+  const you = CHARACTERS.you;
+  if (!you) return '';
+  const parts = [];
+  if (you.handle)   parts.push(`The user's name is ${you.handle}.`);
+  if (you.pronouns) parts.push(`Pronouns: ${you.pronouns}.`);
+  if (you.vibe)     parts.push(`Their vibe: ${you.vibe}.`);
+  if (you.location) parts.push(`They're based around: ${you.location}.`);
+  if (you.arc)      parts.push(`What they're going through right now: ${you.arc}`);
+  if (you.project)  parts.push(`Currently working on: ${you.project}.`);
+  if (you.song)     parts.push(`Theme song right now: ${you.song}.`);
+  if (you.pets)     parts.push(`Pets: ${you.pets}.`);
+  if (you.food)     parts.push(`Fav food/drink: ${you.food}.`);
+  if (you.comfort)  parts.push(`Comfort show/game: ${you.comfort}.`);
+  if (you.hates)    parts.push(`Things they dislike: ${you.hates}.`);
+  if (you.workTags?.length) parts.push(`How they work: ${you.workTags.join(', ')}.`);
+  if (you.freetext) parts.push(you.freetext);
+  if (!parts.length) return '';
+  return 'About the person you are talking to:\n' + parts.join(' ') + '\n\n';
 }
 
 // ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────
