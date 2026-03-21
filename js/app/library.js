@@ -579,7 +579,7 @@ function renderLibrary() {
     return `
       <div class="lib-card" onclick="window.openPanelEditor('${p.id}')">
         <div class="lib-card-img-wrap">
-          <img src="${p.dataURL}" style="filter:${fObj.css}" loading="lazy" />
+          <img src="${p.dataURL}" style="filter:${fObj.css}" />
           ${p.caption?.text ? `<div class="lib-card-caption-dot" style="background:${color}"></div>` : ''}
         </div>
         <div class="lib-card-bar">
