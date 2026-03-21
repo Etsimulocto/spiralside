@@ -51,8 +51,11 @@ function smoothstep(f) {
 function resize() {
   if (!_cvs) return;
   const rect = _cvs.parentElement.getBoundingClientRect();
-  _cvs.width  = Math.round(rect.width);
-  _cvs.height = Math.round(rect.height);
+  // Guard: if parent has no dimensions yet, use offsetWidth fallback
+  const w = Math.round(rect.width)  || _cvs.parentElement.offsetWidth  || 320;
+  const h = Math.round(rect.height) || _cvs.parentElement.offsetHeight || 48;
+  _cvs.width  = w;
+  _cvs.height = h;
 }
 
 // ── DRAW FRAME ────────────────────────────────────────────────
