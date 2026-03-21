@@ -17,8 +17,7 @@ let _ctx = null;
 
 // ── READ ONE CSS VAR ──────────────────────────────────────────
 function cssVar(name) {
-  return getComputedStyle(document.documentElement)
-    .getPropertyValue(name).trim() || '#101014';
+  return (getComputedStyle(document.documentElement).getPropertyValue(name)||'').replace(/\s+/g,'') || '#101014';
 }
 
 // ── PARSE ANY CSS COLOR TO [r,g,b] ───────────────────────────
