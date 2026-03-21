@@ -1571,7 +1571,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.341</div>
+        <div class="version-badge" id="version-badge">v0.8.342</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
@@ -1761,104 +1761,10 @@
   <div class="view" id="view-music"></div>
 
 
-  <!-- LIBRARY VIEW -->
-  <div class="view" id="view-library">
-    <div id="lib-inner">
-      <div class="lib-tabs">
-        <button class="lib-tab active" data-tab="gallery">gallery</button>
-        <button class="lib-tab" data-tab="books">books</button>
-      </div>
-      <!-- GALLERY -->
-      <div id="lib-gallery-view" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
-        <div class="lib-toolbar">
-          <button class="lib-tool-btn" id="lib-add-btn">🖼 add image</button>
-        </div>
-        <div class="lib-gallery-scroll">
-          <div id="lib-grid">
-            <div class="lib-empty">
-              <div style="font-size:2.4rem;margin-bottom:12px">🖼</div>
-              <div>no images yet</div>
-              <div style="font-size:0.7rem;margin-top:6px;opacity:0.6">tap + to add your first panel</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- BOOKS -->
-      <div id="lib-books-view" style="display:none;flex-direction:column;flex:1;overflow:hidden">
-        <div class="lib-toolbar" style="padding-bottom:0">
-          <input class="book-title-input" id="book-title-input" placeholder="new book title..." />
-          <button class="book-create-btn" id="book-new-btn">＋ create</button>
-        </div>
-        <div id="lib-books-scroll" style="flex:1;overflow-y:auto;padding:12px 16px 80px">
-          <div id="lib-books-list">
-            <div class="lib-empty">
-              <div style="font-size:2rem;margin-bottom:10px">📖</div>
-              <div>no books yet</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <input type="file" id="lib-file-input" style="display:none" accept="image/*" multiple />
-  </div>
+  <!-- LIBRARY VIEW — HTML stamped by js/app/library.js initLibrary() -->
+  <div class="view" id="view-library"></div>
 
-  <!-- MUSIC VIEW -->
-  <div class="view" id="view-music"></div>
-
-  <!-- PANEL EDITOR OVERLAY -->
-  <div id="panel-editor-overlay">
-    <div class="pe-header">
-      <span class="pe-header-title">edit panel</span>
-      <button class="pe-close-btn" id="panel-editor-close">✕</button>
-    </div>
-    <div class="pe-body">
-      <div id="panel-editor-img-wrap">
-        <img id="panel-editor-img" src="" alt="panel" />
-      </div>
-
-      <div class="pe-section-label">filter</div>
-      <div class="pe-filter-row">
-        <button class="filter-chip active" data-filter="none">none</button>
-        <button class="filter-chip" data-filter="teal">teal</button>
-        <button class="filter-chip" data-filter="pink">pink</button>
-        <button class="filter-chip" data-filter="noir">noir</button>
-        <button class="filter-chip" data-filter="glitch">glitch</button>
-        <button class="filter-chip" data-filter="vignette">vignette</button>
-      </div>
-
-      <div class="pe-section-label">tag character</div>
-      <div class="pe-tag-row">
-        <button class="tag-chip active" data-tag="none">none</button>
-        <button class="tag-chip" data-tag="sky" style="color:#00F6D6">sky</button>
-        <button class="tag-chip" data-tag="monday" style="color:#FF4BCB">monday</button>
-        <button class="tag-chip" data-tag="cold" style="color:#4DA3FF">cold</button>
-        <button class="tag-chip" data-tag="grit" style="color:#FFD93D">grit</button>
-        <button class="tag-chip" data-tag="you" style="color:#7B5FFF">you</button>
-      </div>
-
-      <div class="pe-section-label">caption</div>
-      <div class="pe-caption-row">
-        <input class="pe-caption-speaker" id="panel-caption-speaker" placeholder="speaker name (or leave blank for narrator)" />
-        <textarea class="pe-caption-text" id="panel-caption-text" placeholder="dialogue or caption text..."></textarea>
-      </div>
-
-      <button class="pe-save-btn" id="panel-editor-save">save panel</button>
-    </div>
-  </div>
-
-  <!-- BOOK BUILDER OVERLAY -->
-  <div id="book-builder-overlay">
-    <div class="bb-header">
-      <span class="bb-title" id="book-builder-title">book</span>
-      <button class="bb-play-btn" id="book-play-btn">▶ play as comic</button>
-      <button class="bb-close-btn" id="book-builder-close">✕</button>
-    </div>
-    <div id="book-panel-queue">
-      <div class="lib-empty">add panels from the gallery</div>
-    </div>
-  </div>
-
-  <!-- FAB -->
+    <!-- FAB -->
   <div id="fab-container">
     <!-- Items injected by buildFAB() in ui.js -->
     <button id="fab-main" onclick="toggleFAB()">🌀</button>
