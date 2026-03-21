@@ -6,8 +6,8 @@
 // ============================================================
 
 const SKY_CONFIG = {
-  speed:    0.006,   // gradient cycle speed
-  opacity:  0.65,    // canvas opacity
+  speed:    0.0006,   // gradient cycle speed
+  opacity:  0.32,    // canvas opacity
   numDots:  32,      // total particles
   dotSpeed: 0.25,    // drift speed px/frame
 };
