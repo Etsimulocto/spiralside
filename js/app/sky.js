@@ -65,10 +65,10 @@ function smoothstep(f) {
 function getStates() {
   const bg   = cssVar('--bg');
   const teal = cssVar('--teal');
-  const purp = cssVar('--purple');
+  const purp = cssVar('--user-bubble');
   const pink = cssVar('--pink');
-  const blue = cssVar('--blue');
-  const yell = cssVar('--yellow');
+  const blue = cssVar('--bubble-user-bg');
+  const text = cssVar('--text');
   return [
     [bg,   teal, bg  ],   // teal center
     [purp, bg,   purp],   // purple wings
