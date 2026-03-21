@@ -104,6 +104,7 @@ window.closeWorldForm       = () => document.getElementById('codex-world-form-ov
 // ── APP READY ─────────────────────────────────────────────────
 // Called after auth check confirms a valid session
 async function onAppReady() {
+  initSky(); // living sky — Nimbis
   // 1. Open IndexedDB
   await initDB();
 
