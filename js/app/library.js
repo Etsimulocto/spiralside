@@ -137,6 +137,13 @@ function injectLibraryStyles() {
       letter-spacing:0.06em; white-space:nowrap; font-family:var(--font-ui);
     }
     .tl-close-btn { background:none; border:none; color:var(--subtext); font-size:1.2rem; cursor:pointer; padding:4px 6px; }
+    .tl-intro-btn {
+      padding:6px 10px; background:transparent; border:1px solid var(--border);
+      border-radius:20px; color:var(--subtext); font-size:0.62rem; font-family:var(--font-ui);
+      letter-spacing:0.06em; cursor:pointer; white-space:nowrap; transition:all 0.2s;
+    }
+    .tl-intro-btn:hover { border-color:var(--yellow); color:var(--yellow); }
+    .tl-intro-btn.is-intro { border-color:var(--yellow); color:var(--yellow); background:rgba(255,217,61,0.1); }
 
     /* filmstrip */
     .tl-strip-wrap {
@@ -345,6 +352,7 @@ function ensureOverlays() {
     tl.innerHTML = `
       <div class="tl-header">
         <span class="tl-title" id="tl-title">book</span>
+        <button class="tl-intro-btn" id="tl-make-intro" title="play this book on startup">⭐ make intro</button>
         <button class="tl-play-btn" id="tl-play-btn">▶ play</button>
         <button class="tl-close-btn" id="tl-close-btn">✕</button>
       </div>
@@ -524,6 +532,7 @@ function wireLibraryControls() {
 function wireTimeline() {
   document.getElementById('tl-close-btn').addEventListener('click', closeTimeline);
   document.getElementById('tl-play-btn').addEventListener('click', playTimeline);
+  document.getElementById('tl-make-intro').addEventListener('click', toggleBookIntro);
 
   // add buttons in empty state
   document.getElementById('se-add-image').addEventListener('click', () => openSlotEditor(null, 'image'));
@@ -705,6 +714,73 @@ export function openBookTimeline(id) {
   renderStrip(book);
   showSlotEmpty();
   document.getElementById('timeline-overlay').classList.add('open');
+  updateIntroBtn();  // reflect whether this book is the current intro
+}
+
+// ── INTRO BOOK SETTING ───────────────────────────────────────
+// Saves/clears intro_book_id in IDB config store
+// Read by _peekIDBConfig in main.js tryUserBookIntro
+
+function _setIDBConfig(key, value) {
+  return new Promise(resolve => {
+    try {
+      const req = indexedDB.open('spiralside');
+      req.onsuccess = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('config')) { db.close(); resolve(); return; }
+        const tx = db.transaction('config', 'readwrite');
+        tx.objectStore('config').put({ key, value });
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror    = () => { db.close(); resolve(); };
+      };
+      req.onerror = () => resolve();
+    } catch(e) { resolve(); }
+  });
+}
+
+function _getIDBConfig(key) {
+  return new Promise(resolve => {
+    try {
+      const req = indexedDB.open('spiralside');
+      req.onsuccess = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('config')) { db.close(); resolve(null); return; }
+        const tx  = db.transaction('config', 'readonly');
+        const get = tx.objectStore('config').get(key);
+        get.onsuccess = () => { db.close(); resolve(get.result?.value ?? null); };
+        get.onerror   = () => { db.close(); resolve(null); };
+      };
+      req.onerror = () => resolve(null);
+    } catch(e) { resolve(null); }
+  });
+}
+
+async function updateIntroBtn() {
+  const btn = document.getElementById('tl-make-intro');
+  if (!btn) return;
+  const currentIntroId = await _getIDBConfig('intro_book_id');
+  const isIntro = currentIntroId === viewingBookId;
+  btn.classList.toggle('is-intro', isIntro);
+  btn.textContent = isIntro ? '⭐ is intro' : '⭐ make intro';
+  btn.title = isIntro ? 'tap to restore default intro' : 'play this book on startup';
+}
+
+async function toggleBookIntro() {
+  const currentIntroId = await _getIDBConfig('intro_book_id');
+  if (currentIntroId === viewingBookId) {
+    // already set — clear it (restore default intro)
+    await _setIDBConfig('intro_book_id', null);
+    updateIntroBtn();
+    // brief feedback
+    const btn = document.getElementById('tl-make-intro');
+    if (btn) { btn.textContent = '✓ restored default'; setTimeout(() => updateIntroBtn(), 1200); }
+  } else {
+    // set this book as intro
+    await _setIDBConfig('intro_book_id', viewingBookId);
+    updateIntroBtn();
+    const btn = document.getElementById('tl-make-intro');
+    if (btn) { btn.textContent = '✓ set as intro!'; setTimeout(() => updateIntroBtn(), 1200); }
+  }
 }
 
 function closeTimeline() {

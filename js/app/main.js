@@ -167,10 +167,17 @@ listenAuthChanges();
 async function tryUserBookIntro(fallbackCallback) {
   try {
     const books = await _peekIDBBooks();
-    // find most recent book that has at least 1 slot with content
+    const introId = await _peekIDBConfig('intro_book_id');
+    // prefer explicitly set intro book, then fall back to most recent with content
     const valid = (books || [])
       .filter(b => b.slots && b.slots.some(s => s.type === 'image' || (s.type === 'text' && s.text)))
-      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      .sort((a, b) => {
+        if (introId) {
+          if (a.id === introId) return -1;
+          if (b.id === introId) return  1;
+        }
+        return (b.createdAt || 0) - (a.createdAt || 0);
+      });
     if (valid.length) {
       const book = valid[0];
       // build comic panels from slots — images need panels store lookup
@@ -246,6 +253,22 @@ function _peekIDB(storeName) {
 }
 function _peekIDBBooks()  { return _peekIDB('books'); }
 function _peekIDBPanels() { return _peekIDB('panels'); }
+function _peekIDBConfig(key) {
+  return new Promise(resolve => {
+    try {
+      const req = indexedDB.open('spiralside');
+      req.onsuccess = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('config')) { db.close(); resolve(null); return; }
+        const tx  = db.transaction('config', 'readonly');
+        const get = tx.objectStore('config').get(key);
+        get.onsuccess = () => { db.close(); resolve(get.result?.value ?? null); };
+        get.onerror   = () => { db.close(); resolve(null); };
+      };
+      req.onerror = () => resolve(null);
+    } catch(e) { resolve(null); }
+  });
+}
 
 // Boot: play user book intro if available, then normal auth flow
 initComic(() => checkAuthAndShow(async (user) => {
