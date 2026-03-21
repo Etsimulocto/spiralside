@@ -1,4 +1,11 @@
-// ============================================================
+# ============================================================
+# SPIRALSIDE — SKY CSS-VAR REWRITE
+# Sky reads colors from the live CSS custom properties
+# so it always matches the user's Style theme
+# Run from ~/spiralside
+# ============================================================
+
+SKY_JS = r"""// ============================================================
 // SPIRALSIDE — LIVING SKY v1.2
 // Reads colors from CSS custom properties — matches Style theme
 // Nimbis anchor: js/app/sky.js
@@ -144,3 +151,10 @@ export function rebuildSky() {
 export function stopSky() {
   if (_raf) { cancelAnimationFrame(_raf); _raf = null; }
 }
+"""
+
+with open('js/app/sky.js', 'w', encoding='utf-8') as f:
+    f.write(SKY_JS)
+print('[sky.js] rewritten — reads CSS vars for colors')
+print()
+print('git add . && git commit -m "feat: sky reads CSS vars — matches Style theme" && git push --force origin main')
