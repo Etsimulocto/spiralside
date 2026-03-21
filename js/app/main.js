@@ -6,6 +6,7 @@
 // ============================================================
 
 import { initComic, playCustomComic }              from './comic.js';
+import { initSky } from './sky.js';
 import { sb, checkAuthAndShow, listenAuthChanges,
          handleLogin, handleSignup, handleSignout,
          switchAuthTab, togglePw }                 from './auth.js';

@@ -1,16 +1,16 @@
 # ============================================================
-# SPIRALSIDE — SKY MODULE PATCH v2
-# Creates js/app/sky.js and patches index.html
+# SPIRALSIDE — SKY MODULE PATCH v3 (final)
+# Targets <div id="app-header"> in index.html
 # Run from ~/spiralside in Git Bash
 # Nimbis anchor: patch_sky.py
 # ============================================================
 
-import os, sys, re
+import os, sys
 
 ROOT = os.getcwd()
 print(f'[root] {ROOT}')
 
-# ── STEP 1: WRITE js/app/sky.js ──────────────────────────────────────────────
+# ── STEP 1: WRITE js/app/sky.js ──────────────────────────────
 
 SKY_JS = r"""// ============================================================
 // SPIRALSIDE — LIVING SKY v1.0
@@ -22,8 +22,8 @@ SKY_JS = r"""// ============================================================
 // ── CONFIG — tweak these freely ──────────────────────────────
 const SKY_CONFIG = {
   speed:   0.0015,   // cycle speed — lower = slower drift
-  opacity: 0.30,     // canvas opacity over header bg
-  // Each state is [left-color, mid-color, right-color]
+  opacity: 0.30,     // canvas opacity layered over header bg
+  // Each state: [left-color, mid-color, right-color]
   states: [
     ['#1a0a2e', '#0d1a3d', '#101014'],   // deep night purple-blue
     ['#0d2a4a', '#1a3a6e', '#0a1520'],   // pre-dawn deep blue
@@ -34,7 +34,7 @@ const SKY_CONFIG = {
   ],
 };
 
-// ── STATE ─────────────────────────────────────────────────────
+// ── INTERNAL STATE ────────────────────────────────────────────
 let _t   = 0;
 let _raf = null;
 let _cvs = null;
@@ -56,7 +56,7 @@ function lerpColor(c1, c2, f) {
   return `rgb(${Math.round(lerp(a[0],b[0],f))},${Math.round(lerp(a[1],b[1],f))},${Math.round(lerp(a[2],b[2],f))})`;
 }
 
-// Smooth cubic ease in-out so state transitions feel organic
+// Smooth cubic ease so state transitions feel organic, not linear
 function smoothstep(f) {
   return f < 0.5 ? 4*f*f*f : 1 - Math.pow(-2*f + 2, 3) / 2;
 }
@@ -107,7 +107,7 @@ function frame() {
 export function initSky() {
   _cvs = document.getElementById('sky-canvas');
   if (!_cvs) {
-    console.warn('[sky] #sky-canvas not found in DOM');
+    console.warn('[sky] #sky-canvas not found — skipping');
     return;
   }
   _cvs.style.opacity = SKY_CONFIG.opacity;
@@ -128,91 +128,107 @@ sky_path = os.path.join(ROOT, 'js', 'app', 'sky.js')
 os.makedirs(os.path.dirname(sky_path), exist_ok=True)
 with open(sky_path, 'w', encoding='utf-8') as f:
     f.write(SKY_JS)
-print(f'[1/3] wrote {sky_path}')
+print(f'[1] wrote {sky_path}')
 
 
-# ── STEP 2: PATCH index.html ─────────────────────────────────────────────────
+# ── STEP 2: PATCH index.html ──────────────────────────────────
 
 html_path = os.path.join(ROOT, 'index.html')
 with open(html_path, 'r', encoding='utf-8') as f:
     html = f.read()
 
-# Debug: show what the header line actually looks like
-header_match = re.search(r'<header[^>]*>', html)
-if header_match:
-    print(f'[debug] found header tag: {repr(header_match.group())}')
-else:
-    print('[debug] NO <header> tag found — dumping first 3000 chars:')
-    print(repr(html[:3000]))
-    sys.exit(1)
-
-# ── 2a: inject <canvas> into <header> ────────────────────────
-CANVAS_TAG = '\n  <canvas id="sky-canvas"></canvas>'
+# 2a — canvas as first child of #app-header
+OLD_HEADER_DIV = '<div id="app-header">'
+NEW_HEADER_DIV = '<div id="app-header">\n    <canvas id="sky-canvas"></canvas>'
 
 if 'id="sky-canvas"' in html:
-    print('[2a] sky-canvas already present — skipping')
+    print('[2a] #sky-canvas already present — skipping')
+elif OLD_HEADER_DIV not in html:
+    print(f'[2a] ERROR: could not find {repr(OLD_HEADER_DIV)}')
+    sys.exit(1)
 else:
-    old_tag = header_match.group()
-    new_tag = old_tag + CANVAS_TAG
-    html = html.replace(old_tag, new_tag, 1)
-    print('[2a] injected #sky-canvas into <header>')
+    html = html.replace(OLD_HEADER_DIV, NEW_HEADER_DIV, 1)
+    print('[2a] injected #sky-canvas into #app-header')
 
-# ── 2b: inject CSS ────────────────────────────────────────────
+# 2b — CSS rules for the canvas
+# #app-header already has position:relative; overflow:hidden in the live CSS
 SKY_CSS = """
     /* ── LIVING SKY ── */
-    header { position:relative; overflow:hidden; }
     #sky-canvas {
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      z-index:0; pointer-events:none;
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
     }
-    header > *:not(#sky-canvas) { position:relative; z-index:1; }
+    #app-header > *:not(#sky-canvas) { position: relative; z-index: 1; }
 """
 
-style_close = '</style>'
-if 'pointer-events:none;' in html:
+if 'pointer-events: none' in html:
     print('[2b] sky CSS already present — skipping')
-elif style_close in html:
-    html = html.replace(style_close, SKY_CSS + style_close, 1)
+elif '</style>' in html:
+    html = html.replace('</style>', SKY_CSS + '  </style>', 1)
     print('[2b] injected sky CSS')
 else:
     print('[2b] ERROR: no </style> found')
     sys.exit(1)
 
-# ── 2c: import + initSky() call ──────────────────────────────
-module_match = re.search(r'(import \{ init \} from ["\']\.\/js\/comic\/viewer\.js["\'];)', html)
-if 'initSky' in html:
-    print('[2c-import] already present — skipping')
-elif module_match:
-    old = module_match.group(1)
-    new = old + '\n    import { initSky } from "./js/app/sky.js";'
-    html = html.replace(old, new, 1)
-    print('[2c-import] injected sky import')
-else:
-    mod_script = re.search(r'(<script type=["\']module["\'][^>]*>)(.*?)(</script>)', html, re.DOTALL)
-    if mod_script:
-        inner = mod_script.group(2)
-        new_inner = inner.rstrip() + '\n    import { initSky } from "./js/app/sky.js";\n'
-        html = html.replace(mod_script.group(0), mod_script.group(1) + new_inner + mod_script.group(3), 1)
-        print('[2c-import] injected sky import via fallback')
-    else:
-        print('[2c-import] WARNING: could not find module script — add import manually')
-
-OLD_SHOW = "document.getElementById('app').classList.add('visible');"
-if 'initSky()' in html:
-    print('[2c-call] initSky() already present — skipping')
-elif OLD_SHOW in html:
-    html = html.replace(OLD_SHOW, OLD_SHOW + "\n  initSky();", 1)
-    print('[2c-call] injected initSky() in showApp()')
-else:
-    print('[2c-call] WARNING: could not find showApp anchor — add initSky() manually')
-
-# ── WRITE ─────────────────────────────────────────────────────
 with open(html_path, 'w', encoding='utf-8') as f:
     f.write(html)
-print(f'[3/3] wrote {html_path}')
+print(f'[2] wrote index.html')
+
+
+# ── STEP 3: WIRE INTO main.js ─────────────────────────────────
+
+main_path = os.path.join(ROOT, 'js', 'app', 'main.js')
+with open(main_path, 'r', encoding='utf-8') as f:
+    main = f.read()
+
+# 3a — import
+SKY_IMPORT = "import { initSky } from './sky.js';\n"
+
+if 'initSky' in main:
+    print('[3a] sky import already in main.js — skipping')
+else:
+    first_import = main.find('import ')
+    if first_import == -1:
+        main = SKY_IMPORT + main
+    else:
+        eol = main.find('\n', first_import)
+        main = main[:eol+1] + SKY_IMPORT + main[eol+1:]
+    print('[3a] injected sky import into main.js')
+
+# 3b — call initSky() — try anchors in preference order
+SKY_CALL = '\n  initSky(); // living sky'
+
+if 'initSky()' in main:
+    print('[3b] initSky() call already present — skipping')
+else:
+    anchors = [
+        "classList.add('visible')",
+        'classList.remove("hidden")',
+        "classList.remove('hidden')",
+        "style.display = 'flex'",
+        "style.display='flex'",
+        'showApp(',
+    ]
+    injected = False
+    for anchor in anchors:
+        idx = main.find(anchor)
+        if idx != -1:
+            eol = main.find('\n', idx)
+            if eol == -1: eol = len(main)
+            main = main[:eol] + SKY_CALL + main[eol:]
+            print(f'[3b] initSky() injected after: {repr(anchor)}')
+            injected = True
+            break
+    if not injected:
+        main += '\ninitSky(); // living sky\n'
+        print('[3b] WARNING: appended initSky() at end of main.js — may need manual placement')
+
+with open(main_path, 'w', encoding='utf-8') as f:
+    f.write(main)
+print(f'[3] wrote main.js')
 
 print()
 print('=== PATCH COMPLETE ===')
-print('Next:')
+print('Run:')
 print('  git add . && git commit -m "feat: living sky header module" && git push --force origin main')
