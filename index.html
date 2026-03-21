@@ -319,6 +319,15 @@
       background: var(--bg); flex-shrink: 0; position: relative; overflow: hidden;
       gap: 6px; flex-wrap: nowrap;
     }
+    /* ── LIVING SKY ── */
+    #sky-canvas {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+      display: block;
+    }
+    #app-header > *:not(#sky-canvas) { position: relative; z-index: 1; }
+
     .header-glow {
       position: absolute; width: 200px; height: 60px; border-radius: 50%;
       background: var(--teal); filter: blur(60px); opacity: 0.06;
@@ -1540,7 +1549,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.301</div>
+      <div class="version-badge" id="version-badge">v0.8.302</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
       </div>
