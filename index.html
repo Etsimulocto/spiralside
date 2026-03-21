@@ -1455,6 +1455,24 @@
       display: block;
       opacity: 0.7;
     }
+  
+    /* ── HEADER SCROLL TRACK ── */
+    .header-scroll-track {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+      animation: headerDrift 28s linear infinite;
+    }
+    @keyframes headerDrift {
+      0%   { transform: translateX(0%); }
+      40%  { transform: translateX(-8%); }
+      60%  { transform: translateX(-8%); }
+      100% { transform: translateX(0%); }
+    }
+    /* pause drift on hover/touch */
+    .header-scroll-track:hover { animation-play-state: paused; }
   </style>
 </head>
 <body>
@@ -1554,13 +1572,15 @@
   <div id="app-header">
     <canvas id="sky-canvas"></canvas>
     <div class="header-glow" id="header-glow"></div>
-    <div class="header-logo-row">
-      <div class="app-logo">spiralside</div>
-    </div>
-    <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.327</div>
-      <div class="header-right">
-        <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
+    <div class="header-scroll-track">
+      <div class="header-logo-row">
+        <div class="app-logo">spiralside</div>
+      </div>
+      <div class="header-controls-row">
+        <div class="version-badge" id="version-badge">v0.8.328</div>
+        <div class="header-right">
+          <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
+        </div>
       </div>
     </div>
   </div>
