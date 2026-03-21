@@ -152,7 +152,7 @@ export function applyThemePreset(id) {
 export function previewColor(key, val) {
   pendingStyle[key] = val;
   // Live-update CSS var so sky + other reactive elements see it immediately
-  const CSS_VAR_MAP = {bg:"--bg",surface:"--surface",teal:"--teal",pink:"--pink",userbubble:"--userbubble",text:"--text",subtext:"--subtext",border:"--border",botbubble:"--botbubble"};
+  const CSS_VAR_MAP = {bg:"--bg",surface:"--surface",teal:"--teal",pink:"--pink",purple:"--purple",userbubble:"--user-bubble",text:"--text",subtext:"--subtext",border:"--border",botbubble:"--botbubble"};
   if (CSS_VAR_MAP[key]) document.documentElement.style.setProperty(CSS_VAR_MAP[key], val);
   // All swatch IDs — panel (old) + view (new)
   const swatchIds = {
