@@ -152,9 +152,21 @@ async function _generate() {
     resEl.innerHTML = `
       <div class="im-result-meta">${meta}</div>
       <img class="im-result-img" src="${url}" alt="generated" />
-      <button class="im-save-btn" id="im-save">💾 save image</button>`;
+      <button class="im-save-btn" id="im-save">💾 save image</button>
+      <button class="im-save-btn" id="im-to-lib" style="margin-top:6px;border-color:var(--pink);color:var(--pink)">📚 save to library</button>`;
     document.getElementById('im-save')?.addEventListener('click', () => {
       const a = document.createElement('a'); a.href = url; a.download = 'spiralside-gen.png'; a.click();
+    });
+    // Save to library — calls window.saveImageToLibrary from library.js
+    document.getElementById('im-to-lib')?.addEventListener('click', async () => {
+      const btn = document.getElementById('im-to-lib');
+      if (!btn) return;
+      btn.textContent = '✓ saved to library!';
+      btn.disabled = true;
+      if (window.saveImageToLibrary) {
+        await window.saveImageToLibrary(url, 'generated-' + Date.now() + '.png');
+      }
+      setTimeout(() => { if (btn) { btn.textContent = '📚 save to library'; btn.disabled = false; } }, 1800);
     });
   } catch(e) {
     errEl.textContent = e.message;
