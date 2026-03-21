@@ -1,4 +1,15 @@
-// ============================================================
+#!/usr/bin/env python3
+# _patch_timeline.py
+# Rewrites js/app/library.js with a proper timeline editor
+# Replaces the old up/down queue with a horizontal filmstrip timeline
+# Each slot: image panel OR text card OR empty + slot
+# Slot editor slides up from bottom (no full-screen overlay)
+
+import os
+
+PATH = os.path.expanduser('~/spiralside/js/app/library.js')
+
+NEW = r'''// ============================================================
 // SPIRALSIDE — LIBRARY v3.0
 // Gallery + Timeline book builder
 // Timeline: horizontal filmstrip, image/text slots, slot editor
@@ -1055,3 +1066,44 @@ export function addPanelToBook(panelId) {
 }
 export function removePanelFromBook() {}
 export function movePanelInBook() {}
+'''
+
+with open(PATH, 'w', encoding='utf-8') as f:
+    f.write(NEW)
+
+# Verify key sections
+with open(PATH, 'r', encoding='utf-8') as f:
+    c = f.read()
+
+checks = [
+    'openBookTimeline', 'renderStrip', 'showImagePicker',
+    'showTextEditor', 'saveImageSlot', 'saveTextSlot',
+    'deleteCurrentSlot', 'tl-strip', 'se-picker-grid',
+    'playTimeline', 'saveImageToLibrary', 'handleSlotUpload',
+]
+for k in checks:
+    print(f'[{"OK" if k in c else "MISSING"}] {k}')
+
+# Also update main.js to expose openBookTimeline
+main_path = PATH.replace('js/app/library.js', 'js/app/main.js')
+with open(main_path, 'r', encoding='utf-8') as f:
+    main = f.read()
+
+OLD = "window.openBookBuilder   = openBookBuilder;"
+NEW_LINE = "window.openBookBuilder   = openBookBuilder;\nwindow.openBookTimeline  = openBookTimeline;"
+
+if OLD in main and 'openBookTimeline' not in main:
+    # also need to import it
+    main = main.replace(
+        "         deleteBook, saveImageToLibrary }          from './library.js';",
+        "         deleteBook, saveImageToLibrary,\n         openBookTimeline }              from './library.js';"
+    )
+    main = main.replace(OLD, NEW_LINE)
+    with open(main_path, 'w', encoding='utf-8') as f:
+        f.write(main)
+    print('[OK] main.js: openBookTimeline imported + exposed')
+else:
+    print('[SKIP] main.js already has openBookTimeline or OLD anchor not found')
+
+print('\n[DONE] Push with:')
+print('  git add . && git commit -m "feat: timeline book builder v1" && git push --force origin main')

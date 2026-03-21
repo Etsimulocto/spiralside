@@ -26,7 +26,8 @@ import { initCodex, openSceneForm, openWorldForm,
 import { initLibrary, openPanelEditor, deletePanel,
          openBookBuilder, addPanelToBook,
          removePanelFromBook, movePanelInBook,
-         deleteBook, saveImageToLibrary }          from './library.js';
+         deleteBook, saveImageToLibrary,
+         openBookTimeline }              from './library.js';
 import { buildFAB, toggleFAB, switchView, setFontSize, loadFontSize,
 
          loadUsage, updateCreditDisplay,
@@ -90,6 +91,7 @@ window.removeFile        = removeFile;
 window.openPanelEditor   = openPanelEditor;
 window.deletePanel       = deletePanel;
 window.openBookBuilder   = openBookBuilder;
+window.openBookTimeline  = openBookTimeline;
 window.addPanelToBook    = addPanelToBook;
 window.removePanelFromBook = removePanelFromBook;
 window.movePanelInBook   = movePanelInBook;
