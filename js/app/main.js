@@ -6,6 +6,7 @@
 // ============================================================
 
 import { initComic, playCustomComic }              from './comic.js';
+import { initColorSketches } from './colorSketches.js';
 import { initSky } from './sky.js';
 import { sb, checkAuthAndShow, listenAuthChanges,
          handleLogin, handleSignup, handleSignout,
@@ -44,6 +45,7 @@ import { initVaultView } from './views/vault.js';
 
 // ── EXPOSE GLOBALS ────────────────────────────────────────────
 // HTML onclick attributes need these on window.
+window.initColorSketches = initColorSketches;
 // Only expose what's called from inline HTML.
 window.switchAuthTab     = switchAuthTab;
 window.togglePw          = togglePw;
