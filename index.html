@@ -319,23 +319,11 @@
       background: var(--bg); flex-shrink: 0; position: relative; overflow: hidden;
       gap: 6px; flex-wrap: nowrap;
     }
-    /* ── LIVING SKY ── */
     #sky-canvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      z-index: 0;
-      pointer-events: none;
-      display: block;
-      background: transparent;
-    }
-    #app-header > *:not(#sky-canvas) { position: relative; z-index: 1; }
-    #sky-canvas {
-      position: absolute;
-      top: 0; left: 0;
+      position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
       z-index: 0; pointer-events: none;
-      display: block;
+      display: block; background: transparent;
     }
     #app-header > *:not(#sky-canvas) { position: relative; z-index: 1; }
 
@@ -1561,7 +1549,7 @@
       <div class="app-logo">spiralside</div>
     </div>
     <div class="header-controls-row">
-      <div class="version-badge" id="version-badge">v0.8.308</div>
+      <div class="version-badge" id="version-badge">v0.8.309</div>
       <div class="header-right">
         <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
       </div>
