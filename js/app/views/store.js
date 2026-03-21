@@ -97,7 +97,7 @@ export function initStoreView() {
       <div class="feature-row"><div class="feature-icon">◎</div><div class="feature-name">chat — sky / 4o<div class="feature-sub">character · cost+17%</div></div><div class="feature-cost">~23 cr</div></div>
       <div class="feature-row"><div class="feature-icon">✦</div><div class="feature-name">chat — sonnet<div class="feature-sub">smart · cost+17%</div></div><div class="feature-cost">~527 cr</div></div>
       <div class="feature-row"><div class="feature-icon">🎨</div><div class="feature-name">image generation<div class="feature-sub">flux schnell</div></div><div class="feature-cost">500 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">🖣️</div><div class="feature-name">text to speech<div class="feature-sub">chatterbox</div></div><div class="feature-cost">200 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">🎙️</div><div class="feature-name">text to speech<div class="feature-sub">elevenlabs · sky only</div></div><div class="feature-cost">~2 cr</div></div>
       <div class="feature-row"><div class="feature-icon">🎤</div><div class="feature-name">speech to text<div class="feature-sub">browser native · free</div></div><div class="feature-cost">0 cr</div></div>
       <div class="feature-row"><div class="feature-icon">📹</div><div class="feature-name">video generation<div class="feature-sub">wan 2.2</div></div><div class="feature-cost">2,000 cr</div></div>
       <div class="view-section-title" style="margin-top:24px;">gift credits</div>
