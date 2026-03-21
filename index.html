@@ -1456,15 +1456,25 @@
       opacity: 0.7;
     }
   
-    /* ── HEADER FLOATERS ── */
-    .header-logo-row, .header-controls-row {
-      position: absolute; inset: 0;
-      display: flex; align-items: center;
-      pointer-events: none;
+    /* ── HEADER ELEMENT DRIFT ── */
+    @keyframes driftRight {
+      0%   { transform: translateX(-30px); }
+      50%  { transform: translateX(30px);  }
+      100% { transform: translateX(-30px); }
     }
-    .header-logo-row { justify-content: center; }
-    .header-controls-row { justify-content: flex-end; padding-right: 14px; gap: 8px; }
-    .hdr-float { pointer-events: all; position: relative; z-index: 2; }
+    @keyframes driftLeft {
+      0%   { transform: translateX(20px);  }
+      50%  { transform: translateX(-20px); }
+      100% { transform: translateX(20px);  }
+    }
+    @keyframes driftRightFast {
+      0%   { transform: translateX(-15px); }
+      50%  { transform: translateX(15px);  }
+      100% { transform: translateX(-15px); }
+    }
+    .app-logo      { animation: driftRight      18s ease-in-out infinite; display: inline-block; }
+    .version-badge { animation: driftLeft       24s ease-in-out infinite; display: inline-block; }
+    .credits-badge { animation: driftRightFast  14s ease-in-out infinite; display: inline-block; }
   </style>
 </head>
 <body>
@@ -1565,12 +1575,12 @@
     <canvas id="sky-canvas"></canvas>
     <div class="header-glow" id="header-glow"></div>
         <div class="header-logo-row">
-        <div class="app-logo hdr-float" id="hdr-logo">spiralside</div>
+        <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge hdr-float" id="hdr-version">v0.8.329</div>
+        <div class="version-badge" id="version-badge">v0.8.330</div>
         <div class="header-right">
-          <div class="credits-badge hdr-float" id="hdr-credits" onclick="switchView('store')">∞ free</div>
+          <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
   </div>
@@ -2640,80 +2650,6 @@
     });
     styleObserver.observe(document.body, { childList: true, subtree: true });
   });
-
-
-  // ── HEADER FLOATERS ──────────────────────────────────────────
-  // Each element drifts independently, loops across the header
-  (function() {
-    const floaters = [
-      { id: 'hdr-logo',    speed: 0.18,  dir: 1  },
-      { id: 'hdr-version', speed: 0.09,  dir: -1 },
-      { id: 'hdr-credits', speed: 0.13,  dir: 1  },
-    ];
-    let headerW = 0;
-    let mouseX = null;
-    let states = [];
-
-    function init() {
-      const header = document.getElementById('app-header');
-      if (!header) return;
-      headerW = header.offsetWidth;
-
-      states = floaters.map((f, i) => {
-        const el = document.getElementById(f.id);
-        if (!el) return null;
-        // stagger starting positions
-        const startX = (headerW / floaters.length) * i + headerW * 0.1;
-        return { el, speed: f.speed, dir: f.dir, x: startX, w: 0 };
-      }).filter(Boolean);
-
-      // measure widths after render
-      requestAnimationFrame(() => {
-        states.forEach(s => { s.w = s.el.offsetWidth + 20; });
-        tick();
-      });
-
-      // touch/mouse push
-      header.addEventListener('mousemove', e => { mouseX = e.clientX; });
-      header.addEventListener('touchmove', e => {
-        mouseX = e.touches[0].clientX;
-        e.preventDefault();
-      }, { passive: false });
-      header.addEventListener('mouseleave', () => { mouseX = null; });
-
-      window.addEventListener('resize', () => { headerW = header.offsetWidth; });
-    }
-
-    function tick() {
-      states.forEach(s => {
-        // drift
-        s.x += s.speed * s.dir;
-
-        // mouse repulsion — nudge away from cursor
-        if (mouseX !== null) {
-          const cx = s.x + s.w / 2;
-          const dx = cx - mouseX;
-          if (Math.abs(dx) < 80) {
-            s.x += dx > 0 ? 1.5 : -1.5;
-          }
-        }
-
-        // wrap around
-        if (s.dir > 0 && s.x > headerW + 20) s.x = -s.w;
-        if (s.dir < 0 && s.x < -s.w - 20) s.x = headerW + 20;
-
-        s.el.style.transform = `translateX(${Math.round(s.x)}px)`;
-        s.el.style.position  = 'absolute';
-        s.el.style.left      = '0';
-        s.el.style.top       = '50%';
-        s.el.style.transform = `translateX(${Math.round(s.x)}px) translateY(-50%)`;
-        s.el.style.whiteSpace = 'nowrap';
-      });
-      requestAnimationFrame(tick);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 600));
-  })();
 
 </body>
 </html>
