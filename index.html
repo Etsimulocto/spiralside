@@ -1457,24 +1457,17 @@
     }
   
     /* ── HEADER ELEMENT DRIFT ── */
-    @keyframes driftRight {
-      0%   { transform: translateX(-30px); }
-      50%  { transform: translateX(30px);  }
-      100% { transform: translateX(-30px); }
+    @keyframes scrollRight {
+      0%   { transform: translateX(-110vw); }
+      100% { transform: translateX(110vw);  }
     }
-    @keyframes driftLeft {
-      0%   { transform: translateX(20px);  }
-      50%  { transform: translateX(-20px); }
-      100% { transform: translateX(20px);  }
+    @keyframes scrollLeft {
+      0%   { transform: translateX(110vw);  }
+      100% { transform: translateX(-110vw); }
     }
-    @keyframes driftRightFast {
-      0%   { transform: translateX(-15px); }
-      50%  { transform: translateX(15px);  }
-      100% { transform: translateX(-15px); }
-    }
-    .app-logo      { animation: driftRight      18s ease-in-out infinite; display: inline-block; }
-    .version-badge { animation: driftLeft       24s ease-in-out infinite; display: inline-block; }
-    .credits-badge { animation: driftRightFast  14s ease-in-out infinite; display: inline-block; }
+    .app-logo      { animation: scrollRight 22s linear infinite; display: inline-block; }
+    .version-badge { animation: scrollLeft  30s linear infinite; display: inline-block; }
+    .credits-badge { animation: scrollRight 17s linear infinite; display: inline-block; }
   </style>
 </head>
 <body>
@@ -1578,7 +1571,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.330</div>
+        <div class="version-badge" id="version-badge">v0.8.331</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
