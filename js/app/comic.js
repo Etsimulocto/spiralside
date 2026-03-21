@@ -82,6 +82,8 @@ function comicRender(idx, onFinish) {
   bg.style.cssText = p.image
     ? 'background-image:url(' + p.image + ');background-size:cover;background-position:center;'
     : 'background:' + p.bg_gradient + ';';
+  // apply filter effect if panel has one (from timeline slot editor)
+  bg.style.filter = (p.filter_css && p.filter_css !== 'none') ? p.filter_css : '';
 
   void bg.offsetWidth;
   bg.classList.add(p.transition || 'fade');
