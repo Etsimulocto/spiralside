@@ -1,7 +1,8 @@
 // ============================================================
-// SPIRALSIDE — ACCOUNT VIEW v2.0
+// SPIRALSIDE — ACCOUNT VIEW v2.1
 // Full module — owns its own HTML and CSS like store.js
 // Nimbis anchor: js/app/views/account.js
+// Added: About section at bottom with legal links + version
 // ============================================================
 import { state } from '../state.js';
 
@@ -26,6 +27,17 @@ function injectAccountStyles() {
     .acct-signout-btn:hover { border-color: var(--accent2); color: var(--accent2); }
     .acct-buy-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--teal), var(--accent)); border: none; border-radius: 12px; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.2s; display: block; }
     .acct-buy-btn:hover { opacity: 0.88; }
+
+    /* ── About section ── */
+    .acct-about-block { margin-top: 8px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; }
+    .acct-about-tagline { font-size: 0.75rem; color: var(--subtext); line-height: 1.5; margin-bottom: 14px; }
+    .acct-about-links { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .acct-about-link { font-size: 0.75rem; color: var(--teal); text-decoration: none; letter-spacing: 0.02em; opacity: 0.85; transition: opacity 0.2s; }
+    .acct-about-link:hover { opacity: 1; text-decoration: underline; }
+    .acct-about-contact { font-size: 0.7rem; color: var(--subtext); line-height: 1.6; }
+    .acct-about-contact a { color: var(--subtext); text-decoration: none; }
+    .acct-about-contact a:hover { color: var(--teal); }
+    .acct-version { font-size: 0.6rem; letter-spacing: 0.1em; color: var(--subtext); opacity: 0.4; text-align: center; margin-top: 12px; }
   `;
   document.head.appendChild(s);
 }
@@ -38,18 +50,45 @@ export function initAccountView() {
     initialized = true;
     el.innerHTML = `
       <div class="acct-scroll">
+
+        <!-- ── Avatar + email ── -->
         <div class="acct-avatar-wrap">
           <div class="acct-avatar" id="acct-avatar-initial">?</div>
           <div class="acct-email" id="acct-email">—</div>
         </div>
+
+        <!-- ── Credits ── -->
         <div class="acct-section-title">credits</div>
         <div class="acct-credit-hero">
           <div class="acct-credit-amount" id="account-credits">0</div>
           <div class="acct-credit-label">credits remaining</div>
         </div>
+
+        <!-- ── Account actions ── -->
         <div class="acct-section-title">account</div>
         <button class="acct-signout-btn" onclick="window.handleSignout()">sign out</button>
         <button class="acct-buy-btn" onclick="window.switchView('store')">buy credits</button>
+
+        <!-- ── About ── -->
+        <div class="acct-section-title">about</div>
+        <div class="acct-about-block">
+          <p class="acct-about-tagline">
+            Spiralside is your space. Everything you create here belongs to you —
+            we don't own it, train on it, or sell it. Ever.
+          </p>
+          <div class="acct-about-links">
+            <a class="acct-about-link" href="https://spiralside.com/terms" target="_blank" rel="noopener">Terms of Service</a>
+            <a class="acct-about-link" href="https://spiralside.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>
+            <a class="acct-about-link" href="https://spiralside.com/disclaimer" target="_blank" rel="noopener">Liability Disclaimer</a>
+          </div>
+          <div class="acct-about-contact">
+            Questions? <a href="mailto:support@spiralside.com">support@spiralside.com</a><br>
+            Legal: <a href="mailto:legal@spiralside.com">legal@spiralside.com</a><br>
+            Complaints: <a href="mailto:complaints@spiralside.com">complaints@spiralside.com</a>
+          </div>
+          <div class="acct-version">spiralside v1.0 · built in tennessee · signal clean</div>
+        </div>
+
       </div>
     `;
   }
