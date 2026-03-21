@@ -51,6 +51,8 @@ export function initChat(openPanelFn) {
   });
 
   sendBtn.addEventListener('click', sendMessage);
+  // Expose sendMessage for STT auto-send in models.js
+  window._sendMessage = sendMessage;
 }
 
 // ── ADD MESSAGE TO DOM ────────────────────────────────────
