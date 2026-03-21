@@ -124,6 +124,7 @@ export function initSky() {
   _cvs = document.getElementById('sky-canvas');
   if (!_cvs) return;
   _cvs.style.opacity = SKY_CONFIG.opacity;
+  _cvs.style.background = 'transparent';
   _ctx = _cvs.getContext('2d');
   window.addEventListener('resize', resize);
   if (_raf) cancelAnimationFrame(_raf);
