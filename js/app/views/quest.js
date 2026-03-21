@@ -369,19 +369,20 @@ async function loadCharacter() {
     const stats = traitsToStats(you.traits);
     const base = JSON.parse(localStorage.getItem('ss_quest_char') || 'null') || {};
     return {
-      name:       you.handle  || base.name  || 'Wanderer',
-      class:      you.vibe    || base.class || 'adventurer · chaotic good',
-      arc:        you.arc     || '',
-      atk:        stats.atk,
-      def:        stats.def,
-      wit:        stats.wit,
-      luk:        stats.luk,
-      level:      base.level  || 1,
-      xp:         base.xp     || 0,
-      xpNext:     base.xpNext || 100,
-      hairColor:  base.hairColor  || '#5a3a1a',
-      skinColor:  base.skinColor  || '#FDDBB4',
-      fromCodex:  true,
+      name:            you.handle  || base.name  || 'Wanderer',
+      class:           you.vibe    || base.class || 'adventurer · chaotic good',
+      arc:             you.arc     || '',
+      portrait_base64: you.portrait_base64 || base.portrait_base64 || null,
+      atk:             stats.atk,
+      def:             stats.def,
+      wit:             stats.wit,
+      luk:             stats.luk,
+      level:           base.level  || 1,
+      xp:              base.xp     || 0,
+      xpNext:          base.xpNext || 100,
+      hairColor:       base.hairColor  || '#5a3a1a',
+      skinColor:       base.skinColor  || '#FDDBB4',
+      fromCodex:       true,
     };
   }
   // 2. Fall back to quest-local storage
@@ -494,7 +495,10 @@ function renderQuest(el, char, events) {
 
     <!-- MII PANEL -->
     <div class="quest-mii-panel">
-      <div class="mii-avatar-wrap">${buildMiiSvg(char)}</div>
+      <div class="mii-avatar-wrap" id="quest-mii-avatar-wrap"
+        style="${char.portrait_base64 ? `background-image:url(${char.portrait_base64});background-size:cover;background-position:center top;` : ''}">
+        ${char.portrait_base64 ? '' : buildMiiSvg(char)}
+      </div>
       <div class="quest-mii-info">
         <div class="quest-mii-name">${char.name}</div>
         <div class="quest-mii-class">${char.class}</div>

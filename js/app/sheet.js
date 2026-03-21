@@ -95,11 +95,67 @@ export function renderActiveChar(id) {
 
   // Avatar block
   const av         = document.getElementById('sheet-avatar-lg');
-  av.textContent   = char.initial;
-  av.style.color   = char.color;
-  av.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
   av.style.border  = `2px solid ${char.color}66`;
   av.style.boxShadow = `0 0 24px ${char.color}44`;
+  // Portrait image — used by You card and soul prints
+  if (char.portrait_base64) {
+    av.textContent = '';
+    av.style.backgroundImage    = `url(${char.portrait_base64})`;
+    av.style.backgroundSize     = 'cover';
+    av.style.backgroundPosition = 'center top';
+    av.style.color              = 'transparent';
+    av.style.background         = `url(${char.portrait_base64}) center top / cover`;
+  } else {
+    av.style.backgroundImage = '';
+    av.textContent   = char.initial;
+    av.style.color   = char.color;
+    av.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
+  }
+  // You card — make avatar tappable to upload portrait
+  av.onclick = null;
+  av.style.cursor = 'default';
+  if (char.isUser) {
+    av.title  = 'tap to set portrait';
+    av.style.cursor = 'pointer';
+    av.onclick = () => {
+      const inp = document.createElement('input');
+      inp.type   = 'file';
+      inp.accept = 'image/*';
+      inp.onchange = async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async ev => {
+          char.portrait_base64 = ev.target.result;
+          // Re-render avatar immediately
+          av.textContent = '';
+          av.style.background = `url(${ev.target.result}) center top / cover`;
+          av.style.backgroundImage = `url(${ev.target.result})`;
+          av.style.backgroundSize  = 'cover';
+          av.style.backgroundPosition = 'center top';
+          // Persist — add portrait to IDB record
+          const { dbSet: _dbSet } = await import('./db.js');
+          await _dbSet('sheets', {
+            id: 'you',
+            arc:             char.arc,
+            traits:          char.traits,
+            handle:          char.handle,
+            vibe:            char.vibe,
+            song:            char.song,
+            portrait_base64: ev.target.result,
+          });
+          // Feedback
+          const hint = document.createElement('div');
+          hint.textContent = '✓ portrait saved';
+          hint.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--teal);color:var(--teal);padding:8px 16px;border-radius:20px;font-size:0.72rem;letter-spacing:0.08em;z-index:999;pointer-events:none;';
+          document.body.appendChild(hint);
+          setTimeout(() => hint.remove(), 2000);
+        };
+        reader.readAsDataURL(file);
+      };
+      inp.click();
+    };
+  }
 
   // Name / trait / mood
   const nameEl = document.getElementById('sheet-char-name');
@@ -206,11 +262,12 @@ export async function saveSummarize() {
   // Persist to IndexedDB
   await dbSet('sheets', {
     id,
-    arc:    char.arc,
-    traits: char.traits,
-    handle: char.handle,
-    vibe:   char.vibe,
-    song:   char.song,
+    arc:             char.arc,
+    traits:          char.traits,
+    handle:          char.handle,
+    vibe:            char.vibe,
+    song:            char.song,
+    portrait_base64: char.portrait_base64 || null,
   });
 
   // Button feedback
