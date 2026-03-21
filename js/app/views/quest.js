@@ -75,6 +75,12 @@ function injectQuestStyles() {
       color: var(--text); margin-bottom: 2px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .quest-mii-arc {
+      font-size: 0.62rem; color: var(--subtext); line-height: 1.5;
+      margin-top: 4px; font-style: italic;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
     .quest-mii-class {
       font-size: 0.65rem; color: var(--subtext);
       letter-spacing: 0.06em; margin-bottom: 8px;
@@ -315,12 +321,72 @@ function loadEvents() {
 function saveEvents(evs) {
   localStorage.setItem('ss_quest_events', JSON.stringify(evs));
 }
-function loadCharacter() {
-  try { return JSON.parse(localStorage.getItem('ss_quest_char') || 'null'); }
-  catch { return null; }
-}
 function saveCharacter(c) {
   localStorage.setItem('ss_quest_char', JSON.stringify(c));
+}
+
+// Reads codex You card from IDB sheets store, returns promise
+// IDB access mirrors the pattern in db.js (same DB name + version range)
+function readCodexYou() {
+  return new Promise(resolve => {
+    try {
+      // Open without version bump — read-only, just need existing stores
+      const req = indexedDB.open('spiralside');
+      req.onerror = () => resolve(null);
+      req.onsuccess = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('sheets')) { db.close(); resolve(null); return; }
+        const tx = db.transaction('sheets', 'readonly');
+        const get = tx.objectStore('sheets').get('you');
+        get.onsuccess = () => { db.close(); resolve(get.result || null); };
+        get.onerror  = () => { db.close(); resolve(null); };
+      };
+    } catch { resolve(null); }
+  });
+}
+
+// Maps codex trait names to quest stats
+// Curiosity/Wit → WIT, Energy/Chaos → ATK, Patience/Trust → DEF, Luck/Spark → LUK
+function traitsToStats(traits) {
+  const stats = { atk: 10, def: 8, wit: 12, luk: 9 };
+  if (!traits || !traits.length) return stats;
+  traits.forEach(t => {
+    const n = (t.label || t.name || '').toLowerCase();
+    const v = Math.round((t.score || t.value || 50) / 10); // 0-100 → 0-10, add to base
+    if (/curiosity|wit|intellect|clever|smart|knowledge/.test(n)) stats.wit = Math.min(20, 8 + v);
+    else if (/energy|chaos|attack|strength|bold|fierce/.test(n)) stats.atk = Math.min(20, 8 + v);
+    else if (/patience|trust|defense|calm|steady|loyal/.test(n)) stats.def = Math.min(20, 8 + v);
+    else if (/luck|spark|charm|wild|random|creative/.test(n))    stats.luk = Math.min(20, 8 + v);
+  });
+  return stats;
+}
+
+// Load character — codex You card takes priority over quest localStorage
+async function loadCharacter() {
+  // 1. Try IDB codex You card first
+  const you = await readCodexYou();
+  if (you && (you.handle || you.vibe)) {
+    const stats = traitsToStats(you.traits);
+    const base = JSON.parse(localStorage.getItem('ss_quest_char') || 'null') || {};
+    return {
+      name:       you.handle  || base.name  || 'Wanderer',
+      class:      you.vibe    || base.class || 'adventurer · chaotic good',
+      arc:        you.arc     || '',
+      atk:        stats.atk,
+      def:        stats.def,
+      wit:        stats.wit,
+      luk:        stats.luk,
+      level:      base.level  || 1,
+      xp:         base.xp     || 0,
+      xpNext:     base.xpNext || 100,
+      hairColor:  base.hairColor  || '#5a3a1a',
+      skinColor:  base.skinColor  || '#FDDBB4',
+      fromCodex:  true,
+    };
+  }
+  // 2. Fall back to quest-local storage
+  try { return JSON.parse(localStorage.getItem('ss_quest_char') || 'null'); }
+  catch { return null; }
 }
 
 // ── DEFAULT CHARACTER ─────────────────────────────────────────
@@ -432,6 +498,7 @@ function renderQuest(el, char, events) {
       <div class="quest-mii-info">
         <div class="quest-mii-name">${char.name}</div>
         <div class="quest-mii-class">${char.class}</div>
+        ${char.arc ? `<div class="quest-mii-arc">${char.arc}</div>` : ''}
         <div class="quest-stat-row">
           <div class="quest-stat atk">ATK ${char.atk}</div>
           <div class="quest-stat def">DEF ${char.def}</div>
@@ -517,10 +584,9 @@ export function initQuestView() {
   injectQuestStyles();
 
   // Load or create character — use Forge bot name if available
-  let char = loadCharacter();
+  let char = await loadCharacter();
   if (!char) {
-    // Try to grab name from forge state
-    const botName = typeof state !== 'undefined' && state.botName ? state.botName : 'Wanderer';
+    const botName = (typeof state !== 'undefined' && state.botName) ? state.botName : 'Wanderer';
     char = defaultCharacter(botName);
     saveCharacter(char);
   }
