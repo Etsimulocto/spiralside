@@ -7,7 +7,7 @@
 
 const SKY_CONFIG = {
   speed:   0.0008,   // slow drift
-  opacity: 0.45,     // visible but not overpowering
+  opacity: 0.55,     // visible but not overpowering
 };
 
 let _t   = 0;
