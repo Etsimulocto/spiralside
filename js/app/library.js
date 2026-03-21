@@ -897,11 +897,11 @@ function playTimeline() {
     if (slot.type === 'image') {
       const p    = panels.find(x => x.id === slot.panelId);
       const fObj = FILTERS.find(f => f.id === (slot.filter || 'none')) || FILTERS[0];
+      const capText    = typeof slot.caption === 'string' ? slot.caption : slot.caption?.text || '';
+      const capSpeaker = typeof slot.caption === 'string' ? 'narrator'   : slot.caption?.speaker || 'narrator';
       return {
         image:    p?.dataURL || '',
-        dialogue: slot.caption?.text
-          ? [{ speaker: slot.caption.speaker || 'narrator', text: slot.caption.text }]
-          : [],
+        dialogue: capText ? [{ speaker: capSpeaker, text: capText }] : [],
         transition: 'fade',
         bg_gradient: 'radial-gradient(ellipse at 50% 50%,#1a0a2e 0%,#101014 70%)',
       };
