@@ -309,8 +309,7 @@ export async function saveSummarize() {
   setTimeout(() => { btn.textContent = orig; }, 2000);
 
   // Only call AI summarize if there's a real thread to summarize
-  const chatMsgs = getChatMsgs();
-  const messages = chatMsgs?.querySelectorAll('.msg');
+  const messages = getChatMsgs();
   if (!messages || messages.length <= 2) return;
 
   try {

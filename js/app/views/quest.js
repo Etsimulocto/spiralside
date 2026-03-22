@@ -622,7 +622,6 @@ function renderQuest(el, char, events) {
 export async function initQuestView() {
   const el = document.getElementById('view-quest');
   if (!el) return;
-  if (_initialized) return;
   _initialized = true;
 
   injectQuestStyles();
