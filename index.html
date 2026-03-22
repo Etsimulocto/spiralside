@@ -429,6 +429,8 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 0.65rem; font-weight: 700; margin-top: 18px;
     }
+    .msg.bot  .msg-avatar { background: linear-gradient(135deg,rgba(0,246,214,0.3),rgba(0,246,214,0.1)); border: 2px solid rgba(0,246,214,0.4); color: var(--teal); }
+    .msg.user .msg-avatar { background: linear-gradient(135deg,rgba(123,95,255,0.4),rgba(255,75,203,0.3)); border: 2px solid rgba(123,95,255,0.4); color: #fff; }
     .msg-content { max-width: 92%; display: flex; flex-direction: column; gap: 3px; }
     .msg-speaker {
       font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase;
@@ -1577,7 +1579,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.369</div>
+        <div class="version-badge" id="version-badge">v0.8.370</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
