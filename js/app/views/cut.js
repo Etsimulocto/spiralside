@@ -633,7 +633,7 @@ function renderCutTimeline() {
     return 1;
   }
 
-  function makeRow(label, clips, clipsWithIdx, color) {
+  function makeRow(label, clips, clipsWithIdx, color, si) {
     if (!clipsWithIdx.length) {
       return `
         <div class="cut-track-row">
@@ -682,9 +682,9 @@ function renderCutTimeline() {
     return `
       <div style="border-left:2px solid var(--border);padding-left:4px;margin-bottom:6px">
         <div style="font-size:0.55rem;color:var(--subtext);letter-spacing:0.1em;padding:2px 0 3px 2px">S${si+1}</div>
-        ${makeRow('cast', castClips, castClips, 'var(--pink)')}
-        ${makeRow('scene', sceneClips, sceneClips, 'var(--teal)')}
-        ${makeRow('world', worldClips, worldClips, 'var(--blue)')}
+        ${makeRow('cast', castClips, castClips, 'var(--pink)', si)}
+        ${makeRow('scene', sceneClips, sceneClips, 'var(--teal)', si)}
+        ${makeRow('world', worldClips, worldClips, 'var(--blue)', si)}
       </div>`;
   }).join('');
 
