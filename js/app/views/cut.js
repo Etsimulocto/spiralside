@@ -96,9 +96,16 @@ async function loadCutScenes() {
 // ── LOAD ASSET BIN DATA ────────────────────────────────────
 async function loadBinData() {
   try {
-    const panels = await cutIDBGetAll('panels');
-    _cutState.sceneCards = panels.filter(p => p.type === 'scene' || !p.type);
-    _cutState.worldCards = panels.filter(p => p.type === 'world');
+    // Studio saves scenes to 'scenes' store, worlds to 'worlds' store
+    // Normalize fields: studio uses .image, .caption; cut expects .imageDataUrl, .dialogue
+    const rawScenes = await cutIDBGetAll('scenes');
+    _cutState.sceneCards = rawScenes.map(s => ({
+      ...s,
+      imageDataUrl: s.image || s.imageDataUrl || null,
+      dialogue:     s.caption || s.dialogue || '',
+    }));
+    const rawWorlds = await cutIDBGetAll('worlds');
+    _cutState.worldCards = rawWorlds;
     _cutState.prints = await cutIDBGetAll('prints');
   } catch(e) {
     _cutState.sceneCards = [];
