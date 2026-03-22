@@ -73,11 +73,20 @@ export function addMessage(text, role) {
     <div class="msg-bubble">${text}</div>
   `;
 
+  const bubble = wrap.querySelector('.msg-bubble');
+  bubble.style.cursor = 'pointer';
+  bubble.addEventListener('click', () => {
+    const t = bubble.innerText || bubble.textContent;
+    navigator.clipboard.writeText(t).then(() => {
+      const prev = bubble.style.outline;
+      bubble.style.outline = '2px solid var(--teal)';
+      setTimeout(() => { bubble.style.outline = prev; }, 600);
+    }).catch(() => {});
+  });
   msgList.appendChild(wrap);
   msgList.scrollTop = msgList.scrollHeight;
 
-  // Return bubble element in case caller wants to update it (streaming etc)
-  return wrap.querySelector('.msg-bubble');
+  return bubble;
 }
 
 // ── TYPING INDICATOR ──────────────────────────────────────
