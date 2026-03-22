@@ -587,8 +587,8 @@ export function toggleBgLayer(layer) {
 export function applyAllBgLayers() {
   const canvas = document.getElementById('particles-canvas');
   // Particles
-  if (bgLayers.particles) { canvas.classList.add('active'); startParticles(); }
-  else { canvas.classList.remove('active'); stopParticles(); }
+  if (bgLayers.particles) { canvas.classList.add('active'); if(window._particlesStart){window._particlesStart(parseInt(pendingStyle.particleDensity)||30,particleSpeed||3,particleSize||2,particleColor||pendingStyle.teal||'#00F6D6');}else{startParticles();} }
+  else { canvas.classList.remove('active'); if(window._particlesStop){window._particlesStop();}else{stopParticles();} }
   // Image
   if (bgLayers.image && bgImageData) {
     const op = (bgImageOpacity || 80) / 100;
