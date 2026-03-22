@@ -39,6 +39,7 @@ import { selectModel, toggleInputMenu, updateInputMenu, initModels } from './mod
 import { initStoreView, updateStoreView }          from './views/store.js';
 import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initQuestView }                           from './views/quest.js';
+import { initCutView } from './views/cut.js';
 import { initXP, awardXP, getXPState, showLevelUpToast, showXPGain } from './xp.js';
 import { initStudioView }                          from './views/studio.js';
 import { initGuide, renderGuide } from './views/guide.js';
@@ -107,6 +108,7 @@ window.deleteCodexCard      = deleteCodexCard;
 window.initStudioView       = initStudioView;
 window.initSpiralCutView    = initSpiralCutView;
 window.initQuestView    = initQuestView;
+window.initCutView     = initCutView;
 window.awardXP    = awardXP;
 window.getXPState = getXPState;
 window.showXPGain = showXPGain;
