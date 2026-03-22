@@ -901,7 +901,7 @@ window._cutAddPrintClip = function(printId, si) {
     name: (print.name || 'character') + ' clip',
     speaker: print.name || 'narrator',
     mood: print.trait || '',
-    dialogue: print.lore?.slice(0,80) || print.identity || '',
+    dialogue: (typeof print.lore === 'string' ? print.lore.slice(0,80) : (print.identity || '')),
     dur: 5,
     prompt: [print.name, print.trait].filter(Boolean).join(', '),
     status: print.image ? '✦ image' : 'no image',
