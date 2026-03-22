@@ -123,7 +123,7 @@ export function switchView(id) {
   const viewInits = {
     store:     () => { window.initStoreView  && window.initStoreView();  updateCreditDisplay(); },
     studio:    () => window.initStudioView   && window.initStudioView(),
-    spiralcut: () => window.initCutView      && window.initCutView(),
+    cut:       () => window.initCutView      && window.initCutView(),
     quest:     () => window.initQuestView    && window.initQuestView(),
     style:     () => { window.initStylePanel && window.initStylePanel(); setTimeout(() => window.initColorSketches && window.initColorSketches(), 400); },
     account:   () => window.initAccountView  && window.initAccountView(),

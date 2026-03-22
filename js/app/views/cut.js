@@ -152,7 +152,7 @@ function injectCutCSS() {
   const s = document.createElement('style');
   s.id = 'cut-css';
   s.textContent = `
-    #view-spiralcut.active {
+    #view-cut.active {
       display: flex; flex-direction: column; overflow: hidden; position: relative;
     }
     .cut-hdr {
@@ -417,7 +417,7 @@ function cutClipCount() {
 
 // ── RENDER FULL VIEW ──────────────────────────────────────
 function renderCutView() {
-  const el = document.getElementById('view-spiralcut');
+  const el = document.getElementById('view-cut');
   if (!el) return;
   const totalSecs = cutTotalSecs();
   const clipCount = cutClipCount();
