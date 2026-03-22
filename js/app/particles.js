@@ -285,6 +285,13 @@ window.setParticlePreset = function(name) {
 
 // ── INIT ──────────────────────────────────────────────────
 // Called from main.js after login
+
+window._particlesStart = function(density, speed, size, color) {
+  cfg.density = density; cfg.speed = speed; cfg.size = size; cfg.color = color;
+  const [r,g,b] = hex2rgb(color); pool.forEach(p=>{p.r=r;p.g=g;p.b=b;});
+};
+window._particlesStop = stopEngine;
+
 export async function initParticles() {
   cv  = document.getElementById('particles-canvas');
   if (!cv) { console.warn('[particles] canvas not found'); return; }

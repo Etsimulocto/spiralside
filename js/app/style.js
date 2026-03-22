@@ -357,6 +357,10 @@ export function loadSavedStyle() {
 }
 
 function startParticles() {
+  if (window._particlesStart) {
+    window._particlesStart(parseInt(pendingStyle.particleDensity)||30, particleSpeed||3, particleSize||2, particleColor||pendingStyle.teal||'#00F6D6');
+    return;
+  }
   const canvas = document.getElementById('particles-canvas');
   const ctx    = canvas.getContext('2d');
   function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -389,6 +393,7 @@ function startParticles() {
 }
 
 function stopParticles() {
+  if (window._particlesStop) { window._particlesStop(); return; }
   if (particleAnim) { cancelAnimationFrame(particleAnim); particleAnim = null; }
   const canvas = document.getElementById('particles-canvas');
   const ctx = canvas && canvas.getContext('2d');
