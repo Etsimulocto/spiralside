@@ -362,6 +362,7 @@ async function handleCreateCard() {
   // Use base64 portrait — more reliable than blob URL for canvas
   let artImage = _portraitBase64 || null;
 
+  if (window._youHandle) print.metadata.creator_name = window._youHandle;
   const canvas = await renderCard(print, artImage);
   canvas.style.cssText = 'width:100%;max-width:360px;border-radius:8px;display:block;margin:0 auto;box-shadow:0 0 32px rgba(0,246,214,0.2)';
   wrap.innerHTML = '';
