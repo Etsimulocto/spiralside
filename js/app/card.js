@@ -89,7 +89,7 @@ export async function renderCard(print, artImage = null) {
   const creator  = (print.metadata && (print.metadata.creator_name || print.metadata.handle))
                  || (print.metadata && print.metadata.owner_id === 'platform' ? 'Spiralside' : null)
                  || (typeof CHARACTERS !== 'undefined' && CHARACTERS.you?.handle)
-                 || 'unknown';
+                 || (typeof CHARACTERS !== 'undefined' && CHARACTERS?.you?.handle) || 'unknown';
   const rarity   = display.rarity     || calcRarity(lifecycle);
   const tier     = RARITY[rarity]     || RARITY.standard;
 
