@@ -595,43 +595,65 @@ function renderCutTimeline() {
     `<div class="cut-tick">${i * secPerMark}s</div>`
   ).join('');
 
-  const tracks = scenes.map((sc, si) => {
-    if (!sc.clips.length) {
+  // Classify a clip: 0=cast, 1=scene, 2=world
+  function clipType(clip) {
+    if (_cutState.worldCards.some(w => String(w.id||w.name) === clip.sourceCard)) return 2;
+    if (_cutState.prints.some(p => String(p.id||p.name) === clip.sourceCard)) return 0;
+    return 1;
+  }
+
+  function makeRow(label, clips, clipsWithIdx, color) {
+    if (!clipsWithIdx.length) {
       return `
         <div class="cut-track-row">
-          <div class="cut-track-label">s${si+1}</div>
+          <div class="cut-track-label" style="color:${color};font-size:0.5rem">${label}</div>
           <div class="cut-track empty"></div>
         </div>`;
     }
-    // Display order: cast (top) → scene (middle) → world (bottom)
-    const _dispOrder = [...sc.clips.map((c,i)=>i)].sort((a,b)=>{
-      function r(c){if(_cutState.worldCards.some(w=>String(w.id||w.name)===c.sourceCard))return 2;if(_cutState.prints.some(p=>String(p.id||p.name)===c.sourceCard))return 0;return 1;}
-      return r(sc.clips[a])-r(sc.clips[b]);
-    });
-    let offsetPct = 0;
-    const bars = _dispOrder.map((ci) => {
-      const clip = sc.clips[ci];
+    let off = 0;
+    const bars = clipsWithIdx.map(({clip, ci}) => {
       const dur = clip.dur || 5;
-      const w = (dur / totalSecs) * 100;
-      const left = offsetPct;
-      offsetPct += w;
-      const color = speakerColor(clip.speaker);
+      const w = Math.max((dur / totalSecs) * 100, 2);
+      const left = off; off += w;
+      const c = speakerColor(clip.speaker);
       const isSel = _cutState.selectedClip &&
-        _cutState.selectedClip.sceneIdx === si &&
+        _cutState.selectedClip.sceneIdx !== undefined &&
         _cutState.selectedClip.clipIdx === ci;
       return `
-        <div class="cut-tl-clip ${isSel ? 'selected' : ''}"
-             style="left:${left}%;width:${Math.min(w, 100-left)}%;
-                    background:${color}18;border:1px solid ${color}40;"
-             onclick="window._cutSelectClip(${si},${ci})">
-          <div class="cut-tl-clip-name">${clip.name || 'clip'} &middot; ${dur}s</div>
+        <div class="cut-tl-clip ${isSel?'selected':''}"
+             style="left:${left}%;width:${Math.min(w,100-left)}%;background:${c}22;border:1px solid ${c}55;"
+             onclick="window._cutSelectClip(${_cutState.scenes.indexOf(_cutState.scenes.find((_,i)=>_cutState.scenes[i].clips.includes(clip)))},${ci})">
+          <div class="cut-tl-clip-name">${clip.name||'clip'} &middot; ${dur}s</div>
         </div>`;
     }).join('');
-
     return `
       <div class="cut-track-row">
-        <div class="cut-track-label">s${si+1}</div>
+        <div class="cut-track-label" style="color:${color};font-size:0.5rem">${label}</div>
         <div class="cut-track">${bars}</div>
+      </div>`;
+  }
+
+  const tracks = scenes.map((sc, si) => {
+    const castClips  = sc.clips.map((c,i)=>({clip:c,ci:i})).filter(({clip})=>clipType(clip)===0);
+    const sceneClips = sc.clips.map((c,i)=>({clip:c,ci:i})).filter(({clip})=>clipType(clip)===1);
+    const worldClips = sc.clips.map((c,i)=>({clip:c,ci:i})).filter(({clip})=>clipType(clip)===2);
+
+    if (!sc.clips.length) {
+      return `
+        <div style="margin-bottom:4px">
+          <div class="cut-track-row">
+            <div class="cut-track-label">s${si+1}</div>
+            <div class="cut-track empty" style="opacity:0.2"></div>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div style="border-left:2px solid var(--border);padding-left:4px;margin-bottom:6px">
+        <div style="font-size:0.55rem;color:var(--subtext);letter-spacing:0.1em;padding:2px 0 3px 2px">S${si+1}</div>
+        ${makeRow('cast', castClips, castClips, 'var(--pink)')}
+        ${makeRow('scene', sceneClips, sceneClips, 'var(--teal)')}
+        ${makeRow('world', worldClips, worldClips, 'var(--blue)')}
       </div>`;
   }).join('');
 
