@@ -114,7 +114,7 @@ function injectCutCSS() {
   const s = document.createElement('style');
   s.id = 'cut-css';
   s.textContent = `
-    #view-spiralcut {
+    #view-spiralcut.active {
       display: flex; flex-direction: column; overflow: hidden; position: relative;
     }
     .cut-hdr {
