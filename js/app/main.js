@@ -1,4 +1,5 @@
 // ============================================================
+import { initParticles } from "./particles.js";
 // SPIRALSIDE — MAIN v1.0
 // Boot sequence — imports all modules, wires globals, starts app
 // This is the single entry point loaded by index.html
@@ -412,3 +413,6 @@ window.buyGift = async function() {
     window.location.href = d.approve_url;
   } catch(e){alert('Payment error. Try again.');}
 };
+
+// particles init
+initParticles();
