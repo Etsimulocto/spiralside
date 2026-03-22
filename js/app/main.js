@@ -107,6 +107,9 @@ window.deleteCodexCard      = deleteCodexCard;
 window.initStudioView       = initStudioView;
 window.initSpiralCutView    = initSpiralCutView;
 window.initQuestView    = initQuestView;
+window.awardXP    = awardXP;
+window.getXPState = getXPState;
+window.showXPGain = showXPGain;
 window.closeSceneForm       = () => document.getElementById('codex-scene-form-overlay')?.classList.remove('open');
 window.closeWorldForm       = () => document.getElementById('codex-world-form-overlay')?.classList.remove('open');
 
