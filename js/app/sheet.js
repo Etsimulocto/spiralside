@@ -233,7 +233,15 @@ export function renderActiveChar(id) {
     document.getElementById('user-pets').value     = char.pets     || '';
     document.getElementById('user-food').value     = char.food     || '';
     document.getElementById('user-comfort').value  = char.comfort  || '';
-    document.getElementById('user-hates').value    = char.hates    || '';
+    document.getElementById('user-hates').value       = char.hates       || '';
+    document.getElementById('user-hobbies').value     = char.hobbies     || '';
+    document.getElementById('user-obsession').value   = char.obsession   || '';
+    document.getElementById('user-job').value         = char.job         || '';
+    document.getElementById('user-medium').value      = char.medium      || '';
+    document.getElementById('user-people').value      = char.people      || '';
+    document.getElementById('user-wins').value        = char.wins        || '';
+    document.getElementById('user-stuck').value       = char.stuck       || '';
+    document.getElementById('user-influences').value  = char.influences  || '';
     document.getElementById('user-freetext').value = char.freetext || '';
     // Restore work tags
     const workTags = char.workTags || [];
@@ -306,7 +314,15 @@ export async function saveSummarize() {
     char.pets     = document.getElementById('user-pets').value;
     char.food     = document.getElementById('user-food').value;
     char.comfort  = document.getElementById('user-comfort').value;
-    char.hates    = document.getElementById('user-hates').value;
+    char.hates       = document.getElementById('user-hates').value;
+    char.hobbies     = document.getElementById('user-hobbies').value;
+    char.obsession   = document.getElementById('user-obsession').value;
+    char.job         = document.getElementById('user-job').value;
+    char.medium      = document.getElementById('user-medium').value;
+    char.people      = document.getElementById('user-people').value;
+    char.wins        = document.getElementById('user-wins').value;
+    char.stuck       = document.getElementById('user-stuck').value;
+    char.influences  = document.getElementById('user-influences').value;
     char.freetext = document.getElementById('user-freetext').value;
     char.workTags = Array.from(document.querySelectorAll('#you-work-tags .you-tag.on')).map(t => t.dataset.tag);
   }
@@ -325,7 +341,15 @@ export async function saveSummarize() {
     pets:            char.pets      || null,
     food:            char.food      || null,
     comfort:         char.comfort   || null,
-    hates:           char.hates     || null,
+    hates:           char.hates       || null,
+    hobbies:         char.hobbies     || null,
+    obsession:       char.obsession   || null,
+    job:             char.job         || null,
+    medium:          char.medium      || null,
+    people:          char.people      || null,
+    wins:            char.wins        || null,
+    stuck:           char.stuck       || null,
+    influences:      char.influences  || null,
     freetext:        char.freetext  || null,
     workTags:        char.workTags  || [],
     portrait_base64: char.portrait_base64 || null,
@@ -408,7 +432,15 @@ export async function loadSavedSheets(dbGet) {
       if (saved.pets)     CHARACTERS.you.pets     = saved.pets;
       if (saved.food)     CHARACTERS.you.food     = saved.food;
       if (saved.comfort)  CHARACTERS.you.comfort  = saved.comfort;
-      if (saved.hates)    CHARACTERS.you.hates    = saved.hates;
+      if (saved.hates)       CHARACTERS.you.hates       = saved.hates;
+      if (saved.hobbies)     CHARACTERS.you.hobbies     = saved.hobbies;
+      if (saved.obsession)   CHARACTERS.you.obsession   = saved.obsession;
+      if (saved.job)         CHARACTERS.you.job         = saved.job;
+      if (saved.medium)      CHARACTERS.you.medium      = saved.medium;
+      if (saved.people)      CHARACTERS.you.people      = saved.people;
+      if (saved.wins)        CHARACTERS.you.wins        = saved.wins;
+      if (saved.stuck)       CHARACTERS.you.stuck       = saved.stuck;
+      if (saved.influences)  CHARACTERS.you.influences  = saved.influences;
       if (saved.freetext) CHARACTERS.you.freetext = saved.freetext;
       if (saved.workTags) CHARACTERS.you.workTags = saved.workTags;
       // FIX: restore portrait so You card shows photo after refresh
@@ -599,7 +631,15 @@ export function buildYouContext() {
   if (you.comfort)  parts.push(`Comfort show/game: ${you.comfort}.`);
   if (you.hates)    parts.push(`Things they dislike: ${you.hates}.`);
   if (you.workTags?.length) parts.push(`How they work: ${you.workTags.join(', ')}.`);
-  if (you.freetext) parts.push(you.freetext);
+  if (you.hobbies)    parts.push(`Hobbies: ${you.hobbies}.`);
+  if (you.obsession)  parts.push(`Currently obsessed with: ${you.obsession}.`);
+  if (you.job)        parts.push(`Job/role: ${you.job}.`);
+  if (you.medium)     parts.push(`Creative medium: ${you.medium}.`);
+  if (you.people)     parts.push(`People who matter: ${you.people}.`);
+  if (you.wins)       parts.push(`Recent wins: ${you.wins}.`);
+  if (you.stuck)      parts.push(`Currently stuck on: ${you.stuck}.`);
+  if (you.influences) parts.push(`Influences: ${you.influences}.`);
+  if (you.freetext)   parts.push(you.freetext);
   if (!parts.length) return '';
   return 'About the person you are talking to:\n' + parts.join(' ') + '\n\n';
 }
