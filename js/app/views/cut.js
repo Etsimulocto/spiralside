@@ -109,7 +109,8 @@ async function loadBinData() {
 
 // ── INJECT CSS ─────────────────────────────────────────────
 function injectCutCSS() {
-  if (document.getElementById('cut-css')) return;
+  const old = document.getElementById('cut-css');
+  if (old) old.remove();
   const s = document.createElement('style');
   s.id = 'cut-css';
   s.textContent = `
