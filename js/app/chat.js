@@ -209,6 +209,7 @@ export async function sendMessage() {
 
     addMessage(data.reply, 'bot');
     speakReply(data.reply);
+    if (window.awardXP) window.awardXP('chat_message').then(r => { if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'chat'); });
 
     // Update credit/usage display if main.js exposed updateCreditDisplay globally
     if (data.usage && typeof updateCreditDisplay === 'function') {

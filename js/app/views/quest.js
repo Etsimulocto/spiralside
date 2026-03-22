@@ -435,7 +435,12 @@ function renderQuest(el, char, events) {
     return (order[a.status] ?? 4) - (order[b.status] ?? 4);
   });
 
-  const xpPct = Math.min(100, Math.round((char.xp / char.xpNext) * 100));
+  // Use live XP engine state if available, else fall back to char stub
+  const _xps  = (typeof getXPState !== 'undefined' && getXPState()) || null;
+  const _xpLv = _xps ? _xps.level  : (char.level  || 1);
+  const _xpCur= _xps ? _xps.xp     : (char.xp     || 0);
+  const _xpNxt= _xps ? _xps.xpNext : (char.xpNext || 100);
+  const xpPct = Math.min(100, Math.round((_xpCur / Math.max(1, _xpNxt)) * 100));
 
   // Calendar — build this month
   const now = new Date();
@@ -486,7 +491,7 @@ function renderQuest(el, char, events) {
         <div class="quest-view-name">${char.name}</div>
       </div>
       <div class="quest-xp-wrap">
-        <div class="quest-level">lv ${char.level}</div>
+        <div class="quest-level">lv ${_xpLv}</div>
         <div class="quest-xp-bar-bg">
           <div class="quest-xp-bar-fill" style="width:${xpPct}%"></div>
         </div>
@@ -573,6 +578,12 @@ function renderQuest(el, char, events) {
     evs.push({ id: Date.now().toString(), title, date });
     saveEvents(evs);
     document.getElementById('quest-modal-overlay').classList.remove('open');
+    // Award XP for adding a quest event
+    if (window.awardXP) {
+      window.awardXP('quest_event_added').then(r => {
+        if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'quest');
+      });
+    }
     // Re-render
     renderQuest(el, char, evs);
   };

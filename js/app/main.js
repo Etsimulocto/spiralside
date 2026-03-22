@@ -39,6 +39,7 @@ import { selectModel, toggleInputMenu, updateInputMenu, initModels } from './mod
 import { initStoreView, updateStoreView }          from './views/store.js';
 import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initQuestView }                           from './views/quest.js';
+import { initXP, showLevelUpToast, showXPGain }    from './xp.js';
 import { initStudioView }                          from './views/studio.js';
 import { initGuide, renderGuide } from './views/guide.js';
 import { initForgeView }           from './views/forge.js';
@@ -132,6 +133,10 @@ async function onAppReady() {
 
   // 4. Load saved character sheet overrides
   await loadSavedSheets(dbGet);
+  // 5. Init XP engine — loads state, handles day reset, daily login bonus
+  await initXP();
+  // Wire level-up toast + XP gain indicator to XP events
+  window.addEventListener('xp:levelup', e => showLevelUpToast(e.detail.level));
 
   // 5. Init all modules
   initModels();
