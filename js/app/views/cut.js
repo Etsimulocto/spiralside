@@ -448,7 +448,7 @@ function renderCutSidebar() {
         const wid = String(w.id || w.name || '').replace(/'/g,'');
         return `
         <div class="cut-clip-row" style="padding:6px 8px;margin:2px 6px;cursor:pointer"
-             onclick="window._cutAddWorldClip('${wid}')">
+             onclick="window._cutAskAddWorld('${wid}')">
           <div class="cut-clip-info">
             <div class="cut-clip-name">${w.name || 'world'}</div>
             <div class="cut-clip-dur">${w.biome || ''} · tap to add</div>
@@ -462,7 +462,7 @@ function renderCutSidebar() {
         const pid = String(p.id || p.name || '').replace(/'/g,'');
         return `
         <div class="cut-clip-row" style="padding:6px 8px;margin:2px 6px;cursor:pointer"
-             onclick="window._cutAddPrintClip('${pid}')">
+             onclick="window._cutAskAddPrint('${pid}')">
           <div class="cut-clip-dot" style="background:${speakerColor(p.name)}"></div>
           <div class="cut-clip-info">
             <div class="cut-clip-name">${p.name || 'character'}</div>
@@ -864,11 +864,10 @@ window._cutExport = function() {
 };
 
 
-window._cutAddWorldClip = function(worldId) {
+window._cutAddWorldClip = function(worldId, si) {
   const world = _cutState.worldCards.find(w => String(w.id || w.name) === worldId);
   if (!world) return;
-  // Add to whichever scene is currently selected, or scene 0
-  const si = _cutState.selectedClip?.sceneIdx ?? 0;
+  si = (si !== undefined ? si : null) ?? _cutState.selectedClip?.sceneIdx ?? 0;
   const clip = {
     id: Date.now(),
     name: world.name || 'world clip',
@@ -887,11 +886,10 @@ window._cutAddWorldClip = function(worldId) {
   renderCutView();
 };
 
-window._cutAddPrintClip = function(printId) {
+window._cutAddPrintClip = function(printId, si) {
   const print = _cutState.prints.find(p => String(p.id || p.name) === printId);
   if (!print) return;
-  const si = _cutState.selectedClip?.sceneIdx ?? 0;
-  const color = speakerColor(print.name);
+  si = (si !== undefined ? si : null) ?? _cutState.selectedClip?.sceneIdx ?? 0;
   const clip = {
     id: Date.now(),
     name: (print.name || 'character') + ' clip',
@@ -908,6 +906,25 @@ window._cutAddPrintClip = function(printId) {
   _cutState.selectedClip = { sceneIdx: si, clipIdx: _cutState.scenes[si].clips.length - 1, clip };
   saveCutScenes();
   renderCutView();
+};
+
+
+window._cutAskAddWorld = function(worldId) {
+  const n = _cutState.scenes.length;
+  const def = String((_cutState.selectedClip?.sceneIdx ?? 0) + 1);
+  const ans = prompt('Add world to scene (1-' + n + '):', def);
+  if (ans === null) return;
+  const si = Math.min(Math.max((parseInt(ans) || 1) - 1, 0), n - 1);
+  window._cutAddWorldClip(worldId, si);
+};
+
+window._cutAskAddPrint = function(printId) {
+  const n = _cutState.scenes.length;
+  const def = String((_cutState.selectedClip?.sceneIdx ?? 0) + 1);
+  const ans = prompt('Add character to scene (1-' + n + '):', def);
+  if (ans === null) return;
+  const si = Math.min(Math.max((parseInt(ans) || 1) - 1, 0), n - 1);
+  window._cutAddPrintClip(printId, si);
 };
 
 // ── PUBLIC INIT ────────────────────────────────────────────
