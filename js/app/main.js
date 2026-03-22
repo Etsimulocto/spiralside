@@ -39,7 +39,7 @@ import { selectModel, toggleInputMenu, updateInputMenu, initModels } from './mod
 import { initStoreView, updateStoreView }          from './views/store.js';
 import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initQuestView }                           from './views/quest.js';
-import { initXP, showLevelUpToast, showXPGain }    from './xp.js';
+import { initXP, awardXP, getXPState, showLevelUpToast, showXPGain } from './xp.js';
 import { initStudioView }                          from './views/studio.js';
 import { initGuide, renderGuide } from './views/guide.js';
 import { initForgeView }           from './views/forge.js';
