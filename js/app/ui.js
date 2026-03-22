@@ -135,8 +135,7 @@ export function switchView(id) {
     forge:     () => window.initForgeView    && window.initForgeView(),
     vault:     () => window.initVaultView    && window.initVaultView(),
     pi:        () => window.initPiView       && window.initPiView(),
-  }
-  };;
+  };
   if (viewInits[id]) viewInits[id]();
   // Fire onOpen hook so modules can refresh state on revisit
   if (window[`on${id[0].toUpperCase()}${id.slice(1)}Open`]) {
