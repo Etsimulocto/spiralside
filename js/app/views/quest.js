@@ -53,6 +53,19 @@ function injectQuestStyles() {
       height: 100%; background: #FFD93D; border-radius: 2px;
       transition: width 0.6s ease;
     }
+    .quest-xp-panel {
+      display: flex; flex-direction: column; gap: 6px;
+      padding: 10px 16px 12px; border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .quest-xp-row { display: flex; align-items: center; justify-content: space-between; }
+    .quest-xp-label { font-size: 0.6rem; letter-spacing: 0.1em; color: var(--subtext); text-transform: uppercase; }
+    .quest-xp-nums  { font-size: 0.7rem; color: #FFD93D; letter-spacing: 0.06em; }
+    .quest-xp-full  { height: 6px; background: var(--muted); border-radius: 3px; overflow: hidden; }
+    .quest-xp-full-fill { height: 100%; background: linear-gradient(90deg,#FFD93D,#FF4BCB); border-radius: 3px; transition: width 0.6s ease; }
+    .quest-xp-meta  { display: flex; gap: 12px; }
+    .quest-xp-chip  { font-size: 0.58rem; color: var(--subtext); letter-spacing: 0.06em; }
+    .quest-xp-chip span { color: #FFD93D; }
 
     /* ── MII PANEL ── */
     .quest-mii-panel {
@@ -495,6 +508,22 @@ function renderQuest(el, char, events) {
         <div class="quest-xp-bar-bg">
           <div class="quest-xp-bar-fill" style="width:${xpPct}%"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- XP PANEL -->
+    <div class="quest-xp-panel">
+      <div class="quest-xp-row">
+        <div class="quest-xp-label">experience</div>
+        <div class="quest-xp-nums">${_xpCur} / ${_xpNxt} xp</div>
+      </div>
+      <div class="quest-xp-full">
+        <div class="quest-xp-full-fill" style="width:${xpPct}%"></div>
+      </div>
+      <div class="quest-xp-meta">
+        <div class="quest-xp-chip">daily <span>${_xps ? _xps.dailyXP : 0}/${_xps ? _xps.dailyCap : 10}</span></div>
+        <div class="quest-xp-chip">streak <span>${_xps ? _xps.streakDays : 1}d</span></div>
+        <div class="quest-xp-chip">total <span>${_xps ? _xps.totalXP : 0}</span></div>
       </div>
     </div>
 
