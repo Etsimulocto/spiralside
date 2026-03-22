@@ -396,6 +396,7 @@ export async function loadSavedSheets(dbGet) {
     // User-specific fields — restore all You card fields from IDB
     if (id === 'you') {
       if (saved.handle)   CHARACTERS.you.handle   = saved.handle;
+      window._youHandle = saved.handle;
       if (saved.pronouns) CHARACTERS.you.pronouns = saved.pronouns;
       if (saved.vibe)     CHARACTERS.you.vibe     = saved.vibe;
       if (saved.location) CHARACTERS.you.location = saved.location;
