@@ -83,8 +83,8 @@ export async function renderCard(print, artImage = null) {
   const vibe     = id.vibe            || '';
   const color    = display.accent_color || '#00F6D6';
   const cardId   = print.card_id      || generateCardId('companion');
-  const version  = print.version      ? 'v' + print.version
-                 : print.card_version ? 'v' + print.card_version : 'v1';
+  const _rv = print.version || print.card_version || 1;
+  const version = (''+_rv).startsWith('v') ? ''+_rv : 'v'+_rv;
   const level    = print.level        || (print.metadata && print.metadata.level) || 1;
   const creator  = (print.metadata && (print.metadata.creator_name || print.metadata.handle))
                  || (print.metadata && print.metadata.owner_id === 'platform' ? 'Spiralside' : null)
