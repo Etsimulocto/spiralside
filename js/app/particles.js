@@ -289,6 +289,27 @@ window.setParticlePreset = function(name) {
 window._particlesStart = function(d,sp,sz,col) { cfg.density=d; cfg.speed=sp; cfg.size=sz; cfg.color=col; var rgb=hex2rgb(col); pool.forEach(function(p){p.r=rgb[0];p.g=rgb[1];p.b=rgb[2];}); syncPool(); startEngine(); };
 window._particlesStop = stopEngine;
 
+
+// ── AUTO-CYCLE unlocked presets ───────────────────────────────
+let cycleTimer = null;
+window.startParticleCycle = function(intervalMs) {
+  if (cycleTimer) clearInterval(cycleTimer);
+  var presets = ['glitter','snow','sparks','confetti','aurora','void'].filter(function(p){ return presetUnlocked(p); });
+  var idx = presets.indexOf(cfg.preset);
+  if (idx < 0) idx = 0;
+  cycleTimer = setInterval(function() {
+    idx = (idx + 1) % presets.length;
+    cfg.preset = presets[idx];
+    saveCfg();
+    // highlight active chip
+    document.querySelectorAll('[id^=pchip-]').forEach(function(b){ b.style.borderColor='var(--border)'; b.style.color='var(--subtext)'; });
+    var chip = document.getElementById('pchip-'+presets[idx]);
+    if (chip) { chip.style.borderColor='var(--teal)'; chip.style.color='var(--teal)'; }
+  }, intervalMs || 3000);
+};
+window.stopParticleCycle = function() {
+  if (cycleTimer) { clearInterval(cycleTimer); cycleTimer = null; }
+};
 export async function initParticles() {
   cv  = document.getElementById('particles-canvas');
   if (!cv) { console.warn('[particles] canvas not found'); return; }
