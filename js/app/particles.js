@@ -67,7 +67,7 @@ async function saveCfg() {
 function getPlayerLevel() {
   if (window._xpState?.level) return window._xpState.level;
   if (window._xpLevel) return window._xpLevel;
-  return 99; // unlocked during dev/no-XP mode — cap at 99 so all presets available
+  return 1; // unlocked during dev/no-XP mode — cap at 99 so all presets available
 }
 
 function presetUnlocked(name) {
