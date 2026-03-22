@@ -51,7 +51,7 @@ let _cutCharacters = null;
 async function getCutCharacters() {
   if (_cutCharacters) return _cutCharacters;
   try {
-    const mod = await import('./state.js');
+    const mod = await import('../state.js');
     _cutCharacters = mod.CHARACTERS || {};
   } catch(e) { _cutCharacters = {}; }
   return _cutCharacters;
