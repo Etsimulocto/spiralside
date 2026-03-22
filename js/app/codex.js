@@ -148,6 +148,7 @@ function closeSceneForm() {
 }
 
 async function saveSceneCard() {
+  if (window.awardXP) window.awardXP('codex_card_created').then(r => { if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'codex'); });
   const id = _sceneEditId || generateCardId('scene');
   const scene = {
     id,
@@ -210,6 +211,7 @@ function closeWorldForm() {
 }
 
 async function saveWorldCard() {
+  if (window.awardXP) window.awardXP('codex_card_created').then(r => { if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'codex'); });
   const id = _worldEditId || generateCardId('world');
   const world = {
     id,

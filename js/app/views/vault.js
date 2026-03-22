@@ -56,6 +56,7 @@ export function initVaultView() {
   if (el.dataset.initialized) {
     // Revisit — just re-render the list with current state
     window.renderVault && window.renderVault();
+    if (window.awardXP) window.awardXP('vault_file_uploaded').then(r => { if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'vault'); });
     return;
   }
   el.dataset.initialized = 'true';

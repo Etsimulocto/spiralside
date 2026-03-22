@@ -442,6 +442,7 @@ async function handleSave() {
   const orig = btn.textContent;
   btn.textContent = '✓ saved';
   setTimeout(() => { btn.textContent = orig; }, 1800);
+  if (window.awardXP) window.awardXP('bot_configured').then(r => { if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'forge'); });
 
   // Reset chat with new greeting
   const chatMsgs = getChatMsgs();

@@ -165,6 +165,7 @@ async function _generate() {
       btn.disabled = true;
       if (window.saveImageToLibrary) {
         await window.saveImageToLibrary(url, 'generated-' + Date.now() + '.png');
+        if (window.awardXP) window.awardXP('image_generated').then(r => { if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'imagine'); });
       }
       setTimeout(() => { if (btn) { btn.textContent = '📚 save to library'; btn.disabled = false; } }, 1800);
     });
