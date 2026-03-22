@@ -46,17 +46,6 @@ async function cutIDBGet(store, key) {
   });
 }
 
-// ── CHARACTERS LOADER (Sky, Monday, Cold, Grit, You + prints) ─
-let _cutCharacters = null;
-async function getCutCharacters() {
-  if (_cutCharacters) return _cutCharacters;
-  try {
-    const mod = await import('../state.js');
-    _cutCharacters = mod.CHARACTERS || {};
-  } catch(e) { _cutCharacters = {}; }
-  return _cutCharacters;
-}
-
 // ── MODULE STATE ───────────────────────────────────────────
 let _cutState = {
   scenes: [],
@@ -118,26 +107,12 @@ async function loadBinData() {
     const rawWorlds = await cutIDBGetAll('worlds');
     _cutState.worldCards = rawWorlds;
     const rawPrints = await cutIDBGetAll('prints');
-    const userPrints = rawPrints.map(p => ({
+    _cutState.prints = rawPrints.map(p => ({
       ...p,
       name:  p.identity?.name  || p.name  || 'character',
       trait: p.identity?.title || p.trait || p.identity?.identity_line || '',
       image: p.portrait_base64 || p.image || null,
     }));
-    // Also include built-in characters (Sky, Monday, Cold, Grit, You)
-    const CHARS = await getCutCharacters();
-    const builtInPrints = Object.entries(CHARS)
-      .filter(([id, c]) => !c.isUser)
-      .map(([id, c]) => ({
-        id: 'builtin_' + id,
-        name:  c.name,
-        trait: c.trait || '',
-        image: c.portrait_base64 || null,
-        sourceCard: 'builtin_' + id,
-        _isBuiltIn: true,
-        _charData: c,
-      }));
-    _cutState.prints = [...builtInPrints, ...userPrints];
   } catch(e) {
     _cutState.sceneCards = [];
     _cutState.worldCards = [];

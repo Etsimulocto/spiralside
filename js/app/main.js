@@ -125,6 +125,7 @@ async function seedBuiltInPrints() {
     { id:'builtin_monday', name:'Monday', color:'#FF4BCB', title:'The Loudest One', vibe:'energy drink at midnight', firstWords:'OKAY but can we talk about—', stats:{Energy:99,Loyalty:94,Impulse:88,Heart:91} },
     { id:'builtin_cold',   name:'Cold',   color:'#4DA3FF', title:'The Quiet One',   vibe:'the moment before it rains', firstWords:'...',         stats:{Presence:97,Mystery:95,Precision:93,Warmth:41} },
     { id:'builtin_grit',   name:'GRIT',   color:'#FFD93D', title:'The Builder',     vibe:'calluses and coffee', firstWords:'What are we building?', stats:{Street_Sense:94,Bluntness:89,Heart:77,Mystery:65} },
+    { id:'builtin_you',    name:'You',    color:'#7B5FFF', title:'The One Who Showed Up', vibe:'still here', firstWords:'...', stats:{Curiosity:50,Creativity:50,Chaos_Level:50,Trust:50} },
   ];
   for (const c of builtIns) {
     try {
