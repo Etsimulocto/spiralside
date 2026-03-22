@@ -864,7 +864,34 @@ window._cutRenderAll = function() {
 window._cutGenImage = function() {
   const sel = _cutState.selectedClip;
   if (!sel) return;
-  const prompt = sel.clip.prompt || sel.clip.dialogue || sel.clip.name || '';
+  // Build a smart prompt from clip + its source card data
+  let prompt = '';
+  const clip = sel.clip;
+  // Try to find source print for character clips
+  const sourcePrint = _cutState.prints.find(p => String(p.id || p.name) === clip.sourceCard);
+  const sourceScene = _cutState.sceneCards.find(c => String(c.id || c.name) === clip.sourceCard);
+  const sourceWorld = _cutState.worldCards.find(w => String(w.id || w.name) === clip.sourceCard);
+  if (sourcePrint) {
+    const ap = sourcePrint.appearance || {};
+    const id = sourcePrint.identity || {};
+    const parts = [
+      id.name,
+      ap.description || '',
+      ap.hair ? 'hair: ' + ap.hair : '',
+      ap.eyes ? 'eyes: ' + ap.eyes : '',
+      ap.style ? 'wearing: ' + ap.style : '',
+      id.vibe || '',
+      ap.art_style || 'bloomcore character portrait',
+      'detailed, high quality',
+    ].filter(Boolean);
+    prompt = parts.join(', ');
+  } else if (sourceScene) {
+    prompt = [sourceScene.name, sourceScene.mood, sourceScene.time, sourceScene.location, sourceScene.camera, 'bloomcore art style'].filter(Boolean).join(', ');
+  } else if (sourceWorld) {
+    prompt = [sourceWorld.name, sourceWorld.biome, sourceWorld.tagline, 'bloomcore environment art'].filter(Boolean).join(', ');
+  } else {
+    prompt = clip.prompt || clip.dialogue || clip.name || '';
+  }
   // Store pending clip so imagine can return image
   window._cutPendingClip = { sceneIdx: sel.sceneIdx, clipIdx: sel.clipIdx };
   if (window.switchView) window.switchView('imagine');
