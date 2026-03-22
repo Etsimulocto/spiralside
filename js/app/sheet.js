@@ -234,6 +234,12 @@ export function renderActiveChar(id) {
     document.getElementById('user-food').value     = char.food     || '';
     document.getElementById('user-comfort').value  = char.comfort  || '';
     document.getElementById('user-hates').value       = char.hates       || '';
+    document.getElementById('user-hair').value        = char.hair        || '';
+    document.getElementById('user-eyes').value        = char.eyes        || '';
+    document.getElementById('user-build').value       = char.build       || '';
+    document.getElementById('user-style').value       = char.style       || '';
+    document.getElementById('user-marks').value       = char.marks       || '';
+    document.getElementById('user-wearing').value     = char.wearing     || '';
     document.getElementById('user-hobbies').value     = char.hobbies     || '';
     document.getElementById('user-obsession').value   = char.obsession   || '';
     document.getElementById('user-job').value         = char.job         || '';
@@ -315,6 +321,12 @@ export async function saveSummarize() {
     char.food     = document.getElementById('user-food').value;
     char.comfort  = document.getElementById('user-comfort').value;
     char.hates       = document.getElementById('user-hates').value;
+    char.hair        = document.getElementById('user-hair').value;
+    char.eyes        = document.getElementById('user-eyes').value;
+    char.build       = document.getElementById('user-build').value;
+    char.style       = document.getElementById('user-style').value;
+    char.marks       = document.getElementById('user-marks').value;
+    char.wearing     = document.getElementById('user-wearing').value;
     char.hobbies     = document.getElementById('user-hobbies').value;
     char.obsession   = document.getElementById('user-obsession').value;
     char.job         = document.getElementById('user-job').value;
@@ -342,6 +354,12 @@ export async function saveSummarize() {
     food:            char.food      || null,
     comfort:         char.comfort   || null,
     hates:           char.hates       || null,
+    hair:            char.hair        || null,
+    eyes:            char.eyes        || null,
+    build:           char.build       || null,
+    style:           char.style       || null,
+    marks:           char.marks       || null,
+    wearing:         char.wearing     || null,
     hobbies:         char.hobbies     || null,
     obsession:       char.obsession   || null,
     job:             char.job         || null,
@@ -433,6 +451,12 @@ export async function loadSavedSheets(dbGet) {
       if (saved.food)     CHARACTERS.you.food     = saved.food;
       if (saved.comfort)  CHARACTERS.you.comfort  = saved.comfort;
       if (saved.hates)       CHARACTERS.you.hates       = saved.hates;
+      if (saved.hair)        CHARACTERS.you.hair        = saved.hair;
+      if (saved.eyes)        CHARACTERS.you.eyes        = saved.eyes;
+      if (saved.build)       CHARACTERS.you.build       = saved.build;
+      if (saved.style)       CHARACTERS.you.style       = saved.style;
+      if (saved.marks)       CHARACTERS.you.marks       = saved.marks;
+      if (saved.wearing)     CHARACTERS.you.wearing     = saved.wearing;
       if (saved.hobbies)     CHARACTERS.you.hobbies     = saved.hobbies;
       if (saved.obsession)   CHARACTERS.you.obsession   = saved.obsession;
       if (saved.job)         CHARACTERS.you.job         = saved.job;
@@ -631,6 +655,12 @@ export function buildYouContext() {
   if (you.comfort)  parts.push(`Comfort show/game: ${you.comfort}.`);
   if (you.hates)    parts.push(`Things they dislike: ${you.hates}.`);
   if (you.workTags?.length) parts.push(`How they work: ${you.workTags.join(', ')}.`);
+  if (you.hair)       parts.push(`Their hair: ${you.hair}.`);
+  if (you.eyes)       parts.push(`Their eyes: ${you.eyes}.`);
+  if (you.build)      parts.push(`Height/build: ${you.build}.`);
+  if (you.style)      parts.push(`Their style: ${you.style}.`);
+  if (you.marks)      parts.push(`Distinguishing features: ${you.marks}.`);
+  if (you.wearing)    parts.push(`Usually wearing: ${you.wearing}.`);
   if (you.hobbies)    parts.push(`Hobbies: ${you.hobbies}.`);
   if (you.obsession)  parts.push(`Currently obsessed with: ${you.obsession}.`);
   if (you.job)        parts.push(`Job/role: ${you.job}.`);
