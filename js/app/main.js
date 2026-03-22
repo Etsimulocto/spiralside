@@ -117,10 +117,42 @@ window.closeWorldForm       = () => document.getElementById('codex-world-form-ov
 
 // ── APP READY ─────────────────────────────────────────────────
 // Called after auth check confirms a valid session
+
+// ── SEED BUILT-IN PRINTS ─────────────────────────────────────
+async function seedBuiltInPrints() {
+  const builtIns = [
+    { id:'builtin_sky',    name:'Sky',    color:'#00F6D6', title:'The Companion',   vibe:'the sky at 4am', firstWords:"Hey. I'm here.",        stats:{Presence:95,Mystery:60,Warmth:88,Patience:91} },
+    { id:'builtin_monday', name:'Monday', color:'#FF4BCB', title:'The Loudest One', vibe:'energy drink at midnight', firstWords:'OKAY but can we talk about—', stats:{Energy:99,Loyalty:94,Impulse:88,Heart:91} },
+    { id:'builtin_cold',   name:'Cold',   color:'#4DA3FF', title:'The Quiet One',   vibe:'the moment before it rains', firstWords:'...',         stats:{Presence:97,Mystery:95,Precision:93,Warmth:41} },
+    { id:'builtin_grit',   name:'GRIT',   color:'#FFD93D', title:'The Builder',     vibe:'calluses and coffee', firstWords:'What are we building?', stats:{Street_Sense:94,Bluntness:89,Heart:77,Mystery:65} },
+  ];
+  for (const c of builtIns) {
+    try {
+      const existing = await dbGet('prints', c.id);
+      if (existing) continue;
+      const statsObj = {};
+      Object.entries(c.stats).forEach(([k,v]) => { statsObj[k.toLowerCase()] = {value:v,max:100,description:''}; });
+      await dbSet('prints', {
+        id: c.id, card_id: c.id,
+        schema_version: 'spiralside_print_v1',
+        template_type: 'archetype',
+        identity: { name:c.name, title:c.title, vibe:c.vibe, first_words:c.firstWords, tone_tags:[] },
+        appearance:{}, personality:{}, story:{backstory:'',current_arc:'',affiliations:'',theme_song:''},
+        stats: statsObj, flavor:{},
+        portrait_base64: null,
+        metadata:{ owner_id:'system', visibility:'public', is_archetype:true,
+          created_at:new Date().toISOString(), updated_at:new Date().toISOString() },
+        _color: c.color,
+      });
+    } catch(e) { /* skip */ }
+  }
+}
+
 async function onAppReady() {
   initSky(); // living sky — Nimbis
   // 1. Open IndexedDB
   await initDB();
+  await seedBuiltInPrints();
 
   // 2. Load persisted bot config
   const bot = await dbGet('config', 'bot');
