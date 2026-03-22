@@ -115,7 +115,7 @@ function injectCutCSS() {
   s.textContent = `
     #view-spiralcut {
       display: flex; flex-direction: column; height: 100%;
-      background: var(--bg); overflow: hidden;
+      background: var(--bg); overflow: hidden; position: relative;
     }
     .cut-hdr {
       display: flex; align-items: center; justify-content: space-between;
@@ -298,8 +298,8 @@ function injectCutCSS() {
     .cut-tl-clip-name { color: rgba(255,255,255,0.88); overflow: hidden; text-overflow: ellipsis; }
     .cut-tl-footer { font-size: 0.58rem; color: var(--subtext); padding: 5px 0 0; letter-spacing: 0.06em; opacity: 0.7; }
     .cut-picker-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-      z-index: 400; display: flex; align-items: flex-end; justify-content: center;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 50; display: flex; align-items: flex-end; justify-content: center;
     }
     .cut-picker-panel {
       width: 100%; max-width: 480px; background: var(--bg);
