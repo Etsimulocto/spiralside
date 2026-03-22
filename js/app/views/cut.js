@@ -889,12 +889,29 @@ window._cutRenderAll = function() {
 window._cutGenImage = function() {
   const sel = _cutState.selectedClip;
   if (!sel) return;
-  const prompt = sel.clip.prompt || sel.clip.name;
+  const prompt = sel.clip.prompt || sel.clip.dialogue || sel.clip.name || '';
+  // Store pending clip so imagine can return image
+  window._cutPendingClip = { sceneIdx: sel.sceneIdx, clipIdx: sel.clipIdx };
   if (window.switchView) window.switchView('imagine');
   setTimeout(() => {
     const inp = document.getElementById('imagine-prompt');
     if (inp) { inp.value = prompt; inp.focus(); }
   }, 200);
+};
+
+// Called by imagine2.js after successful generation
+window._cutReceiveImage = function(imageDataUrl) {
+  const p = window._cutPendingClip;
+  if (!p) return;
+  const clip = _cutState.scenes[p.sceneIdx]?.clips[p.clipIdx];
+  if (!clip) { window._cutPendingClip = null; return; }
+  clip.imageDataUrl = imageDataUrl;
+  clip.status = '✦ image';
+  _cutState.selectedClip = { sceneIdx: p.sceneIdx, clipIdx: p.clipIdx, clip };
+  window._cutPendingClip = null;
+  saveCutScenes();
+  if (window.switchView) window.switchView('cut');
+  setTimeout(() => renderCutView(), 100);
 };
 
 window._cutGenClip = function() {

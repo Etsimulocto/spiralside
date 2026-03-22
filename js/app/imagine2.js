@@ -158,6 +158,17 @@ async function _generate() {
       const a = document.createElement('a'); a.href = url; a.download = 'spiralside-gen.png'; a.click();
     });
     // Save to library — calls window.saveImageToLibrary from library.js
+    // If Cut is waiting for this image, offer to send it back
+    if (window._cutPendingClip) {
+      const cutBtn = document.createElement('button');
+      cutBtn.className = 'im-save-btn';
+      cutBtn.style.cssText = 'margin-top:6px;border-color:var(--teal);color:var(--teal);background:rgba(0,246,214,0.08)';
+      cutBtn.textContent = '✂ send to SpiralCut clip';
+      cutBtn.addEventListener('click', () => {
+        if (window._cutReceiveImage) window._cutReceiveImage(url);
+      });
+      resEl.appendChild(cutBtn);
+    }
     document.getElementById('im-to-lib')?.addEventListener('click', async () => {
       const btn = document.getElementById('im-to-lib');
       if (!btn) return;
