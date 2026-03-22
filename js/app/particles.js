@@ -286,10 +286,7 @@ window.setParticlePreset = function(name) {
 // ── INIT ──────────────────────────────────────────────────
 // Called from main.js after login
 
-window._particlesStart = function(density, speed, size, color) {
-  cfg.density = density; cfg.speed = speed; cfg.size = size; cfg.color = color;
-  const [r,g,b] = hex2rgb(color); pool.forEach(p=>{p.r=r;p.g=g;p.b=b;});
-};
+window._particlesStart = function(d,sp,sz,col) { cfg.density=d; cfg.speed=sp; cfg.size=sz; cfg.color=col; var rgb=hex2rgb(col); pool.forEach(function(p){p.r=rgb[0];p.g=rgb[1];p.b=rgb[2];}); syncPool(); startEngine(); };
 window._particlesStop = stopEngine;
 
 export async function initParticles() {
