@@ -32,6 +32,7 @@ export function buildCharSelector() {
     if (!prints) return;
     prints.forEach(print => {
       if (!print.identity?.name) return;
+      if (String(print.id).startsWith('builtin_')) return; // skip seeded archetypes
       const chip     = document.createElement('div');
       chip.className = 'char-chip';
       chip.textContent = print.identity.name;
