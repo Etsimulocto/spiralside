@@ -252,6 +252,8 @@ export function renderActiveChar(id) {
         '<span>v' + (char.card_version || 1) + '</span>';
       cardMetaEl.style.display = 'flex';
     }
+    const makeBtn = document.getElementById('make-you-card-btn');
+    if (makeBtn) makeBtn.style.display = 'block';
   }
 
   // Save+summarize button color
@@ -649,6 +651,82 @@ This cannot be undone.`)) return;
       renderActiveChar('sky');
     });
   });
+};
+
+// ── MAKE YOU CARD ─────────────────────────────────────────────
+// Builds a soul print from You card fields and renders it as a card
+window.makeYouCard = async function() {
+  const { renderCard, generateCardId, calcRarity } = await import('./card.js');
+  const you = (await import('./state.js')).CHARACTERS.you;
+  if (!you) return;
+
+  // Build a soul print from You card data
+  const print = {
+    card_id:         you.card_id || generateCardId('character'),
+    card_version:    you.card_version || 1,
+    level:           you.level || 1,
+    portrait_base64: you.portrait_base64 || null,
+    identity: {
+      name:          you.handle || 'You',
+      title:         you.trait  || 'the one who showed up',
+      identity_line: you.vibe   || '',
+      vibe:          you.vibe   || '',
+      tone_tags:     you.workTags || [],
+    },
+    stats: {
+      curiosity:   { value: you.traits?.[0]?.val || 50, max: 100 },
+      creativity:  { value: you.traits?.[1]?.val || 50, max: 100 },
+      chaos_level: { value: you.traits?.[2]?.val || 50, max: 100 },
+      trust:       { value: you.traits?.[3]?.val || 50, max: 100 },
+    },
+    metadata: {
+      owner_id:     'you',
+      creator_name: you.handle || 'you',
+      is_archetype: false,
+    },
+    display: {
+      accent_color: '#7B5FFF',
+      rarity:       calcRarity({}),
+    },
+    lifecycle: {},
+  };
+
+  // Build overlay
+  let overlay = document.getElementById('you-card-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'you-card-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+    overlay.innerHTML = `
+      <div id="you-card-wrap" style="width:100%;max-width:360px;padding:0 20px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="downloadYouCard()" style="padding:11px 20px;background:linear-gradient(135deg,var(--purple),var(--teal));border:none;border-radius:10px;color:#fff;font-family:var(--font-ui);font-size:0.78rem;cursor:pointer;letter-spacing:0.06em">↓ download png</button>
+        <button onclick="document.getElementById('you-card-overlay').remove()" style="padding:11px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.78rem;cursor:pointer">close</button>
+      </div>
+    `;
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+  }
+
+  const wrap = document.getElementById('you-card-wrap');
+  wrap.innerHTML = '<div style="color:var(--subtext);font-size:0.75rem;padding:20px;text-align:center">rendering...</div>';
+  overlay.style.display = 'flex';
+
+  const canvas = await renderCard(print, print.portrait_base64 || null);
+  canvas.style.cssText = 'width:100%;border-radius:10px;display:block;box-shadow:0 0 40px rgba(123,95,255,0.3)';
+  window._youCardCanvas = canvas;
+  wrap.innerHTML = '';
+  wrap.appendChild(canvas);
+};
+
+window.downloadYouCard = function() {
+  if (!window._youCardCanvas) return;
+  const you = window.CHARACTERS?.you;
+  const id  = you?.card_id || 'you-card';
+  const a   = document.createElement('a');
+  a.download = id + '.png';
+  a.href     = window._youCardCanvas.toDataURL('image/png');
+  a.click();
 };
 
 // ── EXPORT CODEX ─────────────────────────────────────────────
