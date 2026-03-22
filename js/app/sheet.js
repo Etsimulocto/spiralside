@@ -294,6 +294,7 @@ export async function saveSummarize() {
   // If user's own sheet, also read extra profile fields
   if (char.isUser) {
     char.handle   = document.getElementById('user-handle').value;
+    window._youHandle = char.handle || window._youHandle;
     char.pronouns = document.getElementById('user-pronouns').value;
     char.vibe     = document.getElementById('user-vibe').value;
     char.location = document.getElementById('user-location').value;
