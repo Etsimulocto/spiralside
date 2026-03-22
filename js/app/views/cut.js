@@ -106,7 +106,13 @@ async function loadBinData() {
     }));
     const rawWorlds = await cutIDBGetAll('worlds');
     _cutState.worldCards = rawWorlds;
-    _cutState.prints = await cutIDBGetAll('prints');
+    const rawPrints = await cutIDBGetAll('prints');
+    _cutState.prints = rawPrints.map(p => ({
+      ...p,
+      name:  p.identity?.name  || p.name  || 'character',
+      trait: p.identity?.title || p.trait || p.identity?.identity_line || '',
+      image: p.portrait_base64 || p.image || null,
+    }));
   } catch(e) {
     _cutState.sceneCards = [];
     _cutState.worldCards = [];
@@ -923,11 +929,11 @@ window._cutAddPrintClip = function(printId, si) {
     name: (print.name || 'character') + ' clip',
     speaker: print.name || 'narrator',
     mood: print.trait || '',
-    dialogue: (typeof print.lore === 'string' ? print.lore.slice(0,80) : (print.identity || '')),
+    dialogue: (typeof print.story?.current_arc === 'string' ? print.story.current_arc.slice(0,80) : (typeof print.story?.backstory === 'string' ? print.story.backstory.slice(0,80) : '')),
     dur: 5,
     prompt: [print.name, print.trait].filter(Boolean).join(', '),
-    status: print.image ? '✦ image' : 'no image',
-    imageDataUrl: print.image || null,
+    status: (print.portrait_base64 || print.image) ? '✦ image' : 'no image',
+    imageDataUrl: print.portrait_base64 || print.image || null,
     sourceCard: printId,
   };
   _cutState.scenes[si].clips.push(clip);
