@@ -653,7 +653,7 @@ function renderCutTimeline() {
       return `
         <div class="cut-tl-clip ${isSel?'selected':''}"
              style="left:${left}%;width:${Math.min(w,100-left)}%;background:${c}22;border:1px solid ${c}55;"
-             onclick="window._cutSelectClip(${_cutState.scenes.indexOf(_cutState.scenes.find((_,i)=>_cutState.scenes[i].clips.includes(clip)))},${ci})">
+             onclick="window._cutSelectClip(${si},${ci})">
           <div class="cut-tl-clip-name">${clip.name||'clip'} &middot; ${dur}s</div>
         </div>`;
     }).join('');
@@ -954,7 +954,7 @@ window._cutAddPrintClip = function(printId, si) {
     name: (print.name || 'character') + ' clip',
     speaker: print.name || 'narrator',
     mood: print.trait || '',
-    dialogue: (typeof print.story?.current_arc === 'string' ? print.story.current_arc.slice(0,80) : (typeof print.story?.backstory === 'string' ? print.story.backstory.slice(0,80) : '')),
+    dialogue: (print.story?.current_arc || print.story?.backstory || print.identity?.vibe || ''),
     dur: 5,
     prompt: [print.name, print.trait].filter(Boolean).join(', '),
     status: (print.portrait_base64 || print.image) ? '✦ image' : 'no image',
