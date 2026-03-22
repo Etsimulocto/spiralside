@@ -121,22 +121,22 @@ export function switchView(id) {
   }
   // Lazy-init view on first visit
   const viewInits = {
-    store:   () => { window.initStoreView && window.initStoreView(); updateCreditDisplay();     'spiralcut': () => window.initCutView?.(),
-},
-    studio:  () => window.initStudioView && window.initStudioView(),
-    spiralcut: () => window.initSpiralCutView && window.initSpiralCutView(),
-    quest:     () => window.initQuestView     && window.initQuestView(),
-    style:   () => { window.initStylePanel && window.initStylePanel(); setTimeout(() => window.initColorSketches && window.initColorSketches(), 400); },
-    account: () => window.initAccountView && window.initAccountView(),
-    imagine: () => window.initImagine     && window.initImagine(),
-    music:   () => window.initMusicView   && window.initMusicView(),
-    library: () => window.initLibrary     && window.initLibrary(),
-    code:    () => window.initCodeView     && window.initCodeView(),
-    guide:   () => window.initGuideView   && window.initGuideView(),
-    forge:   () => window.initForgeView   && window.initForgeView(),
-    'vault': () => window.initVaultView && window.initVaultView(),
-    pi:      () => window.initPiView        && window.initPiView(),
-  };
+    store:     () => { window.initStoreView  && window.initStoreView();  updateCreditDisplay(); },
+    studio:    () => window.initStudioView   && window.initStudioView(),
+    spiralcut: () => window.initCutView      && window.initCutView(),
+    quest:     () => window.initQuestView    && window.initQuestView(),
+    style:     () => { window.initStylePanel && window.initStylePanel(); setTimeout(() => window.initColorSketches && window.initColorSketches(), 400); },
+    account:   () => window.initAccountView  && window.initAccountView(),
+    imagine:   () => window.initImagine      && window.initImagine(),
+    music:     () => window.initMusicView    && window.initMusicView(),
+    library:   () => window.initLibrary      && window.initLibrary(),
+    code:      () => window.initCodeView     && window.initCodeView(),
+    guide:     () => window.initGuideView    && window.initGuideView(),
+    forge:     () => window.initForgeView    && window.initForgeView(),
+    vault:     () => window.initVaultView    && window.initVaultView(),
+    pi:        () => window.initPiView       && window.initPiView(),
+  }
+  };;
   if (viewInits[id]) viewInits[id]();
   // Fire onOpen hook so modules can refresh state on revisit
   if (window[`on${id[0].toUpperCase()}${id.slice(1)}Open`]) {
