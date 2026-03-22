@@ -869,9 +869,15 @@ window._cutGenImage = function() {
   window._cutPendingClip = { sceneIdx: sel.sceneIdx, clipIdx: sel.clipIdx };
   if (window.switchView) window.switchView('imagine');
   setTimeout(() => {
-    const inp = document.getElementById('imagine-prompt');
-    if (inp) { inp.value = prompt; inp.focus(); }
-  }, 200);
+    const inp = document.getElementById('im-prompt');
+    if (inp) {
+      inp.value = prompt;
+      inp.dispatchEvent(new Event('input'));
+      // Auto-trigger generation after prompt is set
+      const btn = document.getElementById('im-go');
+      if (btn && !btn.disabled) btn.click();
+    }
+  }, 350);
 };
 
 // Called by imagine2.js after successful generation
