@@ -603,8 +603,14 @@ function renderCutTimeline() {
           <div class="cut-track empty"></div>
         </div>`;
     }
+    // Display order: cast (top) → scene (middle) → world (bottom)
+    const _dispOrder = [...sc.clips.map((c,i)=>i)].sort((a,b)=>{
+      function r(c){if(_cutState.worldCards.some(w=>String(w.id||w.name)===c.sourceCard))return 2;if(_cutState.prints.some(p=>String(p.id||p.name)===c.sourceCard))return 0;return 1;}
+      return r(sc.clips[a])-r(sc.clips[b]);
+    });
     let offsetPct = 0;
-    const bars = sc.clips.map((clip, ci) => {
+    const bars = _dispOrder.map((ci) => {
+      const clip = sc.clips[ci];
       const dur = clip.dur || 5;
       const w = (dur / totalSecs) * 100;
       const left = offsetPct;
