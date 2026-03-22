@@ -481,9 +481,9 @@ export function loadSlot(i) {
 // ── BACKGROUND EXTENDED CONTROLS ─────────────────────────────
 // particle/grid/image vars moved to top
 
-export function updateParticleSpeed(v) { particleSpeed = parseInt(v); stopParticles(); startParticles(); }
-export function updateParticleSize(v)  { particleSize  = parseFloat(v); stopParticles(); startParticles(); }
-export function updateParticleColor(v) { particleColor = v; stopParticles(); startParticles(); }
+export function updateParticleSpeed(v)  { particleSpeed = parseInt(v);   if(window._particlesStop){window._particlesStop();} if(window._particlesStart){window._particlesStart(parseInt(pendingStyle.particleDensity)||30,particleSpeed,particleSize,particleColor||'#00F6D6');} }
+export function updateParticleSize(v)   { particleSize  = parseFloat(v); if(window._particlesStop){window._particlesStop();} if(window._particlesStart){window._particlesStart(parseInt(pendingStyle.particleDensity)||30,particleSpeed,particleSize,particleColor||'#00F6D6');} }
+export function updateParticleColor(v)  { particleColor = v;             if(window._particlesStop){window._particlesStop();} if(window._particlesStart){window._particlesStart(parseInt(pendingStyle.particleDensity)||30,particleSpeed,particleSize,particleColor||'#00F6D6');} }
 
 export function updateGridSize(v) {
   gridSize = parseInt(v);
