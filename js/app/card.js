@@ -83,7 +83,12 @@ export async function renderCard(print, artImage = null) {
   const vibe     = id.vibe            || '';
   const color    = display.accent_color || '#00F6D6';
   const cardId   = print.card_id      || generateCardId('companion');
-  const version  = print.version      || 'v1';
+  const version  = print.version      ? 'v' + print.version
+                 : print.card_version ? 'v' + print.card_version : 'v1';
+  const level    = print.level        || (print.metadata && print.metadata.level) || 1;
+  const creator  = (print.metadata && (print.metadata.creator_name || print.metadata.handle))
+                 || (print.metadata && print.metadata.owner_id === 'platform' ? 'Spiralside' : null)
+                 || print.identity?.name || 'unknown';
   const rarity   = display.rarity     || calcRarity(lifecycle);
   const tier     = RARITY[rarity]     || RARITY.standard;
 
@@ -120,12 +125,21 @@ export async function renderCard(print, artImage = null) {
   ctx.font       = '10px "DM Mono", monospace';
   ctx.fillText('CHARACTER CARD', 16, 4 + headerH - 12);
 
-  // Sigil top right
-  ctx.fillStyle  = tier.border;
-  ctx.font       = '22px serif';
-  ctx.textAlign  = 'right';
-  ctx.fillText(tier.sigil, CARD_W - 16, 4 + headerH / 2);
-  ctx.textAlign  = 'left';
+  // Level badge + rarity sigil top right
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath();
+  ctx.roundRect(CARD_W - 52, 10, 44, 20, 4);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 10px "DM Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('LV ' + level, CARD_W - 30, 20);
+  ctx.fillStyle = tier.border;
+  ctx.font = '11px serif';
+  ctx.fillText(tier.sigil, CARD_W - 30, 36);
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
 
   // ── ART AREA (top 50%) ──
   const artY = headerH + 4;
@@ -283,9 +297,9 @@ export async function renderCard(print, artImage = null) {
   ctx.fillText('CARD HISTORY', rightX + 8, infoY + 12);
   ctx.fillStyle = '#9090c0';
   ctx.font      = '8px "DM Mono", monospace';
-  ctx.fillText(`Created by ${meta.owner_id === 'platform' ? 'Spiralside' : 'Architect'}`, rightX + 8, infoY + 24);
-  ctx.fillText(`Usage: ${lifecycle.usage_count || 0}`, rightX + 8, infoY + 34);
-  ctx.fillText(`Version: ${version}`, rightX + 8, infoY + 44);
+  ctx.fillText('by ' + creator, rightX + 8, infoY + 24);
+  ctx.fillText('usage: ' + (lifecycle.usage_count || 0), rightX + 8, infoY + 34);
+  ctx.fillText(version + '  lv ' + level, rightX + 8, infoY + 44);
 
   // ── FOOTER ──
   const footerY = CARD_H - 36;

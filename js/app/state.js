@@ -117,6 +117,10 @@ export const CHARACTERS = {
     ],
     arc: '',
     handle: '', vibe: '', song: '',
+    // card identity fields
+    card_id:      null,
+    card_version: 1,
+    level:        1,
   },
 };
 

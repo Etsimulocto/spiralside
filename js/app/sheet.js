@@ -241,6 +241,17 @@ export function renderActiveChar(id) {
       t.classList.toggle('on', workTags.includes(t.dataset.tag));
       t.onclick = () => t.classList.toggle('on');
     });
+    // card meta strip
+    const cardMetaEl = document.getElementById('you-card-meta');
+    if (cardMetaEl) {
+      const _xps = (typeof getXPState !== 'undefined') ? getXPState() : null;
+      const lv   = (_xps ? _xps.level : null) || char.level || 1;
+      cardMetaEl.innerHTML =
+        '<span>' + (char.card_id || 'CHR-????-????') + '</span>' +
+        '<span>lv ' + lv + '</span>' +
+        '<span>v' + (char.card_version || 1) + '</span>';
+      cardMetaEl.style.display = 'flex';
+    }
   }
 
   // Save+summarize button color
@@ -262,6 +273,20 @@ export async function saveSummarize() {
   const id   = state.activeChar;
   const char = CHARACTERS[id];
   if (!char) return;
+
+  // sync level from XP engine
+  if (typeof getXPState !== 'undefined') {
+    const _xps = getXPState();
+    if (_xps) char.level = _xps.level || 1;
+  }
+  // ensure card_id exists (generated once, never overwritten)
+  if (!char.card_id) {
+    const s1 = Math.random().toString(36).substring(2,6).toUpperCase();
+    const s2 = Math.random().toString(36).substring(2,6).toUpperCase();
+    char.card_id = 'CHR-' + s1 + '-' + s2;
+  }
+  // bump version on every save
+  char.card_version = (char.card_version || 1) + 1;
 
   // Read arc text from whichever field is active
   char.arc = document.getElementById('arc-text').value;
@@ -301,6 +326,9 @@ export async function saveSummarize() {
     freetext:        char.freetext  || null,
     workTags:        char.workTags  || [],
     portrait_base64: char.portrait_base64 || null,
+    card_id:         char.card_id      || null,
+    card_version:    char.card_version || 1,
+    level:           char.level        || 1,
   });
 
   // Button feedback
@@ -381,6 +409,9 @@ export async function loadSavedSheets(dbGet) {
       if (saved.workTags) CHARACTERS.you.workTags = saved.workTags;
       // FIX: restore portrait so You card shows photo after refresh
       if (saved.portrait_base64) CHARACTERS.you.portrait_base64 = saved.portrait_base64;
+      if (saved.card_id)      CHARACTERS.you.card_id      = saved.card_id;
+      if (saved.card_version) CHARACTERS.you.card_version = saved.card_version;
+      if (saved.level)        CHARACTERS.you.level        = saved.level;
     }
   }
 }
