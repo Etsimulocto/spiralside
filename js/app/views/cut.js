@@ -988,8 +988,14 @@ window._cutAskAddPrint = function(printId) {
 
 // ── PUBLIC INIT ────────────────────────────────────────────
 export async function initCutView() {
-  injectCutCSS();
-  await loadCutScenes();
-  await loadBinData();
-  renderCutView();
+  try {
+    injectCutCSS();
+    await loadCutScenes();
+    await loadBinData();
+    renderCutView();
+  } catch(e) {
+    console.error('[cut] init failed', e);
+    const el = document.getElementById('view-cut');
+    if (el) el.innerHTML = `<div style="padding:20px;color:var(--subtext);font-size:0.78rem">cut error: ${e.message}</div>`;
+  }
 }
