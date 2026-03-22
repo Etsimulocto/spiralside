@@ -33,6 +33,7 @@ export function buildCharSelector() {
     prints.forEach(print => {
       if (!print.identity?.name) return;
       if (String(print.id).startsWith('builtin_')) return; // skip seeded archetypes
+      if (print.id === 'you_card') return; // skip — You archetype chip handles this
       const chip     = document.createElement('div');
       chip.className = 'char-chip';
       chip.textContent = print.identity.name;
@@ -375,6 +376,34 @@ export async function saveSummarize() {
     card_version:    char.card_version || 1,
     level:           char.level        || 1,
   });
+
+  // Keep you_card print in IDB in sync with latest You card data
+  try {
+    const { dbSet: _dbs } = await import('./db.js');
+    await _dbs('prints', {
+      id:              'you_card',
+      card_id:         char.card_id || 'you_card',
+      card_version:    char.card_version || 1,
+      level:           char.level || 1,
+      portrait_base64: char.portrait_base64 || null,
+      identity: {
+        name:          char.handle || 'You',
+        title:         char.trait  || 'the one who showed up',
+        identity_line: char.vibe   || '',
+        vibe:          char.vibe   || '',
+        tone_tags:     char.workTags || [],
+      },
+      stats: {
+        curiosity:   { value: char.traits?.[0]?.val || 50, max: 100 },
+        creativity:  { value: char.traits?.[1]?.val || 50, max: 100 },
+        chaos_level: { value: char.traits?.[2]?.val || 50, max: 100 },
+        trust:       { value: char.traits?.[3]?.val || 50, max: 100 },
+      },
+      metadata: { owner_id:'you', creator_name: char.handle||'you', is_archetype:false, is_you:true },
+      display:   { accent_color:'#7B5FFF' },
+      lifecycle: {},
+    });
+  } catch(e) { console.warn('you_card sync:', e); }
 
   // Button feedback
   const btn  = document.getElementById('save-summarize-btn');
@@ -787,6 +816,38 @@ window.makeYouCard = async function() {
   window._youCardCanvas = canvas;
   wrap.innerHTML = '';
   wrap.appendChild(canvas);
+
+  // Save You print to IDB so SpiralCut + Codex chips can find it
+  const { dbSet } = await import('./db.js');
+  await dbSet('prints', {
+    id:              'you_card',
+    card_id:         print.card_id,
+    card_version:    print.card_version,
+    level:           print.level,
+    portrait_base64: print.portrait_base64 || null,
+    identity: {
+      name:          you.handle || 'You',
+      title:         you.trait  || 'the one who showed up',
+      identity_line: you.vibe   || '',
+      vibe:          you.vibe   || '',
+      tone_tags:     you.workTags || [],
+    },
+    stats: {
+      curiosity:   { value: you.traits?.[0]?.val || 50, max: 100 },
+      creativity:  { value: you.traits?.[1]?.val || 50, max: 100 },
+      chaos_level: { value: you.traits?.[2]?.val || 50, max: 100 },
+      trust:       { value: you.traits?.[3]?.val || 50, max: 100 },
+    },
+    metadata: {
+      owner_id:     'you',
+      creator_name: you.handle || 'you',
+      is_archetype: false,
+      is_you:       true,
+    },
+    display: { accent_color: '#7B5FFF' },
+    lifecycle: {},
+  });
+  console.log('[you_card] saved to prints IDB');
 };
 
 window.downloadYouCard = function() {
