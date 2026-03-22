@@ -444,24 +444,32 @@ function renderCutSidebar() {
   `).join('');
 
   const worldsContent = worldCards.length
-    ? worldCards.map(w => `
-        <div class="cut-clip-row" style="padding:6px 8px;margin:2px 6px">
+    ? worldCards.map(w => {
+        const wid = String(w.id || w.name || '').replace(/'/g,'');
+        return `
+        <div class="cut-clip-row" style="padding:6px 8px;margin:2px 6px;cursor:pointer"
+             onclick="window._cutAddWorldClip('${wid}')">
           <div class="cut-clip-info">
             <div class="cut-clip-name">${w.name || 'world'}</div>
-            <div class="cut-clip-dur">${w.biome || ''}</div>
+            <div class="cut-clip-dur">${w.biome || ''} · tap to add</div>
           </div>
-        </div>`).join('')
+        </div>`;
+      }).join('')
     : `<div class="cut-bin-empty">world cards<br>from Codex<br>appear here</div>`;
 
   const castContent = prints.length
-    ? prints.map(p => `
-        <div class="cut-clip-row" style="padding:6px 8px;margin:2px 6px">
+    ? prints.map(p => {
+        const pid = String(p.id || p.name || '').replace(/'/g,'');
+        return `
+        <div class="cut-clip-row" style="padding:6px 8px;margin:2px 6px;cursor:pointer"
+             onclick="window._cutAddPrintClip('${pid}')">
           <div class="cut-clip-dot" style="background:${speakerColor(p.name)}"></div>
           <div class="cut-clip-info">
             <div class="cut-clip-name">${p.name || 'character'}</div>
-            <div class="cut-clip-dur">${p.trait || ''}</div>
+            <div class="cut-clip-dur">${p.trait || ''} · tap to add</div>
           </div>
-        </div>`).join('')
+        </div>`;
+      }).join('')
     : `<div class="cut-bin-empty">character prints<br>from Codex<br>appear here</div>`;
 
   return `
@@ -853,6 +861,53 @@ window._cutExport = function() {
   a.href = URL.createObjectURL(blob);
   a.download = 'spiralcut-storyboard.json';
   a.click();
+};
+
+
+window._cutAddWorldClip = function(worldId) {
+  const world = _cutState.worldCards.find(w => String(w.id || w.name) === worldId);
+  if (!world) return;
+  // Add to whichever scene is currently selected, or scene 0
+  const si = _cutState.selectedClip?.sceneIdx ?? 0;
+  const clip = {
+    id: Date.now(),
+    name: world.name || 'world clip',
+    speaker: 'narrator',
+    mood: world.biome || '',
+    dialogue: world.tagline || world.lore?.slice(0,80) || '',
+    dur: 5,
+    prompt: [world.biome, world.name].filter(Boolean).join(', '),
+    status: world.image ? '✦ image' : 'no image',
+    imageDataUrl: world.image || null,
+    sourceCard: worldId,
+  };
+  _cutState.scenes[si].clips.push(clip);
+  _cutState.selectedClip = { sceneIdx: si, clipIdx: _cutState.scenes[si].clips.length - 1, clip };
+  saveCutScenes();
+  renderCutView();
+};
+
+window._cutAddPrintClip = function(printId) {
+  const print = _cutState.prints.find(p => String(p.id || p.name) === printId);
+  if (!print) return;
+  const si = _cutState.selectedClip?.sceneIdx ?? 0;
+  const color = speakerColor(print.name);
+  const clip = {
+    id: Date.now(),
+    name: (print.name || 'character') + ' clip',
+    speaker: print.name || 'narrator',
+    mood: print.trait || '',
+    dialogue: print.lore?.slice(0,80) || print.identity || '',
+    dur: 5,
+    prompt: [print.name, print.trait].filter(Boolean).join(', '),
+    status: print.image ? '✦ image' : 'no image',
+    imageDataUrl: print.image || null,
+    sourceCard: printId,
+  };
+  _cutState.scenes[si].clips.push(clip);
+  _cutState.selectedClip = { sceneIdx: si, clipIdx: _cutState.scenes[si].clips.length - 1, clip };
+  saveCutScenes();
+  renderCutView();
 };
 
 // ── PUBLIC INIT ────────────────────────────────────────────
