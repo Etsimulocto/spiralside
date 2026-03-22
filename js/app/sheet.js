@@ -577,6 +577,7 @@ function _setPersonaAndChat(char) {
   import('./ui.js').then(({ switchView }) => {
     import('./chat.js').then(({ addMessage, getChatMsgs }) => {
       import('./state.js').then(({ state }) => {
+        import('./db.js').then(({ dbSet }) => {
         state.botName        = char.name;
         state.botPersonality = '';
         state.botGreeting    = char.firstWords || "Hey. I'm here.";
@@ -585,7 +586,9 @@ function _setPersonaAndChat(char) {
         const chatMsgs = getChatMsgs();
         if (chatMsgs) chatMsgs.innerHTML = '';
         addMessage(state.botGreeting, 'bot', char.name, char.color);
-        switchView('chat');
+        dbSet('config',{key:'bot',name:char.name,personality:'',greeting:state.botGreeting,tone:[],color:char.color});
+          switchView('chat');
+        });
       });
     });
   });
