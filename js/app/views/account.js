@@ -6,8 +6,9 @@ import { syncLoadAll, syncSave } from '../sync.js';
 import { generateSoulPrint }          from '../pdf.js';
 
 export async function exportSoulPrintPDF() {
-  // Pull You card data from CHARACTERS global (set by sheet.js)
-  const you = window.CHARACTERS?.you || {};
+  // Read directly from IDB -- window.CHARACTERS may not be populated yet
+  const { dbGet } = await import('../db.js');
+  const you = await dbGet('sheets', 'you') || {};
   await generateSoulPrint(you);
 }
 
