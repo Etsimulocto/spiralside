@@ -8,6 +8,7 @@
 
 import { state, CHARACTERS, RAIL } from './state.js';
 import { dbSet, dbGetAll }          from './db.js';
+import { syncSave, syncLoad }         from './sync.js';
 import { getToken }                 from './auth.js';
 import { getChatMsgs }              from './chat.js';
 
@@ -341,6 +342,7 @@ export async function saveSummarize() {
   }
 
   // Persist to IndexedDB
+  syncSave('you_card', Object.assign({}, char, {id:'you'})).catch(()=>{});
   await dbSet('sheets', {
     id,
     arc:             char.arc,

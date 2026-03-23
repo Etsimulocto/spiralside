@@ -2,6 +2,31 @@
 // SPIRALSIDE — ACCOUNT VIEW v2.1
 // Full module — owns its own HTML and CSS like store.js
 // Nimbis anchor: js/app/views/account.js
+import { syncLoadAll, syncSave } from '../sync.js';
+
+export async function exportUserData() {
+  const records = await syncLoadAll();
+  if (!records.length) { alert('No cloud data yet. Save your You card and Quest character first.'); return; }
+  const blob = new Blob([JSON.stringify({ spiralside_backup: true, exported_at: new Date().toISOString(), records }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'spiralside-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+export function importUserData() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = async e => {
+    try {
+      const parsed = JSON.parse(await e.target.files[0].text());
+      if (!parsed.spiralside_backup || !parsed.records?.length) { alert('Invalid backup file.'); return; }
+      for (const rec of parsed.records) await syncSave(rec.record_type, rec.data);
+      alert('Restored ' + parsed.records.length + ' records. Reload to see your data.');
+    } catch(err) { alert('Could not read file: ' + err.message); }
+  };
+  input.click();
+}
 // Added: About section at bottom with legal links + version
 // ============================================================
 import { state } from '../state.js';

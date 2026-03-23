@@ -3,6 +3,7 @@
 // Idle DnD companion game seeded from calendar events
 // Mii-style avatar + quest board + weekly calendar strip
 // Nimbis anchor: js/app/views/quest.js
+import { syncSave, syncLoad } from '../sync.js';
 // ============================================================
 
 let _initialized = false;
@@ -336,6 +337,7 @@ function saveEvents(evs) {
 }
 function saveCharacter(c) {
   localStorage.setItem('ss_quest_char', JSON.stringify(c));
+  syncSave('quest_char', c).catch(()=>{});
 }
 
 // Reads codex You card from IDB sheets store, returns promise
