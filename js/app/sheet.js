@@ -498,13 +498,22 @@ function _downloadYouCard(char) {
       [JSON.stringify(exportObj, null, 2)],
       { type: 'application/json' }
     );
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'spiralside-you-' + new Date().toISOString().slice(0,10) + '.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(a.href);
+    // Open in new tab — Edge blocks silent downloads but always allows window.open
+    // User can then Ctrl+S to save, or just keep it as a tab for reference
+    const url = URL.createObjectURL(blob);
+    const tab = window.open(url, '_blank');
+    // Fallback: if popup blocked, show a toast with a manual download link
+    if (!tab) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'spiralside-you-' + new Date().toISOString().slice(0,10) + '.json';
+      a.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 20px;border-radius:20px;font-family:var(--font-ui);font-size:0.78rem;z-index:9999;text-decoration:none;';
+      a.textContent = '⬇ download your backup';
+      document.body.appendChild(a);
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 8000);
+    } else {
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
   } catch(e) {
     console.warn('[sheet] export failed:', e);
   }
