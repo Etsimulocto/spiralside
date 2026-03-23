@@ -128,10 +128,12 @@ function drawYouPage(doc, you) {
 
   // Extra fields row
   const _extras = [
-    you.song      ? '\u266a ' + you.song      : null,
-    you.location  ? '\ud83d\udccd ' + you.location : null,
-    you.job       ? '\ud83d\udcbc ' + you.job       : null,
-    you.hobbies   ? '\u2605 ' + you.hobbies   : null,
+    you.song      ? 'song: '     + you.song      : null,
+    you.location  ? 'location: ' + you.location  : null,
+    you.job       ? 'job: '      + you.job        : null,
+    you.hobbies   ? 'hobbies: '  + you.hobbies   : null,
+    you.obsession ? 'obsession: '+ you.obsession : null,
+    you.project   ? 'project: '  + you.project   : null,
   ].filter(Boolean);
   if (_extras.length) {
     doc.setFontSize(7.5);
