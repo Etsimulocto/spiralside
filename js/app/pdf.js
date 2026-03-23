@@ -126,6 +126,25 @@ function drawYouPage(doc, you) {
     cy += arcLines.length * 5 + 4;
   }
 
+  // Extra fields row
+  const _extras = [
+    you.song      ? '\u266a ' + you.song      : null,
+    you.location  ? '\ud83d\udccd ' + you.location : null,
+    you.job       ? '\ud83d\udcbc ' + you.job       : null,
+    you.hobbies   ? '\u2605 ' + you.hobbies   : null,
+  ].filter(Boolean);
+  if (_extras.length) {
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor('#7070a0');
+    _extras.forEach(ex => {
+      const lines = doc.splitTextToSize(ex, W - 20);
+      doc.text(lines[0], W / 2, cy, { align: 'center' });
+      cy += 5;
+    });
+    cy += 3;
+  }
+
   // Traits
   if (you.traits && you.traits.length) {
     doc.setTextColor('#7070a0');
@@ -141,14 +160,15 @@ function drawYouPage(doc, you) {
   }
 
   // Chips
-  if (you.chips && you.chips.length) {
+  const _tags = you.workTags || you.chips || [];
+  if (_tags.length) {
     doc.setTextColor('#7070a0');
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
     doc.text('HOW YOU WORK', 10, cy);
     cy += 6;
     let cx = 10;
-    you.chips.forEach(chip => {
+    _tags.forEach(chip => {
       const label = typeof chip === 'string' ? chip : chip.label || '';
       if (!label) return;
       const tw = doc.getTextWidth(label);
@@ -164,8 +184,8 @@ function drawYouPage(doc, you) {
   }
 
   // Tell Sky anything
-  if (you.tell_sky || you.sky_note) {
-    const note = you.tell_sky || you.sky_note;
+  if (you.freetext || you.tell_sky || you.sky_note) {
+    const note = you.freetext || you.tell_sky || you.sky_note;
     doc.setFillColor('#111118');
     doc.setDrawColor('#1e1e2e');
     doc.roundedRect(8, cy, W - 16, 30, 2, 2, 'FD');
