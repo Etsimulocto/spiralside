@@ -559,9 +559,13 @@ export async function generateSoulPrint(you) {
         + '<span style="color:#00F6D6;font-family:monospace;font-size:0.82rem;font-weight:700;">SOUL PRINT</span>'
         + '<div style="display:flex;gap:8px;">'
         + '<a href="' + pdfData + '" download="' + fname + '" style="background:#00F6D6;color:#000;padding:6px 14px;border-radius:20px;font-family:monospace;font-size:0.72rem;font-weight:700;text-decoration:none;">&#8595; save</a>'
-        + '<button onclick="document.getElementById(&#39;_pdf_overlay&#39;).remove()" style="background:transparent;border:1px solid #2a2a3e;color:#7070a0;padding:6px 14px;border-radius:20px;font-family:monospace;font-size:0.72rem;cursor:pointer;">close</button>' + '<div style="width:100%;max-width:480px;text-align:center;padding:6px;background:#111118;font-family:monospace;font-size:0.65rem;color:#7070a0;">iOS: tap &#8595; save or use Safari share button &#8679; Save to Files</div>'
+        + '<button onclick="document.getElementById(&#39;_pdf_overlay&#39;).remove()" style="background:transparent;border:1px solid #2a2a3e;color:#7070a0;padding:6px 14px;border-radius:20px;font-family:monospace;font-size:0.72rem;cursor:pointer;">close</button>'
+        + '</div>'
+        + '<div style="width:100%;max-width:480px;padding:10px 16px;background:#0a0a0f;border-top:1px solid #1e1e2e;">'
+        + '<div style="color:#00F6D6;font-family:monospace;font-size:0.7rem;font-weight:700;margin-bottom:6px;">TO SAVE ON iPHONE:</div>'
+        + '<div style="color:#e8e8f0;font-family:monospace;font-size:0.7rem;line-height:2;">1. Tap the share button in Safari toolbar (box with arrow up)<br>2. Scroll and tap Save to Files<br>3. Choose On My iPhone or iCloud Drive<br>4. Tap Save</div>'
         + '</div></div>'
-        + '<iframe src="' + pdfData + '" style="flex:1;width:100%;max-width:480px;border:none;background:#fff;" />';
+        + '<iframe src="' + pdfData + '" style="flex:1;width:100%;max-width:480px;border:none;background:#fff;"></iframe>';
       document.body.appendChild(overlay);
     } else {
       doc.save(fname);
