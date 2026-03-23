@@ -292,6 +292,10 @@ export async function saveSummarize() {
   // This way the user always gets their backup regardless of chat state
   const _youChar = CHARACTERS['you'];
   if (_youChar) _downloadYouCard(_youChar);
+  // ── DOWNLOAD FIRES IMMEDIATELY — before any early-return checks ──
+  // This way the user always gets their backup regardless of chat state
+  const _youChar = CHARACTERS['you'];
+  if (_youChar) _downloadYouCard(_youChar);
   const id   = state.activeChar;
   const char = CHARACTERS[id];
   if (!char) return;
@@ -426,7 +430,7 @@ export async function saveSummarize() {
     if (!token) return;
 
     // Flatten thread to plain text
-    const thread = Array.from(messages).map(m => {
+    const thread = Array.from(messages).filter(m => m && m.querySelector).map(m => {
       const bubble = m.querySelector('.msg-bubble');
       const role   = m.classList.contains('user') ? 'user' : 'bot';
       return `${role}: ${bubble?.textContent?.trim() || ''}`;
