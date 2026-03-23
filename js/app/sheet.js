@@ -292,10 +292,6 @@ export async function saveSummarize() {
   // This way the user always gets their backup regardless of chat state
   const _youChar = CHARACTERS['you'];
   if (_youChar) _downloadYouCard(_youChar);
-  // ── DOWNLOAD FIRES IMMEDIATELY — before any early-return checks ──
-  // This way the user always gets their backup regardless of chat state
-  const _youChar = CHARACTERS['you'];
-  if (_youChar) _downloadYouCard(_youChar);
   const id   = state.activeChar;
   const char = CHARACTERS[id];
   if (!char) return;
