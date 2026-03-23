@@ -4,6 +4,7 @@ import { initParticles } from "./particles.js";
 // Boot sequence — imports all modules, wires globals, starts app
 // This is the single entry point loaded by index.html
 // Nimbis anchor: js/app/main.js
+import { exportSoulPrintPDF, exportUserData, importUserData } from './views/account.js';
 // ============================================================
 
 import { initComic, playCustomComic }              from './comic.js';
@@ -57,6 +58,9 @@ window.switchAuthTab     = switchAuthTab;
 window.togglePw          = togglePw;
 window.handleLogin       = handleLogin;
 window.handleSignup      = handleSignup;
+window._exportSoulPrint = exportSoulPrintPDF;
+window._exportJSON      = exportUserData;
+window._importJSON      = importUserData;
 window.handleSignout     = () => handleSignout(() => {});
 window.openPanel         = (tab) => window.switchView(tab === 'store' ? 'store' : tab === 'style' ? 'style' : 'account');
 window.setFontSize        = setFontSize;

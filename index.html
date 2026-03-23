@@ -1579,7 +1579,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.442</div>
+        <div class="version-badge" id="version-badge">v0.8.443</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
@@ -2552,6 +2552,12 @@
       <div class="panel-section-title">account</div>
       <div class="account-email" id="account-email">—</div>
       <button class="signout-btn" onclick="handleSignout()">sign out</button>
+      <div style="margin-top:16px">
+        <div style="font-size:0.6rem;letter-spacing:0.12em;color:var(--subtext);text-transform:uppercase;margin-bottom:10px">your data</div>
+        <button id="pdf-btn" onclick="window._exportSoulPrint && window._exportSoulPrint()" style="width:100%;padding:12px;background:linear-gradient(135deg,#00F6D6,#7c6af7);border:none;border-radius:10px;color:#000;font-family:var(--font-ui);font-size:0.78rem;font-weight:700;cursor:pointer;letter-spacing:0.04em;margin-bottom:8px">&#8595; soul print PDF</button>
+        <button onclick="window._exportJSON && window._exportJSON()" style="width:100%;padding:11px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.75rem;cursor:pointer;letter-spacing:0.04em;margin-bottom:8px">&#8595; backup JSON</button>
+        <button onclick="window._importJSON && window._importJSON()" style="width:100%;padding:11px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.75rem;cursor:pointer;letter-spacing:0.04em">&#8593; restore from backup</button>
+      </div>
     </div>
   </div>
 </div>

@@ -3,6 +3,13 @@
 // Full module — owns its own HTML and CSS like store.js
 // Nimbis anchor: js/app/views/account.js
 import { syncLoadAll, syncSave } from '../sync.js';
+import { generateSoulPrint }          from '../pdf.js';
+
+export async function exportSoulPrintPDF() {
+  // Pull You card data from CHARACTERS global (set by sheet.js)
+  const you = window.CHARACTERS?.you || {};
+  await generateSoulPrint(you);
+}
 
 export async function exportUserData() {
   const records = await syncLoadAll();
