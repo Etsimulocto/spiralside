@@ -40,6 +40,18 @@ function drawPill(doc, text, x, y, accentHex) {
   return pw + 4; // return width used for next pill
 }
 
+// Check if we need a new page, add one if so, reset cy
+function checkPage(doc, cy, H, margin) {
+  if (cy > H - margin) {
+    doc.addPage();
+    // Redraw dark background on new page
+    doc.setFillColor('#0a0a0f');
+    doc.rect(0, 0, doc.internal.pageSize.getWidth(), H, 'F');
+    return 20; // reset cy to top margin
+  }
+  return cy;
+}
+
 // Draw a trait bar row
 function drawTraitBar(doc, label, val, x, y, pageW) {
   const barW = pageW - x - 20;
@@ -216,6 +228,13 @@ function drawYouPage(doc, you) {
     const col1x = 10; const col2x = W / 2 + 2;
     let col1y = cy; let col2y = cy;
     _youFields.forEach((f, i) => {
+      // If both columns near bottom, add page and reset
+      if (col1y > H - 30 || col2y > H - 30) {
+        doc.addPage();
+        doc.setFillColor('#0a0a0f');
+        doc.rect(0, 0, W, H, 'F');
+        col1y = 20; col2y = 20;
+      }
       const x = i % 2 === 0 ? col1x : col2x;
       const useY = i % 2 === 0 ? col1y : col2y;
       doc.setFont('helvetica', 'bold');
@@ -352,6 +371,20 @@ function drawCardPage(doc, print, idx, total) {
   doc.text((print.card_id || print.id || '') + '  //  ' + (print.schema_version || ''), W / 2, cy, { align: 'center' });
   cy += 7;
 
+  // Helper to check page overflow mid-card
+  const _chk = (y) => {
+    if (y > H - 20) {
+      doc.addPage();
+      doc.setFillColor('#0a0a0f');
+      doc.rect(0, 0, W, H, 'F');
+      // redraw footer
+      doc.setFillColor('#111118');
+      doc.rect(0, H - 12, W, 12, 'F');
+      return 10;
+    }
+    return y;
+  };
+
   // ── IDENTITY section ──
   const idFields = [
     ['vibe',       id.vibe],
@@ -366,7 +399,7 @@ function drawCardPage(doc, print, idx, total) {
   ].filter(f => f[1] && f[1] !== '?');
   if (idFields.length) {
     cy = _section(doc, 'IDENTITY', 8, cy);
-    idFields.forEach(f => { cy = _field(doc, f[0], f[1], 8, cy, W); });
+    idFields.forEach(f => { cy = _chk(_field(doc, f[0], f[1], 8, cy, W)); });
     cy += 2;
   }
 
@@ -381,7 +414,7 @@ function drawCardPage(doc, print, idx, total) {
   ].filter(f => f[1]);
   if (appFields.length) {
     cy = _section(doc, 'APPEARANCE', 8, cy);
-    appFields.forEach(f => { cy = _field(doc, f[0], f[1], 8, cy, W); });
+    appFields.forEach(f => { cy = _chk(_field(doc, f[0], f[1], 8, cy, W)); });
     cy += 2;
   }
 
@@ -395,7 +428,7 @@ function drawCardPage(doc, print, idx, total) {
   ].filter(f => f[1]);
   if (perFields.length) {
     cy = _section(doc, 'PERSONALITY', 8, cy);
-    perFields.forEach(f => { cy = _field(doc, f[0], f[1], 8, cy, W); });
+    perFields.forEach(f => { cy = _chk(_field(doc, f[0], f[1], 8, cy, W)); });
     cy += 2;
   }
 
@@ -408,7 +441,7 @@ function drawCardPage(doc, print, idx, total) {
   ].filter(f => f[1]);
   if (stoFields.length) {
     cy = _section(doc, 'STORY', 8, cy);
-    stoFields.forEach(f => { cy = _field(doc, f[0], f[1], 8, cy, W); });
+    stoFields.forEach(f => { cy = _chk(_field(doc, f[0], f[1], 8, cy, W)); });
     cy += 2;
   }
 
@@ -420,7 +453,7 @@ function drawCardPage(doc, print, idx, total) {
   ].filter(f => f[1]);
   if (flaFields.length) {
     cy = _section(doc, 'FLAVOR', 8, cy);
-    flaFields.forEach(f => { cy = _field(doc, f[0], f[1], 8, cy, W); });
+    flaFields.forEach(f => { cy = _chk(_field(doc, f[0], f[1], 8, cy, W)); });
     cy += 2;
   }
 
