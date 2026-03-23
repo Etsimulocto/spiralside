@@ -546,7 +546,19 @@ export async function generateSoulPrint(you) {
 
     // Save
     const fname = 'spiralside-soulprint-' + new Date().toISOString().slice(0, 10) + '.pdf';
-    doc.save(fname);
+    // iOS Safari fix -- use data URI instead of blob save
+    var pdfData = doc.output('datauristring');
+    var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS || isSafari) {
+      var w = window.open();
+      if (w) {
+        w.document.write('<html><body style="margin:0;background:#0a0a0f;display:flex;align-items:center;justify-content:center;min-height:100vh"><div style="text-align:center;font-family:monospace;color:#e8e8f0;padding:32px"><div style="color:#00F6D6;font-size:1.1rem;margin-bottom:16px">Soul Print ready</div><p style="color:#7070a0;font-size:0.85rem;margin-bottom:24px">Tap and hold the button, then choose<br><strong>Download Linked File</strong> or <strong>Save to Files</strong></p><a href="' + pdfData + '" download="' + fname + '" style="display:inline-block;background:#00F6D6;color:#000;padding:12px 28px;border-radius:20px;font-weight:700;text-decoration:none;font-size:0.9rem">&#8595; ' + fname + '</a></div></body></html>');
+        w.document.close();
+      }
+    } else {
+      doc.save(fname);
+    }
 
   } catch(e) {
     console.error('[pdf] generation failed:', e);
