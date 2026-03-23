@@ -288,6 +288,10 @@ export function renderActiveChar(id) {
 // Saves sheet to IndexedDB, then optionally calls AI to extract
 // traits from the current chat thread and merges them back
 export async function saveSummarize() {
+  // ── DOWNLOAD FIRES IMMEDIATELY — before any early-return checks ──
+  // This way the user always gets their backup regardless of chat state
+  const _youChar = CHARACTERS['you'];
+  if (_youChar) _downloadYouCard(_youChar);
   const id   = state.activeChar;
   const char = CHARACTERS[id];
   if (!char) return;
@@ -459,7 +463,7 @@ export async function saveSummarize() {
       // Re-render with new data
       renderActiveChar(id);
       // Auto-download a backup of everything they filled out
-      if (id === 'you') _downloadYouCard(char);
+      // download already fired at top of saveSummarize
     }
   } catch(e) {
     console.warn('saveSummarize AI step:', e);
