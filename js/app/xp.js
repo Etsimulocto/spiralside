@@ -193,7 +193,6 @@ let _initialized = false;
 // Call once on app boot (in main.js onAppReady).
 // Loads state, handles midnight reset, awards daily login XP.
 export async function initXP() {
-  if (_initialized) return _state;
   _state = await loadXPState();
   _state = _handleDayReset(_state);
   _state = await _awardDailyLogin(_state);
