@@ -563,7 +563,7 @@ export async function generateSoulPrint(you) {
         + '</div>'
         + '<div style="width:100%;max-width:480px;padding:10px 16px;background:#0a0a0f;border-top:1px solid #1e1e2e;">'
         + '<div style="color:#00F6D6;font-family:monospace;font-size:0.7rem;font-weight:700;margin-bottom:6px;">TO SAVE ON iPHONE:</div>'
-        + '<div style="color:#e8e8f0;font-family:monospace;font-size:0.7rem;line-height:2;">1. Tap the share button in Safari toolbar (box with arrow up)<br>2. Scroll and tap Save to Files<br>3. Choose On My iPhone or iCloud Drive<br>4. Tap Save</div>'
+        + '<div style="color:#e8e8f0;font-family:monospace;font-size:0.7rem;line-height:2;">1. Tap <strong style="color:#00F6D6;">Print</strong> in the share sheet above<br>2. Pinch-zoom the preview to open the PDF<br>3. Tap share again &#8679; then <strong style="color:#00F6D6;">Save to Files</strong><br>4. Choose On My iPhone &rarr; Save</div>'
         + '</div></div>'
         + '<iframe src="' + pdfData + '" style="flex:1;width:100%;max-width:480px;border:none;background:#fff;"></iframe>';
       document.body.appendChild(overlay);
