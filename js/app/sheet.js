@@ -449,7 +449,10 @@ export async function saveSummarize() {
       if (parsed.summary) char.arc = parsed.summary;
 
       // Save merged result
-      await dbSet('sheets', { id, arc: char.arc, traits: char.traits });
+      // Merge into full existing record — never overwrite fields we did not touch
+      const { dbGet: _dbGet2 } = await import('./db.js');
+      const _existing = await _dbGet2('sheets', id) || {};
+      await dbSet('sheets', { ..._existing, id, arc: char.arc, traits: char.traits });
 
       // Re-render with new data
       renderActiveChar(id);
