@@ -859,6 +859,7 @@ function showLootToast(msg) {
 }
 
 export async function initQuestView() {
+  dropRandomLoot();
   // Re-render quest char when cloud hydration lands (may bring You card data)
   window.addEventListener('cloud:hydrated', async () => {
     const fresh = await loadCharacter();
