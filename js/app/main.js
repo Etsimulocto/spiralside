@@ -162,7 +162,7 @@ async function seedBuiltInPrints() {
 // Runs before UI renders so the user sees their real theme immediately.
 // Fully silent on failure — localStorage / defaults win if cloud unreachable.
 async function hydrateFromCloud() {
-  // Style prefs
+  // ── Style prefs ──────────────────────────────────────────
   try {
     const cloudStyle = await syncLoad('style_prefs');
     if (cloudStyle) {
@@ -174,7 +174,48 @@ async function hydrateFromCloud() {
     }
   } catch(e) { console.warn('[sync] style hydration failed:', e); }
 
-  // Quest char — only seed localStorage if this device has nothing saved
+  // ── You card — seed IDB if fresh device ──────────────────
+  // loadSavedSheets runs after this and reads from IDB,
+  // so writing here means the You card loads correctly on first login
+  try {
+    const cloudYou = await syncLoad('you_card');
+    if (cloudYou) {
+      // Check if IDB already has a you record on this device
+      // initDB hasn't run yet so open IDB directly
+      const hasLocal = await new Promise(resolve => {
+        const req = indexedDB.open('spiralside');
+        req.onsuccess = e => {
+          const db = e.target.result;
+          // If sheets store doesn't exist yet, definitely fresh
+          if (!db.objectStoreNames.contains('sheets')) { db.close(); resolve(false); return; }
+          const tx = db.transaction('sheets', 'readonly');
+          const get = tx.objectStore('sheets').get('you');
+          get.onsuccess = () => { db.close(); resolve(!!get.result); };
+          get.onerror  = () => { db.close(); resolve(false); };
+        };
+        req.onerror = () => resolve(false);
+      });
+
+      if (!hasLocal) {
+        // Write cloud data into IDB so loadSavedSheets picks it up
+        await new Promise(resolve => {
+          const req = indexedDB.open('spiralside');
+          req.onsuccess = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('sheets')) { db.close(); resolve(); return; }
+            const tx = db.transaction('sheets', 'readwrite');
+            tx.objectStore('sheets').put({ ...cloudYou, id: 'you' });
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror    = () => { db.close(); resolve(); };
+          };
+          req.onerror = () => resolve();
+        });
+        console.log('[sync] you_card hydrated from cloud into IDB');
+      }
+    }
+  } catch(e) { console.warn('[sync] you_card hydration failed:', e); }
+
+  // ── Quest char — seed localStorage if fresh device ───────
   try {
     if (!localStorage.getItem('ss_quest_char')) {
       const cloudChar = await syncLoad('quest_char');
