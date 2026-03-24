@@ -151,6 +151,21 @@ export function initStoreView() {
         <div class="gift-msg" id="gift-msg"></div>
       </div>
 
+      <div class="view-section-title" style="margin-top:24px;">perks</div>
+      <div class="feature-row" id="ads-off-row">
+        <div class="feature-icon">🏙️</div>
+        <div class="feature-name">hide skyline ads<div class="feature-sub">one-time · stored locally</div></div>
+        <div class="feature-cost">50,000 cr</div>
+        <div class="ads-off-building" id="ads-off-btn" onclick="window.toggleAdsOff()" title="click to toggle">
+          <div class="aob-wins">
+            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
+            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
+            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
+          </div>
+          <div class="aob-label" id="ads-off-label">off</div>
+        </div>
+      </div>
+
     </div>`;
   }
   updateStoreView();
