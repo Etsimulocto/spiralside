@@ -597,6 +597,9 @@ function renderQuest(el, char, events) {
           <label>date</label>
           <input type="date" id="quest-ev-date" />
         </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div class="quest-field" style="flex:1;margin-bottom:0"><label>time (opt)</label><input type="time" id="quest-ev-time" style="width:100%;color-scheme:dark;" /></div>
+        </div>
         <div class="quest-modal-btns">
           <button class="quest-modal-cancel" id="quest-modal-cancel">cancel</button>
           <button class="quest-modal-save" id="quest-modal-save">add quest</button>
@@ -626,9 +629,10 @@ function renderQuest(el, char, events) {
   document.getElementById('quest-modal-save').onclick = () => {
     const title = document.getElementById('quest-ev-title').value.trim();
     const date  = document.getElementById('quest-ev-date').value;
+    const time  = (document.getElementById('quest-ev-time') || {}).value || '';
     if (!title || !date) return;
     const evs = loadEvents();
-    evs.push({ id: Date.now().toString(), title, date });
+    evs.push({ id: Date.now().toString(), title, date, time });
     saveEvents(evs);
     document.getElementById('quest-modal-overlay').classList.remove('open');
     // Award XP for adding a quest event
