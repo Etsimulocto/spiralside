@@ -803,7 +803,104 @@ function dropRandomLoot() {
   const icons = {rock:'chr128299',sock:'chr129510',spoon:'chr129364',scroll:'chr128220',jar:'chr129529',card:'chr127183',button:'chr128280',die:'chr127922',note:'chr128221',bone:'chr129462',marble:'chr128302',key:'chr128505',cork:'chr127870',feather:'chr129718',coin:'chr129689',nail:'chr128296',chalk:'chr128397',tooth:'chr129463',candle:'chr129457',hat:'chr127913'};
   const icon = String.fromCodePoint(parseInt(icons[p.i].replace('chr',''))) || p.i;
   if (window.addItem) window.addItem({id:'loot_'+Date.now(),name:p.n,icon:icon,use_text:p.u,stat:null,bonus:0,expiresAt:null,isLoot:true});
-  showLootToast(icon + ' found: ' + p.n);
+  const lootItem = {id:'loot_'+Date.now(),name:p.n,icon:icon,use_text:p.u,stat:null,bonus:0,expiresAt:null,isLoot:true};
+  if (window.addItem) window.addItem(lootItem);
+  showLootCard(lootItem);
+}
+
+function showLootCard(item) {
+  // Inject styles
+  if (!document.getElementById('loot-card-styles')) {
+    const st = document.createElement('style');
+    st.id = 'loot-card-styles';
+    st.textContent = [
+      '.loot-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}',
+      '.loot-card{background:#111118;border:1px solid #FFD93D55;border-radius:16px;padding:20px;width:100%;max-width:300px;position:relative;font-family:var(--font-ui);}',
+      '.loot-found-badge{position:absolute;top:-10px;left:16px;background:#FFD93D;color:#08080d;font-size:0.55rem;letter-spacing:0.1em;padding:2px 10px;border-radius:20px;font-weight:700;text-transform:uppercase;}',
+      '.loot-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}',
+      '.loot-icon-wrap{width:52px;height:52px;background:#FFD93D14;border:1px solid #FFD93D33;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}',
+      '.loot-name{font-size:0.88rem;color:#F0F0FF;font-weight:600;margin-bottom:3px;}',
+      '.loot-rarity{font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:#FFD93D;}',
+      '.loot-divider{height:1px;background:#FFD93D22;margin:0 0 12px;}',
+      '.loot-use{font-size:0.72rem;color:#7070a0;line-height:1.6;margin-bottom:14px;font-style:italic;}',
+      '.loot-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}',
+      '.loot-stat{background:#0f0f18;border:1px solid #1e1e35;border-radius:8px;padding:8px;text-align:center;}',
+      '.loot-stat-val{font-size:0.88rem;font-weight:700;}',
+      '.loot-stat-lbl{font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:#4040a0;margin-top:2px;}',
+      '.loot-btns{display:flex;gap:8px;}',
+      '.loot-btn-use{flex:1;padding:10px;background:#FFD93D18;border:1px solid #FFD93D44;border-radius:8px;color:#FFD93D;font-family:var(--font-ui);font-size:0.68rem;letter-spacing:0.06em;cursor:pointer;text-align:center;}',
+      '.loot-btn-toss{padding:10px 14px;background:transparent;border:1px solid #1e1e35;border-radius:8px;color:#4040a0;font-family:var(--font-ui);font-size:0.68rem;cursor:pointer;}',
+    ].join('');
+    document.head.appendChild(st);
+  }
+
+  // Get live stats
+  const xps = window.getXPState ? window.getXPState() : null;
+  const gold = xps ? (xps.gold || 0) : 0;
+  const streak = xps ? (xps.streakDays || 1) : 1;
+  const level = xps ? (xps.level || 1) : 1;
+
+  // Rarity flavor based on item name length (pure nonsense but fun)
+  const rarities = ['common junk','strange find','odd relic','cursed object','forgotten thing'];
+  const rarity = rarities[item.name.length % rarities.length];
+
+  // Build overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'loot-overlay';
+  overlay.id = 'loot-overlay';
+
+  overlay.innerHTML =
+    '<div class="loot-card">' +
+      '<div class="loot-found-badge">item found</div>' +
+      '<div class="loot-header">' +
+        '<div class="loot-icon-wrap"><span style="font-size:24px">' + item.icon + '</span></div>' +
+        '<div><div class="loot-name">' + item.name + '</div>' +
+        '<div class="loot-rarity">' + rarity + '</div></div>' +
+      '</div>' +
+      '<div class="loot-divider"></div>' +
+      '<div class="loot-use">"' + item.use_text + '"</div>' +
+      '<div class="loot-stats">' +
+        '<div class="loot-stat"><div class="loot-stat-val" style="color:#FFD93D">' + gold + 'g</div><div class="loot-stat-lbl">gold</div></div>' +
+        '<div class="loot-stat"><div class="loot-stat-val" style="color:#00F6D6">' + streak + 'd</div><div class="loot-stat-lbl">streak</div></div>' +
+        '<div class="loot-stat"><div class="loot-stat-val" style="color:#FF4BCB">lv ' + level + '</div><div class="loot-stat-lbl">level</div></div>' +
+      '</div>' +
+      '<div class="loot-btns">' +
+        '<div class="loot-btn-use" id="loot-use-btn">use item</div>' +
+        '<div class="loot-btn-toss" id="loot-toss-btn">toss</div>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+
+  const close = () => {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.2s';
+    setTimeout(() => overlay.remove(), 200);
+  };
+
+  // Use button — show use_text as toast then close
+  overlay.querySelector('#loot-use-btn').onclick = async (e) => {
+    e.stopPropagation();
+    // Keep item in inventory — user manually uses from inventory panel
+    close();
+    // Flash use text briefly
+    const flash = document.createElement('div');
+    flash.style.cssText = 'position:fixed;top:calc(54px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);background:#111118;border:1px solid #FFD93D;color:#FFD93D;font-family:var(--font-ui);font-size:.7rem;padding:8px 16px;border-radius:20px;z-index:9999;white-space:nowrap;';
+    flash.textContent = item.icon + ' ' + item.use_text;
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 3000);
+  };
+
+  // Toss button — consume and close
+  overlay.querySelector('#loot-toss-btn').onclick = async (e) => {
+    e.stopPropagation();
+    if (window.consumeItem && item.id) await window.consumeItem(item.id);
+    close();
+  };
+
+  // Click outside closes
+  overlay.onclick = close;
+  overlay.querySelector('.loot-card').onclick = e => e.stopPropagation();
 }
 
 function showLootToast(msg) {
