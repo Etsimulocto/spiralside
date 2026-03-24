@@ -961,7 +961,7 @@ async function resolveCompletedQuests() {
       evDateTime.setHours(h, m, 0, 0);
       return now > evDateTime;
     }
-    return d < today || d.toDateString() === today.toDateString();
+    return d < today;
   });
 
   if (!toResolve.length) return;
