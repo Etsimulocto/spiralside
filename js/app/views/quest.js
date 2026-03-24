@@ -824,6 +824,12 @@ async function dropRandomLoot() {
 }
 
 function showLootToast(msg) {
+  // Inject toast styles into head if not already there
+  if (!document.getElementById('loot-toast-style-inj ')) {
+    const _ls = document.createElement('style'); _ls.id = 'loot-toast-style-inj';
+    _ls.textContent = '.quest-loot-toast{position:fixed;top:calc(54px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-10px);background:#111118;border:1px solid #FFD93D;color:#FFD93D;font-family:var(--font-ui);font-size:.7rem;letter-spacing:.06em;padding:8px 16px;border-radius:20px;opacity:0;pointer-events:none;z-index:9999;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;}.quest-loot-toast.visible{opacity:1;transform:translateX(-50%) translateY(0);}';
+    document.head.appendChild(_ls);
+  }
   let toast = document.getElementById('quest-loot-toast');
   if (!toast) {
     toast = document.createElement('div');
