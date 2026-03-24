@@ -215,6 +215,52 @@ async function hydrateFromCloud() {
     }
   } catch(e) { console.warn('[sync] you_card hydration failed:', e); }
 
+  // ── User prints — seed IDB if fresh device ──────────────
+  // Each print is stored as 'print_{card_id}' in user_data
+  // Only hydrate if this device has no prints at all in IDB
+  try {
+    const hasPrints = await new Promise(resolve => {
+      const req = indexedDB.open('spiralside');
+      req.onsuccess = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('prints')) { db.close(); resolve(false); return; }
+        const tx  = db.transaction('prints', 'readonly');
+        const req2 = tx.objectStore('prints').count();
+        req2.onsuccess = () => { db.close(); resolve(req2.result > 0); };
+        req2.onerror   = () => { db.close(); resolve(false); };
+      };
+      req.onerror = () => resolve(false);
+    });
+
+    if (!hasPrints) {
+      // Pull all records, filter for print_ keys
+      const { syncLoadAll } = await import('./sync.js');
+      const allRecords = await syncLoadAll();
+      const printRecords = allRecords.filter(r => r.record_type.startsWith('print_'));
+
+      if (printRecords.length > 0) {
+        await new Promise(resolve => {
+          const req = indexedDB.open('spiralside');
+          req.onsuccess = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('prints')) { db.close(); resolve(); return; }
+            const tx = db.transaction('prints', 'readwrite');
+            const store = tx.objectStore('prints');
+            for (const rec of printRecords) {
+              // Skip builtin archetypes — they're seeded by seedBuiltInPrints()
+              if (rec.data?.metadata?.is_archetype) continue;
+              store.put({ ...rec.data, id: rec.data.id || rec.data.card_id });
+            }
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror    = () => { db.close(); resolve(); };
+          };
+          req.onerror = () => resolve();
+        });
+        console.log('[sync] ' + printRecords.length + ' prints hydrated from cloud into IDB');
+      }
+    }
+  } catch(e) { console.warn('[sync] prints hydration failed:', e); }
+
   // ── Quest char — seed localStorage if fresh device ───────
   try {
     if (!localStorage.getItem('ss_quest_char')) {

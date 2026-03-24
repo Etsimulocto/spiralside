@@ -3,6 +3,7 @@
 // Soul print builder — sectioned form, saves to IDB
 // Keeps existing chat persona logic from v1.0
 // Nimbis anchor: js/app/build.js
+import { syncSave } from './sync.js';
 // ============================================================
 
 import { state, SPEAKER_COLORS }      from './state.js';
@@ -412,6 +413,8 @@ async function handleSave() {
 
   // Save full soul print to IDB
   await dbSet('prints', { id: printToSave.card_id, ...printToSave });
+  // Cloud backup — keyed by card_id so each print is its own record
+  syncSave('print_' + printToSave.card_id, { id: printToSave.card_id, ...printToSave }).catch(() => {});
   print.card_id = printToSave.card_id;
 
   // Also save legacy config key so existing chat logic still works
