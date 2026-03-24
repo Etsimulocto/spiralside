@@ -3,7 +3,6 @@
 // Theme presets, color pickers, particles, bg types
 // Nimbis anchor: js/app/style.js
 import { syncSave } from './sync.js';
-import { syncSave } from './sync.js';
 // ============================================================
 
 const THEMES = [
