@@ -1022,6 +1022,7 @@ function showQuestCompleteCard(ev, gold) {
 
 export async function initQuestView() {
   dropRandomLoot();
+  setTimeout(resolveCompletedQuests, 800);
   // Re-render quest char when cloud hydration lands (may bring You card data)
   window.addEventListener('cloud:hydrated', async () => {
     const fresh = await loadCharacter();
