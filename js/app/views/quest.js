@@ -776,54 +776,34 @@ function renderQuest(el, char, events) {
 // ── LOOT DROP ────────────────────────────────────────────────
 // Calls Railway to generate a random junk item via AI
 // Fires every time quest tab opens — pure flavor, zero game impact
-async function dropRandomLoot() {
-  // Show immediate placeholder toast while AI call fires
-  showLootToast('...searching for loot');
-  try {
-    // Get auth token
-    const { data: _sd } = await window.sb.auth.getSession();
-    const token = _sd?.session?.access_token;
-    if (!token) return;
-
-    const resp = await fetch('https://web-production-4e6f3.up.railway.app/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({
-        message: 'Generate one random useless fantasy junk item for an idle RPG. Return ONLY valid JSON, no markdown: {"name":"item name (2-4 words)","icon":"single emoji","use_text":"one silly sentence max 8 words"}. Be weird and creative.',
-        system_prompt: 'You generate random useless fantasy items for a game. Return only raw JSON, no markdown, no explanation.',
-        bot_name: 'Sky',
-        vault_context: ''
-      })
-    });
-
-    if (!resp.ok) return;
-    const data = await resp.json();
-    const reply = data.reply || '';
-
-    // Parse JSON from reply
-    const match = reply.match(/\{[^}]+\}/);
-    if (!match) return;
-    const item = JSON.parse(match[0]);
-    if (!item.name || !item.icon) return;
-
-    // Add to inventory
-    if (window.addItem) {
-      await window.addItem({
-        id: 'loot_' + Date.now(),
-        name: item.name,
-        icon: item.icon,
-        use_text: item.use_text || 'nothing happens.',
-        stat: null, bonus: 0, expiresAt: null,
-        isLoot: true,
-      });
-    }
-
-    // Show loot toast
-    showLootToast(item.icon + ' found: ' + item.name);
-  } catch(e) {
-    showLootToast('the loot ran away');
-    console.warn('[loot]', e);
-  }
+function dropRandomLoot() {
+  const L = [
+    {i:'rock',n:'suspicious rock',u:'you inspect it. nothing happens.'},
+    {i:'sock',n:'one sock',u:'warm for a moment. then gone.'},
+    {i:'spoon',n:'bent spoon',u:'you bend it further. it snaps.'},
+    {i:'scroll',n:'illegible scroll',u:'ancient wisdom. probably.'},
+    {i:'jar',n:'empty jar',u:'smells like adventure.'},
+    {i:'card',n:'worn playing card',u:'the image is faded. was it you?'},
+    {i:'button',n:'mystery button',u:'does not belong to anything here.'},
+    {i:'die',n:'a single die',u:'rolled a 1. always.'},
+    {i:'note',n:'crumpled note',u:'reads: you were here.'},
+    {i:'bone',n:'small bone',u:'not yours. probably.'},
+    {i:'marble',n:'blue marble',u:'perfectly round. perfectly useless.'},
+    {i:'key',n:'unlabeled key',u:'fits nothing you own.'},
+    {i:'cork',n:'a cork',u:'from a bottle of something forgotten.'},
+    {i:'feather',n:'black feather',u:'from no bird you know.'},
+    {i:'coin',n:'coin from nowhere',u:'currency of a place that does not exist.'},
+    {i:'nail',n:'iron nail',u:'slightly bent. slightly judging you.'},
+    {i:'chalk',n:'piece of chalk',u:'writes one word before it crumbles.'},
+    {i:'tooth',n:'a tooth',u:'not yours. you hope.'},
+    {i:'candle',n:'used candle',u:'burned down to the message.'},
+    {i:'hat',n:'very small hat',u:'fits no one you know.'},
+  ];
+  const p = L[Math.floor(Math.random() * L.length)];
+  const icons = {rock:'chr128299',sock:'chr129510',spoon:'chr129364',scroll:'chr128220',jar:'chr129529',card:'chr127183',button:'chr128280',die:'chr127922',note:'chr128221',bone:'chr129462',marble:'chr128302',key:'chr128505',cork:'chr127870',feather:'chr129718',coin:'chr129689',nail:'chr128296',chalk:'chr128397',tooth:'chr129463',candle:'chr129457',hat:'chr127913'};
+  const icon = String.fromCodePoint(parseInt(icons[p.i].replace('chr',''))) || p.i;
+  if (window.addItem) window.addItem({id:'loot_'+Date.now(),name:p.n,icon:icon,use_text:p.u,stat:null,bonus:0,expiresAt:null,isLoot:true});
+  showLootToast(icon + ' found: ' + p.n);
 }
 
 function showLootToast(msg) {
