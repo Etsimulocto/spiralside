@@ -1476,6 +1476,151 @@
     .app-logo      { animation: scrollRight 22s linear infinite; display: inline-block; }
     .version-badge { animation: scrollLeft  30s linear infinite; display: inline-block; }
     .credits-badge { animation: scrollRight 17s linear infinite; display: inline-block; }
+
+    /* ── SKYLINE TICKER ───────────────────────────────────── */
+    #skyline-ticker {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 9000;
+      pointer-events: none;
+      max-width: 480px;
+      margin: 0 auto;
+      /* hidden by default — JS controls visibility */
+      transform: translateY(100%);
+      transition: transform 0.5s cubic-bezier(0.32,0.72,0,1);
+    }
+    #skyline-ticker.visible {
+      transform: translateY(0);
+    }
+
+    /* cloud badges float above the buildings */
+    #sky-clouds {
+      position: absolute;
+      bottom: 145px; left: 0; right: 0;
+      height: 40px;
+      overflow: visible;
+      pointer-events: none;
+    }
+    .sky-cloud {
+      position: absolute;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 40px;
+      font-family: var(--font-ui, 'DM Mono', monospace);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.55);
+      padding: 0 12px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      animation: cloudBob linear infinite;
+    }
+    .sky-cloud.c1 { left: 12px;  animation-duration: 4.2s; animation-delay: 0s;    bottom: 0; }
+    .sky-cloud.c2 { left: 50%;   transform: translateX(-50%); animation-duration: 5.1s; animation-delay: -1.3s; bottom: 4px; }
+    .sky-cloud.c3 { right: 12px; animation-duration: 3.8s; animation-delay: -0.7s; bottom: 2px; }
+    @keyframes cloudBob {
+      0%,100% { margin-bottom: 0px; }
+      50%      { margin-bottom: 6px; }
+    }
+
+    /* the scrolling building track */
+    #sky-stage {
+      height: 145px;
+      background: linear-gradient(to bottom, transparent 0%, rgba(10,10,15,0.85) 30%, #0a0a0f 100%);
+      overflow: hidden;
+      position: relative;
+    }
+    #sky-track {
+      display: flex;
+      align-items: flex-end;
+      gap: 0;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      /* animation set by JS */
+    }
+    .sky-building {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      background: #0b0b12;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-bottom: none;
+      border-radius: 3px 3px 0 0;
+      position: relative;
+      flex-shrink: 0;
+      /* pointer-events on by default so links work */
+      pointer-events: all;
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.25s;
+    }
+    .sky-building:hover { border-color: rgba(0,246,214,0.45); }
+    .sky-building:hover .sky-blabel { color: #00F6D6; }
+
+    /* window grid */
+    .sky-wins {
+      position: absolute;
+      top: 12px; left: 0; right: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 0 14px;
+    }
+    .sky-wrow { display: flex; gap: 5px; }
+    .sky-win {
+      width: 6px; height: 6px;
+      border-radius: 1px;
+      background: rgba(255,255,255,0.06);
+    }
+    .sky-win.y  { background: rgba(255,220,80,0.55);  }
+    .sky-win.t  { background: rgba(0,246,214,0.5);    }
+    .sky-win.p  { background: rgba(255,75,203,0.5);   }
+
+    /* antenna */
+    .sky-antenna {
+      position: absolute;
+      top: -12px; left: 50%;
+      transform: translateX(-50%);
+      width: 1px; height: 12px;
+      background: rgba(255,255,255,0.18);
+    }
+    .sky-antenna::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -2.5px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: rgba(255,75,203,0.85);
+      animation: skyBlink 1.9s ease-in-out infinite;
+    }
+    @keyframes skyBlink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+
+    /* label area at bottom of building */
+    .sky-blabel {
+      font-family: var(--font-ui, 'DM Mono', monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.09em;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+      padding: 0 12px 8px;
+      line-height: 1.5;
+      position: relative;
+      z-index: 2;
+      white-space: nowrap;
+    }
+    .sky-bprice {
+      display: block;
+      font-size: 0.58rem;
+      color: rgba(0,246,214,0.65);
+      letter-spacing: 0.06em;
+      margin-top: 1px;
+    }
+    /* ── END SKYLINE TICKER ───────────────────────────────── */
   </style>
 </head>
 <body>
@@ -1579,7 +1724,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.482</div>
+        <div class="version-badge" id="version-badge">v0.8.483</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
@@ -2878,6 +3023,191 @@ document.addEventListener('DOMContentLoaded', () => {
   const d = document.getElementById('cz-date');
   if (d) d.valueAsDate = new Date();
 });
+
+  // ── SKYLINE TICKER ─────────────────────────────────────────
+  // Shows both buildings on load for 8s so dev can verify,
+  // then hides and re-appears every ~90s for 10s
+  (function() {
+    var ticker  = document.getElementById('skyline-ticker');
+    var crEl    = document.getElementById('sky-cr');
+    var verEl   = document.getElementById('sky-ver');
+    var usrEl   = document.getElementById('sky-usr');
+    var track   = document.getElementById('sky-track');
+
+    // Update cloud badges with live header values
+    function syncClouds() {
+      // credits badge text
+      var cr = document.getElementById('credits-badge');
+      if (cr && crEl) crEl.textContent = cr.textContent;
+      // version badge text
+      var ver = document.getElementById('version-badge');
+      if (ver && verEl) verEl.textContent = ver.textContent;
+      // user initial from avatar
+      var av = document.getElementById('user-avatar');
+      if (av && usrEl) usrEl.textContent = av.textContent || 'spiral';
+    }
+
+    function show() {
+      syncClouds();
+      ticker.classList.add('visible');
+    }
+    function hide() {
+      ticker.classList.remove('visible');
+    }
+
+    // Scroll the track so only ONE building is visible at a time
+    // Track total width = 340 + 80 + 340 + 60 = 820px
+    // Each "slide" shows one building centred in the 480px viewport
+    var BUILDING_W = 340;
+    var GAP_W      = 80;
+    var SLIDE_DURATION = 3500; // ms per building
+    var slides = [0, BUILDING_W + GAP_W]; // x-offset to show each building
+    var currentSlide = 0;
+
+    function goToSlide(idx) {
+      // Animate track left by setting a CSS transition + transform
+      track.style.transition = 'transform 0.7s cubic-bezier(0.32,0.72,0,1)';
+      // Centre the building in 480px: offset = slide_x - (480 - BUILDING_W) / 2
+      var centreOffset = Math.max(0, slides[idx] - (480 - BUILDING_W) / 2);
+      track.style.transform = 'translateX(-' + centreOffset + 'px)';
+    }
+
+    var slideTimer = null;
+
+    function runSequence() {
+      // Reset to building A
+      currentSlide = 0;
+      track.style.transition = 'none';
+      track.style.transform  = 'translateX(0)';
+      goToSlide(0);
+
+      // After SLIDE_DURATION, move to building B
+      slideTimer = setTimeout(function() {
+        currentSlide = 1;
+        goToSlide(1);
+      }, SLIDE_DURATION);
+    }
+
+    function showTicker() {
+      show();
+      runSequence();
+      // Hide after both buildings have been shown
+      setTimeout(function() {
+        clearTimeout(slideTimer);
+        hide();
+      }, SLIDE_DURATION * 2 + 1000);
+    }
+
+    // On load: show immediately so dev can verify both buildings
+    // (first appearance shows both back-to-back, then hides)
+    window.addEventListener('load', function() {
+      // Short delay so app is rendered first
+      setTimeout(showTicker, 1200);
+      // Then repeat every 90 seconds
+      setInterval(showTicker, 90000);
+    });
+  })();
+  // ── END SKYLINE TICKER ─────────────────────────────────────
 </script>
+
+  <!-- ── SKYLINE TICKER ── -->
+  <div id="skyline-ticker">
+
+    <!-- cloud badges (populated by JS with live data) -->
+    <div id="sky-clouds">
+      <div class="sky-cloud c1" id="sky-cr">∞ free</div>
+      <div class="sky-cloud c2" id="sky-ver">v0.8.x</div>
+      <div class="sky-cloud c3" id="sky-usr">spiral</div>
+    </div>
+
+    <!-- building stage -->
+    <div id="sky-stage">
+      <div id="sky-track">
+
+        <!-- BUILDING A: Bloomslice Teak on Amazon -->
+        <a class="sky-building" id="sky-b-amazon"
+           href="https://a.co/d/087erh90" target="_blank"
+           style="width:340px; height:120px;">
+          <div class="sky-antenna"></div>
+          <div class="sky-wins">
+            <div class="sky-wrow">
+              <div class="sky-win y"></div><div class="sky-win"></div>
+              <div class="sky-win t"></div><div class="sky-win y"></div>
+              <div class="sky-win"></div><div class="sky-win t"></div>
+              <div class="sky-win y"></div><div class="sky-win"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win"></div><div class="sky-win t"></div>
+              <div class="sky-win y"></div><div class="sky-win"></div>
+              <div class="sky-win t"></div><div class="sky-win"></div>
+              <div class="sky-win y"></div><div class="sky-win t"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win t"></div><div class="sky-win y"></div>
+              <div class="sky-win"></div><div class="sky-win t"></div>
+              <div class="sky-win y"></div><div class="sky-win t"></div>
+              <div class="sky-win"></div><div class="sky-win y"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win y"></div><div class="sky-win"></div>
+              <div class="sky-win t"></div><div class="sky-win y"></div>
+              <div class="sky-win"></div><div class="sky-win y"></div>
+              <div class="sky-win t"></div><div class="sky-win"></div>
+            </div>
+          </div>
+          <div class="sky-blabel">
+            ✦ BLOOMSLICE TEAK — Pi module stand
+            <span class="sky-bprice">amazon.com ↗</span>
+          </div>
+        </a>
+
+        <!-- GAP BUILDING: dark filler between shops -->
+        <div class="sky-building" style="width:80px; height:75px; pointer-events:none;">
+          <div class="sky-wins">
+            <div class="sky-wrow">
+              <div class="sky-win p"></div><div class="sky-win"></div><div class="sky-win p"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win"></div><div class="sky-win t"></div><div class="sky-win"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUILDING B: Suno music page -->
+        <a class="sky-building" id="sky-b-suno"
+           href="https://suno.com/@quarterbitgames825" target="_blank"
+           style="width:340px; height:105px;">
+          <div class="sky-wins">
+            <div class="sky-wrow">
+              <div class="sky-win p"></div><div class="sky-win"></div>
+              <div class="sky-win p"></div><div class="sky-win t"></div>
+              <div class="sky-win"></div><div class="sky-win p"></div>
+              <div class="sky-win t"></div><div class="sky-win"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win"></div><div class="sky-win p"></div>
+              <div class="sky-win t"></div><div class="sky-win"></div>
+              <div class="sky-win p"></div><div class="sky-win"></div>
+              <div class="sky-win p"></div><div class="sky-win t"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win p"></div><div class="sky-win t"></div>
+              <div class="sky-win"></div><div class="sky-win p"></div>
+              <div class="sky-win t"></div><div class="sky-win p"></div>
+              <div class="sky-win"></div><div class="sky-win p"></div>
+            </div>
+          </div>
+          <div class="sky-blabel">
+            ♪ SPIRAL SOUNDS — music by quarterbitgames
+            <span class="sky-bprice">suno.com ↗</span>
+          </div>
+        </a>
+
+        <!-- trailing filler so last building has breathing room -->
+        <div style="width:60px; flex-shrink:0;"></div>
+
+      </div><!-- /sky-track -->
+    </div><!-- /sky-stage -->
+  </div><!-- /skyline-ticker -->
 </body>
 </html>
