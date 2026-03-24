@@ -262,7 +262,7 @@ async function generate() {
     const token = state.session && state.session.access_token;
     if (!token) { showErr('Please sign in.'); return; }
 
-    const resp = await fetch('https://qfawusrelwthxabfbglg.supabase.co/functions/v1/pi-generate', {
+    const resp = await fetch('https://web-production-4e6f3.up.railway.app/pi', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ prompt }),
