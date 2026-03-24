@@ -779,8 +779,8 @@ function renderQuest(el, char, events) {
 async function dropRandomLoot() {
   try {
     // Get auth token
-    const token = window._state?.session?.access_token
-      || (await (window._getToken ? window._getToken() : Promise.resolve(null)));
+    const { data: _sd } = await window.sb.auth.getSession();
+    const token = _sd?.session?.access_token;
     if (!token) return;
 
     const resp = await fetch('https://web-production-4e6f3.up.railway.app/chat', {
