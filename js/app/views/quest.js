@@ -618,6 +618,26 @@ function renderQuest(el, char, events) {
     <div class="quest-list">${questCards}</div>
 
     <!-- CALENDAR -->
+    <!-- SHOP -->
+    <div class="quest-section-label" style="display:flex;align-items:center;justify-content:space-between;"><span>wandering merchant</span><span style="font-size:0.62rem;color:#FFD93D;text-transform:none">rotates daily</span></div>
+    <div class="quest-shop-wrap">
+      <div class="quest-shop-grid" id="quest-shop-grid">
+        ${getDailyShop().map(function(item){
+          var g = _xps ? (_xps.gold||0) : 0;
+          var ca = g < item.price ? " cant-afford" : "";
+          return "<div class=\"quest-shop-item"+ca+"\" onclick=\"window._questBuyItem('"+item.id+"')\">" +
+            "<div class=\"quest-shop-icon\">"+item.icon+"</div>" +
+            "<div class=\"quest-shop-name\">"+item.name+"</div>" +
+            "<div class=\"quest-shop-price\">"+item.price+"g</div>" +
+            "<div class=\"quest-shop-effect\">"+item.effect+"</div></div>";
+        }).join("")}
+      </div>
+    </div>
+    <div class="quest-section-label">inventory</div>
+    <div class="quest-inv-wrap" id="quest-inv-wrap">
+      ${(_xps&&_xps.items&&_xps.items.length) ? _xps.items.map(function(i){return "<div class=\"quest-inv-item\" onclick=\"window._questUseItem('"+i.id+"')\">" +i.icon+" "+i.name+"</div>";}).join("") : "<div class=\"quest-inv-empty\">no items yet</div>"}
+    </div>
+
     <div class="quest-section-label">this month</div>
     <div class="quest-cal-wrap">
       <div class="quest-cal-month">${monthName}</div>
