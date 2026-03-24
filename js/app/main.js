@@ -5,6 +5,7 @@ import { initParticles } from "./particles.js";
 // This is the single entry point loaded by index.html
 // Nimbis anchor: js/app/main.js
 import { exportSoulPrintPDF, exportUserData, importUserData } from './views/account.js';
+import { CHARACTERS } from './state.js';
 // ============================================================
 
 import { initComic, playCustomComic }              from './comic.js';
