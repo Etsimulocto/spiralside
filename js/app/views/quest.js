@@ -313,6 +313,7 @@ function seedQuestFromEvent(ev) {
     xp: tmpl.xp,
     gold: tmpl.gold,
     date: ev.date,
+    time: ev.time || '',
     status: statusForDate(ev.date), // 'active'|'idle'|'locked'|'done'
     progress: 0,
     sourceEvent: ev.title,
