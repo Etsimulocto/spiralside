@@ -803,7 +803,6 @@ function dropRandomLoot() {
   const p = L[Math.floor(Math.random() * L.length)];
   const icons = {rock:'chr128299',sock:'chr129510',spoon:'chr129364',scroll:'chr128220',jar:'chr129529',card:'chr127183',button:'chr128280',die:'chr127922',note:'chr128221',bone:'chr129462',marble:'chr128302',key:'chr128505',cork:'chr127870',feather:'chr129718',coin:'chr129689',nail:'chr128296',chalk:'chr128397',tooth:'chr129463',candle:'chr129457',hat:'chr127913'};
   const icon = String.fromCodePoint(parseInt(icons[p.i].replace('chr',''))) || p.i;
-  if (window.addItem) window.addItem({id:'loot_'+Date.now(),name:p.n,icon:icon,use_text:p.u,stat:null,bonus:0,expiresAt:null,isLoot:true});
   const lootItem = {id:'loot_'+Date.now(),name:p.n,icon:icon,use_text:p.u,stat:null,bonus:0,expiresAt:null,isLoot:true};
   if (window.addItem) window.addItem(lootItem);
   showLootCard(lootItem);
