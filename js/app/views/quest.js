@@ -934,6 +934,91 @@ function showLootToast(msg) {
   setTimeout(_dismiss, 8000);
 }
 
+// ── IDLE RESOLVE ─────────────────────────────────────────────
+// Checks all events on tab open — if date passed and not yet claimed,
+// awards gold and marks as resolved in localStorage
+function loadResolved() {
+  try { return JSON.parse(localStorage.getItem('ss_quest_resolved') || '[]'); }
+  catch { return []; }
+}
+function markResolved(id) {
+  const r = loadResolved();
+  if (!r.includes(id)) { r.push(id); localStorage.setItem('ss_quest_resolved', JSON.stringify(r)); }
+}
+
+async function resolveCompletedQuests() {
+  const events = loadEvents();
+  const resolved = loadResolved();
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const toResolve = events.filter(ev => {
+    if (resolved.includes(ev.id)) return false;
+    const d = new Date(ev.date + 'T00:00:00');
+    // For timed events, check if the time has passed today
+    if (ev.time && d.toDateString() === new Date().toDateString()) {
+      const [h, m] = ev.time.split(':').map(Number);
+      const evTime = new Date(); evTime.setHours(h, m, 0, 0);
+      return new Date() > evTime;
+    }
+    return d < today;
+  });
+
+  if (!toResolve.length) return;
+
+  for (const ev of toResolve) {
+    // Find template to get gold amount
+    const t = (ev.title || '').toLowerCase();
+    const tmpl = QUEST_TEMPLATES.find(tmpl => tmpl.keywords.some(k => t.includes(k)));
+    const gold = tmpl ? tmpl.gold : 1;
+    markResolved(ev.id);
+    if (window.awardGold) await window.awardGold(gold);
+    // Show completion card
+    showQuestCompleteCard(ev, gold);
+    // Only resolve one at a time per visit to not spam
+    break;
+  }
+}
+
+function showQuestCompleteCard(ev, gold) {
+  if (!document.getElementById('qc-styles')) {
+    const st = document.createElement('style');
+    st.id = 'qc-styles';
+    st.textContent = [
+      '.qc-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;}',
+      '.qc-card{background:#111118;border:1px solid #00F6D655;border-radius:16px;padding:20px;width:100%;max-width:300px;font-family:var(--font-ui);}',
+      '.qc-badge{display:inline-block;background:#00F6D6;color:#08080d;font-size:0.55rem;letter-spacing:0.1em;padding:2px 10px;border-radius:20px;font-weight:700;text-transform:uppercase;margin-bottom:12px;}',
+      '.qc-title{font-size:0.9rem;color:#F0F0FF;font-weight:600;margin-bottom:4px;}',
+      '.qc-sub{font-size:0.7rem;color:#7070a0;margin-bottom:14px;}',
+      '.qc-reward{display:flex;align-items:center;gap:8px;background:#FFD93D14;border:1px solid #FFD93D33;border-radius:10px;padding:12px;margin-bottom:14px;}',
+      '.qc-gold{font-size:1.4rem;font-weight:700;color:#FFD93D;}',
+      '.qc-reward-text{font-size:0.7rem;color:#7070a0;line-height:1.5;}',
+      '.qc-btn{width:100%;padding:10px;background:#00F6D618;border:1px solid #00F6D644;border-radius:8px;color:#00F6D6;font-family:var(--font-ui);font-size:0.72rem;letter-spacing:0.06em;cursor:pointer;text-align:center;}',
+    ].join('');
+    document.head.appendChild(st);
+  }
+
+  const tmpl = QUEST_TEMPLATES.find(t => t.keywords.some(k => (ev.title||'').toLowerCase().includes(k)));
+  const questTitle = tmpl ? tmpl.name(ev) : ev.title;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'qc-overlay';
+  overlay.innerHTML =
+    '<div class="qc-card">' +
+      '<div class="qc-badge">quest complete</div>' +
+      '<div class="qc-title">' + questTitle + '</div>' +
+      '<div class="qc-sub">from: ' + ev.title + (ev.time ? ' · ' + ev.time : '') + '</div>' +
+      '<div class="qc-reward">' +
+        '<div class="qc-gold">+' + gold + 'g</div>' +
+        '<div class="qc-reward-text">gold added to your pouch<br>well done, adventurer</div>' +
+      '</div>' +
+      '<div class="qc-btn" id="qc-close-btn">collect reward</div>' +
+    '</div>';
+
+  document.body.appendChild(overlay);
+  overlay.querySelector('#qc-close-btn').onclick = () => overlay.remove();
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+}
+
 export async function initQuestView() {
   dropRandomLoot();
   // Re-render quest char when cloud hydration lands (may bring You card data)
