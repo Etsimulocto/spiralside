@@ -111,7 +111,22 @@ function injectQuestStyles() {
     .quest-stat.luk { border-color: rgba(0,246,214,0.4);  color: #00F6D6; }
 
 
-    /* ── SHOP ── */
+    /* ── LOOT DROP ── */
+    .quest-loot-toast {
+      position: fixed; bottom: calc(86px + var(--safe-bot,0px)); left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface); border: 1px solid #FFD93D;
+      color: #FFD93D; font-family: var(--font-ui);
+      font-size: 0.7rem; letter-spacing: 0.06em;
+      padding: 8px 16px; border-radius: 20px;
+      opacity: 0; pointer-events: none; z-index: 9999;
+      transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      white-space: nowrap;
+    }
+    .quest-loot-toast.visible {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
+        /* ── SHOP ── */
     .quest-shop-wrap { padding: 0 0 8px; }
     .quest-shop-label { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--subtext); padding: 12px 16px 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
     .quest-shop-gold { font-size: 0.7rem; color: #FFD93D; }
@@ -707,7 +722,14 @@ function renderQuest(el, char, events) {
 
   window._questUseItem = async (itemId) => {
     if (!window.consumeItem) return;
+    // Find item for use_text before consuming
+    const xps = window.getXPState ? window.getXPState() : null;
+    const item = xps && xps.items ? xps.items.find(i => i.id === itemId) : null;
     await window.consumeItem(itemId);
+    // Show use_text as toast if loot item
+    if (item && item.isLoot && item.use_text) {
+      showLootToast(item.icon + ' ' + item.use_text);
+    }
     const el2 = document.getElementById('view-quest');
     if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2, c2, e2); }
   };
@@ -751,6 +773,74 @@ function renderQuest(el, char, events) {
 }
 
 // ── PUBLIC INIT ───────────────────────────────────────────────
+// ── LOOT DROP ────────────────────────────────────────────────
+// Calls Railway to generate a random junk item via AI
+// Fires every time quest tab opens — pure flavor, zero game impact
+async function dropRandomLoot() {
+  try {
+    // Get auth token
+    const token = window._state?.session?.access_token
+      || (await (window._getToken ? window._getToken() : Promise.resolve(null)));
+    if (!token) return;
+
+    const resp = await fetch('https://web-production-4e6f3.up.railway.app/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({
+        message: 'Generate one random useless fantasy junk item for an idle RPG. Return ONLY valid JSON, no markdown: {"name":"item name (2-4 words)","icon":"single emoji","use_text":"one silly sentence max 8 words"}. Be weird and creative.',
+        system_prompt: 'You generate random useless fantasy items for a game. Return only raw JSON, no markdown, no explanation.',
+        bot_name: 'Sky',
+        vault_context: ''
+      })
+    });
+
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const reply = data.reply || '';
+
+    // Parse JSON from reply
+    const match = reply.match(/\{[^}]+\}/);
+    if (!match) return;
+    const item = JSON.parse(match[0]);
+    if (!item.name || !item.icon) return;
+
+    // Add to inventory
+    if (window.addItem) {
+      await window.addItem({
+        id: 'loot_' + Date.now(),
+        name: item.name,
+        icon: item.icon,
+        use_text: item.use_text || 'nothing happens.',
+        stat: null, bonus: 0, expiresAt: null,
+        isLoot: true,
+      });
+    }
+
+    // Show loot toast
+    showLootToast(item.icon + ' found: ' + item.name);
+  } catch(e) {
+    // Silent fail — loot is optional fun
+  }
+}
+
+function showLootToast(msg) {
+  let toast = document.getElementById('quest-loot-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'quest-loot-toast';
+    toast.className = 'quest-loot-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => toast.classList.add('visible'));
+  });
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 500);
+  }, 3000);
+}
+
 export async function initQuestView() {
   // Re-render quest char when cloud hydration lands (may bring You card data)
   window.addEventListener('cloud:hydrated', async () => {
