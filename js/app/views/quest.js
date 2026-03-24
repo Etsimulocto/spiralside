@@ -224,8 +224,7 @@ function injectQuestStyles() {
       padding: 20px 20px calc(20px + var(--safe-bot,0px));
     }
     .quest-modal-handle {
-      width: 36px; height: 4px; background: var(--muted);
-      border-radius: 2px; margin: 0 auto 16px;
+      display: none;
     }
     .quest-modal-title {
       font-family: var(--font-display); font-size: 0.9rem; font-weight: 700;
