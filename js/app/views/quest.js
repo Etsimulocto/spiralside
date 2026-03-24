@@ -780,7 +780,6 @@ async function dropRandomLoot() {
   // Show immediate placeholder toast while AI call fires
   showLootToast('...searching for loot');
   try {
-  try {
     // Get auth token
     const { data: _sd } = await window.sb.auth.getSession();
     const token = _sd?.session?.access_token;
