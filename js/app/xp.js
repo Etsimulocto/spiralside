@@ -209,10 +209,11 @@ function _handleDayReset(s) {
 
   // New day — check streak continuity
   const wasYesterday = _isYesterday(s.lastActiveDate);
-  s.streakDays   = wasYesterday ? (s.streakDays || 0) + 1 : 1;
-  s.dailyXP      = 0;
-  s.dailyCap     = dailyCapForLevel(s.level);
-  s.lastActiveDate = today;
+  s.streakDays            = wasYesterday ? (s.streakDays || 0) + 1 : 1;
+  s.dailyXP               = 0;
+  s.dailyCap              = dailyCapForLevel(s.level);
+  s.lastActiveDate        = today;
+  s._loginBonusGivenToday = false;
   return s;
 }
 

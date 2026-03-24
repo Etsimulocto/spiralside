@@ -317,6 +317,23 @@ function seedQuestFromEvent(ev) {
   };
 }
 
+function formatQuestDate(dateStr, timeStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const day = d.getDate();
+  const mon = months[d.getMonth()];
+  let out = mon + ' ' + day;
+  if (timeStr) {
+    const parts = timeStr.split(':');
+    const h = parseInt(parts[0]); const m = parseInt(parts[1]);
+    const ampm = h >= 12 ? 'pm' : 'am';
+    const h12  = h % 12 || 12;
+    out += ' · ' + h12 + ':' + String(m).padStart(2,'0') + ampm;
+  }
+  return out;
+}
+
 function statusForDate(dateStr) {
   const today = new Date(); today.setHours(0,0,0,0);
   const d = new Date(dateStr + 'T00:00:00');
@@ -486,7 +503,9 @@ function renderQuest(el, char, events) {
         <div class="quest-card-icon">${q.icon}</div>
         <div class="quest-card-body">
           <div class="quest-card-title">${q.title}</div>
+          ${formatQuestDate(q.date,q.time) ? '<div class="quest-card-date">⏰ ' + formatQuestDate(q.date,q.time) + '</div>' : ''}
           <div class="quest-card-sub">${q.lore}</div>
+          <div class="quest-card-source">from: ${q.sourceEvent}</div>
           <div class="quest-card-meta">
             <div class="quest-tag tag-${q.status}">${q.status}</div>
             <div class="quest-reward">+${q.xp} xp · ${q.gold}g</div>
