@@ -15,6 +15,26 @@ function injectStoreStyles() {
   s.id = 'ss-store-styles';
   s.textContent = `
     #view-store { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .ads-off-btn {
+      background: var(--muted, #1e1e2e);
+      border: 1px solid var(--border, #2a2a3e);
+      border-radius: 8px;
+      color: var(--subtext, #7070a0);
+      font-family: var(--font-ui, 'DM Mono', monospace);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      padding: 5px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .ads-off-btn:hover { border-color: var(--teal, #00F6D6); color: var(--teal, #00F6D6); }
+    .ads-off-btn.active {
+      background: rgba(0,246,214,0.1);
+      border-color: var(--teal, #00F6D6);
+      color: var(--teal, #00F6D6);
+    }
     .view-scroll-body { padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 0; flex: 1; min-height: 0; overflow-y: auto; }
     .credit-hero { background: linear-gradient(135deg, rgba(0,246,214,0.08), rgba(124,106,247,0.08)); border: 1px solid var(--border); border-radius: 16px; padding: 28px 20px; text-align: center; margin-bottom: 20px; }
     .credit-amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 800; color: var(--teal); line-height: 1; }
@@ -120,6 +140,16 @@ export function initStoreView() {
   }
   updateStoreView();
   if (window.updateCreditDisplay) window.updateCreditDisplay();
+  updateAdsOffBtn();
+}
+
+// ── ADS-OFF BUTTON STATE ──────────────────────────────────────
+function updateAdsOffBtn() {
+  const btn = document.getElementById('ads-off-btn');
+  if (!btn) return;
+  const off = localStorage.getItem('ss_ads_off') === '1';
+  btn.textContent = off ? 'active ✓' : 'enable';
+  btn.classList.toggle('active', off);
 }
 
 
@@ -138,3 +168,34 @@ export function updateStoreView() {
     if (subEl) subEl.textContent = 'free demo — buy credits to unlock real AI';
   }
 }
+
+// ── TOGGLE ADS OFF (window-exposed) ──────────────────────────
+// Nimbis anchor: toggleAdsOff
+window.toggleAdsOff = function() {
+  const already = localStorage.getItem('ss_ads_off') === '1';
+  if (already) {
+    // turn ads back on — free
+    localStorage.removeItem('ss_ads_off');
+    updateAdsOffBtn();
+    return;
+  }
+  // charge 50,000 credits
+  const COST = 50000;
+  if (!state.isPaid) {
+    alert('You need a paid account to use this perk.');
+    return;
+  }
+  if ((state.credits || 0) < COST) {
+    alert('Not enough credits. Need 50,000 cr.');
+    return;
+  }
+  if (!confirm('Spend 50,000 cr to hide the skyline ads? (stored locally — clears if you clear browser data)')) return;
+  // deduct locally — backend deduction via next chat or usage call
+  state.credits = (state.credits || 0) - COST;
+  localStorage.setItem('ss_ads_off', '1');
+  updateAdsOffBtn();
+  if (window.updateCreditDisplay) window.updateCreditDisplay();
+  // also hide ticker immediately if visible
+  const t = document.getElementById('skyline-ticker');
+  if (t) t.classList.remove('visible');
+};
