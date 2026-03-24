@@ -622,6 +622,31 @@ function renderQuest(el, char, events) {
 
 // ── PUBLIC INIT ───────────────────────────────────────────────
 export async function initQuestView() {
+  // Re-render quest char when cloud hydration lands (may bring You card data)
+  window.addEventListener('cloud:hydrated', async () => {
+    const fresh = await loadCharacter();
+    if (fresh) {
+      // Re-render the mii + stats without reiniting the whole view
+      const { renderChar } = await import('./quest.js').catch(() => ({}));
+      // Fallback: just re-call the render portion directly
+      try {
+        const miiEl = document.getElementById('quest-mii');
+        const nameEl = document.getElementById('quest-char-name');
+        const classEl = document.getElementById('quest-char-class');
+        if (nameEl) nameEl.textContent = fresh.name || 'Wanderer';
+        if (classEl) classEl.textContent = fresh.class || '';
+        if (miiEl && fresh.portrait_base64) {
+          miiEl.innerHTML = '<img src="' + fresh.portrait_base64 + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
+        }
+        // Update stat badges
+        ['atk','def','wit','luk'].forEach(stat => {
+          const el = document.getElementById('quest-stat-' + stat);
+          if (el) el.textContent = fresh[stat] || 0;
+        });
+      } catch(e) { console.warn('[quest] re-render failed:', e); }
+    }
+  }, { once: true });
+
   const el = document.getElementById('view-quest');
   if (!el) return;
   _initialized = true;

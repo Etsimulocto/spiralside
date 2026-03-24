@@ -3,6 +3,7 @@
 // Scene + World card builder — renders into view-studio
 // Uses same forge-section/forge-field pattern as build.js
 // Nimbis anchor: js/app/views/studio.js
+import { syncSave } from '../sync.js';
 // ============================================================
 
 import { dbSet, dbGetAll, dbDelete } from '../db.js';
@@ -245,6 +246,7 @@ function _wireStudio() {
         : new Date().toISOString(),
     };
     await dbSet('scenes', scene);
+    syncSave('scene_' + scene.id, scene).catch(() => {});  // cloud backup
     if (_sceneEditId) scenes = scenes.map(s => s.id === _sceneEditId ? scene : s);
     else scenes.push(scene);
     _sceneEditId = null; _sceneImgData = null;
@@ -272,6 +274,7 @@ function _wireStudio() {
         : new Date().toISOString(),
     };
     await dbSet('worlds', world);
+    syncSave('world_' + world.id, world).catch(() => {});  // cloud backup
     if (_worldEditId) worlds = worlds.map(w => w.id === _worldEditId ? world : w);
     else worlds.push(world);
     _worldEditId = null; _worldImgData = null;

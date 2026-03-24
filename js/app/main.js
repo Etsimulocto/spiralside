@@ -211,6 +211,38 @@ async function hydrateDataFromCloud(dbSet, dbGet) {
     }
   } catch(e) { console.warn('[sync] you_card overlay failed:', e); }
 
+  // ── Scenes ──
+  try {
+    const { syncLoadAll } = await import('./sync.js');
+    const allRecs = await syncLoadAll();
+    const sceneRecs = allRecs.filter(r => r.record_type.startsWith('scene_'));
+    for (const rec of sceneRecs) {
+      const id = rec.data?.id;
+      if (!id) continue;
+      const existing = await dbGet('scenes', id);
+      if (!existing || !existing.created_at) {
+        await dbSet('scenes', { ...rec.data, id });
+      }
+    }
+    if (sceneRecs.length) console.log('[sync] ' + sceneRecs.length + ' scenes synced from cloud');
+  } catch(e) { console.warn('[sync] scenes hydration failed:', e); }
+
+  // ── Worlds ──
+  try {
+    const { syncLoadAll: _sla } = await import('./sync.js');
+    const allRecs2 = await _sla();
+    const worldRecs = allRecs2.filter(r => r.record_type.startsWith('world_'));
+    for (const rec of worldRecs) {
+      const id = rec.data?.id;
+      if (!id) continue;
+      const existing = await dbGet('worlds', id);
+      if (!existing || !existing.created_at) {
+        await dbSet('worlds', { ...rec.data, id });
+      }
+    }
+    if (worldRecs.length) console.log('[sync] ' + worldRecs.length + ' worlds synced from cloud');
+  } catch(e) { console.warn('[sync] worlds hydration failed:', e); }
+
   // ── User prints ──
   try {
     const { syncLoadAll } = await import('./sync.js');
@@ -233,6 +265,9 @@ async function hydrateDataFromCloud(dbSet, dbGet) {
       buildCharSelector();
     }
   } catch(e) { console.warn('[sync] prints overlay failed:', e); }
+
+  // Fire event so quest view re-renders char with fresh You card data
+  window.dispatchEvent(new CustomEvent('cloud:hydrated'));
 }
 
 async function onAppReady() {
