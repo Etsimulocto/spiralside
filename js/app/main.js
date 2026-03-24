@@ -5,7 +5,6 @@ import { initParticles } from "./particles.js";
 // This is the single entry point loaded by index.html
 // Nimbis anchor: js/app/main.js
 import { syncLoad } from './sync.js';
-import { syncLoad } from './sync.js';
 import { exportSoulPrintPDF, exportUserData, importUserData } from './views/account.js';
 import { CHARACTERS } from './state.js';
 // ============================================================
