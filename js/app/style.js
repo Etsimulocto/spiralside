@@ -2,6 +2,8 @@
 // SPIRALSIDE — STYLE v1.0
 // Theme presets, color pickers, particles, bg types
 // Nimbis anchor: js/app/style.js
+import { syncSave } from './sync.js';
+import { syncSave } from './sync.js';
 // ============================================================
 
 const THEMES = [
@@ -249,6 +251,11 @@ export function previewSlider(key, val) {
   applyStyleVars(pendingStyle);
 }
 
+// Lets main.js hydrateFromCloud push a style object without triggering a save
+export function setPendingStyle(s) {
+  pendingStyle = { ...DEFAULT_STYLE, ...s };
+}
+
 export function applyStyleVars(s) {
   const r = document.documentElement.style;
   r.setProperty('--bg',            s.bg);
@@ -286,6 +293,7 @@ export function applyAndSaveStyle() {
   const _save = { ...pendingStyle };
   delete _save.bgImageData;
   localStorage.setItem('ss_style', JSON.stringify(_save));
+  syncSave('style_prefs', _save).catch(() => {});  // cloud backup
   // Keep IDB bg_image in sync
   if (bgImageData) {
     import('./db.js').then(({ dbSet }) => dbSet('config', { key: 'bg_image', data: bgImageData }));

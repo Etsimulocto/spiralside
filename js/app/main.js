@@ -4,6 +4,8 @@ import { initParticles } from "./particles.js";
 // Boot sequence — imports all modules, wires globals, starts app
 // This is the single entry point loaded by index.html
 // Nimbis anchor: js/app/main.js
+import { syncLoad } from './sync.js';
+import { syncLoad } from './sync.js';
 import { exportSoulPrintPDF, exportUserData, importUserData } from './views/account.js';
 import { CHARACTERS } from './state.js';
 // ============================================================
@@ -156,7 +158,38 @@ async function seedBuiltInPrints() {
   }
 }
 
+// ── CLOUD HYDRATION ──────────────────────────────────────────────────────
+// On every login, pull style_prefs + quest_char from Supabase.
+// Runs before UI renders so the user sees their real theme immediately.
+// Fully silent on failure — localStorage / defaults win if cloud unreachable.
+async function hydrateFromCloud() {
+  // Style prefs
+  try {
+    const cloudStyle = await syncLoad('style_prefs');
+    if (cloudStyle) {
+      const { setPendingStyle, applyStyleVars } = await import('./style.js');
+      setPendingStyle(cloudStyle);
+      applyStyleVars(cloudStyle);
+      localStorage.setItem('ss_style', JSON.stringify(cloudStyle));
+      console.log('[sync] style_prefs hydrated from cloud');
+    }
+  } catch(e) { console.warn('[sync] style hydration failed:', e); }
+
+  // Quest char — only seed localStorage if this device has nothing saved
+  try {
+    if (!localStorage.getItem('ss_quest_char')) {
+      const cloudChar = await syncLoad('quest_char');
+      if (cloudChar) {
+        localStorage.setItem('ss_quest_char', JSON.stringify(cloudChar));
+        console.log('[sync] quest_char hydrated from cloud');
+      }
+    }
+  } catch(e) { console.warn('[sync] quest_char hydration failed:', e); }
+}
+
 async function onAppReady() {
+  // Hydrate from cloud before anything else renders
+  await hydrateFromCloud();
   initSky(); // living sky — Nimbis
   // 1. Open IndexedDB
   await initDB();
