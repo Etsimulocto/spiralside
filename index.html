@@ -1479,26 +1479,25 @@
 
     /* ── SKYLINE TICKER ───────────────────────────────────── */
     #skyline-ticker {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 9000;
+      /* normal flow — sits between header and tab bar */
+      width: 100%;
+      overflow: hidden;
+      /* hidden by default: zero height, reveal with .visible */
+      max-height: 0;
+      transition: max-height 0.45s cubic-bezier(0.32,0.72,0,1);
       pointer-events: none;
-      max-width: 480px;
-      margin: 0 auto;
-      /* hidden by default — JS controls visibility */
-      transform: translateY(100%);
-      transition: transform 0.5s cubic-bezier(0.32,0.72,0,1);
     }
     #skyline-ticker.visible {
-      transform: translateY(0);
+      max-height: 130px;
+      pointer-events: all;
     }
 
 
 
     /* the scrolling building track */
     #sky-stage {
-      height: 145px;
-      background: linear-gradient(to bottom, transparent 0%, rgba(10,10,15,0.85) 30%, #0a0a0f 100%);
+      height: 120px;
+      background: var(--bg, #0a0a0f);
       overflow: hidden;
       position: relative;
     }
@@ -1694,13 +1693,96 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.485</div>
+        <div class="version-badge" id="version-badge">v0.8.486</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
   </div>
 
+  <!-- SKYLINE TICKER — between header and tabs -->
+  <div id="skyline-ticker">
+    <div id="sky-stage">
+      <div id="sky-track">
+
+        <!-- BUILDING A: Bloomslice Teak on Amazon -->
+        <a class="sky-building" id="sky-b-amazon"
+           href="https://a.co/d/087erh90" target="_blank"
+           style="width:340px; height:110px;">
+          <div class="sky-antenna"></div>
+          <div class="sky-wins">
+            <div class="sky-wrow">
+              <div class="sky-win y"></div><div class="sky-win"></div>
+              <div class="sky-win t"></div><div class="sky-win y"></div>
+              <div class="sky-win"></div><div class="sky-win t"></div>
+              <div class="sky-win y"></div><div class="sky-win"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win"></div><div class="sky-win t"></div>
+              <div class="sky-win y"></div><div class="sky-win"></div>
+              <div class="sky-win t"></div><div class="sky-win"></div>
+              <div class="sky-win y"></div><div class="sky-win t"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win t"></div><div class="sky-win y"></div>
+              <div class="sky-win"></div><div class="sky-win t"></div>
+              <div class="sky-win y"></div><div class="sky-win t"></div>
+              <div class="sky-win"></div><div class="sky-win y"></div>
+            </div>
+          </div>
+          <div class="sky-blabel">
+            ✦ BLOOMSLICE TEAK — Pi module stand
+            <span class="sky-bprice">amazon.com ↗</span>
+          </div>
+        </a>
+
+        <!-- filler building between shops -->
+        <div class="sky-building" style="width:60px; height:65px; pointer-events:none;">
+          <div class="sky-wins">
+            <div class="sky-wrow">
+              <div class="sky-win p"></div><div class="sky-win"></div><div class="sky-win p"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win"></div><div class="sky-win t"></div><div class="sky-win"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUILDING B: Suno music page -->
+        <a class="sky-building" id="sky-b-suno"
+           href="https://suno.com/@quarterbitgames825" target="_blank"
+           style="width:340px; height:95px;">
+          <div class="sky-wins">
+            <div class="sky-wrow">
+              <div class="sky-win p"></div><div class="sky-win"></div>
+              <div class="sky-win p"></div><div class="sky-win t"></div>
+              <div class="sky-win"></div><div class="sky-win p"></div>
+              <div class="sky-win t"></div><div class="sky-win"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win"></div><div class="sky-win p"></div>
+              <div class="sky-win t"></div><div class="sky-win"></div>
+              <div class="sky-win p"></div><div class="sky-win"></div>
+              <div class="sky-win p"></div><div class="sky-win t"></div>
+            </div>
+            <div class="sky-wrow">
+              <div class="sky-win p"></div><div class="sky-win t"></div>
+              <div class="sky-win"></div><div class="sky-win p"></div>
+              <div class="sky-win t"></div><div class="sky-win p"></div>
+              <div class="sky-win"></div><div class="sky-win p"></div>
+            </div>
+          </div>
+          <div class="sky-blabel">
+            ♪ SPIRAL SOUNDS — music by quarterbitgames
+            <span class="sky-bprice">suno.com ↗</span>
+          </div>
+        </a>
+
+        <div style="width:40px; flex-shrink:0;"></div>
+
+      </div><!-- /sky-track -->
+    </div><!-- /sky-stage -->
+  </div><!-- /skyline-ticker -->
   <!-- TAB BAR -->
   <div id="tab-bar">
     <button class="tab-btn active" id="tab-chat"      onclick="switchView('chat')"      >💬 chat</button>
@@ -3067,97 +3149,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── END SKYLINE TICKER ─────────────────────────────────────
 </script>
 
-  <!-- ── SKYLINE TICKER ── -->
-  <div id="skyline-ticker">
 
-    <!-- building stage -->
-    <div id="sky-stage">
-      <div id="sky-track">
-
-        <!-- BUILDING A: Bloomslice Teak on Amazon -->
-        <a class="sky-building" id="sky-b-amazon"
-           href="https://a.co/d/087erh90" target="_blank"
-           style="width:340px; height:120px;">
-          <div class="sky-antenna"></div>
-          <div class="sky-wins">
-            <div class="sky-wrow">
-              <div class="sky-win y"></div><div class="sky-win"></div>
-              <div class="sky-win t"></div><div class="sky-win y"></div>
-              <div class="sky-win"></div><div class="sky-win t"></div>
-              <div class="sky-win y"></div><div class="sky-win"></div>
-            </div>
-            <div class="sky-wrow">
-              <div class="sky-win"></div><div class="sky-win t"></div>
-              <div class="sky-win y"></div><div class="sky-win"></div>
-              <div class="sky-win t"></div><div class="sky-win"></div>
-              <div class="sky-win y"></div><div class="sky-win t"></div>
-            </div>
-            <div class="sky-wrow">
-              <div class="sky-win t"></div><div class="sky-win y"></div>
-              <div class="sky-win"></div><div class="sky-win t"></div>
-              <div class="sky-win y"></div><div class="sky-win t"></div>
-              <div class="sky-win"></div><div class="sky-win y"></div>
-            </div>
-            <div class="sky-wrow">
-              <div class="sky-win y"></div><div class="sky-win"></div>
-              <div class="sky-win t"></div><div class="sky-win y"></div>
-              <div class="sky-win"></div><div class="sky-win y"></div>
-              <div class="sky-win t"></div><div class="sky-win"></div>
-            </div>
-          </div>
-          <div class="sky-blabel">
-            ✦ BLOOMSLICE TEAK — Pi module stand
-            <span class="sky-bprice">amazon.com ↗</span>
-          </div>
-        </a>
-
-        <!-- GAP BUILDING: dark filler between shops -->
-        <div class="sky-building" style="width:80px; height:75px; pointer-events:none;">
-          <div class="sky-wins">
-            <div class="sky-wrow">
-              <div class="sky-win p"></div><div class="sky-win"></div><div class="sky-win p"></div>
-            </div>
-            <div class="sky-wrow">
-              <div class="sky-win"></div><div class="sky-win t"></div><div class="sky-win"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- BUILDING B: Suno music page -->
-        <a class="sky-building" id="sky-b-suno"
-           href="https://suno.com/@quarterbitgames825" target="_blank"
-           style="width:340px; height:105px;">
-          <div class="sky-wins">
-            <div class="sky-wrow">
-              <div class="sky-win p"></div><div class="sky-win"></div>
-              <div class="sky-win p"></div><div class="sky-win t"></div>
-              <div class="sky-win"></div><div class="sky-win p"></div>
-              <div class="sky-win t"></div><div class="sky-win"></div>
-            </div>
-            <div class="sky-wrow">
-              <div class="sky-win"></div><div class="sky-win p"></div>
-              <div class="sky-win t"></div><div class="sky-win"></div>
-              <div class="sky-win p"></div><div class="sky-win"></div>
-              <div class="sky-win p"></div><div class="sky-win t"></div>
-            </div>
-            <div class="sky-wrow">
-              <div class="sky-win p"></div><div class="sky-win t"></div>
-              <div class="sky-win"></div><div class="sky-win p"></div>
-              <div class="sky-win t"></div><div class="sky-win p"></div>
-              <div class="sky-win"></div><div class="sky-win p"></div>
-            </div>
-          </div>
-          <div class="sky-blabel">
-            ♪ SPIRAL SOUNDS — music by quarterbitgames
-            <span class="sky-bprice">suno.com ↗</span>
-          </div>
-        </a>
-
-        <!-- trailing filler so last building has breathing room -->
-        <div style="width:60px; flex-shrink:0;"></div>
-
-      </div><!-- /sky-track -->
-    </div><!-- /sky-stage -->
-  </div><!-- /skyline-ticker -->
 </body>
 </html>
