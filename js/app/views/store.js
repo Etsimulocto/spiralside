@@ -15,26 +15,41 @@ function injectStoreStyles() {
   s.id = 'ss-store-styles';
   s.textContent = `
     #view-store { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-    .ads-off-btn {
-      background: var(--muted, #1e1e2e);
-      border: 1px solid var(--border, #2a2a3e);
-      border-radius: 8px;
-      color: var(--subtext, #7070a0);
-      font-family: var(--font-ui, 'DM Mono', monospace);
-      font-size: 0.65rem;
-      letter-spacing: 0.06em;
-      padding: 5px 10px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.2s;
+    .ads-off-building {
       flex-shrink: 0;
+      width: 44px; height: 52px;
+      background: #0b0b12;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-bottom: none;
+      border-radius: 3px 3px 0 0;
+      cursor: pointer;
+      position: relative;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-end;
+      transition: border-color 0.2s;
+      padding-bottom: 4px;
     }
-    .ads-off-btn:hover { border-color: var(--teal, #00F6D6); color: var(--teal, #00F6D6); }
-    .ads-off-btn.active {
-      background: rgba(0,246,214,0.1);
-      border-color: var(--teal, #00F6D6);
-      color: var(--teal, #00F6D6);
+    .ads-off-building:hover { border-color: rgba(0,246,214,0.45); }
+    .ads-off-building.active { border-color: rgba(0,246,214,0.6); background: rgba(0,246,214,0.05); }
+    .aob-wins {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      position: absolute; top: 6px; left: 0; right: 0;
     }
+    .aob-row { display: flex; gap: 3px; }
+    .aob-w {
+      width: 5px; height: 5px; border-radius: 1px;
+      background: rgba(255,255,255,0.06);
+      transition: background 0.3s;
+    }
+    .ads-off-building.active .aob-w { background: rgba(0,246,214,0.55); }
+    .aob-label {
+      font-family: var(--font-ui, 'DM Mono', monospace);
+      font-size: 0.45rem; letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.3);
+      text-align: center; line-height: 1.2;
+    }
+    .ads-off-building.active .aob-label { color: rgba(0,246,214,0.7); }
     .view-scroll-body { padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 0; flex: 1; min-height: 0; overflow-y: auto; }
     .credit-hero { background: linear-gradient(135deg, rgba(0,246,214,0.08), rgba(124,106,247,0.08)); border: 1px solid var(--border); border-radius: 16px; padding: 28px 20px; text-align: center; margin-bottom: 20px; }
     .credit-amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 800; color: var(--teal); line-height: 1; }
@@ -145,11 +160,12 @@ export function initStoreView() {
 
 // ── ADS-OFF BUTTON STATE ──────────────────────────────────────
 function updateAdsOffBtn() {
-  const btn = document.getElementById('ads-off-btn');
+  const btn   = document.getElementById('ads-off-btn');
+  const label = document.getElementById('ads-off-label');
   if (!btn) return;
   const off = localStorage.getItem('ss_ads_off') === '1';
-  btn.textContent = off ? 'active ✓' : 'enable';
   btn.classList.toggle('active', off);
+  if (label) label.textContent = off ? 'on' : 'off';
 }
 
 
