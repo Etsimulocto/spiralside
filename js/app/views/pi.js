@@ -189,7 +189,7 @@ function renderDOM(wrap) {
   plusBtn.id = 'pi-plus-btn';
   plusBtn.title = 'models + options';
   plusBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-  plusBtn.onclick = function(e) { e.stopPropagation(); var p = document.getElementById('options-panel'); var b = document.getElementById('plus-btn'); if (!p) return; var open = p.classList.toggle('open'); if (b) b.classList.toggle('active', open); plusBtn.classList.toggle('active', open); };
+  plusBtn.onclick = function(e) { e.stopPropagation(); toggleInputMenu(); };
   inputRow.appendChild(plusBtn);
 
   const ta = document.createElement('textarea');
