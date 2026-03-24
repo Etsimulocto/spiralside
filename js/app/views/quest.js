@@ -522,7 +522,8 @@ function buildMiiSvg(char) {
 
 // ── RENDER ────────────────────────────────────────────────────
 function renderQuest(el, char, events) {
-  const quests = events.map(seedQuestFromEvent).sort((a, b) => {
+  const resolved = loadResolved();
+  const quests = events.map(seedQuestFromEvent).filter(q => !resolved.includes(q.id)).sort((a, b) => {
     const order = { active: 0, idle: 1, locked: 2, done: 3 };
     return (order[a.status] ?? 4) - (order[b.status] ?? 4);
   });
@@ -1016,7 +1017,16 @@ function showQuestCompleteCard(ev, gold) {
     '</div>';
 
   document.body.appendChild(overlay);
-  overlay.querySelector('#qc-close-btn').onclick = () => overlay.remove();
+  overlay.querySelector('#qc-close-btn').onclick = async () => {
+    overlay.remove();
+    // Re-render quest view so gold + resolved quests update
+    const el2 = document.getElementById('view-quest');
+    if (el2) {
+      const c2 = await loadCharacter();
+      const e2 = loadEvents();
+      renderQuest(el2, c2, e2);
+    }
+  };
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 }
 
