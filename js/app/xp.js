@@ -160,6 +160,8 @@ function defaultXPState() {
     botLevels:      {},      // { botId: level } — bot progression
     botXPPool:      0,       // unspent level points to invest in bots
     levelUps:       [],      // history of level-up timestamps
+    gold:           0,       // quest reward currency
+    items:          [],      // active inventory [{id,name,icon,effect,stat,bonus,expiresAt}]
   };
 }
 
@@ -316,6 +318,37 @@ export function getXPState() {
 // ── PUBLIC: INVEST IN BOT ─────────────────────────────────────
 // Spends a level point from botXPPool to level up a specific bot.
 // botId: string (e.g. state.botName.toLowerCase() or a bot UUID)
+// ── PUBLIC: AWARD GOLD ───────────────────────────────────────
+export async function awardGold(amount) {
+  if (amount <= 0) return { goldAwarded: 0 };
+  _state = { ..._state, gold: (_state.gold || 0) + amount };
+  await saveXPState(_state);
+  return { goldAwarded: amount, totalGold: _state.gold };
+}
+
+export async function spendGold(amount) {
+  if ((_state.gold || 0) < amount) return { success: false, reason: 'insufficient_gold' };
+  _state = { ..._state, gold: _state.gold - amount };
+  await saveXPState(_state);
+  return { success: true, goldSpent: amount, totalGold: _state.gold };
+}
+
+export async function addItem(item) {
+  const items = [...(_state.items || [])];
+  if (items.length >= 6) return { success: false, reason: 'inventory_full' };
+  items.push({ ...item, acquiredAt: Date.now() });
+  _state = { ..._state, items };
+  await saveXPState(_state);
+  return { success: true };
+}
+
+export async function consumeItem(itemId) {
+  const items = (_state.items || []).filter(i => i.id !== itemId);
+  _state = { ..._state, items };
+  await saveXPState(_state);
+  return { success: true };
+}
+
 export async function investInBot(botId) {
   if (!_initialized) await initXP();
   if (_state.botXPPool < 1) return { success: false, reason: 'no_points' };

@@ -110,6 +110,25 @@ function injectQuestStyles() {
     .quest-stat.wit { border-color: rgba(124,106,247,0.4); color: #7c6af7; }
     .quest-stat.luk { border-color: rgba(0,246,214,0.4);  color: #00F6D6; }
 
+
+    /* ── SHOP ── */
+    .quest-shop-wrap { padding: 0 0 8px; }
+    .quest-shop-label { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--subtext); padding: 12px 16px 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .quest-shop-gold { font-size: 0.7rem; color: #FFD93D; }
+    .quest-shop-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 10px 16px 4px; }
+    .quest-shop-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 8px; text-align: center; cursor: pointer; transition: all 0.15s; position: relative; }
+    .quest-shop-item:hover { border-color: #FFD93D55; transform: translateY(-1px); }
+    .quest-shop-item:active { transform: scale(0.97); }
+    .quest-shop-item.cant-afford { opacity: 0.4; pointer-events: none; }
+    .quest-shop-icon { font-size: 1.3rem; margin-bottom: 4px; }
+    .quest-shop-name { font-size: 0.58rem; color: var(--text); letter-spacing: 0.04em; margin-bottom: 3px; line-height: 1.3; }
+    .quest-shop-price { font-size: 0.62rem; color: #FFD93D; }
+    .quest-shop-effect { font-size: 0.55rem; color: var(--subtext); margin-top: 2px; }
+    /* ── INVENTORY ── */
+    .quest-inv-wrap { padding: 8px 16px 12px; display: flex; gap: 8px; flex-wrap: wrap; min-height: 32px; }
+    .quest-inv-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 4px 10px 4px 6px; font-size: 0.65rem; color: var(--subtext); display: flex; align-items: center; gap: 5px; cursor: pointer; transition: border-color 0.15s; }
+    .quest-inv-item:hover { border-color: var(--accent2); }
+    .quest-inv-empty { font-size: 0.62rem; color: var(--subtext); opacity: 0.5; padding: 4px 0; }
     /* ── SECTION LABEL ── */
     .quest-section-label {
       font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
@@ -266,13 +285,36 @@ function injectQuestStyles() {
   document.head.appendChild(s);
 }
 
+// ── SHOP CATALOG ─────────────────────────────────────────────
+// 7 items — 3 shown per day, rotated by date seed
+const SHOP_CATALOG = [
+  { id:'health_pot',  icon:'🧪', name:'Health Potion',  price:5,  effect:'+5 HP',        stat:null,  bonus:0,  duration:0 },
+  { id:'rusty_sword', icon:'⚔️',  name:'Rusty Sword',   price:8,  effect:'+1 ATK 24h',   stat:'atk', bonus:1,  duration:86400000 },
+  { id:'crk_shield',  icon:'🛡️',  name:'Cracked Shield',price:8,  effect:'+1 DEF 24h',   stat:'def', bonus:1,  duration:86400000 },
+  { id:'tome',        icon:'📖', name:'Candle & Tome',  price:6,  effect:'+1 WIT 1 quest',stat:'wit', bonus:1,  duration:0 },
+  { id:'mystery',     icon:'🎲', name:'Mystery Sack',   price:3,  effect:'1-3g inside',   stat:null,  bonus:0,  duration:0 },
+  { id:'coin_charm',  icon:'🍀', name:'Coin Charm',     price:12, effect:'+1g quests tmr',stat:null,  bonus:0,  duration:86400000 },
+  { id:'ward_stone',  icon:'💀', name:'Ward Stone',     price:20, effect:'prevent 1 fail', stat:null, bonus:0,  duration:0 },
+];
+
+// Returns 3 items for today based on date seed
+function getDailyShop() {
+  const seed = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const n = parseInt(seed) % SHOP_CATALOG.length;
+  return [
+    SHOP_CATALOG[n % SHOP_CATALOG.length],
+    SHOP_CATALOG[(n+2) % SHOP_CATALOG.length],
+    SHOP_CATALOG[(n+4) % SHOP_CATALOG.length],
+  ];
+}
+
 // ── QUEST SEED LOGIC ─────────────────────────────────────────
 // Turns a calendar event title into a quest name + flavour text
 const QUEST_TEMPLATES = [
   { keywords: ['dentist','doctor','appointment','clinic','hospital'],
     name: e => `The Healer\'s Lair`,
     lore: e => `A summons from the White Coats. Your companion steels themself.`,
-    icon: '🏥', xp: 80, gold: 3 },
+    icon: '🏥', xp: 80, gold: 1 },
   { keywords: ['meeting','standup','sync','call','zoom','team'],
     name: e => `Council of Endless Words`,
     lore: e => `The Verbose Elders gather. Survive ${e.title} without falling asleep.`,
@@ -280,26 +322,26 @@ const QUEST_TEMPLATES = [
   { keywords: ['gym','workout','run','jog','exercise','yoga','crossfit'],
     name: e => `The Iron Trial`,
     lore: e => `The body is a dungeon. Enter it willingly.`,
-    icon: '⚔', xp: 120, gold: 5 },
+    icon: '⚔', xp: 120, gold: 2 },
   { keywords: ['birthday','party','dinner','celebration','wedding'],
     name: e => `The Grand Feast`,
     lore: e => `All the townsfolk gather. Bring gifts, bring charm.`,
-    icon: '🎉', xp: 60, gold: 8 },
+    icon: '🎉', xp: 60, gold: 2 },
   { keywords: ['work','office','deadline','project','presentation'],
     name: e => `The Grind Dungeon`,
     lore: e => `The tower never sleeps. Floor by floor, you climb.`,
-    icon: '🗼', xp: 100, gold: 4 },
+    icon: '🗼', xp: 100, gold: 1 },
   { keywords: ['travel','flight','drive','trip','vacation'],
     name: e => `Journey to Unknown Lands`,
     lore: e => `Beyond the edge of the map lies ${e.title}. Pack light.`,
-    icon: '🗺', xp: 150, gold: 10 },
+    icon: '🗺', xp: 150, gold: 2 },
   { keywords: ['school','class','study','exam','lecture','homework'],
     name: e => `The Scholar\'s Gauntlet`,
     lore: e => `Knowledge is power. The tome won\'t read itself.`,
-    icon: '📚', xp: 70, gold: 2 },
+    icon: '📚', xp: 70, gold: 1 },
 ];
 
-const WILD_QUEST = { name: () => 'The Empty Expanse', lore: () => 'A rare day with no summons. Seek the Wilderness Cache.', icon: '🏔', xp: 200, gold: 12 };
+const WILD_QUEST = { name: () => 'The Empty Expanse', lore: () => 'A rare day with no summons. Seek the Wilderness Cache.', icon: '🏔', xp: 200, gold: 3 };
 
 function seedQuestFromEvent(ev) {
   const t = (ev.title || '').toLowerCase();
@@ -548,6 +590,7 @@ function renderQuest(el, char, events) {
         <div class="quest-xp-chip">daily <span>${_xps ? _xps.dailyXP : 0}/${_xps ? _xps.dailyCap : 10}</span></div>
         <div class="quest-xp-chip">streak <span>${_xps ? _xps.streakDays : 1}d</span></div>
         <div class="quest-xp-chip">total <span>${_xps ? _xps.totalXP : 0}</span></div>
+        <div class="quest-xp-chip" style="margin-left:auto;color:#FFD93D">🪙 <span>${_xps ? (_xps.gold || 0) : 0}g</span></div>
       </div>
     </div>
 
@@ -611,6 +654,43 @@ function renderQuest(el, char, events) {
       </div>
     </div>
   `;
+
+  // ── SHOP HANDLERS ────────────────────────────────────────────
+  window._questBuyItem = async (itemId) => {
+    const item = SHOP_CATALOG.find(i => i.id === itemId);
+    if (!item || !window.spendGold) return;
+    const result = await window.spendGold(item.price);
+    if (!result.success) {
+      // Flash "not enough gold"
+      const grid = document.getElementById('quest-shop-grid');
+      if (grid) { grid.style.opacity='0.5'; setTimeout(()=>grid.style.opacity='1',400); }
+      return;
+    }
+    // Mystery sack — award random gold
+    if (itemId === 'mystery') {
+      const bonus = Math.floor(Math.random() * 3) + 1;
+      if (window.awardGold) await window.awardGold(bonus);
+      if (window.showXPGain) window.showXPGain(bonus, 'mystery');
+    } else {
+      // Add to inventory
+      if (window.addItem) await window.addItem({
+        id: item.id + '_' + Date.now(),
+        name: item.name, icon: item.icon,
+        stat: item.stat, bonus: item.bonus,
+        expiresAt: item.duration ? Date.now() + item.duration : null,
+      });
+    }
+    // Re-render to show updated gold + inventory
+    const el2 = document.getElementById('view-quest');
+    if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2, c2, e2); }
+  };
+
+  window._questUseItem = async (itemId) => {
+    if (!window.consumeItem) return;
+    await window.consumeItem(itemId);
+    const el2 = document.getElementById('view-quest');
+    if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2, c2, e2); }
+  };
 
   // Move modal to body — escapes overflow:hidden
   const _mo = document.getElementById('quest-modal-overlay');
