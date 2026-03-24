@@ -59,6 +59,7 @@ window.togglePw          = togglePw;
 window.handleLogin       = handleLogin;
 window.handleSignup      = handleSignup;
 window._exportSoulPrint = exportSoulPrintPDF;
+window.CHARACTERS       = CHARACTERS;
 window._exportJSON      = exportUserData;
 window._importJSON      = importUserData;
 window.handleSignout     = () => handleSignout(() => {});
