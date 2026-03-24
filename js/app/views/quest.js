@@ -553,7 +553,7 @@ function renderQuest(el, char, events) {
           <div class="quest-card-source">from: ${q.sourceEvent}</div>
           <div class="quest-card-meta">
             <div class="quest-tag tag-${q.status}">${q.status}</div>
-            <div class="quest-reward">+${q.xp} xp · ${q.gold}g</div>
+            <div class="quest-reward">🪙 +${q.gold}g</div>
           </div>
           ${q.status === 'active' ? '<div class="quest-prog-wrap"><div class="quest-prog-fill" style="width:45%"></div></div>' : ''}
         </div>
