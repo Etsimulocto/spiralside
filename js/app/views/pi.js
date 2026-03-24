@@ -189,7 +189,7 @@ function renderDOM(wrap) {
   plusBtn.id = 'pi-plus-btn';
   plusBtn.title = 'models + options';
   plusBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-  plusBtn.onclick = function() { if (typeof toggleInputMenu === 'function') toggleInputMenu(); else if (window.toggleInputMenu) window.toggleInputMenu(); };
+  plusBtn.onclick = function(e) { e.stopPropagation(); var p = document.getElementById('options-panel'); var b = document.getElementById('plus-btn'); if (!p) return; var open = p.classList.toggle('open'); if (b) b.classList.toggle('active', open); plusBtn.classList.toggle('active', open); };
   inputRow.appendChild(plusBtn);
 
   const ta = document.createElement('textarea');
@@ -233,6 +233,7 @@ function wireEvents(wrap) {
   });
 
   document.getElementById('pi-gen-btn').addEventListener('click', generate);
+  refreshBckList();
   document.getElementById('pi-copy-btn').addEventListener('click', copyOutput);
   document.getElementById('pi-run-btn').addEventListener('click', runPiston);
   document.getElementById('pi-save-btn').addEventListener('click', saveCard);
@@ -498,10 +499,52 @@ async function saveCard() {
   if (!lastBuild) { setRunMsg('Generate a project first!', '#FFD93D'); return; }
   try {
     await dbSet('builds', { key: lastBuild.id, data: lastBuild });
-    setRunMsg('\u2713 Saved \u2014 ' + lastBuild.id, '#00F6D6');
+    setRunMsg('Saved ' + lastBuild.id, '#00F6D6');
+    refreshBckList();
   } catch(e) {
-    setRunMsg('\u26a0 IDB needs v7 upgrade for builds store', '#FF4BCB');
+    // IDB v6 lacks builds store -- show card inline in left panel anyway
+    _addBckCard(lastBuild);
+    setRunMsg('Shown in panel (save needs IDB v7)', '#FFD93D');
   }
+}
+
+function _addBckCard(build) {
+  const list = document.getElementById('pi-bck-list');
+  if (!list) return;
+  const ph = list.querySelector('.pi-bck-ph');
+  if (ph) ph.remove();
+  const card = document.createElement('div');
+  card.className = 'pi-bck-card';
+  const idEl = document.createElement('div');
+  idEl.className = 'pi-bck-id';
+  idEl.textContent = build.id;
+  const nameEl = document.createElement('div');
+  nameEl.className = 'pi-bck-name';
+  nameEl.textContent = build.title || build.id;
+  card.appendChild(idEl);
+  card.appendChild(nameEl);
+  card.onclick = function() { renderCardPreview(build); };
+  list.insertBefore(card, list.firstChild);
+}
+
+async function refreshBckList() {
+  try {
+    const all = await dbGetAll('builds');
+    const list = document.getElementById('pi-bck-list');
+    if (!list) return;
+    list.innerHTML = '';
+    if (!all || !all.length) {
+      const ph = document.createElement('div');
+      ph.className = 'pi-bck-ph';
+      ph.textContent = 'no cards yet';
+      list.appendChild(ph);
+      return;
+    }
+    all.slice().reverse().forEach(item => {
+      const b = item.data || item;
+      _addBckCard(b);
+    });
+  } catch(e) { /* builds store not yet in IDB */ }
 }
 
 // ── DOWNLOAD CARD PNG ─────────────────────────────────────
