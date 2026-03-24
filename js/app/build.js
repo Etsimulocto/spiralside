@@ -466,6 +466,9 @@ export async function loadBotIntoForm() { await loadPrintIntoForm(); }
 
 // Loads a print object directly into form (no IDB lookup needed)
 async function _loadPrintDataIntoForm(print) {
+  // Always sync activePrintId with whatever is loaded in the form
+  // so handleSave uses the correct card_id instead of generating a new one
+  state.activePrintId = print.id || print.card_id || null;
   const s = id => { const el = document.getElementById(id); return (val) => { if (el) el.value = val || ''; }; };
   const id = print.identity    || {};
   const p  = print.personality || {};
