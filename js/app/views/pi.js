@@ -5,6 +5,7 @@
 // ============================================================
 
 import { state }               from '../state.js';
+import { selectedModel, toggleInputMenu, MODELS, estimateCost } from '../models.js';
 import { renderBuildCard,
          generateCardId }      from '../card.js';
 import { dbSet, dbGetAll }     from '../db.js';
@@ -166,18 +167,45 @@ function renderDOM(wrap) {
   const consoleEl = document.createElement('div');
   consoleEl.id = 'pi-console';
 
+  // model indicator bar — matches chat
+  const indicator = document.createElement('div');
+  indicator.id = 'pi-model-indicator';
+  const indLabel = document.createElement('span');
+  indLabel.id = 'pi-model-label';
+  const m = MODELS[selectedModel];
+  indLabel.textContent = m ? m.label.toLowerCase() : 'sky / 4o';
+  const indDot = document.createElement('span');
+  indDot.id = 'pi-model-dot';
+  indicator.appendChild(indLabel);
+  indicator.appendChild(indDot);
+  consoleEl.appendChild(indicator);
+
+  // input row — matches chat layout
+  const inputRow = document.createElement('div');
+  inputRow.id = 'pi-input-row';
+
+  // plus button — opens shared options panel
+  const plusBtn = document.createElement('button');
+  plusBtn.id = 'pi-plus-btn';
+  plusBtn.title = 'models + options';
+  plusBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+  plusBtn.onclick = function() { window.toggleInputMenu(); };
+  inputRow.appendChild(plusBtn);
+
   const ta = document.createElement('textarea');
   ta.id = 'pi-prompt';
-  ta.rows = 4;
-  ta.placeholder = 'what do you want to build? describe it here...';
+  ta.rows = 1;
+  ta.placeholder = 'what do you want to build?';
   ta.spellcheck = false;
+  inputRow.appendChild(ta);
 
   const genBtn = document.createElement('button');
   genBtn.id = 'pi-gen-btn';
-  genBtn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> generate';
+  genBtn.title = 'generate';
+  genBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 5 C50 5 55 40 70 50 C55 60 50 95 50 95 C50 95 45 60 30 50 C45 40 50 5 50 5Z" fill="currentColor"/></svg>';
+  inputRow.appendChild(genBtn);
 
-  consoleEl.appendChild(ta);
-  consoleEl.appendChild(genBtn);
+  consoleEl.appendChild(inputRow);
   colRight.appendChild(consoleEl);
 
   wrap.appendChild(colRight);
@@ -195,6 +223,8 @@ function wireEvents(wrap) {
 
   const ta = document.getElementById('pi-prompt');
   ta.addEventListener('input', () => {
+    ta.style.height = 'auto';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
     ta.style.height = 'auto';
     ta.style.height = Math.min(ta.scrollHeight, 100) + 'px';
   });
@@ -565,6 +595,17 @@ function injectPiStyles() {
     '#pi-output{flex:1;font-size:0.82rem;line-height:1.7;color:var(--text);font-family:var(--font-ui);}',
     '.pi-pane-label{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--subtext);padding:4px 0 6px;font-family:var(--font-ui);}',
     '#pi-card-preview{min-height:120px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}',
+    '#pi-console{flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);}',
+    '#pi-model-indicator{display:flex;align-items:center;gap:6px;padding:6px 14px 0;font-size:0.6rem;color:var(--subtext);font-family:var(--font-ui);}',
+    '#pi-model-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;}',
+    '#pi-input-row{display:flex;align-items:flex-end;gap:8px;padding:8px 10px 10px;}',
+    '#pi-plus-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--subtext);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.15s;}',
+    '#pi-plus-btn:hover{border-color:var(--teal);color:var(--teal);}',
+    '#pi-plus-btn.active{border-color:var(--teal);color:var(--teal);background:rgba(0,246,214,0.08);}',
+    '#pi-prompt{flex:1;min-height:38px;max-height:120px;resize:none;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:9px 14px;color:var(--text);font-family:var(--font-ui);font-size:0.85rem;outline:none;line-height:1.5;overflow-y:auto;}',
+    '#pi-prompt:focus{border-color:var(--teal);}',
+    '#pi-gen-btn{width:34px;height:34px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:opacity 0.15s;}',
+    '#pi-gen-btn:hover{opacity:0.85;}',
     '@media(max-width:640px){#pi-panes{flex-direction:column;}#pi-left{flex:none;height:55%;border-right:none;border-bottom:1px solid var(--border);}#pi-right{flex:none;height:45%;}}'
   ].join('');
   document.head.appendChild(s);
