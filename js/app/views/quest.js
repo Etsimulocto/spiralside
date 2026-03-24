@@ -951,16 +951,17 @@ async function resolveCompletedQuests() {
   const resolved = loadResolved();
   const today = new Date(); today.setHours(0,0,0,0);
 
+  const now = new Date();
   const toResolve = events.filter(ev => {
     if (resolved.includes(ev.id)) return false;
     const d = new Date(ev.date + 'T00:00:00');
-    // For timed events, check if the time has passed today
-    if (ev.time && d.toDateString() === new Date().toDateString()) {
+    if (ev.time) {
       const [h, m] = ev.time.split(':').map(Number);
-      const evTime = new Date(); evTime.setHours(h, m, 0, 0);
-      return new Date() > evTime;
+      const evDateTime = new Date(ev.date + 'T00:00:00');
+      evDateTime.setHours(h, m, 0, 0);
+      return now > evDateTime;
     }
-    return d < today;
+    return d < today || d.toDateString() === today.toDateString();
   });
 
   if (!toResolve.length) return;
