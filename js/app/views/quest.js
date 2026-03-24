@@ -212,16 +212,19 @@ function injectQuestStyles() {
 
     /* ── ADD EVENT MODAL ── */
     .quest-modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-      z-index: 300; display: none;
-      align-items: flex-end; justify-content: center;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 9000; display: none;
+      align-items: center; justify-content: center;
+      padding: 20px;
     }
     .quest-modal-overlay.open { display: flex; }
     .quest-modal {
-      width: 100%; max-width: 480px;
+      width: 100%; max-width: 400px;
       background: var(--bg); border: 1px solid var(--border);
-      border-radius: 20px 20px 0 0;
-      padding: 20px 20px calc(20px + var(--safe-bot,0px));
+      border-radius: 16px;
+      padding: 24px 20px;
+      max-height: 90dvh; overflow-y: auto;
     }
     .quest-modal-handle {
       display: none;
