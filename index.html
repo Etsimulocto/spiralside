@@ -1724,7 +1724,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.483</div>
+        <div class="version-badge" id="version-badge">v0.8.484</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
@@ -3025,87 +3025,88 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
   // ── SKYLINE TICKER ─────────────────────────────────────────
-  // Shows both buildings on load for 8s so dev can verify,
-  // then hides and re-appears every ~90s for 10s
+  // Shows both buildings on load so dev can verify,
+  // then hides and re-appears every ~90s for 10s.
+  // All element refs are looked up lazily (inside functions)
+  // so there is no null-at-init race with the DOM.
   (function() {
-    var ticker  = document.getElementById('skyline-ticker');
-    var crEl    = document.getElementById('sky-cr');
-    var verEl   = document.getElementById('sky-ver');
-    var usrEl   = document.getElementById('sky-usr');
-    var track   = document.getElementById('sky-track');
 
-    // Update cloud badges with live header values
+    var BUILDING_W     = 340;
+    var GAP_W          = 80;
+    var SLIDE_DURATION = 3500;   // ms each building stays visible
+    var SHOW_INTERVAL  = 90000;  // ms between appearances
+    var slides         = [0, BUILDING_W + GAP_W];
+    var slideTimer     = null;
+
+    // ── lazy element helpers ─────────────────────────────────
+    function el(id) { return document.getElementById(id); }
+
+    // ── sync cloud badges from live header elements ──────────
     function syncClouds() {
-      // credits badge text
-      var cr = document.getElementById('credits-badge');
-      if (cr && crEl) crEl.textContent = cr.textContent;
-      // version badge text
-      var ver = document.getElementById('version-badge');
+      var cr  = el('credits-badge');
+      var ver = el('version-badge');
+      var av  = el('user-avatar');
+      var crEl  = el('sky-cr');
+      var verEl = el('sky-ver');
+      var usrEl = el('sky-usr');
+      if (cr  && crEl)  crEl.textContent  = cr.textContent;
       if (ver && verEl) verEl.textContent = ver.textContent;
-      // user initial from avatar
-      var av = document.getElementById('user-avatar');
-      if (av && usrEl) usrEl.textContent = av.textContent || 'spiral';
+      if (av  && usrEl) usrEl.textContent = (av.textContent || 'spiral').trim();
     }
 
+    // ── show / hide ──────────────────────────────────────────
     function show() {
+      var t = el('skyline-ticker');
+      if (!t) return;
       syncClouds();
-      ticker.classList.add('visible');
+      t.classList.add('visible');
     }
     function hide() {
-      ticker.classList.remove('visible');
+      var t = el('skyline-ticker');
+      if (!t) return;
+      t.classList.remove('visible');
     }
 
-    // Scroll the track so only ONE building is visible at a time
-    // Track total width = 340 + 80 + 340 + 60 = 820px
-    // Each "slide" shows one building centred in the 480px viewport
-    var BUILDING_W = 340;
-    var GAP_W      = 80;
-    var SLIDE_DURATION = 3500; // ms per building
-    var slides = [0, BUILDING_W + GAP_W]; // x-offset to show each building
-    var currentSlide = 0;
-
+    // ── slide to building index ──────────────────────────────
     function goToSlide(idx) {
-      // Animate track left by setting a CSS transition + transform
+      var track = el('sky-track');
+      if (!track) return;
       track.style.transition = 'transform 0.7s cubic-bezier(0.32,0.72,0,1)';
-      // Centre the building in 480px: offset = slide_x - (480 - BUILDING_W) / 2
-      var centreOffset = Math.max(0, slides[idx] - (480 - BUILDING_W) / 2);
-      track.style.transform = 'translateX(-' + centreOffset + 'px)';
+      // centre the 340px building inside the 480px max-width viewport
+      var offset = Math.max(0, slides[idx] - (480 - BUILDING_W) / 2);
+      track.style.transform  = 'translateX(-' + offset + 'px)';
     }
 
-    var slideTimer = null;
-
+    // ── run A → B sequence ───────────────────────────────────
     function runSequence() {
-      // Reset to building A
-      currentSlide = 0;
+      var track = el('sky-track');
+      if (!track) return;
+      // snap back to building A with no animation
       track.style.transition = 'none';
       track.style.transform  = 'translateX(0)';
-      goToSlide(0);
-
-      // After SLIDE_DURATION, move to building B
-      slideTimer = setTimeout(function() {
-        currentSlide = 1;
-        goToSlide(1);
-      }, SLIDE_DURATION);
+      // brief yield so the snap applies before the slide
+      setTimeout(function() { goToSlide(0); }, 20);
+      // slide to building B after SLIDE_DURATION
+      slideTimer = setTimeout(function() { goToSlide(1); }, SLIDE_DURATION);
     }
 
+    // ── full show cycle ──────────────────────────────────────
     function showTicker() {
       show();
       runSequence();
-      // Hide after both buildings have been shown
+      // hide after both buildings have had their moment
       setTimeout(function() {
         clearTimeout(slideTimer);
         hide();
-      }, SLIDE_DURATION * 2 + 1000);
+      }, SLIDE_DURATION * 2 + 800);
     }
 
-    // On load: show immediately so dev can verify both buildings
-    // (first appearance shows both back-to-back, then hides)
+    // ── kick off after DOM + assets ready ───────────────────
     window.addEventListener('load', function() {
-      // Short delay so app is rendered first
-      setTimeout(showTicker, 1200);
-      // Then repeat every 90 seconds
-      setInterval(showTicker, 90000);
+      setTimeout(showTicker, 1200);          // first appearance
+      setInterval(showTicker, SHOW_INTERVAL); // repeat every 90s
     });
+
   })();
   // ── END SKYLINE TICKER ─────────────────────────────────────
 </script>
