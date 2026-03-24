@@ -605,6 +605,10 @@ function renderQuest(el, char, events) {
     </div>
   `;
 
+  // Move modal to body — escapes overflow:hidden
+  const _mo = document.getElementById('quest-modal-overlay');
+  if (_mo && _mo.parentElement !== document.body) document.body.appendChild(_mo);
+
   // Wire modal
   document.getElementById('quest-add-btn').onclick = () => {
     const today = new Date().toISOString().split('T')[0];
