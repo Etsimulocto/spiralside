@@ -777,6 +777,9 @@ function renderQuest(el, char, events) {
 // Calls Railway to generate a random junk item via AI
 // Fires every time quest tab opens — pure flavor, zero game impact
 async function dropRandomLoot() {
+  // Show immediate placeholder toast while AI call fires
+  showLootToast('...searching for loot');
+  try {
   try {
     // Get auth token
     const { data: _sd } = await window.sb.auth.getSession();
@@ -819,7 +822,8 @@ async function dropRandomLoot() {
     // Show loot toast
     showLootToast(item.icon + ' found: ' + item.name);
   } catch(e) {
-    // Silent fail — loot is optional fun
+    showLootToast('the loot ran away');
+    console.warn('[loot]', e);
   }
 }
 
@@ -841,10 +845,17 @@ function showLootToast(msg) {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => toast.classList.add('visible'));
   });
-  setTimeout(() => {
+  // Click anywhere on toast to dismiss
+  toast.style.pointerEvents = 'all';
+  toast.style.cursor = 'pointer';
+  const _dismiss = () => {
     toast.classList.remove('visible');
-    setTimeout(() => toast.remove(), 500);
-  }, 3000);
+    setTimeout(() => { toast.remove(); }, 400);
+    toast.removeEventListener('click', _dismiss);
+  };
+  toast.addEventListener('click', _dismiss);
+  // Also auto-dismiss after 8 seconds
+  setTimeout(_dismiss, 8000);
 }
 
 export async function initQuestView() {
