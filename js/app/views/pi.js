@@ -42,21 +42,22 @@ export function initPiView() {
 }
 
 // ── DOM ───────────────────────────────────────────────────
+
 function renderDOM(wrap) {
-  // Header
-  const header = document.createElement('div');
-  header.id = 'pi-header';
+  // LEFT COLUMN
+  const colLeft = document.createElement('div');
+  colLeft.id = 'pi-col-left';
+
   const title = document.createElement('div');
   title.id = 'pi-title';
-  title.textContent = '🍓 Bloomslice Studio';
-  const msg = document.createElement('div');
-  msg.id = 'pi-sky-msg';
-  msg.textContent = 'Tell me what you want to build and I\'ll write the code, explain every line, and show you how to wire it up.';
-  header.appendChild(title);
-  header.appendChild(msg);
-  wrap.appendChild(header);
+  title.textContent = 'Bloomslice Studio';
+  colLeft.appendChild(title);
 
-  // Starter cards
+  const startersLabel = document.createElement('div');
+  startersLabel.className = 'pi-col-label';
+  startersLabel.textContent = 'starters';
+  colLeft.appendChild(startersLabel);
+
   const starters = document.createElement('div');
   starters.id = 'pi-starters';
   STARTERS.forEach(s => {
@@ -66,56 +67,91 @@ function renderDOM(wrap) {
     const icon = document.createElement('span');
     icon.className = 'pi-starter-icon';
     icon.textContent = s.icon;
-    const label = document.createElement('span');
-    label.className = 'pi-starter-label';
-    label.textContent = s.label;
+    const lbl = document.createElement('span');
+    lbl.className = 'pi-starter-label';
+    lbl.textContent = s.label;
     btn.appendChild(icon);
-    btn.appendChild(label);
+    btn.appendChild(lbl);
     starters.appendChild(btn);
   });
-  wrap.appendChild(starters);
+  colLeft.appendChild(starters);
 
-  // Panes
-  const panes = document.createElement('div');
-  panes.id = 'pi-panes';
+  const actLabel = document.createElement('div');
+  actLabel.className = 'pi-col-label';
+  actLabel.textContent = 'actions';
+  colLeft.appendChild(actLabel);
 
-  // Left — output
-  const left = document.createElement('div');
-  left.id = 'pi-left';
-  const leftLabel = document.createElement('div');
-  leftLabel.className = 'pi-pane-label';
-  leftLabel.textContent = 'output';
+  const actions = document.createElement('div');
+  actions.id = 'pi-actions';
+
+  const runBtn = document.createElement('button');
+  runBtn.id = 'pi-run-btn';
+  runBtn.innerHTML = '<svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> run python';
+  actions.appendChild(runBtn);
+
+  const saveBtn = document.createElement('button');
+  saveBtn.id = 'pi-save-btn';
+  saveBtn.textContent = 'save build card';
+  actions.appendChild(saveBtn);
+
   const copyBtn = document.createElement('button');
-  copyBtn.className = 'pi-pane-action';
   copyBtn.id = 'pi-copy-btn';
-  copyBtn.textContent = 'copy';
-  leftLabel.appendChild(copyBtn);
+  copyBtn.textContent = 'copy output';
+  actions.appendChild(copyBtn);
+
+  const dlBtn = document.createElement('button');
+  dlBtn.id = 'pi-dl-btn';
+  dlBtn.textContent = 'save PNG';
+  actions.appendChild(dlBtn);
+
+  colLeft.appendChild(actions);
+
+  const bckLabel = document.createElement('div');
+  bckLabel.className = 'pi-col-label';
+  bckLabel.textContent = 'saved cards';
+  colLeft.appendChild(bckLabel);
+
+  const bckList = document.createElement('div');
+  bckList.id = 'pi-bck-list';
+  const bckPh = document.createElement('div');
+  bckPh.className = 'pi-bck-ph';
+  bckPh.textContent = 'no cards yet';
+  bckList.appendChild(bckPh);
+  colLeft.appendChild(bckList);
+
+  wrap.appendChild(colLeft);
+
+  // RIGHT COLUMN
+  const colRight = document.createElement('div');
+  colRight.id = 'pi-col-right';
+
+  const outWrap = document.createElement('div');
+  outWrap.id = 'pi-out-wrap';
+
+  const outLabel = document.createElement('div');
+  outLabel.className = 'pi-pane-label';
+  outLabel.textContent = 'output';
+  outWrap.appendChild(outLabel);
+
   const output = document.createElement('div');
   output.id = 'pi-output';
   const outPh = document.createElement('div');
   outPh.id = 'pi-output-ph';
-  const phIcon = document.createElement('div');
-  phIcon.style.fontSize = '2rem';
-  phIcon.textContent = '🍓';
   const phTxt = document.createElement('div');
   phTxt.textContent = 'pick a starter or describe your project';
-  outPh.appendChild(phIcon);
   outPh.appendChild(phTxt);
   output.appendChild(outPh);
-  left.appendChild(leftLabel);
-  left.appendChild(output);
+  outWrap.appendChild(output);
 
-  // Right — card preview
-  const right = document.createElement('div');
-  right.id = 'pi-right';
-  const rightLabel = document.createElement('div');
-  rightLabel.className = 'pi-pane-label';
-  rightLabel.textContent = 'build card';
-  const dlBtn = document.createElement('button');
-  dlBtn.className = 'pi-pane-action';
-  dlBtn.id = 'pi-dl-btn';
-  dlBtn.textContent = 'save PNG';
-  rightLabel.appendChild(dlBtn);
+  const runOut = document.createElement('div');
+  runOut.id = 'pi-run-out';
+  outWrap.appendChild(runOut);
+
+  const cardLabel = document.createElement('div');
+  cardLabel.className = 'pi-pane-label';
+  cardLabel.textContent = 'build card';
+  outWrap.appendChild(cardLabel);
+
   const cardPrev = document.createElement('div');
   cardPrev.id = 'pi-card-preview';
   const cardPh = document.createElement('div');
@@ -123,44 +159,30 @@ function renderDOM(wrap) {
   cardPh.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:0.3;font-size:0.65rem;color:var(--subtext);text-align:center;gap:6px;';
   cardPh.innerHTML = '<div>BCK-????</div><div>card appears after generation</div>';
   cardPrev.appendChild(cardPh);
-  right.appendChild(rightLabel);
-  right.appendChild(cardPrev);
+  outWrap.appendChild(cardPrev);
 
-  panes.appendChild(left);
-  panes.appendChild(right);
-  wrap.appendChild(panes);
+  colRight.appendChild(outWrap);
 
-  // Action bar
-  const bar = document.createElement('div');
-  bar.id = 'pi-action-bar';
-  const runBtn = document.createElement('button');
-  runBtn.id = 'pi-run-btn';
-  runBtn.innerHTML = '<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> run python';
-  const runOut = document.createElement('div');
-  runOut.id = 'pi-run-out';
-  const saveBtn = document.createElement('button');
-  saveBtn.id = 'pi-save-btn';
-  saveBtn.textContent = '🎴 save build card';
-  bar.appendChild(runBtn);
-  bar.appendChild(runOut);
-  bar.appendChild(saveBtn);
-  wrap.appendChild(bar);
+  const consoleEl = document.createElement('div');
+  consoleEl.id = 'pi-console';
 
-  // Footer
-  const footer = document.createElement('div');
-  footer.id = 'pi-footer';
   const ta = document.createElement('textarea');
   ta.id = 'pi-prompt';
-  ta.rows = 1;
-  ta.placeholder = 'What do you want to build? (e.g. blink an LED, read a temperature sensor...)';
+  ta.rows = 4;
+  ta.placeholder = 'what do you want to build? describe it here...';
   ta.spellcheck = false;
+
   const genBtn = document.createElement('button');
   genBtn.id = 'pi-gen-btn';
-  genBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> generate';
-  footer.appendChild(ta);
-  footer.appendChild(genBtn);
-  wrap.appendChild(footer);
+  genBtn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg> generate';
+
+  consoleEl.appendChild(ta);
+  consoleEl.appendChild(genBtn);
+  colRight.appendChild(consoleEl);
+
+  wrap.appendChild(colRight);
 }
+
 
 // ── EVENTS ────────────────────────────────────────────────
 function wireEvents(wrap) {
@@ -469,7 +491,7 @@ function injectPiStyles() {
   const s = document.createElement('style');
   s.id = 'pi-styles';
   s.textContent = [
-    '#pi-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font-ui);}',
+    '#pi-wrap{display:flex;flex-direction:row;height:100%;overflow:hidden;background:var(--bg);font-family:var(--font-ui);}',
     '#pi-header{padding:10px 14px 8px;flex-shrink:0;border-bottom:1px solid var(--border);}',
     '#pi-title{font-family:var(--font-display);font-weight:800;font-size:1rem;background:linear-gradient(135deg,#FF4BCB,#00F6D6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:3px;}',
     '#pi-sky-msg{font-size:0.68rem;color:var(--subtext);line-height:1.5;}',
@@ -514,6 +536,35 @@ function injectPiStyles() {
     '.pi-spin{display:inline-block;width:10px;height:10px;border:1.5px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:piSpin 0.7s linear infinite;}',
     '@keyframes piSpin{to{transform:rotate(360deg);}}',
     '@keyframes piPulse{0%,100%{opacity:0.4;}50%{opacity:1;}}',
+    '#pi-col-left{width:220px;flex-shrink:0;display:flex;flex-direction:column;border-right:1px solid var(--border);overflow-y:auto;padding:12px 10px;}',
+    '#pi-col-right{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;}',
+    '#pi-out-wrap{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-height:0;}',
+    '#pi-console{flex-shrink:0;border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;align-items:flex-end;background:var(--surface);}',
+    '#pi-prompt{flex:1;min-height:72px;max-height:160px;resize:vertical;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font-ui);font-size:0.82rem;outline:none;line-height:1.5;}',
+    '#pi-prompt:focus{border-color:var(--teal);}',
+    '#pi-gen-btn{flex-shrink:0;padding:10px 18px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.78rem;cursor:pointer;letter-spacing:0.04em;align-self:flex-end;}',
+    '#pi-starters{display:flex;flex-direction:column;gap:4px;margin-bottom:6px;}',
+    '.pi-starter{display:flex;align-items:center;gap:7px;padding:7px 9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;cursor:pointer;text-align:left;width:100%;transition:border-color 0.15s;}',
+    '.pi-starter:hover{border-color:var(--teal);}',
+    '.pi-starter-icon{font-size:0.9rem;flex-shrink:0;}',
+    '.pi-starter-label{font-size:0.72rem;color:var(--text);font-family:var(--font-ui);}',
+    '#pi-actions{display:flex;flex-direction:column;gap:4px;margin-bottom:6px;}',
+    '#pi-actions button{padding:7px 9px;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;text-align:left;width:100%;transition:all 0.15s;}',
+    '#pi-actions button:hover{border-color:var(--teal);color:var(--teal);}',
+    '#pi-run-btn{color:var(--teal) !important;border-color:rgba(0,246,214,0.4) !important;}',
+    '#pi-save-btn{color:var(--pink) !important;border-color:rgba(255,75,203,0.4) !important;}',
+    '.pi-col-label{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--subtext);padding:8px 2px 4px;font-family:var(--font-ui);}',
+    '#pi-title{font-family:var(--font-display);font-size:0.75rem;font-weight:700;color:var(--teal);letter-spacing:0.06em;padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:8px;}',
+    '#pi-bck-list{display:flex;flex-direction:column;gap:4px;}',
+    '.pi-bck-card{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:7px 9px;cursor:pointer;transition:border-color 0.15s;}',
+    '.pi-bck-card:hover{border-color:var(--teal);}',
+    '.pi-bck-id{font-size:0.6rem;color:var(--teal);letter-spacing:0.05em;}',
+    '.pi-bck-name{font-size:0.72rem;color:var(--text);font-family:var(--font-ui);}',
+    '.pi-bck-ph{font-size:0.65rem;color:var(--subtext);opacity:0.5;padding:4px 2px;}',
+    '#pi-run-out{font-size:0.72rem;color:var(--teal);font-family:var(--font-mono);padding:4px 0;min-height:0;}',
+    '#pi-output{flex:1;font-size:0.82rem;line-height:1.7;color:var(--text);font-family:var(--font-ui);}',
+    '.pi-pane-label{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--subtext);padding:4px 0 6px;font-family:var(--font-ui);}',
+    '#pi-card-preview{min-height:120px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}',
     '@media(max-width:640px){#pi-panes{flex-direction:column;}#pi-left{flex:none;height:55%;border-right:none;border-bottom:1px solid var(--border);}#pi-right{flex:none;height:45%;}}'
   ].join('');
   document.head.appendChild(s);
