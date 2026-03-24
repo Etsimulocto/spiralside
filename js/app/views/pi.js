@@ -5,7 +5,7 @@
 // ============================================================
 
 import { state }               from '../state.js';
-import { selectedModel, toggleInputMenu, MODELS, estimateCost } from '../models.js';
+import { selectedModel, toggleInputMenu, MODELS } from '../models.js';
 import { renderBuildCard,
          generateCardId }      from '../card.js';
 import { dbSet, dbGetAll }     from '../db.js';
