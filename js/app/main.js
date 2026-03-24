@@ -163,14 +163,19 @@ async function seedBuiltInPrints() {
 // Fully silent on failure — localStorage / defaults win if cloud unreachable.
 async function hydrateFromCloud() {
   // ── Style prefs ──────────────────────────────────────────
+  // Only hydrate if localStorage has nothing — loadSavedStyle() already
+  // applied local style before onAppReady ran, so re-applying here causes flash
   try {
-    const cloudStyle = await syncLoad('style_prefs');
-    if (cloudStyle) {
-      const { setPendingStyle, applyStyleVars } = await import('./style.js');
-      setPendingStyle(cloudStyle);
-      applyStyleVars(cloudStyle);
-      localStorage.setItem('ss_style', JSON.stringify(cloudStyle));
-      console.log('[sync] style_prefs hydrated from cloud');
+    const _hasLocalStyle = localStorage.getItem('ss_style');
+    if (!_hasLocalStyle) {
+      const cloudStyle = await syncLoad('style_prefs');
+      if (cloudStyle) {
+        const { setPendingStyle, applyStyleVars } = await import('./style.js');
+        setPendingStyle(cloudStyle);
+        applyStyleVars(cloudStyle);
+        localStorage.setItem('ss_style', JSON.stringify(cloudStyle));
+        console.log('[sync] style_prefs hydrated from cloud');
+      }
     }
   } catch(e) { console.warn('[sync] style hydration failed:', e); }
 
