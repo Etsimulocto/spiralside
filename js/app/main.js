@@ -210,6 +210,7 @@ async function hydrateDataFromCloud(dbSet, dbGet) {
       if (CHARACTERS && CHARACTERS.you) {
         Object.assign(CHARACTERS.you, cloudYou);
         window._youHandle = cloudYou.handle || window._youHandle;
+        try { renderActiveChar(CHARACTERS.you); } catch(_) {}
       }
       console.log('[sync] you_card overlaid from cloud');
     }
