@@ -52,7 +52,6 @@ export function checkAuthAndShow(onAppReady) {
       showScreen('app');
       checkWaiver().then(() => {
         onAppReady();
-        _recordWaiverAccepted(state.user.id);
       });
     } else {
       await sb.auth.signOut();
@@ -75,7 +74,6 @@ export function listenAuthChanges() {
         window._onAppReady = null; // only call once
         checkWaiver().then(() => {
           fn();
-          _recordWaiverAccepted(state.user.id);
         });
       }
     } else if (event === 'TOKEN_REFRESHED' && session?.user) {
