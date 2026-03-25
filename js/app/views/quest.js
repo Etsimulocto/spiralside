@@ -296,6 +296,8 @@ function injectQuestStyles() {
       transition: opacity 0.2s; letter-spacing: 0.04em;
     }
     .quest-modal-save:hover { opacity: 0.88; }
+    .quest-launch-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:8px 14px;background:transparent;border:1px solid #00F6D655;border-radius:8px;color:#00F6D6;font-family:var(--font-ui);font-size:0.68rem;letter-spacing:0.08em;cursor:pointer;transition:all 0.2s;text-decoration:none;}
+    .quest-launch-btn:hover{background:#00F6D615;border-color:#00F6D6;}
   `;
   document.head.appendChild(s);
 }
@@ -572,6 +574,7 @@ function renderQuest(el, char, events) {
             <div class="quest-reward">🪙 +${q.gold}g</div>
           </div>
           ${q.status === 'active' ? '<div class="quest-prog-wrap"><div class="quest-prog-fill" style="width:45%"></div></div>' : ''}
+          ${q.link ? '<a class="quest-launch-btn" href="" + q.link + "" target="_blank" rel="noopener noreferrer">' + (q.linkLabel || 'open link') + '</a>' : ''}
         </div>
       </div>`).join('')
     : `<div style="padding:32px 16px;text-align:center;color:var(--subtext);font-size:0.78rem;line-height:1.8">
@@ -683,6 +686,14 @@ function renderQuest(el, char, events) {
         <div style="display:flex;gap:8px;margin-bottom:8px;">
           <div class="quest-field" style="flex:1;margin-bottom:0"><label>time (opt)</label><input type="time" id="quest-ev-time" style="width:100%;color-scheme:dark;" /></div>
         </div>
+                <div class="quest-field">
+          <label>launch link (opt)</label>
+          <input type="url" id="quest-ev-link" placeholder="https://..." style="width:100%;" />
+        </div>
+        <div class="quest-field">
+          <label>button label (opt)</label>
+          <input type="text" id="quest-ev-link-label" placeholder="e.g. Pay Bill, Play Song" style="width:100%;" />
+        </div>
         <div class="quest-modal-btns">
           <button class="quest-modal-cancel" id="quest-modal-cancel">cancel</button>
           <button class="quest-modal-save" id="quest-modal-save">add quest</button>
@@ -748,6 +759,8 @@ function renderQuest(el, char, events) {
   };
   document.getElementById('quest-modal-cancel').onclick = () => {
     document.getElementById('quest-modal-overlay').classList.remove('open');
+    const _lf=document.getElementById('quest-ev-link'); if(_lf)_lf.value='';
+    const _llf=document.getElementById('quest-ev-link-label'); if(_llf)_llf.value='';
   };
   document.getElementById('quest-modal-overlay').onclick = (e) => {
     if (e.target === document.getElementById('quest-modal-overlay'))
@@ -759,7 +772,9 @@ function renderQuest(el, char, events) {
     const time  = (document.getElementById('quest-ev-time') || {}).value || '';
     if (!title || !date) return;
     const evs = loadEvents();
-    evs.push({ id: Date.now().toString(), title, date, time });
+    const link=(document.getElementById('quest-ev-link')||{}).value.trim()||'';
+    const linkLabel=(document.getElementById('quest-ev-link-label')||{}).value.trim()||'';
+    evs.push({ id: Date.now().toString(), title, date, time, link, linkLabel });
     saveEvents(evs);
     document.getElementById('quest-modal-overlay').classList.remove('open');
     // Award XP for adding a quest event
