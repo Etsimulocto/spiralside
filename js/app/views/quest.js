@@ -376,6 +376,8 @@ function seedQuestFromEvent(ev) {
     status: statusForDate(ev.date), // 'active'|'idle'|'locked'|'done'
     progress: 0,
     sourceEvent: ev.title,
+    link: ev.link || '',
+    linkLabel: ev.linkLabel || '',
   };
 }
 
