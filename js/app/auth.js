@@ -5,6 +5,7 @@
 // Nimbis anchor: js/app/auth.js
 // ============================================================
 
+import { checkWaiver, WAIVER_VERSION_STR } from './waiver.js';
 import { state } from './state.js';
 
 // ── SUPABASE CLIENT ───────────────────────────────────────────
@@ -49,7 +50,10 @@ export function checkAuthAndShow(onAppReady) {
       state.user    = session.user;
       state.session = session;
       showScreen('app');
-      onAppReady();
+      checkWaiver().then(() => {
+        onAppReady();
+        _recordWaiverAccepted(state.user.id);
+      });
     } else {
       await sb.auth.signOut();
       showScreen('auth');
@@ -69,7 +73,10 @@ export function listenAuthChanges() {
       if (window._onAppReady) {
         const fn = window._onAppReady;
         window._onAppReady = null; // only call once
-        fn();
+        checkWaiver().then(() => {
+          fn();
+          _recordWaiverAccepted(state.user.id);
+        });
       }
     } else if (event === 'TOKEN_REFRESHED' && session?.user) {
       // Keep state in sync on background refresh
