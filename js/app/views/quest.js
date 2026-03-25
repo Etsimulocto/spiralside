@@ -574,7 +574,7 @@ function renderQuest(el, char, events) {
             <div class="quest-reward">🪙 +${q.gold}g</div>
           </div>
           ${q.status === 'active' ? '<div class="quest-prog-wrap"><div class="quest-prog-fill" style="width:45%"></div></div>' : ''}
-          ${q.link ? '<a class="quest-launch-btn" href="${q.link}" target="_blank" rel="noopener noreferrer">${q.linkLabel || 'open link'}</a>' : ''}
+          ${q.link ? "<a class='quest-launch-btn' href='${q.link}' target='_blank' rel='noopener noreferrer'>${q.linkLabel || "open link"}</a>" : ""}
         </div>
       </div>`).join('')
     : `<div style="padding:32px 16px;text-align:center;color:var(--subtext);font-size:0.78rem;line-height:1.8">
