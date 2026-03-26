@@ -120,6 +120,20 @@ function renderDOM(wrap) {
   bckList.appendChild(bckPh);
   colLeft.appendChild(bckList);
 
+  const cardColLabel = document.createElement('div');
+  cardColLabel.className = 'pi-col-label';
+  cardColLabel.textContent = 'build card';
+  colLeft.appendChild(cardColLabel);
+
+  const cardPrev = document.createElement('div');
+  cardPrev.id = 'pi-card-preview';
+  const cardPh = document.createElement('div');
+  cardPh.id = 'pi-card-ph';
+  cardPh.style.cssText = 'opacity:0.3;font-size:0.65rem;color:var(--subtext);text-align:center;padding:12px 4px;';
+  cardPh.textContent = 'BCK-???? — card appears after generation';
+  cardPrev.appendChild(cardPh);
+  colLeft.appendChild(cardPrev);
+
   wrap.appendChild(colLeft);
 
   // RIGHT COLUMN
@@ -147,20 +161,6 @@ function renderDOM(wrap) {
   const runOut = document.createElement('div');
   runOut.id = 'pi-run-out';
   outWrap.appendChild(runOut);
-
-  const cardLabel = document.createElement('div');
-  cardLabel.className = 'pi-pane-label';
-  cardLabel.textContent = 'build card';
-  outWrap.appendChild(cardLabel);
-
-  const cardPrev = document.createElement('div');
-  cardPrev.id = 'pi-card-preview';
-  const cardPh = document.createElement('div');
-  cardPh.id = 'pi-card-ph';
-  cardPh.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:0.3;font-size:0.65rem;color:var(--subtext);text-align:center;gap:6px;';
-  cardPh.innerHTML = '<div>BCK-????</div><div>card appears after generation</div>';
-  cardPrev.appendChild(cardPh);
-  outWrap.appendChild(cardPrev);
 
   colRight.appendChild(outWrap);
 
@@ -609,7 +609,8 @@ function injectPiStyles() {
     '#pi-run-out{font-size:0.72rem;color:var(--teal);font-family:var(--font-mono);padding:4px 0;min-height:0;}',
     '#pi-output{flex:1;font-size:0.82rem;line-height:1.7;color:var(--text);font-family:var(--font-ui);}',
     '.pi-pane-label{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--subtext);padding:4px 0 6px;font-family:var(--font-ui);}',
-    '#pi-card-preview{min-height:120px;border:1px solid var(--border);border-radius:8px;overflow:hidden;}',
+    '#pi-card-preview{padding:4px 0;overflow:hidden;}',
+    '#pi-card-preview canvas{width:100% !important;max-width:200px;border-radius:8px;display:block;margin:0 auto;}',
     '#pi-console{flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);}',
     '#pi-model-indicator{display:flex;align-items:center;gap:6px;padding:6px 14px 0;font-size:0.6rem;color:var(--subtext);font-family:var(--font-ui);}',
     '#pi-model-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;}',
