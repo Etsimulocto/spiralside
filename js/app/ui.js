@@ -109,6 +109,87 @@ export function toggleFAB() {
   });
 }
 
+
+// ── SPLIT MODE ────────────────────────────────────────────────
+let _splitOn = false;
+const _splitViews = { a: 'chat', b: 'pi' };
+const _ALL_TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide'];
+
+export function toggleSplitMode() {
+  _splitOn = !_splitOn;
+  const btn = document.getElementById('tab-split');
+  if (btn) btn.classList.toggle('active', _splitOn);
+  if (_splitOn) _startSplit(); else _endSplit();
+}
+window.toggleSplitMode = toggleSplitMode;
+
+function _startSplit() {
+  document.body.classList.add('split-mode');
+  const app = document.getElementById('screen-app');
+  if (!document.getElementById('split-panel-a')) {
+    ['a','b'].forEach(p => {
+      const panel = document.createElement('div');
+      panel.className = 'split-panel'; panel.id = 'split-panel-' + p;
+      const bar = document.createElement('div');
+      bar.className = 'split-tabbar'; bar.id = 'split-tabbar-' + p;
+      _ALL_TABS.forEach(id => {
+        const btn = document.createElement('button');
+        btn.className = 'split-tab' + (_splitViews[p] === id ? ' active' : '');
+        btn.textContent = id;
+        btn.onclick = () => _splitLoad(p, id);
+        bar.appendChild(btn);
+      });
+      panel.appendChild(bar);
+      app.appendChild(panel);
+    });
+  }
+  _splitLoad('a', _splitViews.a);
+  _splitLoad('b', _splitViews.b);
+}
+
+function _endSplit() {
+  document.body.classList.remove('split-mode');
+  const app = document.getElementById('screen-app');
+  ['a','b'].forEach(p => {
+    const panel = document.getElementById('split-panel-' + p);
+    if (!panel) return;
+    panel.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); app.appendChild(v); });
+    panel.remove();
+  });
+  switchView(state.activeView || 'chat');
+}
+
+function _splitLoad(panel, id) {
+  _splitViews[panel] = id;
+  const panelEl = document.getElementById('split-panel-' + panel);
+  const app = document.getElementById('screen-app');
+  if (!panelEl) return;
+  panelEl.querySelectorAll('.split-tab').forEach(t => t.classList.toggle('active', t.textContent === id));
+  panelEl.querySelectorAll('.view').forEach(v => { v.classList.remove('active'); app.appendChild(v); });
+  const viewEl = document.getElementById('view-' + id);
+  if (!viewEl) return;
+  panelEl.appendChild(viewEl);
+  viewEl.classList.add('active');
+  const inits = {
+    store:()=>window.initStoreView&&window.initStoreView(),
+    studio:()=>window.initStudioView&&window.initStudioView(),
+    cut:()=>window.initCutView&&window.initCutView(),
+    quest:()=>window.initQuestView&&window.initQuestView(),
+    style:()=>window.initStylePanel&&window.initStylePanel(),
+    account:()=>window.initAccountView&&window.initAccountView(),
+    imagine:()=>window.initImagine&&window.initImagine(),
+    music:()=>window.initMusicView&&window.initMusicView(),
+    library:()=>window.initLibrary&&window.initLibrary(),
+    code:()=>window.initCodeView&&window.initCodeView(),
+    guide:()=>window.initGuideView&&window.initGuideView(),
+    forge:()=>window.initForgeView&&window.initForgeView(),
+    vault:()=>window.initVaultView&&window.initVaultView(),
+    pi:()=>window.initPiView&&window.initPiView(),
+    codex:()=>window.initCodexView&&window.initCodexView(),
+  };
+  if (inits[id]) inits[id]();
+}
+
 // ── SWITCH VIEW ───────────────────────────────────────────────
 // id: 'chat' | 'codex' | 'vault' | 'forge'
 export function switchView(id) {
