@@ -1591,26 +1591,6 @@
       margin-top: 1px;
     }
     /* ── END SKYLINE TICKER ───────────────────────────────── */
-
-    /* ── SPLIT MODE ─────────────────────────────────────────── */
-    #tab-split { margin-left:auto; flex-shrink:0; opacity:0.35; padding:4px 8px; transition:opacity 0.2s; }
-    #tab-split:hover { opacity:1; }
-    #tab-split.active { opacity:1; color:var(--teal); border-color:var(--teal); }
-    @media(max-width:1023px){ #tab-split { display:none; } }
-    @media(min-width:1024px){
-      body.split-mode #screen-app { max-width:100vw !important; display:flex !important; flex-direction:row !important; overflow:hidden; }
-      body.split-mode #screen-app > .view { display:none !important; }
-      .split-panel { flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
-      #split-panel-a { border-right:1px solid var(--border); }
-      .split-panel > .view { display:none; flex:1; min-height:0; }
-      .split-panel > .view.active { display:flex !important; }
-      .split-tabbar { display:flex; align-items:center; gap:2px; padding:0 6px; height:28px; background:var(--surface); border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; flex-shrink:0; }
-      .split-tabbar::-webkit-scrollbar { display:none; }
-      .split-tab { font-size:0.58rem; color:var(--subtext); padding:3px 7px; border-radius:4px; cursor:pointer; border:1px solid transparent; background:none; font-family:var(--font-ui); white-space:nowrap; transition:all 0.12s; }
-      .split-tab:hover { color:var(--text); background:var(--surface2); }
-      .split-tab.active { color:var(--teal); border-color:rgba(0,246,214,0.3); background:rgba(0,246,214,0.06); }
-    }
-    /* ────────────────────────────────────────────────────────── */
   </style>
 <link rel="icon" type="image/png" href="https://huggingface.co/spaces/quarterbitgames/spiralside/resolve/main/assets/spiral-logo.png">
 </head>
@@ -1825,7 +1805,6 @@
     <button class="tab-btn"        id="tab-store"     onclick="switchView('store')"     >🏪 store</button>
     <button class="tab-btn"        id="tab-account"   onclick="switchView('account')"   >👤 account</button>
     <button class="tab-btn"        id="tab-cannonized" onclick="switchView('cannonized')" >∴ cannonized</button>
-    <button id="tab-split" class="tab-btn" onclick="window.toggleSplitMode()" title="split view"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg></button>
 
   </div>
 
