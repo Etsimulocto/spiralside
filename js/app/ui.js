@@ -151,6 +151,7 @@ function _buildPanels() {
     const host = document.createElement('div');
     host.className = 'split-view-host';
     host.id = 'split-host-' + p;
+    if(p==='b'){const x=document.createElement('button');x.className='split-tab';x.textContent='x  exit split';x.style.marginLeft='auto';x.style.color='var(--pink)';x.onclick=()=>window.toggleSplitMode();bar.appendChild(x);}
     panel.appendChild(bar);
     panel.appendChild(host);
   });
