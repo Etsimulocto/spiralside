@@ -962,7 +962,7 @@ function markResolved(id) {
   if (!r.includes(id)) { r.push(id); localStorage.setItem('ss_quest_resolved', JSON.stringify(r)); }
 }
 
-async function resolveCompletedQuests() {
+async async function resolveCompletedQuests() {
   const events = loadEvents();
   const resolved = loadResolved();
   const today = new Date(); today.setHours(0,0,0,0);
