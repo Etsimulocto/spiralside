@@ -1591,6 +1591,19 @@
       margin-top: 1px;
     }
     /* ── END SKYLINE TICKER ───────────────────────────────── */
+
+    /* ── SPLIT MODE ── */
+    #tab-split { margin-left:auto; flex-shrink:0; opacity:0.4; transition:opacity 0.2s; }
+    #tab-split:hover { opacity:1; }
+    #tab-split.split-active { opacity:1; color:var(--teal); border-color:var(--teal); }
+    @media(max-width:1023px){ #tab-split { display:none; } }
+    .split-panel { flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+    .split-tabbar { display:flex; align-items:center; gap:2px; padding:0 6px; height:28px; background:var(--surface); border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; flex-shrink:0; }
+    .split-tabbar::-webkit-scrollbar { display:none; }
+    .split-tab { font-size:0.58rem; color:var(--subtext); padding:3px 7px; border-radius:4px; cursor:pointer; border:1px solid transparent; background:none; font-family:var(--font-ui); white-space:nowrap; }
+    .split-tab:hover { color:var(--text); background:var(--surface2); }
+    .split-tab.active { color:var(--teal); border-color:rgba(0,246,214,0.3); background:rgba(0,246,214,0.06); }
+    .split-view-host { flex:1; overflow:hidden; display:flex; flex-direction:column; }
   </style>
 <link rel="icon" type="image/png" href="https://huggingface.co/spaces/quarterbitgames/spiralside/resolve/main/assets/spiral-logo.png">
 </head>
@@ -1696,7 +1709,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.554</div>
+        <div class="version-badge" id="version-badge">v0.8.555</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
@@ -1805,6 +1818,7 @@
     <button class="tab-btn"        id="tab-store"     onclick="switchView('store')"     >🏪 store</button>
     <button class="tab-btn"        id="tab-account"   onclick="switchView('account')"   >👤 account</button>
     <button class="tab-btn"        id="tab-cannonized" onclick="switchView('cannonized')" >∴ cannonized</button>
+    <button id="tab-split" class="tab-btn" onclick="window.toggleSplitMode()" title="split view"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg></button>
 
   </div>
 
@@ -2558,6 +2572,11 @@
   </div>
 </div><!-- /#view-cannonized -->
 </div><!-- end #screen-app -->
+
+<div id="split-root" style="display:none;width:100%;height:100vh;flex-direction:row;overflow:hidden;position:fixed;top:0;left:0;z-index:10;background:var(--bg)">
+  <div id="split-panel-a" class="split-panel"></div>
+  <div id="split-panel-b" class="split-panel" style="border-left:1px solid var(--border)"></div>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- SLIDE PANEL (Store + Account)                             -->

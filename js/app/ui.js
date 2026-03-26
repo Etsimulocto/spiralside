@@ -109,6 +109,89 @@ export function toggleFAB() {
   });
 }
 
+
+// ── SPLIT MODE ────────────────────────────────────────────────
+let _splitOn = false;
+const _sv = { a: 'chat', b: 'pi' };
+const _TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide'];
+
+export function toggleSplitMode() {
+  _splitOn = !_splitOn;
+  document.getElementById('tab-split')?.classList.toggle('split-active', _splitOn);
+  const root = document.getElementById('split-root');
+  const app  = document.getElementById('screen-app');
+  if (!root || !app) return;
+  if (_splitOn) {
+    app.style.display = 'none';
+    root.style.display = 'flex';
+    _buildPanels();
+    _loadPanel('a', _sv.a);
+    _loadPanel('b', _sv.b);
+  } else {
+    root.style.display = 'none';
+    app.style.display = '';
+    switchView(state.activeView || 'chat');
+  }
+}
+window.toggleSplitMode = toggleSplitMode;
+
+function _buildPanels() {
+  ['a','b'].forEach(p => {
+    const panel = document.getElementById('split-panel-' + p);
+    if (!panel || panel.querySelector('.split-tabbar')) return;
+    const bar = document.createElement('div');
+    bar.className = 'split-tabbar';
+    _TABS.forEach(id => {
+      const btn = document.createElement('button');
+      btn.className = 'split-tab' + (_sv[p] === id ? ' active' : '');
+      btn.textContent = id;
+      btn.onclick = () => _loadPanel(p, id);
+      bar.appendChild(btn);
+    });
+    const host = document.createElement('div');
+    host.className = 'split-view-host';
+    host.id = 'split-host-' + p;
+    panel.appendChild(bar);
+    panel.appendChild(host);
+  });
+}
+
+function _loadPanel(panel, id) {
+  _sv[panel] = id;
+  const panelEl = document.getElementById('split-panel-' + panel);
+  if (!panelEl) return;
+  panelEl.querySelectorAll('.split-tab').forEach(t => t.classList.toggle('active', t.textContent === id));
+  const host = document.getElementById('split-host-' + panel);
+  if (!host) return;
+  // Move view into host
+  const app = document.getElementById('screen-app');
+  const viewEl = document.getElementById('view-' + id);
+  if (!viewEl) return;
+  // Return any view currently in this host back to screen-app
+  [...host.children].forEach(c => { if (c.classList.contains('view')) { c.classList.remove('active'); app.appendChild(c); } });
+  host.appendChild(viewEl);
+  viewEl.classList.add('active');
+  // Init
+  const I = {
+    store:()=>window.initStoreView&&window.initStoreView(),
+    studio:()=>window.initStudioView&&window.initStudioView(),
+    cut:()=>window.initCutView&&window.initCutView(),
+    quest:()=>window.initQuestView&&window.initQuestView(),
+    style:()=>window.initStylePanel&&window.initStylePanel(),
+    account:()=>window.initAccountView&&window.initAccountView(),
+    imagine:()=>window.initImagine&&window.initImagine(),
+    music:()=>window.initMusicView&&window.initMusicView(),
+    library:()=>window.initLibrary&&window.initLibrary(),
+    code:()=>window.initCodeView&&window.initCodeView(),
+    guide:()=>window.initGuideView&&window.initGuideView(),
+    forge:()=>window.initForgeView&&window.initForgeView(),
+    vault:()=>window.initVaultView&&window.initVaultView(),
+    pi:()=>window.initPiView&&window.initPiView(),
+    codex:()=>window.initCodexView&&window.initCodexView(),
+  };
+  if (I[id]) I[id]();
+}
+
 // ── SWITCH VIEW ───────────────────────────────────────────────
 // id: 'chat' | 'codex' | 'vault' | 'forge'
 export function switchView(id) {
