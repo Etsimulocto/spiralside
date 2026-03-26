@@ -129,6 +129,7 @@ export function toggleSplitMode() {
     _loadPanel('b', _sv.b);
   } else {
     root.style.display = 'none';
+    document.querySelectorAll('.split-view-host .view').forEach(v => { v.classList.remove('active'); app.appendChild(v); });
     app.style.display = '';
     switchView(state.activeView || 'chat');
   }
