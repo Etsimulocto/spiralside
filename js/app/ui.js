@@ -190,7 +190,7 @@ function _loadPanel(panel, id) {
     vault:()=>window.initVaultView&&window.initVaultView(),
     pi:()=>window.initPiView&&window.initPiView(),
     codex:()=>window.initCodexView&&window.initCodexView(),
-    spiral:()=>window.initSpiralView&&window.initSpiralView(),
+    spiral:()=>window.initSpiral&&window.initSpiral(),
     cannonized:()=>window.initCannonizedView&&window.initCannonizedView(),
   };
   if (I[id]) I[id]();
