@@ -17,11 +17,7 @@ export function initBloomslice() {
     const s = document.createElement('style');
     s.id = 'bloomslice-styles';
     s.textContent = `
-      #bs-inner {
-        max-width: 600px;
-        margin: 0 auto;
-        width: 100%;
-      }
+      #bs-inner { width: 100%; }
       .bs-hero {
         position: relative;
         padding: 32px 20px 28px;
