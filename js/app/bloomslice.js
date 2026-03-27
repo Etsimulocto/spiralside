@@ -17,11 +17,17 @@ export function initBloomslice() {
     const s = document.createElement('style');
     s.id = 'bloomslice-styles';
     s.textContent = `
-      #view-bloomslice {
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
+      #view-bloomslice.active {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        flex: 1;
       }
       #bs-inner {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         padding: 0 0 calc(80px + var(--safe-bot, 0px));
         max-width: 600px;
         margin: 0 auto;
