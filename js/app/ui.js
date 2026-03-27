@@ -189,6 +189,7 @@ function _loadPanel(panel, id) {
     forge:()=>window.initForgeView&&window.initForgeView(),
     vault:()=>window.initVaultView&&window.initVaultView(),
     pi:()=>window.initPiView&&window.initPiView(),
+    bloomslice: () => window.initBloomsliceView && window.initBloomsliceView(),
     codex:()=>window.initCodexView&&window.initCodexView(),
     spiral:()=>window.initSpiral&&window.initSpiral(),
     cannonized:()=>window.initCannonizedView&&window.initCannonizedView(),
