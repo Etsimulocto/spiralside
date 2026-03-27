@@ -1,5 +1,6 @@
 // ============================================================
 import { initParticles } from "./particles.js";
+import { initSpiral }      from './views/spiral.js';
 // SPIRALSIDE — MAIN v1.0
 // Boot sequence — imports all modules, wires globals, starts app
 // This is the single entry point loaded by index.html
@@ -96,6 +97,7 @@ window.updateStoreView    = updateStoreView;
 window.initAccountView    = initAccountView;
 window.updateAccountView   = updateAccountView;
 window.initGuideView      = initGuide;
+window.initSpiralView     = initSpiral;
 window.initForgeView      = initForgeView;
 window.destroyMusicView  = destroyMusicView;
 window.removeFile        = removeFile;
