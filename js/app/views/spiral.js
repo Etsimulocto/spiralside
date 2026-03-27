@@ -32,6 +32,17 @@ const SPIRAL_UNLOCKS = [
   { id:'setbg',   label:'set as bg',   cost:250 },
 ];
 
+// ── GOLD CODES ────────────────────────────────────────────────
+// Cheat/tester codes — each redeemable once per session
+const GOLD_CODES = {
+  'SPIRALTEST':  500,
+  'BLOOMCORE':   250,
+  'NIMBIS':      999,
+  'ARCHITECT':   500,
+  'HELEN':       500,
+};
+const _redeemedCodes = new Set();
+
 function _spiralInjectCSS() {
   if (document.getElementById('spiral-css')) return;
   const s = document.createElement('style');
@@ -112,6 +123,7 @@ function _spiralBuildHTML(container) {
     '<div class="sp-section" style="margin-top:4px;">unlock with gold \u25c8</div>' +
     '<div id="sp-unlock-grid">' + unlockHTML + '</div>' +
     '<div id="sp-acts"><button class="sp-abtn" id="sp-freeze">freeze</button><button class="sp-abtn" id="sp-png">save PNG</button><button class="sp-abtn" id="sp-ss">screensaver</button></div>' +
+    '<div id="sp-code-row" style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#1e1e2e);"><input id="sp-code-inp" placeholder="gold code..." style="flex:1;background:var(--bg,#0a0a0f);border:1px solid var(--border,#1e1e2e);border-radius:8px;padding:6px 10px;color:var(--text,#e8e8f0);font-family:var(--font-ui,monospace);font-size:0.65rem;outline:none;letter-spacing:0.08em;" /><button class="sp-abtn" id="sp-code-btn" style="flex-shrink:0;width:auto;padding:5px 12px;">redeem</button></div>' +
     '</div>' +
     '</div>' +
     '<div id="sp-toast"></div>';
@@ -278,6 +290,21 @@ function _spiralWire(st, math) {
   q('#sp-freeze').addEventListener('click',()=>{st.frozen=!st.frozen;q('#sp-freeze').textContent=st.frozen?'unfreeze':'freeze';});
   q('#sp-png').addEventListener('click',()=>{st.canvas.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='spiral-'+Date.now()+'.png';a.click();});});
   q('#sp-ss').addEventListener('click',()=>toast('screensaver activates after 5min idle'));
+  q('#sp-code-btn').addEventListener('click',()=>{
+    const inp = q('#sp-code-inp');
+    const code = (inp.value||'').trim().toUpperCase();
+    if (!code) return;
+    if (_redeemedCodes.has(code)) { toast('code already used this session'); inp.value=''; return; }
+    const amount = GOLD_CODES[code];
+    if (!amount) { toast('invalid code'); inp.value=''; return; }
+    _redeemedCodes.add(code);
+    st.gold += amount;
+    if (window.awardGold) window.awardGold(amount);
+    updateGold();
+    toast('+' + amount + ' gold ◈ ' + code);
+    inp.value='';
+  });
+  q('#sp-code-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') q('#sp-code-btn').click(); });
   document.querySelectorAll('.sp-preset').forEach(b=>b.addEventListener('click',()=>applyPreset(b.dataset.p)));
 
   document.querySelectorAll('.sp-ubtn').forEach(btn=>{
