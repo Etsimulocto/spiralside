@@ -17,12 +17,6 @@ export function initBloomslice() {
     const s = document.createElement('style');
     s.id = 'bloomslice-styles';
     s.textContent = `
-      #view-bloomslice.active {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        flex: 1;
-      }
       #bs-inner {
         flex: 1;
         min-height: 0;
