@@ -225,6 +225,7 @@ export function switchView(id) {
     vault:     () => window.initVaultView    && window.initVaultView(),
     pi:        () => window.initPiView       && window.initPiView(),
     spiral:    () => window.initSpiralView  && window.initSpiralView(),
+    bloomslice: () => window.initBloomsliceView && window.initBloomsliceView(),
   };
   if (viewInits[id]) viewInits[id]();
   // Fire onOpen hook so modules can refresh state on revisit
