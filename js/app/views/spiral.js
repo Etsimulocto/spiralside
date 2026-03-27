@@ -38,7 +38,7 @@ function _spiralInjectCSS() {
   s.id = 'spiral-css';
   s.textContent = [
     '#view-spiral.active{display:flex;flex-direction:column;overflow:hidden;flex:1;}',
-    '#sp-inner{display:flex;flex-direction:column;height:100%;}',
+    '#sp-inner{display:flex;flex-direction:column;flex:1;min-height:0;}',
     '#sp-topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;flex-shrink:0;border-bottom:1px solid var(--border,#1e1e2e);}',
     '#sp-gold{display:flex;align-items:center;gap:5px;font-size:0.65rem;letter-spacing:0.08em;color:#FFD93D;}',
     '#sp-goldnum{font-weight:700;font-size:0.9rem;}',
