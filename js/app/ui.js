@@ -113,7 +113,7 @@ export function toggleFAB() {
 // ── SPLIT MODE ────────────────────────────────────────────────
 let _splitOn = false;
 const _sv = { a: 'chat', b: 'pi' };
-const _TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide'];
+const _TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide','cannonized','spiral'];
 
 export function toggleSplitMode() {
   _splitOn = !_splitOn;
