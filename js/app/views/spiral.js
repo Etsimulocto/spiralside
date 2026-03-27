@@ -7,7 +7,7 @@ const _SpiralState = {
   ptcls:[], angle:0, frozen:false, rainbowHue:0,
   owned:new Set(['dual']),
   active:new Set(),
-  gold:0,
+  gold:500,
   cfg:{ type:'log', color:'#00F6D6', speed:0.6, density:180, dir:1, particles:true, decay:false },
 };
 
