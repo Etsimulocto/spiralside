@@ -8,7 +8,7 @@ const _SpiralState = {
   owned:new Set(['dual']),
   active:new Set(),
   gold:500,
-  cfg:{ type:'log', color:'#00F6D6', speed:0.6, density:180, dir:1, particles:true, decay:false },
+  cfg:{ type:'log', color:'#00F6D6', speed:0.6, density:180, dir:1, particles:true, decay:false, glow:0, twist:0, zoom:0, lineWidth:1.0, opacity:1.0, trail:0.12 },
 };
 
 const SPIRAL_PRESETS = {
@@ -120,7 +120,7 @@ function _spiralBuildHTML(container) {
     '<div class="sp-row"><span class="sp-lbl">color</span><div id="sp-cswatch" class="sp-sw" style="background:#00F6D6"><input type="color" id="sp-color" value="#00F6D6"/></div><span class="sp-lbl" style="width:auto;margin-left:8px;">speed</span><input type="range" id="sp-speed" min="1" max="20" value="6" step="1" class="sp-rng"/><span class="sp-val" id="sp-spval">0.6x</span></div>' +
     '<div class="sp-row"><span class="sp-lbl">density</span><input type="range" id="sp-density" min="60" max="400" value="180" step="10" class="sp-rng"/><span class="sp-val" id="sp-dnval">180</span></div>' +
     '<div class="sp-row"><span class="sp-lbl">dir</span><button class="sp-tbtn" id="sp-dir">CW</button><span class="sp-lbl" style="width:auto;margin-left:6px;">ptcl</span><button class="sp-tog on" id="sp-ptcl"></button><span class="sp-lbl" style="width:auto;margin-left:6px;">decay</span><button class="sp-tog" id="sp-decay"></button></div>' +
-    '<div class="sp-section" style="margin-top:4px;">unlock with gold \u25c8</div>' +
+    '<div class="sp-section" style="margin-top:6px;">fx controls</div>' +'<div class="sp-row"><span class="sp-lbl">glow</span><input type="range" id="sp-glow" min="0" max="40" value="0" step="1" class="sp-rng"/><span class="sp-val" id="sp-glowval">0</span></div>' +'<div class="sp-row"><span class="sp-lbl">twist</span><input type="range" id="sp-twist" min="0" max="30" value="0" step="1" class="sp-rng"/><span class="sp-val" id="sp-twistval">0</span></div>' +'<div class="sp-row"><span class="sp-lbl">zoom</span><input type="range" id="sp-zoom" min="0" max="20" value="0" step="1" class="sp-rng"/><span class="sp-val" id="sp-zoomval">0</span></div>' +'<div class="sp-row"><span class="sp-lbl">width</span><input type="range" id="sp-lw" min="1" max="20" value="5" step="1" class="sp-rng"/><span class="sp-val" id="sp-lwval">1.0</span></div>' +'<div class="sp-row"><span class="sp-lbl">opacity</span><input type="range" id="sp-opacity" min="10" max="100" value="100" step="1" class="sp-rng"/><span class="sp-val" id="sp-opacityval">1.0</span></div>' +'<div class="sp-row"><span class="sp-lbl">trail</span><input type="range" id="sp-trail" min="0" max="30" value="0" step="1" class="sp-rng"/><span class="sp-val" id="sp-trailval">0</span></div>' +'<div class="sp-section" style="margin-top:4px;">unlock with gold \u25c8</div>' +
     '<div id="sp-unlock-grid">' + unlockHTML + '</div>' +
     '<div id="sp-acts"><button class="sp-abtn" id="sp-freeze">freeze</button><button class="sp-abtn" id="sp-png">save PNG</button><button class="sp-abtn" id="sp-ss">screensaver</button></div>' +
     '<div id="sp-code-row" style="display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#1e1e2e);"><input id="sp-code-inp" placeholder="gold code..." style="flex:1;background:var(--bg,#0a0a0f);border:1px solid var(--border,#1e1e2e);border-radius:8px;padding:6px 10px;color:var(--text,#e8e8f0);font-family:var(--font-ui,monospace);font-size:0.65rem;outline:none;letter-spacing:0.08em;" /><button class="sp-abtn" id="sp-code-btn" style="flex-shrink:0;width:auto;padding:5px 12px;">redeem</button></div>' +
@@ -169,26 +169,43 @@ function _spiralDraw(st, math) {
   const { canvas, ctx, cfg, active, ptcls } = st;
   const W=canvas.width, H=canvas.height, cx=W/2, cy=H/2;
   const pulse = active.has('pulse') ? Math.sin(Date.now()/600)*0.08+0.92 : 1;
-  const maxR = Math.min(W,H)*0.44*pulse;
-  const trailAlpha = active.has('trails') ? 0.04 : 0.12;
-  if(cfg.decay||active.has('trails')){ctx.fillStyle='rgba(10,10,15,'+trailAlpha+')';ctx.fillRect(0,0,W,H);}
-  else{ctx.clearRect(0,0,W,H);}
+  // zoom slider: breathe the radius
+  const zoomPulse = cfg.zoom > 0 ? 1 + (cfg.zoom/100)*Math.sin(Date.now()/700) : 1;
+  const maxR = Math.min(W,H)*0.44*pulse*zoomPulse;
+  // trail slider: 0=clear, higher=longer trails
+  const trailAlpha = cfg.trail > 0 ? cfg.trail : (active.has('trails') ? 0.04 : null);
+  if(cfg.decay || active.has('trails') || cfg.trail > 0){
+    ctx.fillStyle='rgba(10,10,15,'+(trailAlpha||0.12)+')';
+    ctx.fillRect(0,0,W,H);
+  } else { ctx.clearRect(0,0,W,H); }
+  // glow: shadow blur on canvas context
+  if(cfg.glow > 0) { ctx.shadowBlur = cfg.glow; ctx.shadowColor = cfg.color; }
+  else { ctx.shadowBlur = 0; }
+  // opacity applied via globalAlpha
+  ctx.globalAlpha = cfg.opacity;
   const col = active.has('rainbow') ? math.hsl2hex(st.rainbowHue%360) : cfg.color;
   if(active.has('rainbow')) st.rainbowHue += 0.8;
   const arms = active.has('arms') ? 5 : 3;
   const mir = active.has('mirror');
   const pts = math.getPts(cfg, cx, cy, maxR, st.angle, arms);
 
+  // twist: add a time-based angle warp to the spiral offset
+  const twistOffset = cfg.twist > 0 ? Math.sin(Date.now()/1200) * (cfg.twist/100) * Math.PI : 0;
   function drawPts(p, c) {
     if(cfg.type==='fib'){
       p.forEach(([x,y],i)=>{
-        ctx.beginPath();ctx.arc(x,y,1.4,0,Math.PI*2);ctx.fillStyle=math.rgba(c,0.3+(i/p.length)*0.7);ctx.fill();
+        // twist: rotate each point around center
+        if(twistOffset !== 0) {
+          const dx=x-cx, dy=y-cy, r=Math.hypot(dx,dy), a=Math.atan2(dy,dx)+twistOffset*(i/p.length);
+          x=cx+r*Math.cos(a); y=cy+r*Math.sin(a);
+        }
+        ctx.beginPath();ctx.arc(x,y,1.4*cfg.lineWidth,0,Math.PI*2);ctx.fillStyle=math.rgba(c,0.3+(i/p.length)*0.7);ctx.fill();
         if(mir){ctx.beginPath();ctx.arc(W-x,y,1.4,0,Math.PI*2);ctx.fill();}
       });
     } else {
       for(let i=1;i<p.length;i++){
         ctx.beginPath();ctx.moveTo(p[i-1][0],p[i-1][1]);ctx.lineTo(p[i][0],p[i][1]);
-        ctx.strokeStyle=math.rgba(c,0.12+(i/p.length)*0.88);ctx.lineWidth=0.9+(i/p.length)*0.6;ctx.stroke();
+        ctx.strokeStyle=math.rgba(c,0.12+(i/p.length)*0.88);ctx.lineWidth=(0.9+(i/p.length)*0.6)*cfg.lineWidth;ctx.stroke();
         if(mir){ctx.beginPath();ctx.moveTo(W-p[i-1][0],p[i-1][1]);ctx.lineTo(W-p[i][0],p[i][1]);ctx.stroke();}
       }
     }
@@ -241,6 +258,8 @@ function _spiralDraw(st, math) {
       p.oy+=(Math.random()-0.5)*0.3;p.oy*=0.92;
     });
   }
+  ctx.globalAlpha = 1.0;
+  ctx.shadowBlur = 0;
   st.angle += 0.004*cfg.speed*cfg.dir;
 }
 
@@ -311,6 +330,12 @@ function _spiralWire(st, math) {
   q('#sp-dir').addEventListener('click',()=>{st.cfg.dir*=-1;q('#sp-dir').textContent=st.cfg.dir===1?'CW':'CCW';});
   q('#sp-ptcl').addEventListener('click',()=>{st.cfg.particles=!st.cfg.particles;q('#sp-ptcl').classList.toggle('on',st.cfg.particles);if(st.cfg.particles)initP();});
   q('#sp-decay').addEventListener('click',()=>{st.cfg.decay=!st.cfg.decay;q('#sp-decay').classList.toggle('on',st.cfg.decay);});
+  q('#sp-glow').addEventListener('input',e=>{st.cfg.glow=parseInt(e.target.value);q('#sp-glowval').textContent=e.target.value;});
+  q('#sp-twist').addEventListener('input',e=>{st.cfg.twist=parseInt(e.target.value);q('#sp-twistval').textContent=e.target.value;});
+  q('#sp-zoom').addEventListener('input',e=>{st.cfg.zoom=parseInt(e.target.value);q('#sp-zoomval').textContent=e.target.value;});
+  q('#sp-lw').addEventListener('input',e=>{st.cfg.lineWidth=e.target.value/5;q('#sp-lwval').textContent=st.cfg.lineWidth.toFixed(1);});
+  q('#sp-opacity').addEventListener('input',e=>{st.cfg.opacity=e.target.value/100;q('#sp-opacityval').textContent=st.cfg.opacity.toFixed(1);});
+  q('#sp-trail').addEventListener('input',e=>{const v=parseInt(e.target.value);st.cfg.trail=v>0?v/1000:0;q('#sp-trailval').textContent=e.target.value;});
   q('#sp-freeze').addEventListener('click',()=>{st.frozen=!st.frozen;q('#sp-freeze').textContent=st.frozen?'unfreeze':'freeze';});
   q('#sp-png').addEventListener('click',()=>{st.canvas.toBlob(b=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='spiral-'+Date.now()+'.png';a.click();});});
   q('#sp-ss').addEventListener('click',()=>toast('screensaver activates after 5min idle'));
