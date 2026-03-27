@@ -220,6 +220,7 @@ export function switchView(id) {
     forge:     () => window.initForgeView    && window.initForgeView(),
     vault:     () => window.initVaultView    && window.initVaultView(),
     pi:        () => window.initPiView       && window.initPiView(),
+    spiral:    () => window.initSpiralView  && window.initSpiralView(),
   };
   if (viewInits[id]) viewInits[id]();
   // Fire onOpen hook so modules can refresh state on revisit
