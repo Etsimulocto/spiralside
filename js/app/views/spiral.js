@@ -199,6 +199,30 @@ function _spiralDraw(st, math) {
     const pts2 = math.getPts({...cfg,dir:cfg.dir*-1}, cx, cy, maxR*0.7, st.angle*-1.3+Math.PI, arms);
     drawPts(pts2, col);
   }
+  // extra arms: draw 2 additional rotated copies of the spiral on non-galaxy types
+  if(active.has('arms') && cfg.type !== 'galaxy') {
+    const ptsA = math.getPts(cfg, cx, cy, maxR*0.85, st.angle + Math.PI*0.66, arms);
+    const ptsB = math.getPts(cfg, cx, cy, maxR*0.85, st.angle + Math.PI*1.33, arms);
+    drawPts(ptsA, col);
+    drawPts(ptsB, col);
+  }
+  // shatter: burst fragments radiating outward from spiral points
+  if(active.has('shatter') && pts.length > 10) {
+    const shardCount = 18;
+    const t = Date.now() / 800;
+    for(let si=0; si<shardCount; si++) {
+      const idx = Math.floor((si/shardCount)*pts.length);
+      const [sx, sy] = pts[idx];
+      const angle = (si/shardCount)*Math.PI*2 + t;
+      const len = 8 + Math.sin(t + si)*6;
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(sx + Math.cos(angle)*len, sy + Math.sin(angle)*len);
+      ctx.strokeStyle = math.rgba(col, 0.55);
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
+  }
 
   if(cfg.particles && pts.length>10){
     ptcls.forEach((p,pi)=>{
@@ -313,7 +337,11 @@ function _spiralWire(st, math) {
       if(st.owned.has(uid)){
         st.active.has(uid)?st.active.delete(uid):st.active.add(uid);
         btn.classList.toggle('sp-on',st.active.has(uid));
-        toast(uid+(st.active.has(uid)?' on':' off'));
+        if(uid==='web' && st.active.has(uid) && !st.cfg.particles) {
+          toast('web lines: turn particles on first');
+        } else {
+          toast(uid+(st.active.has(uid)?' on':' off'));
+        }
       } else if(st.gold>=cost){
         st.gold-=cost; updateGold();
         st.owned.add(uid); st.active.add(uid);
