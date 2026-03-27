@@ -194,6 +194,7 @@ function _loadPanel(panel, id) {
     cannonized:()=>window.initCannonizedView&&window.initCannonizedView(),
   };
   if (I[id]) I[id]();
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 50);
 }
 
 // ── SWITCH VIEW ───────────────────────────────────────────────
