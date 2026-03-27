@@ -18,13 +18,9 @@ export function initBloomslice() {
     s.id = 'bloomslice-styles';
     s.textContent = `
       #bs-inner {
-        flex: 1;
-        min-height: 0;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 0 calc(80px + var(--safe-bot, 0px));
         max-width: 600px;
         margin: 0 auto;
+        width: 100%;
       }
       .bs-hero {
         position: relative;
