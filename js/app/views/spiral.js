@@ -1,17 +1,14 @@
-
 // Nimbis anchor: js/app/views/spiral.js
 // SPIRALSIDE -- SPIRAL VIEW v1.0
 // Gold-unlock generative spiral art tab
-// Pattern: injectCSS + renderHTML + wire events, flex:1 min-height:0 inner wrapper
-// window.initSpiralView = initSpiral (registered in main.js alongside other globals)
 
 const _SpiralState = {
-  canvas: null, ctx: null, animId: null,
-  ptcls: [], angle: 0, frozen: false, rainbowHue: 0,
-  owned: new Set(['dual']),
-  active: new Set(),
-  gold: 0,
-  cfg: { type:'log', color:'#00F6D6', speed:0.6, density:180, dir:1, particles:true, decay:false },
+  canvas:null, ctx:null, animId:null,
+  ptcls:[], angle:0, frozen:false, rainbowHue:0,
+  owned:new Set(['dual']),
+  active:new Set(),
+  gold:0,
+  cfg:{ type:'log', color:'#00F6D6', speed:0.6, density:180, dir:1, particles:true, decay:false },
 };
 
 const SPIRAL_PRESETS = {
@@ -59,7 +56,7 @@ function _spiralInjectCSS() {
     '.sp-val{font-size:0.62rem;color:#00F6D6;width:32px;text-align:right;flex-shrink:0;}',
     '.sp-tog{width:32px;height:18px;background:var(--muted,#2a2a3e);border-radius:9px;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;border:none;}',
     '.sp-tog.on{background:#00F6D6;}',
-    ".sp-tog::after{content:';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform 0.2s;}",
+    ".sp-tog::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform 0.2s;}",
     '.sp-tog.on::after{transform:translateX(14px);}',
     '.sp-tbtn{flex:1;padding:5px 8px;background:transparent;border:1px solid var(--border,#1e1e2e);border-radius:8px;color:var(--text,#e8e8f0);font-family:var(--font-ui,monospace);font-size:0.65rem;cursor:pointer;transition:all 0.15s;}',
     '.sp-tbtn:hover{border-color:#00F6D6;}',
@@ -77,18 +74,18 @@ function _spiralInjectCSS() {
     '.sp-abtn:hover{border-color:#00F6D6;color:#00F6D6;}',
     '#sp-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0a0a0f;border:1px solid #FFD93D;color:#FFD93D;font-family:var(--font-ui,monospace);font-size:0.65rem;letter-spacing:0.08em;padding:7px 16px;border-radius:20px;opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:9000;}',
     '#sp-toast.show{opacity:1;}',
-  ].join(');
+  ].join('');
   document.head.appendChild(s);
 }
 
 function _spiralBuildHTML(container) {
   const unlockHTML = SPIRAL_UNLOCKS.map(u =>
-    '<button class="sp-ubtn' + (_SpiralState.owned.has(u.id) ? ' owned' : ') + '" data-uid="' + u.id + '" data-cost="' + u.cost + '">"' +
+    '<button class="sp-ubtn' + (_SpiralState.owned.has(u.id) ? ' owned' : '') + '" data-uid="' + u.id + '" data-cost="' + u.cost + '">' +
     '<span>' + u.label + '</span>' +
-    '<span class="sp-ucost' + (u.cost === 0 ? ' free' : ') + '">"' +
+    '<span class="sp-ucost' + (u.cost === 0 ? ' free' : '') + '">' +
     (u.cost === 0 ? 'owned' : u.cost + ' \u25c8') +
     '</span></button>'
-  ).join(');
+  ).join('');
 
   container.innerHTML =
     '<div id="sp-inner">' +
@@ -270,7 +267,6 @@ function _spiralWire(st, math) {
     document.querySelectorAll('.sp-preset').forEach(c=>c.classList.toggle('active',c.dataset.p===name));
   }
 
-  // Wire controls
   q('#sp-type').addEventListener('change',e=>{st.cfg.type=e.target.value;document.querySelectorAll('.sp-preset').forEach(c=>c.classList.remove('active'));});
   q('#sp-color').addEventListener('input',e=>{st.cfg.color=e.target.value;q('#sp-cswatch').style.background=e.target.value;});
   q('#sp-speed').addEventListener('input',e=>{st.cfg.speed=e.target.value/10;q('#sp-spval').textContent=st.cfg.speed.toFixed(1)+'x';});
