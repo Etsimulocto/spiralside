@@ -1604,6 +1604,8 @@
     .split-tab:hover { color:var(--text); background:var(--surface2); }
     .split-tab.active { color:var(--teal); border-color:rgba(0,246,214,0.3); background:rgba(0,246,214,0.06); }
     .split-view-host { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+  .split-view-host #cz-inner { max-width:100% !important; }
+  .split-view-host .view { overflow-y:auto; }
   </style>
 <link rel="icon" type="image/png" href="https://huggingface.co/spaces/quarterbitgames/spiralside/resolve/main/assets/spiral-logo.png">
 </head>
@@ -1709,7 +1711,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.573</div>
+        <div class="version-badge" id="version-badge">v0.8.574</div>
         <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
@@ -2485,7 +2487,7 @@
 
 <!-- ∴ CANNONIZED VIEW -->
 <div class="view" id="view-cannonized" style="overflow-y:auto;padding:20px 16px calc(80px + var(--safe-bot,0px));">
-  <div style="max-width:700px;margin:0 auto;">
+  <div id="cz-inner" style="max-width:700px;margin:0 auto;">
 
     <div style="margin-bottom:20px;">
       <div style="font-family:var(--font-ui);font-size:0.65rem;letter-spacing:0.2em;color:var(--teal);opacity:0.6;margin-bottom:4px;">SPIRALSIDE ARCHIVE SYSTEM</div>
