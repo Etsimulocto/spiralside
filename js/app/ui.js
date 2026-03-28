@@ -190,6 +190,7 @@ function _loadPanel(panel, id) {
     vault:()=>window.initVaultView&&window.initVaultView(),
     pi:()=>window.initPiView&&window.initPiView(),
     bloomslice: () => window.initBloomsliceView && window.initBloomsliceView(),
+      bloomengine: () => window.initBloomEngineView && window.initBloomEngineView(),
     codex:()=>window.initCodexView&&window.initCodexView(),
     spiral:()=>window.initSpiral&&window.initSpiral(),
     cannonized:()=>window.initCannonizedView&&window.initCannonizedView(),
