@@ -40,6 +40,7 @@ function _beInjectCSS() {
     '.be-stat span{color:#00F6D6;}',
     '#be-bloom-btn{background:transparent;border:1px solid #FF4BCB44;color:#FF4BCB;font-family:var(--font-ui,monospace);font-size:8px;letter-spacing:.1em;padding:3px 8px;cursor:pointer;border-radius:2px;}',
     '#be-bloom-btn:hover{background:#FF4BCB22;}',
+    '#view-bloomengine.active{display:flex;flex-direction:column;overflow:hidden;flex:1;}',
   ].join('');
   document.head.appendChild(s);
 }
