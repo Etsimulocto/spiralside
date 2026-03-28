@@ -40,6 +40,8 @@ function _beInjectCSS() {
     '.be-stat span{color:#00F6D6;}',
     '#be-bloom-btn{background:transparent;border:1px solid #FF4BCB44;color:#FF4BCB;font-family:var(--font-ui,monospace);font-size:8px;letter-spacing:.1em;padding:3px 8px;cursor:pointer;border-radius:2px;}',
     '#be-bloom-btn:hover{background:#FF4BCB22;}',
+    '#be-reset-btn{background:transparent;border:1px solid #4DA3FF44;color:#4DA3FF;font-family:var(--font-ui,monospace);font-size:8px;letter-spacing:.1em;padding:3px 8px;cursor:pointer;border-radius:2px;margin-right:4px;}',
+    '#be-reset-btn:hover{background:#4DA3FF22;}',
     '#view-bloomengine.active{display:flex;flex-direction:column;overflow:hidden;flex:1;}',
   ].join('');
   document.head.appendChild(s);
@@ -97,7 +99,7 @@ function _beBuildHTML(container) {
     '<div id="be-stats"><div class="be-stat">POP <span id="be-st-pop">1</span></div>' +
     '<div class="be-stat">CYCLE <span id="be-st-cyc">0</span></div>' +
     '<div class="be-stat">WELLS <span id="be-st-wells">0</span></div></div>' +
-    '<button id="be-bloom-btn">WHITE BLOOM</button></div></div>';
+    '<button id="be-reset-btn">RESET</button><button id="be-bloom-btn">WHITE BLOOM</button></div></div>';
 }
 
 function _beG(id) { return +document.getElementById('be-' + id).value; }
@@ -247,6 +249,17 @@ function _beWire() {
   });
   C.addEventListener('click',e=>{const r=C.getBoundingClientRect();st.wells.push({x:e.clientX-r.left,y:e.clientY-r.top,type:1});if(st.wells.length>8)st.wells.shift();const el=document.getElementById('be-st-wells');if(el)el.textContent=st.wells.length;});
   C.addEventListener('contextmenu',e=>{e.preventDefault();const r=C.getBoundingClientRect();st.wells.push({x:e.clientX-r.left,y:e.clientY-r.top,type:-1});if(st.wells.length>8)st.wells.shift();const el=document.getElementById('be-st-wells');if(el)el.textContent=st.wells.length;});
+  const BE_DEFAULTS = {spawn:30,life:140,radius:0,maxpop:600,cdrift:40,size:2,entropy:50,radial:15,vortex:0,speed:3,damp:99,bounce:50,sine:40,sinamp:40,cos:0,phase:0,harm:1,tangle:0,branch:0,bangle:45,self:0,fscale:50,bloom:10,recbloom:0,lorenz:0,lsigma:10,julia:0,jcx:-70,bifurc:0,strange:0,spectral:0,heat:0,ghost:20,cpulse:0,palette:0,invert:0,polar:0,arms:0,radsym:1,odecay:0,adrift:0,petal:0,windx:0,windy:0,pulse:0,gravity:0,tunnel:0,repulse:0};
+  document.getElementById('be-reset-btn').addEventListener('click',()=>{
+    Object.entries(BE_DEFAULTS).forEach(([k,v])=>{
+      const el=document.getElementById('be-'+k);
+      const vEl=document.getElementById('bv-'+k);
+      if(el){el.value=v;}
+      if(vEl){vEl.textContent=v;}
+    });
+    st.wells=[];st.bloomPhase=0;st.particles=[_beSpawn(null,null,4,0)];
+    const wEl=document.getElementById('be-st-wells');if(wEl)wEl.textContent=0;
+  });
   document.getElementById('be-bloom-btn').addEventListener('click',()=>{st.bloomPhase=1.0;});
   window.addEventListener('resize',()=>setTimeout(_beSetSize,0));
   st.particles=[_beSpawn(null,null,4,0)];
