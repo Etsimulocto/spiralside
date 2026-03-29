@@ -199,6 +199,15 @@ function injectQuestStyles() {
     .q-modal-cancel:hover { border-color: var(--accent2); color: var(--accent2); }
     .q-modal-save { flex: 2; padding: 10px; background: linear-gradient(135deg,#FFD93D,#FFa500); border: none; border-radius: 8px; color: #101014; font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; cursor: pointer; letter-spacing: 0.04em; }
 
+    .q-cancel-btn {
+      padding: 7px 12px; background: transparent;
+      border: 1px solid rgba(255,107,107,0.3); border-radius: 7px;
+      font-size: 0.65rem; color: rgba(255,107,107,0.6);
+      letter-spacing: 0.08em; cursor: pointer;
+      font-family: var(--font-ui); transition: all 0.15s;
+    }
+    .q-cancel-btn:hover { border-color: #ff6b6b; color: #ff6b6b; background: rgba(255,107,107,0.08); }
+
     .quest-loot-toast { position:fixed;top:calc(54px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-10px);background:#111118;border:1px solid #FFD93D;color:#FFD93D;font-family:var(--font-ui);font-size:.7rem;letter-spacing:.06em;padding:8px 16px;border-radius:20px;opacity:0;pointer-events:none;z-index:9999;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap; }
     .quest-loot-toast.visible { opacity:1;transform:translateX(-50%) translateY(0); }
   `;
@@ -417,7 +426,10 @@ function renderQuest(el, char, events) {
         </div>
       </div>
       <div class="q-prog-bg"><div class="q-prog" style="width:${prog}%"></div></div>
-      ${playBtn}
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${playBtn}
+        <button class="q-cancel-btn" onclick="window._questCancel('${q.id}')">abandon</button>
+      </div>
     </div>`;
   }
 
@@ -567,6 +579,13 @@ function renderQuest(el, char, events) {
     const item2 = xps2 && xps2.items ? xps2.items.find(i => i.id===itemId) : null;
     await window.consumeItem(itemId);
     if (item2 && item2.isLoot && item2.use_text) showLootToast(item2.icon+' '+item2.use_text);
+    const el2 = document.getElementById('view-quest');
+    if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2,c2,e2); }
+  };
+
+  // Abandon an active quest — marks resolved without awarding gold
+  window._questCancel = async (questId) => {
+    markResolved(questId);
     const el2 = document.getElementById('view-quest');
     if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2,c2,e2); }
   };
