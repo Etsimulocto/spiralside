@@ -614,9 +614,12 @@ function renderQuest(el, char, events) {
     showBattleOverlay(q, char);
   };
 
-  // Move modal to body so it escapes overflow:hidden
-  const _mo = document.getElementById('q-modal-overlay');
-  if (_mo && _mo.parentElement !== document.body) document.body.appendChild(_mo);
+  // Move modal to body so it escapes overflow:hidden.
+  // Always remove any stale orphaned modal first — re-renders leave old ones on body.
+  const _stale = document.getElementById('q-modal-overlay');
+  if (_stale) _stale.remove();
+  const _mo = el.querySelector('#q-modal-overlay') || document.getElementById('q-modal-overlay');
+  if (_mo) document.body.appendChild(_mo);
 
   document.getElementById('q-clear-btn').onclick = () => {
     if (!confirm('clear all quests and history?')) return;
