@@ -421,9 +421,7 @@ function renderQuest(el, char, events) {
     ? activeQuests.map(heroCard).join('')
     : `<div class="q-empty">no active quests today.<br>add calendar events and they become adventures.</div>`;
 
-  const upcomingSection = [...upcomingQuests, ...doneQuests].length
-    ? [...upcomingQuests, ...doneQuests].map(questRow).join('')
-    : '';
+
 
   el.innerHTML = `
     <div class="q-status-bar">
