@@ -134,20 +134,6 @@ function injectQuestStyles() {
     }
     .q-play-link:hover { background: rgba(0,246,214,0.15); }
 
-    .q-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 16px; border-bottom: 1px solid var(--border);
-      transition: background 0.15s;
-    }
-    .q-row:active { background: var(--surface); }
-    .q-row-icon { width: 34px; height: 34px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
-    .q-row-body { flex: 1; min-width: 0; }
-    .q-row-title { font-size: 0.8rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .q-row-sub { font-size: 0.6rem; color: var(--subtext); margin-top: 1px; }
-    .q-row-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-    .q-row-gold { font-size: 0.62rem; color: #7c6af7; }
-    .q-row-done { opacity: 0.45; }
-
     .q-empty { padding: 28px 16px; text-align: center; color: var(--subtext); font-size: 0.75rem; line-height: 1.8; }
 
     .q-shop-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 6px 12px 8px; }
@@ -352,8 +338,6 @@ function renderQuest(el, char, events) {
   const resolved = loadResolved();
   const allQuests = events.map(seedQuestFromEvent);
   const activeQuests   = allQuests.filter(q => q.status==='active' && !resolved.includes(q.id));
-  const upcomingQuests = allQuests.filter(q => q.status!=='done' && q.status!=='active' && !resolved.includes(q.id));
-  const doneQuests     = allQuests.filter(q => q.status==='done' || resolved.includes(q.id)).slice(0,3);
 
   const _xps   = (typeof getXPState !== 'undefined' && getXPState()) || null;
   const _xpLv  = _xps ? _xps.level   : (char.level||1);
@@ -433,22 +417,6 @@ function renderQuest(el, char, events) {
     </div>`;
   }
 
-  // Compact row for upcoming / done quests
-  function questRow(q) {
-    const isDone = q.status==='done' || resolved.includes(q.id);
-    return `<div class="q-row${isDone?' q-row-done':''}">
-      <div class="q-row-icon">${q.icon}</div>
-      <div class="q-row-body">
-        <div class="q-row-title">${q.title}</div>
-        <div class="q-row-sub">from: ${q.sourceEvent}${q.date?' \u00B7 '+formatQuestDate(q.date,q.time):''}</div>
-      </div>
-      <div class="q-row-right">
-        <div class="q-tag tag-${isDone?'done':q.status}">${isDone?'done':q.status}</div>
-        <div class="q-row-gold">+${q.gold}g</div>
-      </div>
-    </div>`;
-  }
-
   const activeSection = activeQuests.length
     ? activeQuests.map(heroCard).join('')
     : `<div class="q-empty">no active quests today.<br>add calendar events and they become adventures.</div>`;
@@ -497,11 +465,6 @@ function renderQuest(el, char, events) {
 
     <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">active quests</span><div class="q-rule-line"></div></div>
     ${activeSection}
-
-    ${upcomingSection ? `
-      <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">upcoming</span><div class="q-rule-line"></div></div>
-      <div>${upcomingSection}</div>
-    ` : ''}
 
     <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">wandering merchant</span><span class="q-rule-right">rotates daily</span></div>
     <div class="q-shop-grid" id="q-shop-grid">
