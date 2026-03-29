@@ -169,6 +169,16 @@ function injectQuestStyles() {
     }
     .q-add-btn:hover { border-color: rgba(255,211,61,0.4); color: #FFD93D; }
 
+    .q-clear-btn {
+      width: calc(100% - 24px); margin: 0 12px 20px; padding: 9px;
+      border-radius: 8px; background: transparent;
+      border: 1px dashed rgba(255,107,107,0.2);
+      color: rgba(255,107,107,0.35); font-family: var(--font-ui);
+      font-size: 0.6rem; letter-spacing: 0.1em; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .q-clear-btn:hover { border-color: rgba(255,107,107,0.5); color: #ff6b6b; }
+
     .q-modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
       z-index: 9000; display: none; align-items: center; justify-content: center; padding: 20px;
@@ -534,6 +544,7 @@ function renderQuest(el, char, events) {
     </div>
 
     <button class="q-add-btn" id="q-add-btn">+ add calendar event</button>
+    <button class="q-clear-btn" id="q-clear-btn">clear all quests</button>
 
     <div class="q-modal-overlay" id="q-modal-overlay">
       <div class="q-modal">
@@ -606,6 +617,13 @@ function renderQuest(el, char, events) {
   // Move modal to body so it escapes overflow:hidden
   const _mo = document.getElementById('q-modal-overlay');
   if (_mo && _mo.parentElement !== document.body) document.body.appendChild(_mo);
+
+  document.getElementById('q-clear-btn').onclick = () => {
+    if (!confirm('clear all quests and history?')) return;
+    localStorage.removeItem('ss_quest_events');
+    localStorage.removeItem('ss_quest_resolved');
+    renderQuest(el, char, []);
+  };
 
   document.getElementById('q-add-btn').onclick = () => {
     document.getElementById('q-ev-date').value = new Date().toISOString().split('T')[0];
