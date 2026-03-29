@@ -196,6 +196,48 @@ function injectQuestStyles() {
 
     .quest-loot-toast { position:fixed;top:calc(54px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%) translateY(-10px);background:#111118;border:1px solid #FFD93D;color:#FFD93D;font-family:var(--font-ui);font-size:.7rem;letter-spacing:.06em;padding:8px 16px;border-radius:20px;opacity:0;pointer-events:none;z-index:9999;transition:all .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap; }
     .quest-loot-toast.visible { opacity:1;transform:translateX(-50%) translateY(0); }
+
+    .q-battle-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.88);
+      z-index: 9500; display: flex; align-items: center; justify-content: center;
+      padding: 20px; cursor: pointer;
+    }
+    .q-battle-card {
+      width: 100%; max-width: 360px; background: #0d0d14;
+      border: 1px solid #1e1e2e; border-radius: 14px;
+      padding: 20px; cursor: default; font-family: var(--font-ui);
+    }
+    .q-battle-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .q-battle-title { font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--subtext); }
+    .q-battle-tap-hint { font-size: 0.55rem; color: #2e2e40; letter-spacing: 0.08em; animation: tapPulseB 2s infinite; }
+    @keyframes tapPulseB { 0%,100%{opacity:0.3;} 50%{opacity:0.8;} }
+    .q-battle-enemy-name { font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 2px; }
+    .q-battle-enemy-lore { font-size: 0.65rem; color: var(--subtext); text-align: center; font-style: italic; margin-bottom: 14px; line-height: 1.5; }
+    .q-battle-combatants { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .q-combatant { flex: 1; }
+    .q-combatant-name { font-size: 0.58rem; color: var(--subtext); letter-spacing: 0.08em; margin-bottom: 5px; text-transform: uppercase; }
+    .q-combatant-hp-bar-bg { height: 6px; background: #1e1e2e; border-radius: 3px; overflow: hidden; margin-bottom: 3px; }
+    .q-combatant-hp-bar { height: 100%; border-radius: 3px; transition: width 0.35s ease; }
+    .q-combatant-hp-bar.you { background: #00F6D6; }
+    .q-combatant-hp-bar.enemy { background: #ff6b6b; }
+    .q-combatant-hp-val { font-size: 0.58rem; color: var(--subtext); letter-spacing: 0.06em; }
+    .q-vs-badge { font-size: 0.6rem; color: #FFD93D; flex-shrink: 0; padding: 0 4px; }
+    .q-battle-log { background: #07070c; border: 1px solid #1e1e2e; border-radius: 8px; padding: 10px 12px; height: 110px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; margin-bottom: 14px; }
+    .q-battle-log::-webkit-scrollbar { width: 2px; }
+    .q-battle-log::-webkit-scrollbar-thumb { background: #1e1e2e; }
+    .q-blog-line { font-size: 0.65rem; line-height: 1.5; color: var(--subtext); }
+    .q-blog-line.dmg-you { color: #ff6b6b; }
+    .q-blog-line.dmg-enemy { color: #00F6D6; }
+    .q-blog-line.system { color: #FFD93D; }
+    .q-blog-line.result-win { color: #6af7c8; font-weight: 700; letter-spacing: 0.06em; }
+    .q-blog-line.result-loss { color: #ff6b6b; font-weight: 700; letter-spacing: 0.06em; }
+    .q-battle-stat-changes { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; min-height: 0; }
+    .q-stat-delta { font-size: 0.6rem; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; }
+    .q-stat-delta.up { background: rgba(106,247,200,0.12); color: #6af7c8; border: 1px solid rgba(106,247,200,0.3); }
+    .q-stat-delta.down { background: rgba(255,107,107,0.1); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.25); }
+    .q-battle-close-btn { width: 100%; padding: 10px; background: rgba(124,106,247,0.1); border: 1px solid rgba(124,106,247,0.3); border-radius: 8px; color: #7c6af7; font-family: var(--font-ui); font-size: 0.72rem; letter-spacing: 0.08em; cursor: pointer; transition: background 0.15s; display: none; }
+    .q-battle-close-btn.visible { display: block; }
+    .q-battle-close-btn:hover { background: rgba(124,106,247,0.2); }
   `;
   document.head.appendChild(s);
 }
@@ -413,6 +455,7 @@ function renderQuest(el, char, events) {
       <div style="display:flex;gap:8px;align-items:center;">
         ${playBtn}
         <button class="q-cancel-btn" onclick="window._questCancel('${q.id}')">abandon</button>
+        <button class="q-play-link" style="background:rgba(255,211,61,0.08);border-color:rgba(255,211,61,0.3);color:#FFD93D;" onclick="event.stopPropagation();window._questFight('${q.id}')">\u2694 fight</button>
       </div>
     </div>`;
   }
@@ -551,6 +594,15 @@ function renderQuest(el, char, events) {
     if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2,c2,e2); }
   };
 
+  // Open battle overlay for an active quest
+  window._questFight = (questId) => {
+    const evs = loadEvents();
+    const ev  = evs.find(e => e.id === questId);
+    if (!ev) return;
+    const q = seedQuestFromEvent(ev);
+    showBattleOverlay(q, char);
+  };
+
   // Move modal to body so it escapes overflow:hidden
   const _mo = document.getElementById('q-modal-overlay');
   if (_mo && _mo.parentElement !== document.body) document.body.appendChild(_mo);
@@ -582,6 +634,196 @@ function renderQuest(el, char, events) {
     });
     renderQuest(el, char, evs);
   };
+}
+
+// ── BATTLE SYSTEM ────────────────────────────────────────────
+const ENEMY_ROSTER = {
+  'The Grind Dungeon':      { name:'Deadline Wraith',    lore:'feeds on unfinished tasks',         atk:4, hp:22 },
+  'The Iron Trial':         { name:'Iron Golem',         lore:'forged from skipped rest days',      atk:5, hp:26 },
+  "The Scholar's Gauntlet": { name:'Exam Specter',       lore:'knows everything you forgot',        atk:3, hp:20 },
+  "The Healer's Lair":      { name:'Waiting Room Demon', lore:'has been here since 9am',            atk:3, hp:18 },
+  'The Grand Feast':        { name:'Cake Elemental',     lore:'surprisingly hostile',               atk:3, hp:20 },
+  'The Leisure Realm':      { name:'Couch Wisp',         lore:'resists all movement',               atk:2, hp:16 },
+  'The Tavern Run':         { name:'Hungry Ghost',       lore:'will not be satisfied',              atk:3, hp:18 },
+  'Council of Endless Words':{ name:'Meeting Phantom',   lore:'could have been an email',           atk:2, hp:16 },
+  'Journey to Unknown Lands':{ name:'Road Troll',        lore:'lives under every detour',           atk:4, hp:24 },
+};
+const DEFAULT_ENEMY = { name:'Shadow', lore:'origin unknown', atk:3, hp:20 };
+
+function showBattleOverlay(quest, char) {
+  const enemyDef = ENEMY_ROSTER[quest.title] || DEFAULT_ENEMY;
+  const xps = window.getXPState ? window.getXPState() : null;
+  const streak = xps ? (xps.streakDays||0) : 0;
+
+  // HP flavor same as render
+  let yourHP    = Math.min(100, Math.max(10, streak*8+50));
+  let yourMaxHP = yourHP;
+  let enemyHP   = enemyDef.hp + Math.floor(Math.random()*8);
+  let enemyMaxHP= enemyHP;
+
+  const yourAtk = char.atk || 10;
+  const yourDef = char.def || 8;
+
+  let done = false;
+  let won  = false;
+  let turnTimer = null;
+  let statDeltas = {};
+
+  // Build overlay DOM
+  const overlay = document.createElement('div');
+  overlay.className = 'q-battle-overlay';
+  overlay.innerHTML = `
+    <div class="q-battle-card" id="q-bcard">
+      <div class="q-battle-header">
+        <span class="q-battle-title">\u2694 battle</span>
+        <span class="q-battle-tap-hint">tap to skip</span>
+      </div>
+      <div class="q-battle-enemy-name">${enemyDef.name}</div>
+      <div class="q-battle-enemy-lore">${enemyDef.lore}</div>
+      <div class="q-battle-combatants">
+        <div class="q-combatant">
+          <div class="q-combatant-name">${char.name||'you'}</div>
+          <div class="q-combatant-hp-bar-bg"><div class="q-combatant-hp-bar you" id="qb-your-bar" style="width:100%"></div></div>
+          <div class="q-combatant-hp-val" id="qb-your-val">${yourHP} hp</div>
+        </div>
+        <div class="q-vs-badge">vs</div>
+        <div class="q-combatant" style="text-align:right">
+          <div class="q-combatant-name">${enemyDef.name}</div>
+          <div class="q-combatant-hp-bar-bg"><div class="q-combatant-hp-bar enemy" id="qb-enemy-bar" style="width:100%"></div></div>
+          <div class="q-combatant-hp-val" id="qb-enemy-val">${enemyHP} hp</div>
+        </div>
+      </div>
+      <div class="q-battle-log" id="qb-log"></div>
+      <div class="q-battle-stat-changes" id="qb-deltas"></div>
+      <button class="q-battle-close-btn" id="qb-close">continue</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const log      = overlay.querySelector('#qb-log');
+  const yourBar  = overlay.querySelector('#qb-your-bar');
+  const enemyBar = overlay.querySelector('#qb-enemy-bar');
+  const yourVal  = overlay.querySelector('#qb-your-val');
+  const enemyVal = overlay.querySelector('#qb-enemy-val');
+  const closeBtn = overlay.querySelector('#qb-close');
+  const deltasEl = overlay.querySelector('#qb-deltas');
+
+  function addLog(text, cls) {
+    const d = document.createElement('div');
+    d.className = 'q-blog-line' + (cls ? ' '+cls : '');
+    d.textContent = text;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function updateBars() {
+    const yPct = Math.max(0, Math.round(yourHP/yourMaxHP*100));
+    const ePct = Math.max(0, Math.round(enemyHP/enemyMaxHP*100));
+    yourBar.style.width  = yPct+'%';
+    enemyBar.style.width = ePct+'%';
+    yourVal.textContent  = Math.max(0,yourHP)+' hp';
+    enemyVal.textContent = Math.max(0,enemyHP)+' hp';
+  }
+
+  function applyStatDeltas(didWin) {
+    // Each stat gets 0 or ±1; win biases positive, loss biases negative
+    const STATS = ['atk','def','wit','luk'];
+    const labels = { atk:'ATK', def:'DEF', wit:'WIT', luk:'LUK' };
+    STATS.forEach(s => {
+      const roll = Math.random();
+      let delta = 0;
+      if (didWin) {
+        // win: 50% +1, 20% -1, 30% no change
+        delta = roll < 0.50 ? 1 : roll < 0.70 ? -1 : 0;
+      } else {
+        // loss: 20% +1, 50% -1, 30% no change
+        delta = roll < 0.20 ? 1 : roll < 0.70 ? -1 : 0;
+      }
+      if (delta !== 0) {
+        statDeltas[s] = delta;
+        char[s] = Math.max(1, Math.min(20, (char[s]||10) + delta));
+      }
+    });
+    // Render delta chips
+    Object.entries(statDeltas).forEach(([s, d]) => {
+      const chip = document.createElement('div');
+      chip.className = 'q-stat-delta ' + (d > 0 ? 'up' : 'down');
+      chip.textContent = (d > 0 ? '+' : '') + d + ' ' + ({atk:'ATK',def:'DEF',wit:'WIT',luk:'LUK'}[s]);
+      deltasEl.appendChild(chip);
+    });
+    // Persist
+    saveCharacter(char);
+  }
+
+  function finish(didWin) {
+    done = true; won = didWin;
+    if (turnTimer) { clearTimeout(turnTimer); turnTimer = null; }
+    if (didWin) {
+      addLog('\u2728 victory! the enemy dissolves.', 'result-win');
+    } else {
+      addLog('\u{1F480} defeated. you retreat into the fog.', 'result-loss');
+    }
+    applyStatDeltas(didWin);
+    closeBtn.classList.add('visible');
+    // Re-render quest view so stat bars update
+    setTimeout(async () => {
+      const el2 = document.getElementById('view-quest');
+      if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2, c2, e2); }
+    }, 300);
+  }
+
+  function runTurn() {
+    if (done) return;
+
+    // Your attack
+    const yourDmg = Math.floor(yourAtk/4) + Math.floor(Math.random()*3);
+    enemyHP = Math.max(0, enemyHP - yourDmg);
+    addLog('you strike for ' + yourDmg + ' dmg', 'dmg-enemy');
+    updateBars();
+
+    if (enemyHP <= 0) { finish(true); return; }
+
+    // Enemy attack — reduced by def
+    const defMit  = Math.floor(yourDef/8);
+    const rawDmg  = Math.floor(enemyDef.atk/2) + Math.floor(Math.random()*3);
+    const enemyDmg = Math.max(1, rawDmg - defMit);
+    yourHP = Math.max(0, yourHP - enemyDmg);
+    addLog(enemyDef.name + ' hits for ' + enemyDmg, 'dmg-you');
+    updateBars();
+
+    if (yourHP <= 0) { finish(false); return; }
+
+    turnTimer = setTimeout(runTurn, 900);
+  }
+
+  function skipToEnd() {
+    if (done) return;
+    // Simulate remaining turns instantly
+    if (turnTimer) { clearTimeout(turnTimer); turnTimer = null; }
+    let safetyMax = 40;
+    while (!done && safetyMax-- > 0) {
+      const yd = Math.floor(yourAtk/4) + Math.floor(Math.random()*3);
+      enemyHP = Math.max(0, enemyHP - yd);
+      if (enemyHP <= 0) { updateBars(); finish(true); return; }
+      const defMit = Math.floor(yourDef/8);
+      const ed = Math.max(1, Math.floor(enemyDef.atk/2) + Math.floor(Math.random()*3) - defMit);
+      yourHP = Math.max(0, yourHP - ed);
+      if (yourHP <= 0) { updateBars(); finish(false); return; }
+    }
+    // Tiebreak — whoever has more HP %
+    updateBars();
+    finish(yourHP/yourMaxHP >= enemyHP/enemyMaxHP);
+  }
+
+  // Tap overlay = skip; tap card = ignore
+  overlay.addEventListener('click', () => { if (!done) skipToEnd(); });
+  overlay.querySelector('#q-bcard').addEventListener('click', e => e.stopPropagation());
+
+  closeBtn.onclick = () => { overlay.remove(); };
+
+  // Kick off first turn after a short breath
+  addLog('the battle begins...', 'system');
+  turnTimer = setTimeout(runTurn, 600);
 }
 
 // ── LOOT DROP ────────────────────────────────────────────────
