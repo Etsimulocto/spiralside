@@ -129,8 +129,9 @@ function _buildFinalPrompt() {
   const scene    = g('ix-scene');
   const world    = g('ix-world');
   const biome    = g('ix-biome');
-  const bg       = g('ix-background');
-  const render   = g('ix-render-style');
+  const visualDesc = g('ix-visual-desc');
+  const bg         = g('ix-background');
+  const render     = g('ix-render-style');
 
   // CHIPS
   function chip(gid) {
@@ -485,7 +486,7 @@ function _wireUI() {
   const liveIds = [
     'im-prompt','ix-hair','ix-eyes','ix-clothing','ix-marks',
     'ix-species','ix-vibe','ix-pose',
-    'ix-scene','ix-world','ix-biome','ix-background',
+    'ix-scene','ix-world','ix-biome','ix-visual-desc','ix-background',
     'ix-render-style','ix-color-theme',
   ];
   liveIds.forEach(id => {

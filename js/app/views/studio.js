@@ -340,8 +340,7 @@ function _wireStudio() {
         mood:       g('st-scene-mood'),
         timeOfDay:  g('st-scene-time'),
         camera:     g('st-scene-camera'),
-        // visual_desc goes into background as scene context
-        background: g('st-scene-visual-desc'),
+        visualDesc: g('st-scene-visual-desc'),
         artStyle:   'bloomcore art style',
         negativePrompt: 'blurry, low quality, ugly',
       });
@@ -355,7 +354,7 @@ function _wireStudio() {
         subject:     g('st-world-name') || 'world environment',
         world:       g('st-world-name'),
         biome:       g('st-world-biome'),
-        background:  g('st-world-visual-desc') || g('st-world-tagline'),
+        visualDesc:  g('st-world-visual-desc') || g('st-world-tagline'),
         scene:       g('st-world-loc1'),
         artStyle:    'bloomcore concept art',
         renderStyle: 'environment art, wide establishing shot',
