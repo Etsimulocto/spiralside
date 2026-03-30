@@ -1064,3 +1064,10 @@ function _injectStyles() {
 window.openFramePicker = openFramePicker;
 window.applyFrame      = applyFrame;
 window.bakeFrameToPNG  = bakeFrameToPNG;
+// Safe stubs — real implementations assigned inside initFramesView on first visit
+window._framesReset       = () => {};
+window._framesPreview     = () => {};
+window._framesSaveCurrent = async () => {};
+window._framesSwitchTab   = () => {};
+window._framesSelectCorner= () => {};
+window._framesImportPNG   = () => {};
