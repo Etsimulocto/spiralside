@@ -3,7 +3,7 @@
 // Scene + World card builder — renders into view-studio
 // Uses same forge-section/forge-field pattern as build.js
 // Nimbis anchor: js/app/views/studio.js
-import { syncSave } from '../sync.js';
+import { syncSave, syncDelete } from '../sync.js';
 // ============================================================
 
 import { dbSet, dbGetAll, dbDelete } from '../db.js';
@@ -294,6 +294,7 @@ function _wireStudio() {
   window._studioDeleteScene = async (id) => {
     scenes = scenes.filter(s => s.id !== id);
     await dbDelete('scenes', id);
+    syncDelete('scene_' + id).catch(() => {});  // remove from cloud
     await _renderSceneGrid();
   };
 
@@ -367,9 +368,9 @@ function _wireStudio() {
   };
 
   window._studioDeleteWorld = async (id) => {
-
     worlds = worlds.filter(w => w.id !== id);
     await dbDelete('worlds', id);
+    syncDelete('world_' + id).catch(() => {});  // remove from cloud
     await _renderWorldGrid();
   };
 

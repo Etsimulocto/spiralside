@@ -39,6 +39,20 @@ export async function syncLoad(record_type) {
   } catch(e) { console.warn('[sync] load failed:', record_type, e); return null; }
 }
 
+export async function syncDelete(record_type) {
+  const token = state.session?.access_token;
+  if (!token) return;
+  try {
+    await fetch(
+      SUPA_URL + '/rest/v1/user_data?user_id=eq.' + state.user.id + '&record_type=eq.' + encodeURIComponent(record_type),
+      {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token, 'apikey': SUPA_KEY },
+      }
+    );
+  } catch(e) { console.warn('[sync] delete failed:', record_type, e); }
+}
+
 export async function syncLoadAll() {
   const token = state.session?.access_token;
   if (!token) return [];
