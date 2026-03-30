@@ -7,64 +7,27 @@
 // ============================================================
 
 // ── IDB HELPERS ───────────────────────────────────────────────────────────────
-// Open (or reuse) the spiralside IndexedDB and get the frames store
-// IDB version that includes the frames store.
-// We check the current version first, then bump only if needed.
-const FRAMES_DB_VERSION = 3;  // bump past existing version to trigger onupgradeneeded
+// Delegate to db.js functions imported at init time.
+// _dbFns is populated by initFramesView() once db.js is ready.
+let _dbFns = null;
 
-function _idb() {
-  return new Promise((resolve, reject) => {
-    // First probe current version so we never go backwards
-    const probe = indexedDB.open('spiralside');
-    probe.onsuccess = e => {
-      const currentVersion = e.target.result.version;
-      e.target.result.close();
-      const targetVersion = Math.max(currentVersion, FRAMES_DB_VERSION);
-      const req = indexedDB.open('spiralside', targetVersion);
-      req.onupgradeneeded = ev => {
-        const db = ev.target.result;
-        if (!db.objectStoreNames.contains('frames')) {
-          db.createObjectStore('frames', { keyPath: 'id' });
-        }
-      };
-      req.onsuccess = ev => resolve(ev.target.result);
-      req.onerror   = ev => reject(ev.target.error);
-    };
-    probe.onerror = e => reject(e.target.error);
-  });
+function _ensureDB() {
+  if (!_dbFns) throw new Error('[frames] db not ready — call initFramesView first');
 }
 
-// Read all frames from IDB
 async function _getAllFrames() {
-  const db = await _idb();
-  return new Promise((resolve, reject) => {
-    const tx  = db.transaction('frames', 'readonly');
-    const req = tx.objectStore('frames').getAll();
-    req.onsuccess = e => resolve(e.target.result || []);
-    req.onerror   = e => reject(e.target.error);
-  });
+  _ensureDB();
+  return (await _dbFns.getAll('frames')) || [];
 }
 
-// Write a single frame record to IDB
 async function _putFrame(frame) {
-  const db = await _idb();
-  return new Promise((resolve, reject) => {
-    const tx  = db.transaction('frames', 'readwrite');
-    const req = tx.objectStore('frames').put(frame);
-    req.onsuccess = () => resolve();
-    req.onerror   = e  => reject(e.target.error);
-  });
+  _ensureDB();
+  return _dbFns.set('frames', frame);
 }
 
-// Delete a frame by id
 async function _deleteFrame(id) {
-  const db = await _idb();
-  return new Promise((resolve, reject) => {
-    const tx  = db.transaction('frames', 'readwrite');
-    const req = tx.objectStore('frames').delete(id);
-    req.onsuccess = () => resolve();
-    req.onerror   = e  => reject(e.target.error);
-  });
+  _ensureDB();
+  return _dbFns.del('frames', id);
 }
 
 // ── BUILT-IN DEFAULT FRAME ─────────────────────────────────────────────────
@@ -444,6 +407,10 @@ export async function initFramesView() {
   // Guard against double-init
   if (view.dataset.init) return;
   view.dataset.init = '1';
+
+  // Wire db.js functions into frames module
+  const { dbGet, dbSet, dbGetAll, dbDelete } = await import('../db.js');
+  _dbFns = { get: dbGet, set: dbSet, getAll: dbGetAll, del: dbDelete };
 
   // Inject tab-specific styles
   _injectStyles();

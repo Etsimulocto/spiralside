@@ -11,7 +11,7 @@ let db = null; // single shared IDB connection
 // Open the database. Must be called before any other db* fn.
 export async function initDB() {
   return new Promise((res, rej) => {
-    const req = indexedDB.open('spiralside', 6); // v5 adds prints store
+    const req = indexedDB.open('spiralside', 7); // v7 adds frames store
 
     req.onupgradeneeded = e => {
       const d = e.target.result;
@@ -24,6 +24,7 @@ export async function initDB() {
       if (!d.objectStoreNames.contains('prints')) d.createObjectStore('prints', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('scenes')) d.createObjectStore('scenes', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('worlds')) d.createObjectStore('worlds', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('frames')) d.createObjectStore('frames', { keyPath: 'id' });
     };
 
     req.onsuccess = e => { db = e.target.result; res(db); };
