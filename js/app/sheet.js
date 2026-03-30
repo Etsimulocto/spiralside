@@ -270,6 +270,23 @@ export function renderActiveChar(id) {
     }
     const makeBtn = document.getElementById('make-you-card-btn');
     if (makeBtn) makeBtn.style.display = 'block';
+    // Show "gen portrait" button for You card
+    let imagineBtn = document.getElementById('you-imagine-btn');
+    if (!imagineBtn) {
+      imagineBtn = document.createElement('button');
+      imagineBtn.id = 'you-imagine-btn';
+      imagineBtn.textContent = '✦ gen portrait';
+      imagineBtn.style.cssText = [
+        'width:100%','padding:11px','margin-top:6px',
+        'background:linear-gradient(135deg,var(--purple),var(--teal))',
+        'border:none','border-radius:10px','color:#fff',
+        'font-family:var(--font-display)','font-weight:700',
+        'font-size:0.82rem','cursor:pointer','letter-spacing:0.04em',
+      ].join(';');
+      imagineBtn.onclick = () => window.imagineYouCard();
+      if (makeBtn) makeBtn.parentNode.insertBefore(imagineBtn, makeBtn.nextSibling);
+    }
+    imagineBtn.style.display = 'block';
   }
 
   // Save+summarize button color
@@ -934,6 +951,28 @@ window.downloadYouCard = function() {
   a.download = id + '.png';
   a.href     = window._youCardCanvas.toDataURL('image/png');
   a.click();
+};
+
+// ── IMAGINE YOU CARD ─────────────────────────────────────────
+// Reads You card appearance fields and routes to Imagine tab pre-filled
+window.imagineYouCard = function() {
+  const you = CHARACTERS.you;
+  if (!you) return;
+  if (window.imagineWithContext) {
+    window.imagineWithContext({
+      subject:     you.handle     || 'You',
+      hair:        you.hair       || '',
+      eyes:        you.eyes       || '',
+      clothing:    you.wearing    || you.style || '',
+      marks:       you.marks      || '',
+      species:     'human',
+      vibe:        you.vibe       || '',
+      // build goes into pose as physical description context
+      pose:        you.build      || '',
+      renderStyle: 'character portrait',
+      negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
+    });
+  }
 };
 
 // ── EXPORT CODEX ─────────────────────────────────────────────
