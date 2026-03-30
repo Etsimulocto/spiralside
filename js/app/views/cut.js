@@ -887,9 +887,17 @@ window._cutGenImage = function() {
     const sibScene = siblingClips.map(c =>
       _cutState.sceneCards.find(s => String(s.id || s.name) === c.sourceCard)
     ).find(Boolean);
-    const sibWorld = siblingClips.map(c =>
+    // Only use a sibling world if it's actually linked from the scene card
+    // or if it's explicitly a world clip in the same scene
+    const sibWorldFromClip = siblingClips.map(c =>
       _cutState.worldCards.find(w => String(w.id || w.name) === c.sourceCard)
     ).find(Boolean);
+    const sibWorldFromScene = sibScene?.world
+      ? _cutState.worldCards.find(w =>
+          w.name === sibScene.world || String(w.id) === sibScene.world
+        )
+      : null;
+    const sibWorld = sibWorldFromScene || sibWorldFromClip;
 
     ctx = {
       subject:     id.name              || clip.speaker || 'character',
