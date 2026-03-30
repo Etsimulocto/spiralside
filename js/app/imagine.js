@@ -57,11 +57,12 @@ window.imagineWithContext = function(ctx = {}) {
     _fillField('ix-vibe',      ctx.vibe      || '');
     _fillField('ix-pose',      ctx.pose      || '');
     // SCENE fields
-    _fillField('ix-scene',     ctx.scene     || '');
-    _fillField('ix-world',     ctx.world     || '');
-    _fillField('ix-biome',     ctx.biome     || '');
+    _fillField('ix-scene',       ctx.scene       || '');
+    _fillField('ix-world',       ctx.world       || '');
+    _fillField('ix-biome',       ctx.biome       || '');
+    _fillField('ix-visual-desc', ctx.visualDesc  || '');
     // STYLE fields
-    _fillField('ix-background',   ctx.background   || '');
+    _fillField('ix-background',  ctx.background  || '');
     _fillField('ix-render-style', ctx.renderStyle  || '');
     // CHIPS
     if (ctx.timeOfDay) _activateChip('ix-chips-time',     ctx.timeOfDay);
@@ -162,14 +163,12 @@ function _buildFinalPrompt() {
   if (charParts.length) segs.push(charParts.join(', '));
 
   // Scene / world context
-  if (scene)   segs.push('in ' + scene);
-  if (world)   segs.push(world);
-  if (biome)   segs.push(biome);
-  if (timeOfDay) segs.push(timeOfDay);
-  if (bg)      segs.push('background: ' + bg);
-
-  // Visual description — goes before style tags so FLUX uses it as scene context
-  if (bg)       segs.push(bg);
+  if (scene)      segs.push('in ' + scene);
+  if (world)      segs.push(world);
+  if (biome)      segs.push(biome);
+  if (visualDesc) segs.push(visualDesc);
+  if (timeOfDay)  segs.push(timeOfDay);
+  if (bg)         segs.push(bg);
 
   // Style
   if (artStyle) segs.push(artStyle);
@@ -329,6 +328,12 @@ function _buildHTML() {
             <div class="im-label">background</div>
             <input class="im-input" id="ix-background" type="text" placeholder="void, city skyline, stars..." />
           </div>
+        </div>
+        <div>
+          <div class="im-label">visual description <span style="font-size:0.55rem;color:var(--subtext);margin-left:4px;opacity:0.7">scene / world</span></div>
+          <textarea class="im-input" id="ix-visual-desc" rows="2"
+            placeholder="Neon lights reflecting off wet streets, holographic billboards flickering in smog, chrome spires vanishing into perpetual haze..."
+            style="resize:none"></textarea>
         </div>
         <div>
           <div class="im-label">time of day</div>
