@@ -426,13 +426,16 @@ export async function initFramesView() {
       <!-- ── MAKE TAB ── -->
       <div class="frames-pane active" id="fpane-make">
 
-        <!-- LIVE PREVIEW -->
+        <!-- STICKY PREVIEW (outside scroll) -->
         <div class="frames-preview-wrap">
           <div class="frames-preview-bg">
             <div id="fp-preview-placeholder" style="font-size:3rem;opacity:0.1;pointer-events:none">◈</div>
           </div>
           <div class="frames-preview-frame" id="fp-preview-frame"></div>
         </div>
+
+        <!-- SCROLLABLE CONTROLS -->
+        <div class="frames-controls-scroll">
 
         <!-- NAME -->
         <div class="frames-field">
@@ -600,6 +603,8 @@ export async function initFramesView() {
         <div class="frames-import-hint">Upload transparent PNG (max 1024×768 / 2MB).</div>
         <button class="frames-import-btn" onclick="document.getElementById('fp-png-input').click()">↑ import PNG</button>
         <input type="file" id="fp-png-input" accept="image/png" style="display:none" onchange="window._framesImportPNG(this)" />
+
+        </div><!-- /frames-controls-scroll -->
       </div>
 
       <!-- ── LIBRARY TAB ── -->
@@ -890,8 +895,8 @@ function _injectStyles() {
   s.id = 'frames-styles';
   s.textContent = `
     /* ── FRAMES VIEW SHELL ── */
-    #view-frames { overflow-y:auto; -webkit-overflow-scrolling:touch; }
-    #frames-inner { padding:12px 16px calc(80px + var(--safe-bot,0px)); display:flex; flex-direction:column; gap:14px; }
+    #view-frames { display:flex; flex-direction:column; overflow:hidden; }
+    #frames-inner { display:flex; flex-direction:column; flex:1; min-height:0; gap:0; }
 
     /* ── TABS ── */
     .frames-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -904,14 +909,24 @@ function _injectStyles() {
     .frames-tab.active { color:var(--teal); border-bottom-color:var(--teal); }
 
     /* ── PANES ── */
-    .frames-pane { display:none; flex-direction:column; gap:12px; padding-top:14px; }
+    .frames-pane { display:none; flex-direction:column; flex:1; min-height:0; }
     .frames-pane.active { display:flex; }
 
-    /* ── PREVIEW ── */
+    /* ── CONTROLS SCROLL ── */
+    .frames-controls-scroll {
+      flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch;
+      padding:12px 16px calc(80px + var(--safe-bot,0px));
+      display:flex; flex-direction:column; gap:12px;
+    }
+
+    /* ── LIBRARY PANE scroll ── */
+    #fpane-library { overflow-y:auto; -webkit-overflow-scrolling:touch;
+      padding:12px 16px calc(80px + var(--safe-bot,0px)); gap:12px; }
+
+    /* ── PREVIEW — sticky at top, fixed height ── */
     .frames-preview-wrap {
-      position:relative; width:100%; aspect-ratio:5/7; max-height:260px;
-      margin:0 auto; border-radius:10px; overflow:hidden;
-      background:var(--surface); border:1px solid var(--border);
+      position:relative; width:100%; height:180px; flex-shrink:0;
+      background:var(--surface); border-bottom:1px solid var(--border);
     }
     .frames-preview-bg {
       position:absolute; inset:0; display:flex;
