@@ -910,7 +910,8 @@ window._cutGenImage = function() {
       biome:       sibWorld?.biome      || '',
       timeOfDay:   sibScene?.time       || '',
       camera:      sibScene?.camera     || '',
-      visualDesc:  sibScene?.visual_desc || sibScene?.caption || sibWorld?.visual_desc || sibWorld?.tagline || '',
+      visualDesc:  sibScene?.visual_desc || sibScene?.caption || sibWorld?.visual_desc || '',
+      background:  sibWorld?.tagline || '',
       negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
     };
   } else if (sourceScene) {
@@ -929,13 +930,14 @@ window._cutGenImage = function() {
   } else if (sourceWorld) {
     // WORLD clip — fields: name, tagline, biome, lore, locations[], visual_desc
     ctx = {
-      subject:     sourceWorld.name              || clip.name || 'world',
-      world:       sourceWorld.name              || '',
-      biome:       sourceWorld.biome             || '',
-      scene:       (sourceWorld.locations || [])[0] || '',
-      visualDesc:  sourceWorld.visual_desc       || sourceWorld.tagline || '',
-      artStyle:    'bloomcore environment art',
-      renderStyle: 'wide establishing shot',
+      subject:    sourceWorld.name                    || clip.name || 'world',
+      world:      sourceWorld.name                    || '',
+      biome:      sourceWorld.biome                   || '',
+      scene:      (sourceWorld.locations || [])[0]    || '',
+      visualDesc: sourceWorld.visual_desc             || '',
+      background: sourceWorld.tagline                 || '',
+      artStyle:   'bloomcore environment art',
+      renderStyle:'wide establishing shot',
       negativePrompt: 'people, characters, blurry, low quality',
     };
   } else {
