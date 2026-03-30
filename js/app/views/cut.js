@@ -877,48 +877,50 @@ window._cutGenImage = function() {
   let ctx = {};
 
   if (sourcePrint) {
-    // CHARACTER clip — populate character fields
+    // CHARACTER clip — map print fields to imagine context
+    // Print schema: identity{name,title,vibe,species,pronouns,origin}, appearance{hair,eyes,style,marks,color_theme}
     const ap = sourcePrint.appearance || {};
     const id = sourcePrint.identity   || {};
     ctx = {
-      subject:     id.name        || clip.speaker || 'character',
-      hair:        ap.hair        || '',
-      eyes:        ap.eyes        || '',
-      clothing:    ap.style       || '',
-      marks:       ap.marks       || '',
-      species:     id.species     || '',
-      vibe:        id.vibe        || '',
-      pose:        ap.pose        || '',
-      artStyle:    ap.art_style   || '',
-      lighting:    ap.lighting    || '',
-      renderStyle: ap.render_style || 'character portrait',
-      mood:        clip.mood      || '',
+      subject:     id.name              || clip.speaker || 'character',
+      hair:        ap.hair              || '',
+      eyes:        ap.eyes              || '',
+      clothing:    ap.style             || '',
+      marks:       ap.marks             || '',
+      species:     id.species           || '',
+      vibe:        id.vibe              || '',
+      pose:        ap.pose              || ap.description || '',
+      artStyle:    ap.art_style         || '',
+      lighting:    ap.lighting          || '',
+      renderStyle: ap.render_style      || ap.description ? '' : 'character portrait',
+      mood:        clip.mood            || '',
       negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
     };
   } else if (sourceScene) {
-    // SCENE clip — populate scene fields
+    // SCENE clip — codex saves: name, caption, mood, time, camera, location, world
+    // loadBinData normalizes: imageDataUrl, dialogue=caption — all other keys pass through
     ctx = {
-      subject:  sourceScene.name     || clip.name || 'scene',
-      scene:    sourceScene.location || sourceScene.name || '',
-      world:    sourceScene.world    || '',
-      mood:     sourceScene.mood     || clip.mood || '',
-      timeOfDay: sourceScene.time   || '',
-      camera:   sourceScene.camera  || '',
-      artStyle: 'bloomcore art style',
+      subject:   sourceScene.name     || clip.name || 'scene',
+      scene:     sourceScene.location || '',
+      world:     sourceScene.world    || '',
+      mood:      sourceScene.mood     || clip.mood || '',
+      timeOfDay: sourceScene.time     || '',
+      camera:    sourceScene.camera   || '',
+      artStyle:  'bloomcore art style',
       negativePrompt: 'blurry, low quality, ugly',
     };
   } else if (sourceWorld) {
-    // WORLD clip — populate world/environment fields
+    // WORLD clip — codex saves: name, tagline, biome, lore, threat, locations[]
     ctx = {
-      subject:  sourceWorld.name    || clip.name || 'world',
-      world:    sourceWorld.name    || '',
-      biome:    sourceWorld.biome   || '',
-      scene:    sourceWorld.locations?.[0] || '',
+      subject:  sourceWorld.name           || clip.name || 'world',
+      world:    sourceWorld.name           || '',
+      biome:    sourceWorld.biome          || '',
+      scene:    (sourceWorld.locations || [])[0] || '',
       artStyle: 'bloomcore environment art',
       negativePrompt: 'blurry, low quality, ugly',
     };
   } else {
-    // BLANK clip — use whatever clip fields are set
+    // BLANK clip — use clip fields directly
     ctx = {
       subject: clip.name     || '',
       mood:    clip.mood     || '',
