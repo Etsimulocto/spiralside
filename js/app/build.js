@@ -71,65 +71,27 @@ window.toggleForgeSection = toggleSection;
 // ── PORTRAIT UPLOAD ───────────────────────────────────────────
 let _portraitImage = null; // stores the loaded HTMLImageElement
 
-window.handleForgeGenImg = async function() {
+window.handleForgeGenImg = function() {
+  // Read all forge appearance + identity fields
   const g = id => document.getElementById(id)?.value?.trim() || '';
-  const name    = g('bot-name')         || 'character';
-  const title   = g('forge-title');
-  const species = g('forge-species');
-  const appear  = g('forge-appearance');
-  const hair    = g('forge-hair');
-  const eyes    = g('forge-eyes');
-  const style   = g('forge-style');
-  const vibe    = g('forge-vibe');
-  const artStyle  = g('forge-art-style');
-  const pose      = g('forge-pose');
-  const lighting  = g('forge-lighting');
-  const background = g('forge-background');
-  const renderStyle = g('forge-render-style');
-  const parts   = [
-    name, title, species,
-    appear,
-    hair    ? 'hair: '+hair         : '',
-    eyes    ? 'eyes: '+eyes         : '',
-    style   ? 'wearing: '+style     : '',
-    pose    ? 'pose: '+pose         : '',
-    lighting ? lighting+' lighting' : '',
-    background ? 'background: '+background : '',
-    artStyle  || 'bloomcore art style',
-    renderStyle || 'character portrait',
-    vibe,
-    'detailed', 'high quality'
-  ].filter(Boolean);
-  const prompt  = parts.join(', ');
-  const wrap    = document.getElementById('forge-portrait-wrap');
-  const preview = document.getElementById('forge-portrait-preview');
-  const hint    = document.getElementById('forge-portrait-hint');
-  if (hint)    hint.textContent = '🌀 generating...';
-  if (preview) preview.style.display = 'none';
-  if (wrap)    wrap.style.borderColor = 'var(--teal)';
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    const token = session?.access_token;
-    if (!token) { if (hint) hint.textContent = 'sign in required'; return; }
-    const model = getImagineModel() || 'schnell';
-    const size  = getImagineSize()  || { w: 512, h: 512 };
-    const RAIL  = 'https://web-production-4e6f3.up.railway.app';
-    const r = await fetch(RAIL + '/generate-image', {
-      method: 'POST',
-      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, model, width: size.w, height: size.h, negative_prompt: 'blurry, low quality, ugly, deformed' }),
+  // Call imagineWithContext — switches to Imagine tab pre-filled
+  if (window.imagineWithContext) {
+    window.imagineWithContext({
+      subject:     g('bot-name') || 'character',
+      hair:        g('forge-hair'),
+      eyes:        g('forge-eyes'),
+      clothing:    g('forge-style'),
+      marks:       g('forge-marks'),
+      species:     g('forge-species'),
+      vibe:        g('forge-vibe'),
+      pose:        g('forge-pose'),
+      scene:       g('forge-background'),
+      world:       g('forge-origin'),
+      artStyle:    g('forge-art-style'),
+      lighting:    g('forge-lighting'),
+      renderStyle: g('forge-render-style'),
+      negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
     });
-    const data = await r.json();
-    if (!r.ok) { if (hint) hint.textContent = data.detail || 'error'; return; }
-    _portraitBase64 = 'data:image/png;base64,' + data.image;
-    const img2 = new Image();
-    img2.onload = () => { _portraitImage = img2; };
-    img2.src = _portraitBase64;
-    if (preview) { preview.src = _portraitBase64; preview.style.display = 'block'; }
-    if (hint)    hint.style.display = 'none';
-    if (window.updateCreditDisplay) window.updateCreditDisplay();
-  } catch(e) {
-    if (hint) hint.textContent = e.message;
   }
 };
 

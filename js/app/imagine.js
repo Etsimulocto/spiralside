@@ -1,8 +1,7 @@
 // ============================================================
-// SPIRALSIDE — IMAGINE v1.3
-// Multi-model image gen + extended prompt fields
-// Models: flux-schnell | sdxl-lightning | sdxl | dalle3
-// v1.3 — merged imagine2 model selector + imagine v1.2 extended fields
+// SPIRALSIDE — IMAGINE v1.4
+// Multi-model image gen + unified extended prompt fields
+// Fields match Forge / Scene / World card schemas exactly
 // Nimbis anchor: js/app/imagine.js
 // ============================================================
 
@@ -18,47 +17,56 @@ const MODELS = [
 ];
 
 // ── MODULE STATE ──────────────────────────────────────────────
-let _model = 'schnell';
-let _selW  = 512;
-let _selH  = 512;
+let _model       = 'schnell';
+let _selW        = 512;
+let _selH        = 512;
 let _initialized = false;
 
-// ── PUBLIC API ────────────────────────────────────────────────
+// ── PUBLIC EXPORTS ────────────────────────────────────────────
 export function getImagineModel() { return _model; }
 export function getImagineSize()  { return { w: _selW, h: _selH }; }
 
-// Called by Forge, SpiralCut, Codex to pre-fill + switch to Imagine tab.
-// ctx: { subject, appearance, species, scene, world, timeOfDay,
-//         style, mood, lighting, camera, negativePrompt }
+// ── imagineWithContext ────────────────────────────────────────
+// Called by Forge, Cut, Codex to pre-fill + switch to Imagine tab.
+// Full ctx shape (all optional):
+//   CHARACTER: subject, hair, eyes, clothing, marks, species, vibe, pose
+//   SCENE:     scene, world, biome, timeOfDay
+//   STYLE:     artStyle, mood, lighting, camera, background, renderStyle
+//   OTHER:     negativePrompt
 window.imagineWithContext = function(ctx = {}) {
   if (typeof switchView === 'function') switchView('imagine');
   setTimeout(() => {
-    // Core prompt from subject fields
-    const parts = [];
-    if (ctx.subject)    parts.push(ctx.subject);
-    if (ctx.appearance) parts.push(ctx.appearance);
-    if (ctx.species)    parts.push(ctx.species);
-    const subjectLine = parts.join(', ');
-    if (subjectLine) {
+    // Core prompt — name/subject goes here
+    if (ctx.subject) {
       const el = document.getElementById('im-prompt');
-      if (el) el.value = subjectLine;
+      if (el) el.value = ctx.subject;
     }
     if (ctx.negativePrompt) {
       const el = document.getElementById('im-neg');
       if (el) el.value = ctx.negativePrompt;
     }
-    // Extended fields
-    _fillField('ix-appearance', ctx.appearance || '');
-    _fillField('ix-species',    ctx.species    || '');
-    _fillField('ix-scene',      ctx.scene      || '');
-    _fillField('ix-world',      ctx.world      || '');
-    // Chips
+    // CHARACTER fields
+    _fillField('ix-hair',      ctx.hair      || '');
+    _fillField('ix-eyes',      ctx.eyes      || '');
+    _fillField('ix-clothing',  ctx.clothing  || '');
+    _fillField('ix-marks',     ctx.marks     || '');
+    _fillField('ix-species',   ctx.species   || '');
+    _fillField('ix-vibe',      ctx.vibe      || '');
+    _fillField('ix-pose',      ctx.pose      || '');
+    // SCENE fields
+    _fillField('ix-scene',     ctx.scene     || '');
+    _fillField('ix-world',     ctx.world     || '');
+    _fillField('ix-biome',     ctx.biome     || '');
+    // STYLE fields
+    _fillField('ix-background',   ctx.background   || '');
+    _fillField('ix-render-style', ctx.renderStyle  || '');
+    // CHIPS
     if (ctx.timeOfDay) _activateChip('ix-chips-time',     ctx.timeOfDay);
-    if (ctx.style)     _activateChip('ix-chips-style',    ctx.style);
+    if (ctx.artStyle)  _activateChip('ix-chips-style',    ctx.artStyle);
     if (ctx.mood)      _activateChip('ix-chips-mood',     ctx.mood);
     if (ctx.lighting)  _activateChip('ix-chips-lighting', ctx.lighting);
     if (ctx.camera)    _activateChip('ix-chips-camera',   ctx.camera);
-    // Expand extended panel
+    // Open extended panel so user sees what filled
     const toggle = document.getElementById('ix-toggle');
     const panel  = document.getElementById('ix-extended');
     if (toggle && panel && !panel.classList.contains('open')) {
@@ -67,6 +75,7 @@ window.imagineWithContext = function(ctx = {}) {
       const sp = toggle.querySelector('span');
       if (sp) sp.textContent = '▼ extended options';
     }
+    _updatePreview();
   }, 80);
 };
 
@@ -93,50 +102,87 @@ window._ixToggle = function() {
   btn.classList.toggle('open', isOpen);
   const sp = btn.querySelector('span');
   if (sp) sp.textContent = isOpen ? '▼ extended options' : '▶ extended options';
-  // show/hide preview
   _updatePreview();
 };
 
 // ── PROMPT ASSEMBLY ───────────────────────────────────────────
+// Assembles all fields into one quality prompt string.
+// Order mirrors how FLUX/SD models process tags:
+//   subject → character details → scene context → style → quality
 function _buildFinalPrompt() {
-  const core       = document.getElementById('im-prompt')?.value.trim()       || '';
-  const appearance = document.getElementById('ix-appearance')?.value.trim()   || '';
-  const species    = document.getElementById('ix-species')?.value.trim()      || '';
-  const scene      = document.getElementById('ix-scene')?.value.trim()        || '';
-  const world      = document.getElementById('ix-world')?.value.trim()        || '';
+  const g = id => document.getElementById(id)?.value.trim() || '';
 
-  function getChip(gid) {
+  // CHARACTER
+  const subject  = g('im-prompt');
+  const hair     = g('ix-hair');
+  const eyes     = g('ix-eyes');
+  const clothing = g('ix-clothing');
+  const marks    = g('ix-marks');
+  const species  = g('ix-species');
+  const vibe     = g('ix-vibe');
+  const pose     = g('ix-pose');
+
+  // SCENE
+  const scene    = g('ix-scene');
+  const world    = g('ix-world');
+  const biome    = g('ix-biome');
+  const bg       = g('ix-background');
+  const render   = g('ix-render-style');
+
+  // CHIPS
+  function chip(gid) {
     const a = document.querySelector(`#${gid} .ix-chip.active`);
     return a ? (a.dataset.val || a.textContent.trim()) : '';
   }
-  const timeOfDay = getChip('ix-chips-time');
-  const style     = getChip('ix-chips-style');
-  const mood      = getChip('ix-chips-mood');
-  const lighting  = getChip('ix-chips-lighting');
-  const camera    = getChip('ix-chips-camera');
+  const timeOfDay = chip('ix-chips-time');
+  const artStyle  = chip('ix-chips-style');
+  const mood      = chip('ix-chips-mood');
+  const lighting  = chip('ix-chips-lighting');
+  const camera    = chip('ix-chips-camera');
 
-  const segments = [];
-  if (core)       segments.push(core);
-  if (appearance) segments.push(appearance);
-  if (species)    segments.push(species);
-  if (scene)      segments.push(`in ${scene}`);
-  if (world)      segments.push(world);
-  if (timeOfDay)  segments.push(timeOfDay);
-  if (style)      segments.push(style);
-  if (mood)       segments.push(`${mood} mood`);
-  if (lighting)   segments.push(lighting);
-  if (camera)     segments.push(camera);
-  segments.push('detailed, high quality, sharp focus');
+  const segs = [];
 
-  return segments.filter(Boolean).join(', ');
+  // Subject line
+  if (subject) segs.push(subject);
+
+  // Character details — combine into compact comma list
+  const charParts = [
+    hair     ? hair + ' hair'      : '',
+    eyes     ? eyes + ' eyes'      : '',
+    clothing ? 'wearing ' + clothing : '',
+    marks,
+    species,
+    vibe,
+    pose     ? pose + ' pose'      : '',
+  ].filter(Boolean);
+  if (charParts.length) segs.push(charParts.join(', '));
+
+  // Scene / world context
+  if (scene)   segs.push('in ' + scene);
+  if (world)   segs.push(world);
+  if (biome)   segs.push(biome);
+  if (timeOfDay) segs.push(timeOfDay);
+  if (bg)      segs.push('background: ' + bg);
+
+  // Style
+  if (artStyle) segs.push(artStyle);
+  if (render)   segs.push(render);
+  if (mood)     segs.push(mood + ' mood');
+  if (lighting) segs.push(lighting);
+  if (camera)   segs.push(camera);
+
+  // Quality tail
+  segs.push('detailed, high quality, sharp focus');
+
+  return segs.filter(Boolean).join(', ');
 }
 
 function _updatePreview() {
-  const previewWrap = document.getElementById('ix-preview-wrap');
-  const previewText = document.getElementById('ix-preview-text');
+  const wrap = document.getElementById('ix-preview-wrap');
+  const text = document.getElementById('ix-preview-text');
   const isOpen = document.getElementById('ix-extended')?.classList.contains('open');
-  if (previewWrap) previewWrap.style.display = isOpen ? 'flex' : 'none';
-  if (previewText) previewText.textContent = _buildFinalPrompt();
+  if (wrap) wrap.style.display = isOpen ? 'flex' : 'none';
+  if (text) text.textContent = _buildFinalPrompt();
 }
 
 // ── MODEL PICK ────────────────────────────────────────────────
@@ -155,7 +201,6 @@ function _syncCostBar() {
   const btn = document.getElementById('im-go');
   if (lbl) { lbl.textContent = `this will use ${m.cost.toLocaleString()} cr`; lbl.style.color = m.color; }
   if (btn)  btn.style.background = `linear-gradient(135deg,${m.color},var(--purple))`;
-  // sync forge-gen-btn across forge + cut
   const label = `❆ generate from fields · ${m.label} · ${m.cost.toLocaleString()} cr`;
   document.querySelectorAll('.forge-gen-btn').forEach(b => {
     b.textContent = label;
@@ -164,9 +209,7 @@ function _syncCostBar() {
   const cr = window._currentCredits ?? null;
   if (bal && cr !== null) {
     const after = cr - m.cost;
-    bal.textContent = after >= 0
-      ? `${Math.round(cr).toLocaleString()} cr remaining`
-      : '⚠ not enough credits';
+    bal.textContent = after >= 0 ? `${Math.round(cr).toLocaleString()} cr remaining` : '⚠ not enough credits';
     bal.style.color = after >= 0 ? 'var(--subtext)' : 'var(--pink)';
   }
 }
@@ -182,7 +225,6 @@ export function initImagine() {
     _initialized = true;
   }
   _syncCostBar();
-  // sync forge-gen-btn on re-open
   document.querySelectorAll('.forge-gen-btn').forEach(b => {
     const m = MODELS.find(x => x.id === _model) || MODELS[0];
     b.textContent = `❆ generate from fields · ${m.label} · ${m.cost.toLocaleString()} cr`;
@@ -204,46 +246,82 @@ function _buildHTML() {
   <div class="im-scroll">
     <div class="im-section-title">✦ IMAGINE</div>
 
-    <!-- PROMPT -->
+    <!-- ── CORE SUBJECT ── -->
     <div class="im-card">
-      <div class="im-label">✏ prompt</div>
+      <div class="im-label">✏ subject / prompt</div>
       <textarea class="im-input" id="im-prompt" rows="3"
-        placeholder="Sky floating above a neon city at night, bloomcore art style..."></textarea>
+        placeholder="Sky, a girl floating above a neon city at night..."></textarea>
     </div>
 
-    <!-- EXTENDED OPTIONS TOGGLE -->
+    <!-- ── EXTENDED TOGGLE ── -->
     <button class="ix-toggle-btn" id="ix-toggle" onclick="window._ixToggle()">
       <span>▶ extended options</span>
     </button>
 
-    <!-- EXTENDED FIELDS -->
+    <!-- ── EXTENDED FIELDS ── -->
     <div class="ix-extended" id="ix-extended">
 
-      <div class="ix-group-label">character</div>
+      <!-- CHARACTER -->
+      <div class="ix-group-label">◈ character</div>
       <div class="im-card" style="gap:10px">
-        <div>
-          <div class="im-label">appearance</div>
-          <input class="im-input" id="ix-appearance" type="text"
-            placeholder="silver hair, teal eyes, tactical hoodie, spiral tattoo..." />
+        <div class="ix-field-row">
+          <div>
+            <div class="im-label">hair</div>
+            <input class="im-input" id="ix-hair" type="text" placeholder="long silver, short dark curly..." />
+          </div>
+          <div>
+            <div class="im-label">eyes</div>
+            <input class="im-input" id="ix-eyes" type="text" placeholder="glowing teal, amber..." />
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div>
+            <div class="im-label">style / clothing</div>
+            <input class="im-input" id="ix-clothing" type="text" placeholder="tactical hoodie, flowing dress..." />
+          </div>
+          <div>
+            <div class="im-label">species / type</div>
+            <input class="im-input" id="ix-species" type="text" placeholder="human, AI, cryptid..." />
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div>
+            <div class="im-label">marks / features</div>
+            <input class="im-input" id="ix-marks" type="text" placeholder="spiral tattoo, freckles, scar..." />
+          </div>
+          <div>
+            <div class="im-label">vibe</div>
+            <input class="im-input" id="ix-vibe" type="text" placeholder="the sky at 4am..." />
+          </div>
         </div>
         <div>
-          <div class="im-label">species / type</div>
-          <input class="im-input" id="ix-species" type="text"
-            placeholder="human, AI, cryptid, android..." />
+          <div class="im-label">pose / expression</div>
+          <input class="im-input" id="ix-pose" type="text" placeholder="looking away, arms crossed, smiling..." />
         </div>
       </div>
 
-      <div class="ix-group-label">scene / world</div>
+      <!-- SCENE / WORLD -->
+      <div class="ix-group-label">◈ scene / world</div>
       <div class="im-card" style="gap:10px">
-        <div>
-          <div class="im-label">scene / location</div>
-          <input class="im-input" id="ix-scene" type="text"
-            placeholder="rooftop, server lab, neon alley, forest clearing..." />
+        <div class="ix-field-row">
+          <div>
+            <div class="im-label">scene / location</div>
+            <input class="im-input" id="ix-scene" type="text" placeholder="rooftop, server lab, neon alley..." />
+          </div>
+          <div>
+            <div class="im-label">world</div>
+            <input class="im-input" id="ix-world" type="text" placeholder="Spiral City, void space..." />
+          </div>
         </div>
-        <div>
-          <div class="im-label">world</div>
-          <input class="im-input" id="ix-world" type="text"
-            placeholder="Spiral City, void space, Bloomcore district..." />
+        <div class="ix-field-row">
+          <div>
+            <div class="im-label">biome / environment</div>
+            <input class="im-input" id="ix-biome" type="text" placeholder="cyberpunk city, forest archive, deep ocean..." />
+          </div>
+          <div>
+            <div class="im-label">background</div>
+            <input class="im-input" id="ix-background" type="text" placeholder="void, city skyline, stars..." />
+          </div>
         </div>
         <div>
           <div class="im-label">time of day</div>
@@ -252,12 +330,14 @@ function _buildHTML() {
             <div class="ix-chip" data-val="midday">midday</div>
             <div class="ix-chip" data-val="dusk">dusk</div>
             <div class="ix-chip" data-val="4am">4am</div>
+            <div class="ix-chip" data-val="night">night</div>
             <div class="ix-chip" data-val="void">void</div>
           </div>
         </div>
       </div>
 
-      <div class="ix-group-label">style</div>
+      <!-- STYLE -->
+      <div class="ix-group-label">◈ style</div>
       <div class="im-card" style="gap:10px">
         <div>
           <div class="im-label">art style</div>
@@ -268,6 +348,7 @@ function _buildHTML() {
             <div class="ix-chip" data-val="pixel art">pixel art</div>
             <div class="ix-chip" data-val="concept art">concept art</div>
             <div class="ix-chip" data-val="illustration">illustration</div>
+            <div class="ix-chip" data-val="bloomcore">bloomcore</div>
           </div>
         </div>
         <div>
@@ -276,8 +357,11 @@ function _buildHTML() {
             <div class="ix-chip" data-val="soft">soft</div>
             <div class="ix-chip" data-val="dramatic">dramatic</div>
             <div class="ix-chip" data-val="neon">neon</div>
-            <div class="ix-chip" data-val="void">void</div>
+            <div class="ix-chip" data-val="tense">tense</div>
+            <div class="ix-chip" data-val="tender">tender</div>
+            <div class="ix-chip" data-val="surreal">surreal</div>
             <div class="ix-chip" data-val="golden">golden</div>
+            <div class="ix-chip" data-val="void">void</div>
             <div class="ix-chip" data-val="melancholic">melancholic</div>
           </div>
         </div>
@@ -290,17 +374,33 @@ function _buildHTML() {
             <div class="ix-chip" data-val="god rays">god rays</div>
             <div class="ix-chip" data-val="bioluminescent">bioluminescent</div>
             <div class="ix-chip" data-val="neon glow">neon glow</div>
+            <div class="ix-chip" data-val="golden hour">golden hour</div>
+            <div class="ix-chip" data-val="dramatic">dramatic</div>
           </div>
         </div>
         <div>
           <div class="im-label">camera angle</div>
           <div class="ix-chips" id="ix-chips-camera">
             <div class="ix-chip" data-val="portrait close-up">portrait</div>
+            <div class="ix-chip" data-val="medium shot">medium</div>
             <div class="ix-chip" data-val="3/4 view">3/4 view</div>
-            <div class="ix-chip" data-val="wide shot">wide shot</div>
+            <div class="ix-chip" data-val="wide shot">wide</div>
             <div class="ix-chip" data-val="overhead">overhead</div>
-            <div class="ix-chip" data-val="dutch angle">dutch angle</div>
             <div class="ix-chip" data-val="low angle">low angle</div>
+            <div class="ix-chip" data-val="dutch angle">dutch angle</div>
+            <div class="ix-chip" data-val="POV">POV</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div>
+            <div class="im-label">rendering style</div>
+            <input class="im-input" id="ix-render-style" type="text"
+              placeholder="cinematic, concept art, photograph, illustration..." />
+          </div>
+          <div>
+            <div class="im-label">color theme</div>
+            <input class="im-input" id="ix-color-theme" type="text"
+              placeholder="teal + void black + silver..." />
           </div>
         </div>
       </div>
@@ -313,25 +413,25 @@ function _buildHTML() {
 
     </div><!-- /ix-extended -->
 
-    <!-- GENERATE BUTTON -->
+    <!-- ── GENERATE ── -->
     <button class="im-generate-btn" id="im-go">❆ generate</button>
     <div class="im-error" id="im-error"></div>
     <div id="im-result"></div>
 
-    <!-- NEGATIVE PROMPT -->
+    <!-- ── NEGATIVE PROMPT ── -->
     <div class="im-card">
       <div class="im-label">negative prompt <span class="im-sublabel">optional</span></div>
       <textarea class="im-input" id="im-neg" rows="2"
         placeholder="blurry, low quality, ugly, deformed"></textarea>
     </div>
 
-    <!-- MODEL SELECTOR -->
+    <!-- ── MODEL ── -->
     <div class="im-card">
       <div class="im-label">model</div>
       <div id="im-model-list">${modelCards}</div>
     </div>
 
-    <!-- SIZE -->
+    <!-- ── SIZE ── -->
     <div class="im-card">
       <div class="im-label">size</div>
       <div class="im-size-grid">
@@ -342,12 +442,11 @@ function _buildHTML() {
       </div>
     </div>
 
-    <!-- COST BAR -->
+    <!-- ── COST BAR ── -->
     <div class="im-cost-bar" id="im-cost-bar">
       <span id="im-cost-label">this will use 500 cr</span>
       <span id="im-balance-label" class="im-balance"></span>
     </div>
-
     <div style="height:60px"></div>
   </div>`;
 }
@@ -364,7 +463,7 @@ function _wireUI() {
     });
   });
 
-  // Extended chips — single select per group, toggle off on re-click
+  // Extended chips — single-select per group, toggle off on re-click
   document.querySelectorAll('.ix-chips').forEach(group => {
     group.querySelectorAll('.ix-chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -376,25 +475,36 @@ function _wireUI() {
     });
   });
 
-  // Live preview on text input
-  ['im-prompt','ix-appearance','ix-species','ix-scene','ix-world'].forEach(id => {
+  // Live preview on any text change
+  const liveIds = [
+    'im-prompt','ix-hair','ix-eyes','ix-clothing','ix-marks',
+    'ix-species','ix-vibe','ix-pose',
+    'ix-scene','ix-world','ix-biome','ix-background',
+    'ix-render-style','ix-color-theme',
+  ];
+  liveIds.forEach(id => {
     document.getElementById(id)?.addEventListener('input', _updatePreview);
   });
 
-  // Generate
   document.getElementById('im-go')?.addEventListener('click', _generate);
 }
 
 // ── GENERATE ──────────────────────────────────────────────────
 async function _generate() {
-  const prompt = _buildFinalPrompt();
-  const neg    = document.getElementById('im-neg')?.value.trim();
-  const errEl  = document.getElementById('im-error');
-  const resEl  = document.getElementById('im-result');
-  const btn    = document.getElementById('im-go');
+  // Add color theme to prompt if set
+  const colorTheme = document.getElementById('ix-color-theme')?.value.trim();
+  let prompt = _buildFinalPrompt();
+  if (colorTheme && !prompt.includes(colorTheme)) {
+    prompt = prompt.replace('detailed, high quality, sharp focus', colorTheme + ', detailed, high quality, sharp focus');
+  }
+
+  const neg   = document.getElementById('im-neg')?.value.trim();
+  const errEl = document.getElementById('im-error');
+  const resEl = document.getElementById('im-result');
+  const btn   = document.getElementById('im-go');
 
   if (!prompt || prompt === 'detailed, high quality, sharp focus') {
-    errEl.textContent = 'Write a prompt first.'; return;
+    errEl.textContent = 'Write a subject first.'; return;
   }
   errEl.textContent = '';
   btn.textContent   = '🌀 generating...';
@@ -414,7 +524,6 @@ async function _generate() {
     const data = await r.json();
     if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
 
-    // Update credits
     if (data.credits_remaining !== undefined) {
       window._currentCredits = data.credits_remaining;
       if (window.updateCreditDisplay) window.updateCreditDisplay();
@@ -430,8 +539,10 @@ async function _generate() {
     resEl.innerHTML = `
       <div class="im-result-meta">${meta}</div>
       <img class="im-result-img" src="${url}" alt="generated" />
-      <button class="im-save-btn" id="im-save">💾 save image</button>
-      <button class="im-save-btn" id="im-to-lib" style="margin-top:6px;border-color:var(--pink);color:var(--pink)">📚 save to library</button>`;
+      <div class="im-result-actions">
+        <button class="im-save-btn" id="im-save">💾 save</button>
+        <button class="im-save-btn" id="im-to-lib" style="border-color:var(--pink);color:var(--pink)">📚 library</button>
+      </div>`;
 
     document.getElementById('im-save')?.addEventListener('click', () => {
       const a = document.createElement('a'); a.href = url; a.download = 'spiralside-gen.png'; a.click();
@@ -447,17 +558,17 @@ async function _generate() {
           if (r?.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'imagine');
         });
       }
-      setTimeout(() => { if (b) { b.textContent = '📚 save to library'; b.disabled = false; } }, 1800);
+      setTimeout(() => { if (b) { b.textContent = '📚 library'; b.disabled = false; } }, 1800);
     });
 
-    // SpiralCut integration
+    // SpiralCut — send generated image back to the waiting clip
     if (window._cutPendingClip) {
       const cutBtn = document.createElement('button');
       cutBtn.className = 'im-save-btn';
-      cutBtn.style.cssText = 'margin-top:6px;border-color:var(--teal);color:var(--teal);background:rgba(0,246,214,0.08)';
+      cutBtn.style.cssText = 'border-color:var(--teal);color:var(--teal);background:rgba(0,246,214,0.08)';
       cutBtn.textContent = '✂ send to SpiralCut clip';
       cutBtn.addEventListener('click', () => { if (window._cutReceiveImage) window._cutReceiveImage(url); });
-      resEl.appendChild(cutBtn);
+      document.querySelector('.im-result-actions')?.appendChild(cutBtn);
     }
 
   } catch(e) {
@@ -471,12 +582,12 @@ async function _generate() {
 
 // ── STYLES ────────────────────────────────────────────────────
 export function injectImagineStyles() {
-  if (document.getElementById('imagine-styles-v3')) return;
-  // Remove old style tags to avoid conflicts
-  document.getElementById('imagine-styles')?.remove();
-  document.getElementById('imagine-styles-v2')?.remove();
+  if (document.getElementById('imagine-styles-v4')) return;
+  ['imagine-styles','imagine-styles-v2','imagine-styles-v3'].forEach(id =>
+    document.getElementById(id)?.remove()
+  );
   const s = document.createElement('style');
-  s.id = 'imagine-styles-v3';
+  s.id = 'imagine-styles-v4';
   s.textContent = `
     #view-imagine { flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch; }
     .im-scroll { padding:20px 16px calc(80px + var(--safe-bot,0px)); display:flex; flex-direction:column; gap:12px; }
@@ -484,9 +595,11 @@ export function injectImagineStyles() {
     .im-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
     .im-label { font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtext); font-family:var(--font-ui); }
     .im-sublabel { color:var(--teal); font-size:0.6rem; margin-left:6px; }
+
+    /* ── INPUTS ── */
     .im-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-family:var(--font-ui); font-size:0.82rem; outline:none; resize:none; transition:border-color 0.2s; line-height:1.5; box-sizing:border-box; }
     .im-input:focus { border-color:var(--teal); }
-    .im-input::placeholder { color:var(--subtext); }
+    .im-input::placeholder { color:var(--subtext); opacity:0.6; }
 
     /* ── TOGGLE ── */
     .ix-toggle-btn { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 16px; color:var(--subtext); font-family:var(--font-ui); font-size:0.72rem; letter-spacing:0.08em; cursor:pointer; text-align:left; transition:border-color 0.2s,color 0.2s; }
@@ -495,7 +608,10 @@ export function injectImagineStyles() {
     /* ── EXTENDED PANEL ── */
     .ix-extended { display:none; flex-direction:column; gap:12px; }
     .ix-extended.open { display:flex; }
-    .ix-group-label { font-size:0.58rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); opacity:0.7; }
+    .ix-group-label { font-size:0.58rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); opacity:0.7; padding-top:4px; }
+
+    /* ── 2-COL FIELD ROW ── */
+    .ix-field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
     /* ── CHIPS ── */
     .ix-chips { display:flex; gap:6px; flex-wrap:wrap; }
@@ -532,15 +648,16 @@ export function injectImagineStyles() {
     .im-generate-btn:hover { opacity:0.88; }
     .im-generate-btn:disabled { opacity:0.45; cursor:not-allowed; }
 
-    /* ── ERROR + SPINNER ── */
+    /* ── ERROR / SPINNER ── */
     .im-error { font-size:0.68rem; color:var(--pink); min-height:16px; text-align:center; font-family:var(--font-ui); }
     .im-spinner { width:36px; height:36px; margin:28px auto; border:3px solid rgba(0,246,214,0.15); border-top-color:var(--teal); border-radius:50%; animation:spin 0.85s linear infinite; }
 
     /* ── RESULT ── */
     .im-result-meta { font-size:0.6rem; letter-spacing:0.1em; color:var(--subtext); text-align:center; text-transform:uppercase; font-family:var(--font-ui); }
     .im-result-img  { width:100%; border-radius:12px; border:1px solid var(--border); display:block; margin:8px 0; }
-    .im-save-btn { width:100%; padding:11px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:var(--font-ui); font-size:0.78rem; cursor:pointer; transition:border-color 0.2s; letter-spacing:0.04em; }
-    .im-save-btn:hover { border-color:var(--teal); }
+    .im-result-actions { display:flex; gap:8px; margin-top:4px; }
+    .im-save-btn { flex:1; padding:11px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:var(--font-ui); font-size:0.72rem; cursor:pointer; transition:border-color 0.2s; letter-spacing:0.04em; }
+    .im-save-btn:hover { border-color:var(--teal); color:var(--teal); }
   `;
   document.head.appendChild(s);
 }
