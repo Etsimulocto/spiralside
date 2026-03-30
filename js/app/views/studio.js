@@ -354,10 +354,10 @@ function _wireStudio() {
         subject:     g('st-world-name') || 'world environment',
         world:       g('st-world-name'),
         biome:       g('st-world-biome'),
-        // visual_desc first; fall back to lore snippet for old cards (not tagline)
+        // visual_desc → visual description textarea; fall back to lore for old cards
         visualDesc:  g('st-world-visual-desc') || g('st-world-lore').slice(0, 200),
-        // tagline stays as a short background descriptor
-        background:  g('st-world-tagline'),
+        // tagline is NOT background — leave background empty so user can fill it
+        // background field is for things like "void", "city skyline" etc
         scene:       g('st-world-loc1'),
         artStyle:    'bloomcore concept art',
         renderStyle: 'environment art, wide establishing shot',
