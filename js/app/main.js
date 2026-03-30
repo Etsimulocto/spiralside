@@ -53,6 +53,7 @@ import { initGuide, renderGuide } from './views/guide.js';
 import { initForgeView }           from './views/forge.js';
 import { initAccountView, updateAccountView }      from './views/account.js';
 import { initVaultView } from './views/vault.js';
+import { initFramesView } from '../frames/frames.js';
 
 // ── EXPOSE GLOBALS ────────────────────────────────────────────
 // HTML onclick attributes need these on window.
