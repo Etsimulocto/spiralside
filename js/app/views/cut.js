@@ -897,27 +897,30 @@ window._cutGenImage = function() {
       negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
     };
   } else if (sourceScene) {
-    // SCENE clip — codex saves: name, caption, mood, time, camera, location, world
-    // loadBinData normalizes: imageDataUrl, dialogue=caption — all other keys pass through
+    // SCENE clip — fields: name, caption, mood, time, camera, location, world, visual_desc
     ctx = {
-      subject:   sourceScene.name     || clip.name || 'scene',
-      scene:     sourceScene.location || '',
-      world:     sourceScene.world    || '',
-      mood:      sourceScene.mood     || clip.mood || '',
-      timeOfDay: sourceScene.time     || '',
-      camera:    sourceScene.camera   || '',
-      artStyle:  'bloomcore art style',
+      subject:    sourceScene.name        || clip.name || 'scene',
+      scene:      sourceScene.location    || '',
+      world:      sourceScene.world       || '',
+      mood:       sourceScene.mood        || clip.mood || '',
+      timeOfDay:  sourceScene.time        || '',
+      camera:     sourceScene.camera      || '',
+      // visual_desc is the human-written scene description — best prompt basis
+      background: sourceScene.visual_desc || sourceScene.caption || '',
+      artStyle:   'bloomcore art style',
       negativePrompt: 'blurry, low quality, ugly',
     };
   } else if (sourceWorld) {
-    // WORLD clip — codex saves: name, tagline, biome, lore, threat, locations[]
+    // WORLD clip — fields: name, tagline, biome, lore, locations[], visual_desc
     ctx = {
-      subject:  sourceWorld.name           || clip.name || 'world',
-      world:    sourceWorld.name           || '',
-      biome:    sourceWorld.biome          || '',
-      scene:    (sourceWorld.locations || [])[0] || '',
-      artStyle: 'bloomcore environment art',
-      negativePrompt: 'blurry, low quality, ugly',
+      subject:     sourceWorld.name              || clip.name || 'world',
+      world:       sourceWorld.name              || '',
+      biome:       sourceWorld.biome             || '',
+      scene:       (sourceWorld.locations || [])[0] || '',
+      background:  sourceWorld.visual_desc       || sourceWorld.tagline || '',
+      artStyle:    'bloomcore environment art',
+      renderStyle: 'wide establishing shot',
+      negativePrompt: 'people, characters, blurry, low quality',
     };
   } else {
     // BLANK clip — use clip fields directly

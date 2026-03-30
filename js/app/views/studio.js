@@ -7,7 +7,7 @@ import { syncSave } from '../sync.js';
 // ============================================================
 
 import { dbSet, dbGetAll, dbDelete } from '../db.js';
-import { getImagineModel, getImagineSize } from '../imagine2.js';
+import { getImagineModel, getImagineSize } from '../imagine.js';
 import { RAIL } from '../state.js';
 import { sb } from '../auth.js';
 import { renderSceneCard, renderWorldCard, generateCardId } from '../card.js';
@@ -87,6 +87,9 @@ export async function initStudioView() {
               </div>
               <div class="forge-field"><label class="forge-label">linked world</label>
                 <input class="forge-input" id="st-scene-world" placeholder="world name or ID"/></div>
+              <div class="forge-field"><label class="forge-label">visual description</label>
+                <textarea class="forge-input" id="st-scene-visual-desc" rows="2"
+                  placeholder="What does this scene look like? Neon lights reflecting off wet streets, a holographic billboard flickering..." style="resize:vertical"></textarea></div>
               <div class="forge-field"><label class="forge-label">panel image</label>
                 <div style="display:flex;gap:8px;margin-bottom:6px">
                   <button onclick="window._studioGenSceneImg()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:8px;color:#fff;font-family:var(--font-display);font-weight:700;font-size:0.75rem;cursor:pointer"class="forge-gen-btn">✦ generate from fields · flux schnell · 500 cr</button>
@@ -139,6 +142,9 @@ export async function initStudioView() {
                 <textarea class="forge-input" id="st-world-lore" rows="3"
                   placeholder="A city built on layered signals..."
                   style="resize:vertical"></textarea></div>
+              <div class="forge-field"><label class="forge-label">visual description</label>
+                <textarea class="forge-input" id="st-world-visual-desc" rows="2"
+                  placeholder="What does this world look like? Towering chrome spires, bioluminescent canals, perpetual neon dusk..." style="resize:vertical"></textarea></div>
               <div class="forge-field"><label class="forge-label">key locations</label>
                 <input class="forge-input" id="st-world-loc1" placeholder="Location 1" style="margin-bottom:6px"/>
                 <input class="forge-input" id="st-world-loc2" placeholder="Location 2" style="margin-bottom:6px"/>
@@ -239,7 +245,8 @@ function _wireStudio() {
       time:     g('st-scene-time'),
       camera:   g('st-scene-camera'),
       location: g('st-scene-location'),
-      world:    g('st-scene-world'),
+      world:       g('st-scene-world'),
+      visual_desc: g('st-scene-visual-desc'),
       image:    _sceneImgData || null,
       created_at: _sceneEditId
         ? (scenes.find(s => s.id === _sceneEditId)?.created_at || new Date().toISOString())
@@ -266,7 +273,8 @@ function _wireStudio() {
       biome:     g('st-world-biome'),
       lore:      g('st-world-lore'),
       threat:    parseInt(document.getElementById('st-world-threat')?.value) || 50,
-      locations: [g('st-world-loc1'), g('st-world-loc2'), g('st-world-loc3')].filter(Boolean),
+      locations:   [g('st-world-loc1'), g('st-world-loc2'), g('st-world-loc3')].filter(Boolean),
+      visual_desc: g('st-world-visual-desc'),
       palette:   ['#00F6D6','#FF4BCB','#4DA3FF','#FFD93D','#7c6af7','#F3F7FF'],
       image:     _worldImgData || null,
       created_at: _worldEditId
@@ -322,25 +330,38 @@ function _wireStudio() {
     }
   }
 
-  window._studioGenSceneImg = async () => {
+  window._studioGenSceneImg = function() {
     const g = id => document.getElementById(id)?.value?.trim() || '';
-    const name     = g('st-scene-name')     || 'scene';
-    const mood     = g('st-scene-mood');
-    const time     = g('st-scene-time');
-    const camera   = g('st-scene-camera');
-    const location = g('st-scene-location') || 'Spiral City';
-    const parts = [name, mood, time ? time + ' lighting' : '', camera ? camera + ' shot' : '', location, 'bloomcore art style', 'cinematic', 'detailed'].filter(Boolean);
-    await _callGenerate(parts.join(', '), 'st-scene-img-wrap', 'st-scene-img-preview', 'st-scene-img-hint', url => { _sceneImgData = url; });
+    if (window.imagineWithContext) {
+      window.imagineWithContext({
+        subject:    g('st-scene-name') || 'scene',
+        scene:      g('st-scene-location'),
+        world:      g('st-scene-world'),
+        mood:       g('st-scene-mood'),
+        timeOfDay:  g('st-scene-time'),
+        camera:     g('st-scene-camera'),
+        // visual_desc goes into background as scene context
+        background: g('st-scene-visual-desc'),
+        artStyle:   'bloomcore art style',
+        negativePrompt: 'blurry, low quality, ugly',
+      });
+    }
   };
 
-  window._studioGenWorldImg = async () => {
+  window._studioGenWorldImg = function() {
     const g = id => document.getElementById(id)?.value?.trim() || '';
-    const name    = g('st-world-name')    || 'world';
-    const tagline = g('st-world-tagline');
-    const biome   = g('st-world-biome')   || 'environment';
-    const lore    = g('st-world-lore').slice(0, 80);
-    const parts = [biome + ' environment', 'called ' + name, tagline, lore, 'concept art', 'bloomcore art style', 'dramatic lighting', 'detailed'].filter(Boolean);
-    await _callGenerate(parts.join(', '), 'st-world-img-wrap', 'st-world-img-preview', 'st-world-img-hint', url => { _worldImgData = url; });
+    if (window.imagineWithContext) {
+      window.imagineWithContext({
+        subject:     g('st-world-name') || 'world environment',
+        world:       g('st-world-name'),
+        biome:       g('st-world-biome'),
+        background:  g('st-world-visual-desc') || g('st-world-tagline'),
+        scene:       g('st-world-loc1'),
+        artStyle:    'bloomcore concept art',
+        renderStyle: 'environment art, wide establishing shot',
+        negativePrompt: 'people, characters, blurry, low quality',
+      });
+    }
   };
 
   window._studioDeleteWorld = async (id) => {
