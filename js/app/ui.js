@@ -218,6 +218,7 @@ export function switchView(id) {
     style:     () => { window.initStylePanel && window.initStylePanel(); setTimeout(() => window.initColorSketches && window.initColorSketches(), 400); },
     account:   () => window.initAccountView  && window.initAccountView(),
     imagine:   () => window.initImagine      && window.initImagine(),
+    frames:    () => window.initFramesView  && window.initFramesView(),
     music:     () => window.initMusicView    && window.initMusicView(),
     library:   () => window.initLibrary      && window.initLibrary(),
     code:      () => window.initCodeView     && window.initCodeView(),

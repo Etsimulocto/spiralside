@@ -123,6 +123,7 @@ window.initStudioView       = initStudioView;
 window.initSpiralCutView    = initSpiralCutView;
 window.initQuestView    = initQuestView;
 window.initCutView     = initCutView;
+window.initFramesView  = initFramesView;
 window.awardXP    = awardXP;
 window.getXPState = getXPState;
 window.showXPGain = showXPGain;
