@@ -593,6 +593,7 @@ export async function initFramesView() {
 
         <!-- SAVE -->
         <button class="frames-save-btn" id="fp-save-btn" onclick="window._framesSaveCurrent()">✦ save frame</button>
+        <button class="frames-reset-btn" onclick="window._framesReset()">↺ reset to defaults</button>
 
         <!-- IMPORT PNG -->
         <div class="frames-section-title" style="margin-top:4px">import PNG frame</div>
@@ -987,6 +988,13 @@ function _injectStyles() {
       letter-spacing:0.04em; transition:all 0.2s;
     }
     .frames-import-btn:hover { border-color:var(--teal); color:var(--teal); }
+    .frames-reset-btn {
+      width:100%; padding:11px; background:transparent;
+      border:1px solid var(--border); border-radius:10px; color:var(--subtext);
+      font-family:var(--font-ui); font-size:0.78rem; cursor:pointer;
+      letter-spacing:0.04em; transition:all 0.2s; margin-top:-4px;
+    }
+    .frames-reset-btn:hover { border-color:var(--pink,#FF4BCB); color:var(--pink,#FF4BCB); }
 
     /* ── LIBRARY GRID ── */
     .fp-lib-grid {
