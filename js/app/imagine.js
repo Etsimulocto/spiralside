@@ -167,6 +167,9 @@ function _buildFinalPrompt() {
   if (timeOfDay) segs.push(timeOfDay);
   if (bg)      segs.push('background: ' + bg);
 
+  // Visual description — goes before style tags so FLUX uses it as scene context
+  if (bg)       segs.push(bg);
+
   // Style
   if (artStyle) segs.push(artStyle);
   if (render)   segs.push(render);
