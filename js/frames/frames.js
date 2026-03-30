@@ -485,25 +485,25 @@ export async function initFramesView() {
         <div class="fp-4side">
           <div class="frames-row">
             <div class="frames-field"><label class="frames-label">top</label>
-              <input class="frames-input" type="range" min="-20" max="40" value="0" id="fp-off-top"
+              <input class="frames-input" type="range" min="-60" max="200" value="0" id="fp-off-top"
                 oninput="window._framesPreview();document.getElementById('fp-off-top-v').textContent=this.value"/></div>
             <div class="frames-val" id="fp-off-top-v">0</div>
           </div>
           <div class="frames-row">
             <div class="frames-field"><label class="frames-label">right</label>
-              <input class="frames-input" type="range" min="-20" max="40" value="0" id="fp-off-right"
+              <input class="frames-input" type="range" min="-60" max="200" value="0" id="fp-off-right"
                 oninput="window._framesPreview();document.getElementById('fp-off-right-v').textContent=this.value"/></div>
             <div class="frames-val" id="fp-off-right-v">0</div>
           </div>
           <div class="frames-row">
             <div class="frames-field"><label class="frames-label">bottom</label>
-              <input class="frames-input" type="range" min="-20" max="40" value="0" id="fp-off-bottom"
+              <input class="frames-input" type="range" min="-60" max="200" value="0" id="fp-off-bottom"
                 oninput="window._framesPreview();document.getElementById('fp-off-bottom-v').textContent=this.value"/></div>
             <div class="frames-val" id="fp-off-bottom-v">0</div>
           </div>
           <div class="frames-row">
             <div class="frames-field"><label class="frames-label">left</label>
-              <input class="frames-input" type="range" min="-20" max="40" value="0" id="fp-off-left"
+              <input class="frames-input" type="range" min="-60" max="200" value="0" id="fp-off-left"
                 oninput="window._framesPreview();document.getElementById('fp-off-left-v').textContent=this.value"/></div>
             <div class="frames-val" id="fp-off-left-v">0</div>
           </div>
