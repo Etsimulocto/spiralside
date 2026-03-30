@@ -918,7 +918,11 @@ window._cutGenImage = function() {
       biome:       sibWorld?.biome      || '',
       timeOfDay:   sibScene?.time       || '',
       camera:      sibScene?.camera     || '',
-      visualDesc:  sibScene?.visual_desc || sibScene?.caption || sibWorld?.visual_desc || sibWorld?.lore?.slice(0,200) || '',
+      // Merge scene + world visual descriptions — scene is more specific, world gives context
+      visualDesc:  [
+        sibScene?.visual_desc || sibScene?.caption || '',
+        sibWorld?.visual_desc || sibWorld?.lore?.slice(0, 120) || '',
+      ].filter(Boolean).join(', ') || '',
       negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
     };
   } else if (sourceScene) {
