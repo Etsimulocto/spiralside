@@ -1,60 +1,71 @@
 // ============================================================
-// SPIRALSIDE — IMAGINE v1.2
-// AI image generation via Railway -> HF FLUX.1-schnell
-// Free: 3/day 512x512 | Paid: 5cr, up to 1024x1024
-// v1.2 — Extended prompt fields, imagineWithContext API
+// SPIRALSIDE — IMAGINE v1.3
+// Multi-model image gen + extended prompt fields
+// Models: flux-schnell | sdxl-lightning | sdxl | dalle3
+// v1.3 — merged imagine2 model selector + imagine v1.2 extended fields
 // Nimbis anchor: js/app/imagine.js
 // ============================================================
 
 import { RAIL } from './state.js';
+import { sb }   from './auth.js';
+
+// ── MODELS ────────────────────────────────────────────────────
+const MODELS = [
+  { id:'schnell',   label:'flux schnell',        sub:'fastest · draft quality · HuggingFace', cost:500,  color:'var(--teal)',   icon:'⚡' },
+  { id:'lightning', label:'sdxl lightning',       sub:'fast · crisp · HuggingFace',            cost:1000, color:'var(--purple)', icon:'⚡⚡' },
+  { id:'sdxl',      label:'stable diffusion xl',  sub:'cinematic · versatile · HuggingFace',   cost:1500, color:'var(--pink)',   icon:'🎨' },
+  { id:'dalle3',    label:'dall·e 3',             sub:'highest quality · OpenAI',              cost:3000, color:'#FFD93D',      icon:'🌟' },
+];
+
+// ── MODULE STATE ──────────────────────────────────────────────
+let _model = 'schnell';
+let _selW  = 512;
+let _selH  = 512;
+let _initialized = false;
 
 // ── PUBLIC API ────────────────────────────────────────────────
-// Called by Forge, SpiralCut, Codex to pre-fill and switch to Imagine tab.
-// ctx shape:
-//   { subject, appearance, species, scene, world, timeOfDay,
-//     style, mood, lighting, camera, negativePrompt }
-window.imagineWithContext = function(ctx = {}) {
-  // Switch to imagine tab first
-  if (typeof switchView === 'function') switchView('imagine');
+export function getImagineModel() { return _model; }
+export function getImagineSize()  { return { w: _selW, h: _selH }; }
 
-  // Small defer so the view is rendered before we try to fill fields
+// Called by Forge, SpiralCut, Codex to pre-fill + switch to Imagine tab.
+// ctx: { subject, appearance, species, scene, world, timeOfDay,
+//         style, mood, lighting, camera, negativePrompt }
+window.imagineWithContext = function(ctx = {}) {
+  if (typeof switchView === 'function') switchView('imagine');
   setTimeout(() => {
-    // Core prompt: build subject line from ctx
+    // Core prompt from subject fields
     const parts = [];
     if (ctx.subject)    parts.push(ctx.subject);
     if (ctx.appearance) parts.push(ctx.appearance);
     if (ctx.species)    parts.push(ctx.species);
     const subjectLine = parts.join(', ');
     if (subjectLine) {
-      const promptEl = document.getElementById('imagine-prompt');
-      if (promptEl) promptEl.value = subjectLine;
+      const el = document.getElementById('im-prompt');
+      if (el) el.value = subjectLine;
     }
-
-    // Negative prompt
     if (ctx.negativePrompt) {
-      const negEl = document.getElementById('imagine-neg');
-      if (negEl) negEl.value = ctx.negativePrompt;
+      const el = document.getElementById('im-neg');
+      if (el) el.value = ctx.negativePrompt;
     }
-
-    // Extended fields — fill text inputs
+    // Extended fields
     _fillField('ix-appearance', ctx.appearance || '');
     _fillField('ix-species',    ctx.species    || '');
     _fillField('ix-scene',      ctx.scene      || '');
     _fillField('ix-world',      ctx.world      || '');
-
-    // Chips — activate matching values
+    // Chips
     if (ctx.timeOfDay) _activateChip('ix-chips-time',     ctx.timeOfDay);
     if (ctx.style)     _activateChip('ix-chips-style',    ctx.style);
     if (ctx.mood)      _activateChip('ix-chips-mood',     ctx.mood);
     if (ctx.lighting)  _activateChip('ix-chips-lighting', ctx.lighting);
     if (ctx.camera)    _activateChip('ix-chips-camera',   ctx.camera);
-
-    // Expand the extended options panel so user sees what got filled
-    const toggle  = document.getElementById('ix-toggle');
-    const content = document.getElementById('ix-extended');
-    if (toggle && content && !content.classList.contains('open')) {
-      content.classList.add('open');
+    // Expand extended panel
+    const toggle = document.getElementById('ix-toggle');
+    const panel  = document.getElementById('ix-extended');
+    if (toggle && panel && !panel.classList.contains('open')) {
+      panel.classList.add('open');
       toggle.classList.add('open');
+      const sp = toggle.querySelector('span');
+      if (sp) sp.textContent = '▼ extended options';
     }
   }, 80);
 };
@@ -67,200 +78,36 @@ function _fillField(id, val) {
 function _activateChip(groupId, val) {
   const group = document.getElementById(groupId);
   if (!group) return;
-  // Case-insensitive match on data-val or textContent
   group.querySelectorAll('.ix-chip').forEach(chip => {
-    const match = (chip.dataset.val || chip.textContent).toLowerCase() === val.toLowerCase();
-    if (match) chip.classList.add('active');
+    if ((chip.dataset.val || chip.textContent).toLowerCase() === val.toLowerCase())
+      chip.classList.add('active');
   });
 }
 
-// ── INIT ──────────────────────────────────────────────────────
-export function initImagine() {
-  const el = document.getElementById('view-imagine');
-  if (!el) return;
-  injectImagineStyles();
-  el.innerHTML = buildGeneratorHTML();
-  wireGenerator();
-}
-
-// ── HTML ──────────────────────────────────────────────────────
-function buildGeneratorHTML() {
-  return `
-  <div id="imagine-inner">
-
-    <!-- ── HEADER ── -->
-    <div class="imagine-header">✦ IMAGINE</div>
-
-    <!-- ── CORE PROMPT ── -->
-    <div class="imagine-section">
-      <div class="imagine-label">✏ prompt</div>
-      <textarea class="imagine-input" id="imagine-prompt" rows="4"
-        placeholder="Sky floating above a neon city at night, bloomcore art style..."></textarea>
-    </div>
-
-    <!-- ── NEGATIVE PROMPT ── -->
-    <div class="imagine-section">
-      <div class="imagine-label">🚫 negative prompt</div>
-      <textarea class="imagine-input" id="imagine-neg" rows="2"
-        placeholder="blurry, low quality, realistic photo, ugly, deformed"></textarea>
-    </div>
-
-    <!-- ── EXTENDED OPTIONS TOGGLE ── -->
-    <button class="ix-toggle-btn" id="ix-toggle" onclick="window._ixToggle()">
-      <span>▶ extended options</span>
-    </button>
-
-    <!-- ── EXTENDED FIELDS (hidden by default) ── -->
-    <div class="ix-extended" id="ix-extended">
-
-      <!-- CHARACTER -->
-      <div class="ix-group-label">character</div>
-
-      <div class="imagine-section">
-        <div class="imagine-label">appearance</div>
-        <input class="imagine-input" id="ix-appearance" type="text"
-          placeholder="silver hair, teal eyes, tactical hoodie, spiral tattoo..." />
-      </div>
-
-      <div class="imagine-section">
-        <div class="imagine-label">species / type</div>
-        <input class="imagine-input" id="ix-species" type="text"
-          placeholder="human, AI, cryptid, android..." />
-      </div>
-
-      <!-- SCENE / WORLD -->
-      <div class="ix-group-label">scene / world</div>
-
-      <div class="imagine-section">
-        <div class="imagine-label">scene / location</div>
-        <input class="imagine-input" id="ix-scene" type="text"
-          placeholder="rooftop, server lab, neon alley, forest clearing..." />
-      </div>
-
-      <div class="imagine-section">
-        <div class="imagine-label">world</div>
-        <input class="imagine-input" id="ix-world" type="text"
-          placeholder="Spiral City, void space, Bloomcore district..." />
-      </div>
-
-      <div class="imagine-section">
-        <div class="imagine-label">time of day</div>
-        <div class="ix-chips" id="ix-chips-time">
-          <div class="ix-chip" data-val="dawn">dawn</div>
-          <div class="ix-chip" data-val="midday">midday</div>
-          <div class="ix-chip" data-val="dusk">dusk</div>
-          <div class="ix-chip" data-val="4am">4am</div>
-          <div class="ix-chip" data-val="void">void</div>
-        </div>
-      </div>
-
-      <!-- STYLE -->
-      <div class="ix-group-label">style</div>
-
-      <div class="imagine-section">
-        <div class="imagine-label">art style</div>
-        <div class="ix-chips" id="ix-chips-style">
-          <div class="ix-chip" data-val="anime">anime</div>
-          <div class="ix-chip" data-val="painterly">painterly</div>
-          <div class="ix-chip" data-val="cinematic">cinematic</div>
-          <div class="ix-chip" data-val="pixel art">pixel art</div>
-          <div class="ix-chip" data-val="concept art">concept art</div>
-          <div class="ix-chip" data-val="illustration">illustration</div>
-        </div>
-      </div>
-
-      <div class="imagine-section">
-        <div class="imagine-label">mood</div>
-        <div class="ix-chips" id="ix-chips-mood">
-          <div class="ix-chip" data-val="soft">soft</div>
-          <div class="ix-chip" data-val="dramatic">dramatic</div>
-          <div class="ix-chip" data-val="neon">neon</div>
-          <div class="ix-chip" data-val="void">void</div>
-          <div class="ix-chip" data-val="golden">golden</div>
-          <div class="ix-chip" data-val="melancholic">melancholic</div>
-        </div>
-      </div>
-
-      <!-- LIGHTING -->
-      <div class="imagine-section">
-        <div class="imagine-label">lighting</div>
-        <div class="ix-chips" id="ix-chips-lighting">
-          <div class="ix-chip" data-val="rim light">rim light</div>
-          <div class="ix-chip" data-val="soft ambient">soft ambient</div>
-          <div class="ix-chip" data-val="harsh">harsh</div>
-          <div class="ix-chip" data-val="god rays">god rays</div>
-          <div class="ix-chip" data-val="bioluminescent">bioluminescent</div>
-          <div class="ix-chip" data-val="neon glow">neon glow</div>
-        </div>
-      </div>
-
-      <!-- CAMERA -->
-      <div class="imagine-section">
-        <div class="imagine-label">camera angle</div>
-        <div class="ix-chips" id="ix-chips-camera">
-          <div class="ix-chip" data-val="portrait close-up">portrait</div>
-          <div class="ix-chip" data-val="3/4 view">3/4 view</div>
-          <div class="ix-chip" data-val="wide shot">wide shot</div>
-          <div class="ix-chip" data-val="overhead">overhead</div>
-          <div class="ix-chip" data-val="dutch angle">dutch angle</div>
-          <div class="ix-chip" data-val="low angle">low angle</div>
-        </div>
-      </div>
-
-    </div><!-- /ix-extended -->
-
-    <!-- ── SIZE ── -->
-    <div class="imagine-section">
-      <div class="imagine-label">size <span style="color:var(--subtext);font-size:var(--subtext-size)">(paid only for larger)</span></div>
-      <div class="size-chips">
-        <div class="size-chip active" data-w="512"  data-h="512">512 × 512</div>
-        <div class="size-chip" data-w="768"  data-h="768">768 × 768 ✦</div>
-        <div class="size-chip" data-w="1024" data-h="768">1024 × 768 ✦</div>
-        <div class="size-chip" data-w="768"  data-h="1024">768 × 1024 ✦</div>
-      </div>
-    </div>
-
-    <!-- ── PROMPT PREVIEW (updates live) ── -->
-    <div class="ix-preview-wrap" id="ix-preview-wrap" style="display:none">
-      <div class="imagine-label">assembled prompt preview</div>
-      <div class="ix-preview-text" id="ix-preview-text"></div>
-    </div>
-
-    <button class="imagine-btn" id="imagine-go">🎨 generate</button>
-    <div class="imagine-error" id="imagine-error"></div>
-    <div id="imagine-result"></div>
-
-  </div>`;
-}
-
 // ── TOGGLE ────────────────────────────────────────────────────
-// Exposed on window so onclick in HTML can reach it
 window._ixToggle = function() {
-  const btn     = document.getElementById('ix-toggle');
-  const content = document.getElementById('ix-extended');
-  if (!btn || !content) return;
-  const isOpen = content.classList.toggle('open');
+  const btn   = document.getElementById('ix-toggle');
+  const panel = document.getElementById('ix-extended');
+  if (!btn || !panel) return;
+  const isOpen = panel.classList.toggle('open');
   btn.classList.toggle('open', isOpen);
-  btn.querySelector('span').textContent = isOpen
-    ? '▼ extended options'
-    : '▶ extended options';
+  const sp = btn.querySelector('span');
+  if (sp) sp.textContent = isOpen ? '▼ extended options' : '▶ extended options';
+  // show/hide preview
+  _updatePreview();
 };
 
 // ── PROMPT ASSEMBLY ───────────────────────────────────────────
-// Reads all fields and chip selections, builds a single quality prompt string.
-function buildFinalPrompt() {
-  const core = document.getElementById('imagine-prompt')?.value.trim() || '';
+function _buildFinalPrompt() {
+  const core       = document.getElementById('im-prompt')?.value.trim()       || '';
+  const appearance = document.getElementById('ix-appearance')?.value.trim()   || '';
+  const species    = document.getElementById('ix-species')?.value.trim()      || '';
+  const scene      = document.getElementById('ix-scene')?.value.trim()        || '';
+  const world      = document.getElementById('ix-world')?.value.trim()        || '';
 
-  // Extended text fields
-  const appearance = document.getElementById('ix-appearance')?.value.trim() || '';
-  const species    = document.getElementById('ix-species')?.value.trim()    || '';
-  const scene      = document.getElementById('ix-scene')?.value.trim()      || '';
-  const world      = document.getElementById('ix-world')?.value.trim()      || '';
-
-  // Active chips — collect data-val from each group
-  function getChip(groupId) {
-    const active = document.querySelector(`#${groupId} .ix-chip.active`);
-    return active ? (active.dataset.val || active.textContent.trim()) : '';
+  function getChip(gid) {
+    const a = document.querySelector(`#${gid} .ix-chip.active`);
+    return a ? (a.dataset.val || a.textContent.trim()) : '';
   }
   const timeOfDay = getChip('ix-chips-time');
   const style     = getChip('ix-chips-style');
@@ -268,10 +115,7 @@ function buildFinalPrompt() {
   const lighting  = getChip('ix-chips-lighting');
   const camera    = getChip('ix-chips-camera');
 
-  // Assemble in semantic order:
-  // subject → appearance → scene/world context → style → mood → lighting → camera → quality tail
   const segments = [];
-
   if (core)       segments.push(core);
   if (appearance) segments.push(appearance);
   if (species)    segments.push(species);
@@ -282,190 +126,421 @@ function buildFinalPrompt() {
   if (mood)       segments.push(`${mood} mood`);
   if (lighting)   segments.push(lighting);
   if (camera)     segments.push(camera);
-
-  // Always append quality tags
   segments.push('detailed, high quality, sharp focus');
 
-  const assembled = segments.filter(Boolean).join(', ');
+  return segments.filter(Boolean).join(', ');
+}
 
-  // Update live preview if extended panel is open
+function _updatePreview() {
   const previewWrap = document.getElementById('ix-preview-wrap');
   const previewText = document.getElementById('ix-preview-text');
-  if (previewText) {
-    previewText.textContent = assembled;
-    if (previewWrap) {
-      previewWrap.style.display = document.getElementById('ix-extended')?.classList.contains('open')
-        ? 'flex' : 'none';
-    }
-  }
+  const isOpen = document.getElementById('ix-extended')?.classList.contains('open');
+  if (previewWrap) previewWrap.style.display = isOpen ? 'flex' : 'none';
+  if (previewText) previewText.textContent = _buildFinalPrompt();
+}
 
-  return assembled;
+// ── MODEL PICK ────────────────────────────────────────────────
+window._imPick = function(id) {
+  _model = id;
+  document.querySelectorAll('.im-model-card').forEach(c =>
+    c.classList.toggle('active', c.dataset.model === id)
+  );
+  _syncCostBar();
+};
+
+function _syncCostBar() {
+  const m   = MODELS.find(x => x.id === _model) || MODELS[0];
+  const lbl = document.getElementById('im-cost-label');
+  const bal = document.getElementById('im-balance-label');
+  const btn = document.getElementById('im-go');
+  if (lbl) { lbl.textContent = `this will use ${m.cost.toLocaleString()} cr`; lbl.style.color = m.color; }
+  if (btn)  btn.style.background = `linear-gradient(135deg,${m.color},var(--purple))`;
+  // sync forge-gen-btn across forge + cut
+  const label = `❆ generate from fields · ${m.label} · ${m.cost.toLocaleString()} cr`;
+  document.querySelectorAll('.forge-gen-btn').forEach(b => {
+    b.textContent = label;
+    b.style.background = `linear-gradient(135deg,${m.color},var(--purple))`;
+  });
+  const cr = window._currentCredits ?? null;
+  if (bal && cr !== null) {
+    const after = cr - m.cost;
+    bal.textContent = after >= 0
+      ? `${Math.round(cr).toLocaleString()} cr remaining`
+      : '⚠ not enough credits';
+    bal.style.color = after >= 0 ? 'var(--subtext)' : 'var(--pink)';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────
+export function initImagine() {
+  const el = document.getElementById('view-imagine');
+  if (!el) return;
+  injectImagineStyles();
+  if (!_initialized) {
+    el.innerHTML = _buildHTML();
+    _wireUI();
+    _initialized = true;
+  }
+  _syncCostBar();
+  // sync forge-gen-btn on re-open
+  document.querySelectorAll('.forge-gen-btn').forEach(b => {
+    const m = MODELS.find(x => x.id === _model) || MODELS[0];
+    b.textContent = `❆ generate from fields · ${m.label} · ${m.cost.toLocaleString()} cr`;
+    b.style.background = `linear-gradient(135deg,${m.color},var(--purple))`;
+  });
+}
+
+// ── HTML ──────────────────────────────────────────────────────
+function _buildHTML() {
+  const modelCards = MODELS.map(m =>
+    `<div class="im-model-card ${m.id==='schnell'?'active':''}" data-model="${m.id}" onclick="window._imPick('${m.id}')">
+      <div class="im-model-icon">${m.icon}</div>
+      <div class="im-model-info"><div class="im-model-name">${m.label}</div><div class="im-model-sub">${m.sub}</div></div>
+      <div class="im-model-cost" style="color:${m.color}">${m.cost.toLocaleString()} cr</div>
+    </div>`
+  ).join('');
+
+  return `
+  <div class="im-scroll">
+    <div class="im-section-title">✦ IMAGINE</div>
+
+    <!-- PROMPT -->
+    <div class="im-card">
+      <div class="im-label">✏ prompt</div>
+      <textarea class="im-input" id="im-prompt" rows="3"
+        placeholder="Sky floating above a neon city at night, bloomcore art style..."></textarea>
+    </div>
+
+    <!-- EXTENDED OPTIONS TOGGLE -->
+    <button class="ix-toggle-btn" id="ix-toggle" onclick="window._ixToggle()">
+      <span>▶ extended options</span>
+    </button>
+
+    <!-- EXTENDED FIELDS -->
+    <div class="ix-extended" id="ix-extended">
+
+      <div class="ix-group-label">character</div>
+      <div class="im-card" style="gap:10px">
+        <div>
+          <div class="im-label">appearance</div>
+          <input class="im-input" id="ix-appearance" type="text"
+            placeholder="silver hair, teal eyes, tactical hoodie, spiral tattoo..." />
+        </div>
+        <div>
+          <div class="im-label">species / type</div>
+          <input class="im-input" id="ix-species" type="text"
+            placeholder="human, AI, cryptid, android..." />
+        </div>
+      </div>
+
+      <div class="ix-group-label">scene / world</div>
+      <div class="im-card" style="gap:10px">
+        <div>
+          <div class="im-label">scene / location</div>
+          <input class="im-input" id="ix-scene" type="text"
+            placeholder="rooftop, server lab, neon alley, forest clearing..." />
+        </div>
+        <div>
+          <div class="im-label">world</div>
+          <input class="im-input" id="ix-world" type="text"
+            placeholder="Spiral City, void space, Bloomcore district..." />
+        </div>
+        <div>
+          <div class="im-label">time of day</div>
+          <div class="ix-chips" id="ix-chips-time">
+            <div class="ix-chip" data-val="dawn">dawn</div>
+            <div class="ix-chip" data-val="midday">midday</div>
+            <div class="ix-chip" data-val="dusk">dusk</div>
+            <div class="ix-chip" data-val="4am">4am</div>
+            <div class="ix-chip" data-val="void">void</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ix-group-label">style</div>
+      <div class="im-card" style="gap:10px">
+        <div>
+          <div class="im-label">art style</div>
+          <div class="ix-chips" id="ix-chips-style">
+            <div class="ix-chip" data-val="anime">anime</div>
+            <div class="ix-chip" data-val="painterly">painterly</div>
+            <div class="ix-chip" data-val="cinematic">cinematic</div>
+            <div class="ix-chip" data-val="pixel art">pixel art</div>
+            <div class="ix-chip" data-val="concept art">concept art</div>
+            <div class="ix-chip" data-val="illustration">illustration</div>
+          </div>
+        </div>
+        <div>
+          <div class="im-label">mood</div>
+          <div class="ix-chips" id="ix-chips-mood">
+            <div class="ix-chip" data-val="soft">soft</div>
+            <div class="ix-chip" data-val="dramatic">dramatic</div>
+            <div class="ix-chip" data-val="neon">neon</div>
+            <div class="ix-chip" data-val="void">void</div>
+            <div class="ix-chip" data-val="golden">golden</div>
+            <div class="ix-chip" data-val="melancholic">melancholic</div>
+          </div>
+        </div>
+        <div>
+          <div class="im-label">lighting</div>
+          <div class="ix-chips" id="ix-chips-lighting">
+            <div class="ix-chip" data-val="rim light">rim light</div>
+            <div class="ix-chip" data-val="soft ambient">soft ambient</div>
+            <div class="ix-chip" data-val="harsh">harsh</div>
+            <div class="ix-chip" data-val="god rays">god rays</div>
+            <div class="ix-chip" data-val="bioluminescent">bioluminescent</div>
+            <div class="ix-chip" data-val="neon glow">neon glow</div>
+          </div>
+        </div>
+        <div>
+          <div class="im-label">camera angle</div>
+          <div class="ix-chips" id="ix-chips-camera">
+            <div class="ix-chip" data-val="portrait close-up">portrait</div>
+            <div class="ix-chip" data-val="3/4 view">3/4 view</div>
+            <div class="ix-chip" data-val="wide shot">wide shot</div>
+            <div class="ix-chip" data-val="overhead">overhead</div>
+            <div class="ix-chip" data-val="dutch angle">dutch angle</div>
+            <div class="ix-chip" data-val="low angle">low angle</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROMPT PREVIEW -->
+      <div class="ix-preview-wrap" id="ix-preview-wrap" style="display:none">
+        <div class="im-label">assembled prompt preview</div>
+        <div class="ix-preview-text" id="ix-preview-text"></div>
+      </div>
+
+    </div><!-- /ix-extended -->
+
+    <!-- GENERATE BUTTON -->
+    <button class="im-generate-btn" id="im-go">❆ generate</button>
+    <div class="im-error" id="im-error"></div>
+    <div id="im-result"></div>
+
+    <!-- NEGATIVE PROMPT -->
+    <div class="im-card">
+      <div class="im-label">negative prompt <span class="im-sublabel">optional</span></div>
+      <textarea class="im-input" id="im-neg" rows="2"
+        placeholder="blurry, low quality, ugly, deformed"></textarea>
+    </div>
+
+    <!-- MODEL SELECTOR -->
+    <div class="im-card">
+      <div class="im-label">model</div>
+      <div id="im-model-list">${modelCards}</div>
+    </div>
+
+    <!-- SIZE -->
+    <div class="im-card">
+      <div class="im-label">size</div>
+      <div class="im-size-grid">
+        <button class="im-size-chip active" data-w="512"  data-h="512">512×512</button>
+        <button class="im-size-chip"        data-w="768"  data-h="768">768×768</button>
+        <button class="im-size-chip"        data-w="1024" data-h="768">1024×768</button>
+        <button class="im-size-chip"        data-w="768"  data-h="1024">768×1024</button>
+      </div>
+    </div>
+
+    <!-- COST BAR -->
+    <div class="im-cost-bar" id="im-cost-bar">
+      <span id="im-cost-label">this will use 500 cr</span>
+      <span id="im-balance-label" class="im-balance"></span>
+    </div>
+
+    <div style="height:60px"></div>
+  </div>`;
 }
 
 // ── WIRE ──────────────────────────────────────────────────────
-function wireGenerator() {
-  let selW = 512, selH = 512;
-
-  // Size chip selection
-  document.querySelectorAll('.size-chip').forEach(c => {
+function _wireUI() {
+  // Size chips
+  document.querySelectorAll('.im-size-chip').forEach(c => {
     c.addEventListener('click', () => {
-      document.querySelectorAll('.size-chip').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.im-size-chip').forEach(x => x.classList.remove('active'));
       c.classList.add('active');
-      selW = parseInt(c.dataset.w);
-      selH = parseInt(c.dataset.h);
+      _selW = parseInt(c.dataset.w);
+      _selH = parseInt(c.dataset.h);
     });
   });
 
-  // Extended chips — single-select per group (toggle off if clicked again)
+  // Extended chips — single select per group, toggle off on re-click
   document.querySelectorAll('.ix-chips').forEach(group => {
     group.querySelectorAll('.ix-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         const wasActive = chip.classList.contains('active');
         group.querySelectorAll('.ix-chip').forEach(c => c.classList.remove('active'));
         if (!wasActive) chip.classList.add('active');
-        // Live-update preview
-        buildFinalPrompt();
+        _updatePreview();
       });
     });
   });
 
-  // Live preview on core prompt typing
-  document.getElementById('imagine-prompt')?.addEventListener('input', buildFinalPrompt);
-  document.getElementById('ix-appearance')?.addEventListener('input', buildFinalPrompt);
-  document.getElementById('ix-species')?.addEventListener('input',    buildFinalPrompt);
-  document.getElementById('ix-scene')?.addEventListener('input',      buildFinalPrompt);
-  document.getElementById('ix-world')?.addEventListener('input',      buildFinalPrompt);
-
-  // Generate button
-  document.getElementById('imagine-go')?.addEventListener('click', async () => {
-    const prompt   = buildFinalPrompt();
-    const neg      = document.getElementById('imagine-neg')?.value.trim();
-    const errEl    = document.getElementById('imagine-error');
-    const resultEl = document.getElementById('imagine-result');
-    const btn      = document.getElementById('imagine-go');
-
-    if (!prompt || prompt === 'detailed, high quality, sharp focus') {
-      errEl.textContent = 'Write a prompt first.';
-      return;
-    }
-    errEl.textContent  = '';
-    btn.textContent    = '🌀 generating...';
-    btn.disabled       = true;
-    resultEl.innerHTML = '<div class="imagine-spinner"></div>';
-
-    try {
-      const { data: { session } } = await window._sb.auth.getSession();
-      const authToken = session?.access_token;
-      if (!authToken) throw new Error('Not signed in.');
-
-      const r = await fetch(`${RAIL}/generate-image`, {
-        method:  'POST',
-        headers: { Authorization: `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ prompt, negative_prompt: neg, width: selW, height: selH }),
-      });
-      const data = await r.json();
-      if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
-
-      const url  = `data:image/png;base64,${data.image}`;
-      const modelLabel = 'FLUX SCHNELL';
-      const tier = data.is_paid
-        ? `${modelLabel} · ${data.width}×${data.height} · ${data.credits_used || 5} CR USED`
-        : `${modelLabel} · 512×512 · ${data.free_images_used}/${data.free_images_limit} today`;
-
-      resultEl.innerHTML = `
-        <div class="imagine-tier">${tier}</div>
-        <img class="imagine-result-img" src="${url}" alt="generated" />
-        <div class="imagine-result-actions">
-          <button class="imagine-btn-sm" id="imagine-save">💾 save</button>
-          <button class="imagine-btn-sm" id="imagine-reuse">↻ reuse prompt</button>
-        </div>`;
-
-      document.getElementById('imagine-save')?.addEventListener('click', () => {
-        const a = document.createElement('a');
-        a.href = url; a.download = 'spiralside-gen.png'; a.click();
-      });
-
-      // Reuse: copy assembled prompt back to core textarea
-      document.getElementById('imagine-reuse')?.addEventListener('click', () => {
-        const el = document.getElementById('imagine-prompt');
-        if (el) el.value = prompt;
-      });
-
-    } catch(e) {
-      errEl.textContent  = e.message;
-      resultEl.innerHTML = '';
-    } finally {
-      btn.textContent = '🎨 generate';
-      btn.disabled    = false;
-    }
+  // Live preview on text input
+  ['im-prompt','ix-appearance','ix-species','ix-scene','ix-world'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', _updatePreview);
   });
+
+  // Generate
+  document.getElementById('im-go')?.addEventListener('click', _generate);
+}
+
+// ── GENERATE ──────────────────────────────────────────────────
+async function _generate() {
+  const prompt = _buildFinalPrompt();
+  const neg    = document.getElementById('im-neg')?.value.trim();
+  const errEl  = document.getElementById('im-error');
+  const resEl  = document.getElementById('im-result');
+  const btn    = document.getElementById('im-go');
+
+  if (!prompt || prompt === 'detailed, high quality, sharp focus') {
+    errEl.textContent = 'Write a prompt first.'; return;
+  }
+  errEl.textContent = '';
+  btn.textContent   = '🌀 generating...';
+  btn.disabled      = true;
+  resEl.innerHTML   = '<div class="im-spinner"></div>';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token;
+    if (!token) throw new Error('Not signed in.');
+
+    const r = await fetch(`${RAIL}/generate-image`, {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ prompt, negative_prompt: neg || '', width: _selW, height: _selH, model: _model }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || `Error ${r.status}`);
+
+    // Update credits
+    if (data.credits_remaining !== undefined) {
+      window._currentCredits = data.credits_remaining;
+      if (window.updateCreditDisplay) window.updateCreditDisplay();
+      _syncCostBar();
+    }
+
+    const m   = MODELS.find(x => x.id === _model) || MODELS[0];
+    const url = `data:image/png;base64,${data.image}`;
+    const meta = data.is_paid
+      ? `${m.label} · ${data.width}×${data.height} · ${m.cost.toLocaleString()} cr used`
+      : `free · ${data.free_images_used}/${data.free_images_limit} today`;
+
+    resEl.innerHTML = `
+      <div class="im-result-meta">${meta}</div>
+      <img class="im-result-img" src="${url}" alt="generated" />
+      <button class="im-save-btn" id="im-save">💾 save image</button>
+      <button class="im-save-btn" id="im-to-lib" style="margin-top:6px;border-color:var(--pink);color:var(--pink)">📚 save to library</button>`;
+
+    document.getElementById('im-save')?.addEventListener('click', () => {
+      const a = document.createElement('a'); a.href = url; a.download = 'spiralside-gen.png'; a.click();
+    });
+
+    document.getElementById('im-to-lib')?.addEventListener('click', async () => {
+      const b = document.getElementById('im-to-lib');
+      if (!b) return;
+      b.textContent = '✓ saved!'; b.disabled = true;
+      if (window.saveImageToLibrary) {
+        await window.saveImageToLibrary(url, 'generated-' + Date.now() + '.png');
+        if (window.awardXP) window.awardXP('image_generated').then(r => {
+          if (r?.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'imagine');
+        });
+      }
+      setTimeout(() => { if (b) { b.textContent = '📚 save to library'; b.disabled = false; } }, 1800);
+    });
+
+    // SpiralCut integration
+    if (window._cutPendingClip) {
+      const cutBtn = document.createElement('button');
+      cutBtn.className = 'im-save-btn';
+      cutBtn.style.cssText = 'margin-top:6px;border-color:var(--teal);color:var(--teal);background:rgba(0,246,214,0.08)';
+      cutBtn.textContent = '✂ send to SpiralCut clip';
+      cutBtn.addEventListener('click', () => { if (window._cutReceiveImage) window._cutReceiveImage(url); });
+      resEl.appendChild(cutBtn);
+    }
+
+  } catch(e) {
+    errEl.textContent = e.message;
+    resEl.innerHTML   = '';
+  } finally {
+    btn.textContent = '❆ generate';
+    btn.disabled    = false;
+  }
 }
 
 // ── STYLES ────────────────────────────────────────────────────
 export function injectImagineStyles() {
-  if (document.getElementById('imagine-styles-v2')) return;
+  if (document.getElementById('imagine-styles-v3')) return;
+  // Remove old style tags to avoid conflicts
+  document.getElementById('imagine-styles')?.remove();
+  document.getElementById('imagine-styles-v2')?.remove();
   const s = document.createElement('style');
-  s.id = 'imagine-styles-v2';
+  s.id = 'imagine-styles-v3';
   s.textContent = `
-    /* ── VIEW SCROLL ── */
-    #view-imagine { overflow-y: auto; padding: 16px 16px calc(80px + var(--safe-bot, 0px)); }
-    #imagine-inner { display: flex; flex-direction: column; gap: 20px; max-width: 600px; margin: 0 auto; }
+    #view-imagine { flex-direction:column; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+    .im-scroll { padding:20px 16px calc(80px + var(--safe-bot,0px)); display:flex; flex-direction:column; gap:12px; }
+    .im-section-title { font-size:0.6rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); font-family:var(--font-ui); font-weight:600; }
+    .im-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
+    .im-label { font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtext); font-family:var(--font-ui); }
+    .im-sublabel { color:var(--teal); font-size:0.6rem; margin-left:6px; }
+    .im-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-family:var(--font-ui); font-size:0.82rem; outline:none; resize:none; transition:border-color 0.2s; line-height:1.5; box-sizing:border-box; }
+    .im-input:focus { border-color:var(--teal); }
+    .im-input::placeholder { color:var(--subtext); }
 
-    /* ── HEADER ── */
-    .imagine-header { font-family: var(--font-display); font-weight: 800; font-size: 1rem; letter-spacing: 0.12em; color: var(--teal); padding-top: 8px; }
-
-    /* ── SECTIONS ── */
-    .imagine-section { display: flex; flex-direction: column; gap: 8px; }
-    .imagine-label { font-size: var(--subtext-size); letter-spacing: 0.1em; color: var(--subtext); text-transform: uppercase; }
-
-    /* ── INPUTS ── */
-    .imagine-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: var(--font-ui); font-size: 0.82rem; outline: none; resize: none; transition: border-color 0.2s; box-sizing: border-box; }
-    .imagine-input:focus { border-color: var(--teal); }
-    .imagine-input::placeholder { color: var(--subtext); }
-
-    /* ── TOGGLE BUTTON ── */
-    .ix-toggle-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; color: var(--subtext); font-family: var(--font-ui); font-size: 0.72rem; letter-spacing: 0.08em; cursor: pointer; text-align: left; transition: border-color 0.2s, color 0.2s; }
-    .ix-toggle-btn:hover, .ix-toggle-btn.open { border-color: var(--teal); color: var(--teal); }
+    /* ── TOGGLE ── */
+    .ix-toggle-btn { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 16px; color:var(--subtext); font-family:var(--font-ui); font-size:0.72rem; letter-spacing:0.08em; cursor:pointer; text-align:left; transition:border-color 0.2s,color 0.2s; }
+    .ix-toggle-btn:hover, .ix-toggle-btn.open { border-color:var(--teal); color:var(--teal); }
 
     /* ── EXTENDED PANEL ── */
-    .ix-extended { display: none; flex-direction: column; gap: 20px; padding: 16px; background: rgba(0,246,214,0.03); border: 1px solid rgba(0,246,214,0.12); border-radius: 10px; }
-    .ix-extended.open { display: flex; }
-
-    /* ── GROUP LABELS ── */
-    .ix-group-label { font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); opacity: 0.7; padding-bottom: 2px; border-bottom: 1px solid rgba(0,246,214,0.15); }
+    .ix-extended { display:none; flex-direction:column; gap:12px; }
+    .ix-extended.open { display:flex; }
+    .ix-group-label { font-size:0.58rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); opacity:0.7; }
 
     /* ── CHIPS ── */
-    .ix-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-    .ix-chip { padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; font-size: 0.68rem; color: var(--subtext); cursor: pointer; transition: all 0.15s; letter-spacing: 0.04em; user-select: none; }
-    .ix-chip:hover { border-color: rgba(0,246,214,0.4); color: var(--text); }
-    .ix-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(0,246,214,0.08); }
+    .ix-chips { display:flex; gap:6px; flex-wrap:wrap; }
+    .ix-chip { padding:6px 10px; background:var(--bg); border:1px solid var(--border); border-radius:6px; font-size:0.68rem; color:var(--subtext); cursor:pointer; transition:all 0.15s; letter-spacing:0.04em; user-select:none; font-family:var(--font-ui); }
+    .ix-chip:hover { border-color:rgba(0,246,214,0.4); color:var(--text); }
+    .ix-chip.active { border-color:var(--teal); color:var(--teal); background:rgba(0,246,214,0.08); }
 
-    /* ── SIZE CHIPS ── */
-    .size-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .size-chip { padding: 8px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-size: var(--subtext-size); color: var(--subtext); cursor: pointer; transition: all 0.15s; }
-    .size-chip.active { border-color: var(--teal); color: var(--teal); background: rgba(0,246,214,0.08); }
+    /* ── PREVIEW ── */
+    .ix-preview-wrap { display:flex; flex-direction:column; gap:6px; }
+    .ix-preview-text { font-size:0.72rem; color:var(--subtext); background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:10px 12px; line-height:1.6; font-style:italic; font-family:var(--font-ui); }
 
-    /* ── PROMPT PREVIEW ── */
-    .ix-preview-wrap { display: flex; flex-direction: column; gap: 6px; }
-    .ix-preview-text { font-size: 0.72rem; color: var(--subtext); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; line-height: 1.6; font-style: italic; }
+    /* ── MODEL CARDS ── */
+    #im-model-list { display:flex; flex-direction:column; gap:6px; }
+    .im-model-card { display:flex; align-items:center; gap:12px; padding:10px 12px; background:var(--bg); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all 0.15s; }
+    .im-model-card.active { border-color:var(--teal); background:rgba(0,246,214,0.06); }
+    .im-model-icon { font-size:1.1rem; width:24px; text-align:center; flex-shrink:0; }
+    .im-model-info { flex:1; min-width:0; }
+    .im-model-name { font-size:0.78rem; color:var(--text); font-family:var(--font-ui); }
+    .im-model-sub  { font-size:0.62rem; color:var(--subtext); margin-top:2px; }
+    .im-model-cost { font-size:0.72rem; font-weight:700; font-family:var(--font-display); flex-shrink:0; }
+
+    /* ── SIZE ── */
+    .im-size-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .im-size-chip { padding:10px 8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--subtext); cursor:pointer; transition:all 0.15s; text-align:center; font-family:var(--font-ui); font-size:0.75rem; }
+    .im-size-chip.active { border-color:var(--teal); color:var(--teal); background:rgba(0,246,214,0.08); }
+
+    /* ── COST BAR ── */
+    .im-cost-bar { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; font-family:var(--font-ui); }
+    #im-cost-label { font-size:0.72rem; font-weight:600; }
+    .im-balance { font-size:0.65rem; }
 
     /* ── GENERATE BUTTON ── */
-    .imagine-btn { width: 100%; padding: 14px; background: linear-gradient(135deg, var(--teal), var(--purple)); border: none; border-radius: 12px; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 0.9rem; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.2s; }
-    .imagine-btn:hover { opacity: 0.88; }
-    .imagine-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .im-generate-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--teal),var(--purple)); border:none; border-radius:12px; color:#fff; font-family:var(--font-display); font-weight:700; font-size:0.88rem; cursor:pointer; letter-spacing:0.06em; transition:opacity 0.2s; }
+    .im-generate-btn:hover { opacity:0.88; }
+    .im-generate-btn:disabled { opacity:0.45; cursor:not-allowed; }
 
-    /* ── ERROR ── */
-    .imagine-error { font-size: 0.72rem; color: var(--pink); min-height: 18px; text-align: center; }
-
-    /* ── SPINNER ── */
-    .imagine-spinner { width: 40px; height: 40px; margin: 30px auto; border: 3px solid rgba(0,246,214,0.15); border-top-color: var(--teal); border-radius: 50%; animation: spin 0.85s linear infinite; }
+    /* ── ERROR + SPINNER ── */
+    .im-error { font-size:0.68rem; color:var(--pink); min-height:16px; text-align:center; font-family:var(--font-ui); }
+    .im-spinner { width:36px; height:36px; margin:28px auto; border:3px solid rgba(0,246,214,0.15); border-top-color:var(--teal); border-radius:50%; animation:spin 0.85s linear infinite; }
 
     /* ── RESULT ── */
-    .imagine-tier { font-size: var(--subtext-size); letter-spacing: 0.1em; color: var(--subtext); text-align: center; text-transform: uppercase; margin-bottom: 8px; }
-    .imagine-result-img { width: 100%; border-radius: 12px; border: 1px solid var(--border); display: block; margin-bottom: 12px; }
-    .imagine-result-actions { display: flex; gap: 8px; }
-    .imagine-btn-sm { flex: 1; padding: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--font-ui); font-size: 0.72rem; cursor: pointer; letter-spacing: 0.04em; transition: border-color 0.2s; }
-    .imagine-btn-sm:hover { border-color: var(--teal); color: var(--teal); }
+    .im-result-meta { font-size:0.6rem; letter-spacing:0.1em; color:var(--subtext); text-align:center; text-transform:uppercase; font-family:var(--font-ui); }
+    .im-result-img  { width:100%; border-radius:12px; border:1px solid var(--border); display:block; margin:8px 0; }
+    .im-save-btn { width:100%; padding:11px; background:var(--surface); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:var(--font-ui); font-size:0.78rem; cursor:pointer; transition:border-color 0.2s; letter-spacing:0.04em; }
+    .im-save-btn:hover { border-color:var(--teal); }
   `;
   document.head.appendChild(s);
 }
