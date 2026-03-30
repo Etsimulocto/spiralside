@@ -415,11 +415,9 @@ export async function initFramesView() {
   // Inject tab-specific styles
   _injectStyles();
 
-  // Render shell
+  // Render shell — full comic frame builder
   view.innerHTML = `
     <div id="frames-inner">
-
-      <!-- ── TABS ── -->
       <div class="frames-tabs">
         <button class="frames-tab active" id="ftab-make"    onclick="window._framesSwitchTab('make')">✦ make</button>
         <button class="frames-tab"        id="ftab-library" onclick="window._framesSwitchTab('library')">▣ my frames</button>
@@ -431,8 +429,7 @@ export async function initFramesView() {
         <!-- LIVE PREVIEW -->
         <div class="frames-preview-wrap">
           <div class="frames-preview-bg">
-            <img id="fp-preview-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:10px;"/>
-            <div id="fp-preview-placeholder">◈</div>
+            <div id="fp-preview-placeholder" style="font-size:3rem;opacity:0.1;pointer-events:none">◈</div>
           </div>
           <div class="frames-preview-frame" id="fp-preview-frame"></div>
         </div>
@@ -440,101 +437,180 @@ export async function initFramesView() {
         <!-- NAME -->
         <div class="frames-field">
           <label class="frames-label">frame name</label>
-          <input class="frames-input" type="text" id="fp-name" placeholder="my bloomcore frame" />
+          <input class="frames-input" type="text" id="fp-name" placeholder="my comic frame" />
         </div>
 
-        <!-- HOLE SIZE -->
-        <div class="frames-section-title">window / hole</div>
+        <!-- ── OUTER STROKE ── -->
+        <div class="frames-section-title">outer stroke</div>
         <div class="frames-row">
-          <div class="frames-field">
-            <label class="frames-label">inset (px)</label>
-            <input class="frames-input" type="range" id="fp-inset" min="4" max="40" value="14"
-              oninput="window._framesPreview();document.getElementById('fp-inset-val').textContent=this.value" />
-          </div>
-          <div class="frames-val" id="fp-inset-val">14</div>
+          <div class="frames-field"><label class="frames-label">thickness</label>
+            <input class="frames-input" type="range" id="fp-out-thick" min="0" max="20" value="6"
+              oninput="window._framesPreview();document.getElementById('fp-out-thick-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-out-thick-v">6</div>
         </div>
         <div class="frames-row">
-          <div class="frames-field">
-            <label class="frames-label">corner radius</label>
-            <input class="frames-input" type="range" id="fp-radius" min="0" max="32" value="10"
-              oninput="window._framesPreview();document.getElementById('fp-radius-val').textContent=this.value" />
-          </div>
-          <div class="frames-val" id="fp-radius-val">10</div>
-        </div>
-
-        <!-- BORDER -->
-        <div class="frames-section-title">border</div>
-        <div class="frames-row">
-          <div class="frames-field">
-            <label class="frames-label">thickness</label>
-            <input class="frames-input" type="range" id="fp-bthick" min="1" max="10" value="3"
-              oninput="window._framesPreview();document.getElementById('fp-bthick-val').textContent=this.value" />
-          </div>
-          <div class="frames-val" id="fp-bthick-val">3</div>
-        </div>
-        <div class="frames-row">
-          <label class="frames-label" style="margin-bottom:0">primary color</label>
-          <div class="frames-swatch">
-            <div class="frames-swatch-bg" id="fp-col1-bg" style="background:#00F6D6"></div>
-            <input type="color" value="#00F6D6" id="fp-col1"
-              oninput="document.getElementById('fp-col1-bg').style.background=this.value;window._framesPreview()" />
-          </div>
-        </div>
-        <div class="frames-row">
-          <label class="frames-label" style="margin-bottom:0">secondary color</label>
-          <div class="frames-swatch">
-            <div class="frames-swatch-bg" id="fp-col2-bg" style="background:#FF4BCB"></div>
-            <input type="color" value="#FF4BCB" id="fp-col2"
-              oninput="document.getElementById('fp-col2-bg').style.background=this.value;window._framesPreview()" />
-          </div>
+          <label class="frames-label" style="margin-bottom:0">color</label>
+          <div class="frames-swatch"><div class="frames-swatch-bg" id="fp-out-col-bg" style="background:#ffffff"></div>
+            <input type="color" value="#ffffff" id="fp-out-col"
+              oninput="document.getElementById('fp-out-col-bg').style.background=this.value;window._framesPreview()"/></div>
+          <label class="frames-label" style="margin-bottom:0;margin-left:8px">opacity</label>
+          <input class="frames-input" type="range" id="fp-out-op" min="0" max="100" value="100" style="width:80px"
+            oninput="window._framesPreview();document.getElementById('fp-out-op-v').textContent=this.value"/>
+          <div class="frames-val" id="fp-out-op-v">100</div>
         </div>
 
-        <!-- CORNERS -->
-        <div class="frames-section-title">corners</div>
+        <!-- ── BORDER FILL ── -->
+        <div class="frames-section-title">border / fill</div>
+        <div class="frames-row">
+          <div class="frames-field"><label class="frames-label">width (each side)</label>
+            <input class="frames-input" type="range" id="fp-border-w" min="4" max="60" value="18"
+              oninput="window._framesPreview();document.getElementById('fp-border-w-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-border-w-v">18</div>
+        </div>
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0">fill color</label>
+          <div class="frames-swatch"><div class="frames-swatch-bg" id="fp-fill-col-bg" style="background:#0a0a0f"></div>
+            <input type="color" value="#0a0a0f" id="fp-fill-col"
+              oninput="document.getElementById('fp-fill-col-bg').style.background=this.value;window._framesPreview()"/></div>
+          <label class="frames-label" style="margin-bottom:0;margin-left:8px">opacity</label>
+          <input class="frames-input" type="range" id="fp-fill-op" min="0" max="100" value="95" style="width:80px"
+            oninput="window._framesPreview();document.getElementById('fp-fill-op-v').textContent=this.value"/>
+          <div class="frames-val" id="fp-fill-op-v">95</div>
+        </div>
+        <!-- Per-side offsets -->
+        <div class="frames-label" style="margin-top:6px">per-side offset</div>
+        <div class="fp-4side">
+          <div class="fp-side-row"><label>top</label>
+            <input type="range" min="-20" max="40" value="0" id="fp-off-top"
+              oninput="window._framesPreview();document.getElementById('fp-off-top-v').textContent=this.value"/>
+            <span id="fp-off-top-v">0</span></div>
+          <div class="fp-side-row"><label>right</label>
+            <input type="range" min="-20" max="40" value="0" id="fp-off-right"
+              oninput="window._framesPreview();document.getElementById('fp-off-right-v').textContent=this.value"/>
+            <span id="fp-off-right-v">0</span></div>
+          <div class="fp-side-row"><label>bottom</label>
+            <input type="range" min="-20" max="40" value="0" id="fp-off-bottom"
+              oninput="window._framesPreview();document.getElementById('fp-off-bottom-v').textContent=this.value"/>
+            <span id="fp-off-bottom-v">0</span></div>
+          <div class="fp-side-row"><label>left</label>
+            <input type="range" min="-20" max="40" value="0" id="fp-off-left"
+              oninput="window._framesPreview();document.getElementById('fp-off-left-v').textContent=this.value"/>
+            <span id="fp-off-left-v">0</span></div>
+        </div>
+
+        <!-- ── INNER STROKE ── -->
+        <div class="frames-section-title">inner stroke</div>
+        <div class="frames-row">
+          <div class="frames-field"><label class="frames-label">thickness</label>
+            <input class="frames-input" type="range" id="fp-in-thick" min="0" max="12" value="2"
+              oninput="window._framesPreview();document.getElementById('fp-in-thick-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-in-thick-v">2</div>
+        </div>
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0">color</label>
+          <div class="frames-swatch"><div class="frames-swatch-bg" id="fp-in-col-bg" style="background:#00F6D6"></div>
+            <input type="color" value="#00F6D6" id="fp-in-col"
+              oninput="document.getElementById('fp-in-col-bg').style.background=this.value;window._framesPreview()"/></div>
+          <label class="frames-label" style="margin-bottom:0;margin-left:8px">accent</label>
+          <div class="frames-swatch"><div class="frames-swatch-bg" id="fp-acc-col-bg" style="background:#FF4BCB"></div>
+            <input type="color" value="#FF4BCB" id="fp-acc-col"
+              oninput="document.getElementById('fp-acc-col-bg').style.background=this.value;window._framesPreview()"/></div>
+        </div>
+        <div class="frames-row">
+          <div class="frames-field"><label class="frames-label">inner inset gap</label>
+            <input class="frames-input" type="range" id="fp-in-gap" min="2" max="20" value="4"
+              oninput="window._framesPreview();document.getElementById('fp-in-gap-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-in-gap-v">4</div>
+        </div>
+
+        <!-- ── SHAPE ── -->
+        <div class="frames-section-title">shape</div>
+        <div class="frames-row">
+          <div class="frames-field"><label class="frames-label">corner radius</label>
+            <input class="frames-input" type="range" id="fp-radius" min="0" max="32" value="0"
+              oninput="window._framesPreview();document.getElementById('fp-radius-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-radius-v">0</div>
+        </div>
+        <div class="frames-row">
+          <div class="frames-field"><label class="frames-label">skew X (deg)</label>
+            <input class="frames-input" type="range" id="fp-skew-x" min="-15" max="15" value="0"
+              oninput="window._framesPreview();document.getElementById('fp-skew-x-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-skew-x-v">0</div>
+        </div>
+        <div class="frames-row">
+          <div class="frames-field"><label class="frames-label">skew Y (deg)</label>
+            <input class="frames-input" type="range" id="fp-skew-y" min="-15" max="15" value="0"
+              oninput="window._framesPreview();document.getElementById('fp-skew-y-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-skew-y-v">0</div>
+        </div>
+
+        <!-- ── CORNERS ── -->
+        <div class="frames-section-title">corner style</div>
         <div class="frames-chip-row" id="fp-corner-chips">
-          <button class="frames-chip active" data-corner="diamond" onclick="window._framesSelectCorner(this,'diamond')">◆ diamond</button>
-          <button class="frames-chip"        data-corner="bracket" onclick="window._framesSelectCorner(this,'bracket')">⌐ bracket</button>
-          <button class="frames-chip"        data-corner="dot"     onclick="window._framesSelectCorner(this,'dot')">● dot</button>
-          <button class="frames-chip"        data-corner="none"    onclick="window._framesSelectCorner(this,'none')">none</button>
+          <button class="frames-chip active" data-corner="bracket"  onclick="window._framesSelectCorner(this,'bracket')">⌐ bracket</button>
+          <button class="frames-chip"        data-corner="diamond"  onclick="window._framesSelectCorner(this,'diamond')">◆ diamond</button>
+          <button class="frames-chip"        data-corner="dot"      onclick="window._framesSelectCorner(this,'dot')">● dot</button>
+          <button class="frames-chip"        data-corner="rivet"    onclick="window._framesSelectCorner(this,'rivet')">⊙ rivet</button>
+          <button class="frames-chip"        data-corner="slash"    onclick="window._framesSelectCorner(this,'slash')">/ slash</button>
+          <button class="frames-chip"        data-corner="none"     onclick="window._framesSelectCorner(this,'none')">none</button>
+        </div>
+        <div class="frames-row" style="margin-top:8px">
+          <div class="frames-field"><label class="frames-label">corner arm length</label>
+            <input class="frames-input" type="range" id="fp-corner-arm" min="8" max="60" value="24"
+              oninput="window._framesPreview();document.getElementById('fp-corner-arm-v').textContent=this.value"/></div>
+          <div class="frames-val" id="fp-corner-arm-v">24</div>
         </div>
 
-        <!-- GLOW -->
-        <div class="frames-row" style="margin-top:12px">
-          <label class="frames-label" style="margin-bottom:0">outer glow</label>
+        <!-- ── FX ── -->
+        <div class="frames-section-title">fx</div>
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0;flex:1">outer glow</label>
           <div class="s-toggle" id="fp-glow-toggle" onclick="this.classList.toggle('on');window._framesPreview()"></div>
         </div>
-
-        <!-- SAVE SVG BUTTON -->
-        <button class="frames-save-btn" id="fp-save-btn" onclick="window._framesSaveCurrent()">
-          ✦ save frame
-        </button>
-
-        <!-- IMPORT PNG SECTION -->
-        <div class="frames-section-title" style="margin-top:20px">import PNG frame</div>
-        <div class="frames-import-hint">
-          Upload a transparent PNG (max 1024×768 / 2MB). The transparent area becomes the content window.
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0;flex:1">halftone dots</label>
+          <div class="s-toggle" id="fp-halftone-toggle" onclick="this.classList.toggle('on');window._framesPreview()"></div>
         </div>
-        <button class="frames-import-btn" onclick="document.getElementById('fp-png-input').click()">
-          ↑ import PNG
-        </button>
-        <input type="file" id="fp-png-input" accept="image/png" style="display:none"
-          onchange="window._framesImportPNG(this)" />
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0;flex:1">scanlines</label>
+          <div class="s-toggle" id="fp-scan-toggle" onclick="this.classList.toggle('on');window._framesPreview()"></div>
+        </div>
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0;flex:1">panel badge</label>
+          <div class="s-toggle" id="fp-badge-toggle" onclick="this.classList.toggle('on');window._framesPreview()"></div>
+          <input class="frames-input" type="text" id="fp-badge-text" value="01"
+            style="width:48px;padding:4px 6px;margin-left:8px;text-align:center"
+            oninput="window._framesPreview()" placeholder="01"/>
+        </div>
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0;flex:1">speed lines</label>
+          <div class="s-toggle" id="fp-speed-toggle" onclick="this.classList.toggle('on');window._framesPreview()"></div>
+        </div>
+        <div class="frames-row">
+          <label class="frames-label" style="margin-bottom:0;flex:1">ripped edge</label>
+          <div class="s-toggle" id="fp-rip-toggle" onclick="this.classList.toggle('on');window._framesPreview()"></div>
+        </div>
+
+        <!-- SAVE -->
+        <button class="frames-save-btn" id="fp-save-btn" onclick="window._framesSaveCurrent()">✦ save frame</button>
+
+        <!-- IMPORT PNG -->
+        <div class="frames-section-title" style="margin-top:4px">import PNG frame</div>
+        <div class="frames-import-hint">Upload transparent PNG (max 1024×768 / 2MB).</div>
+        <button class="frames-import-btn" onclick="document.getElementById('fp-png-input').click()">↑ import PNG</button>
+        <input type="file" id="fp-png-input" accept="image/png" style="display:none" onchange="window._framesImportPNG(this)" />
       </div>
 
       <!-- ── LIBRARY TAB ── -->
       <div class="frames-pane" id="fpane-library">
-        <div id="fp-lib-grid" class="fp-lib-grid">
-          <!-- populated by _framesRenderLibrary() -->
-        </div>
+        <div id="fp-lib-grid" class="fp-lib-grid"></div>
       </div>
-
     </div>
   `;
 
-  // ── MODULE-LEVEL STATE ──
-  let _cornerStyle = 'diamond';
+  // ── STATE ──
+  let _cornerStyle = 'bracket';
 
-  // Expose tab switcher globally (called from inline onclick)
   window._framesSwitchTab = function(tab) {
     document.querySelectorAll('.frames-tab').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.frames-pane').forEach(p => p.classList.remove('active'));
@@ -543,146 +619,233 @@ export async function initFramesView() {
     if (tab === 'library') _framesRenderLibrary();
   };
 
-  // Expose corner selector globally
   window._framesSelectCorner = function(el, val) {
-    document.querySelectorAll('#fp-corner-chips .frames-chip')
-      .forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#fp-corner-chips .frames-chip').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
     _cornerStyle = val;
     window._framesPreview();
   };
 
-  // Build SVG from current controls
-  function _buildSVG() {
-    const inset  = parseInt(document.getElementById('fp-inset').value)  || 14;
-    const radius = parseInt(document.getElementById('fp-radius').value) || 10;
-    const thick  = parseInt(document.getElementById('fp-bthick').value) || 3;
-    const col1   = document.getElementById('fp-col1').value             || '#00F6D6';
-    const col2   = document.getElementById('fp-col2').value             || '#FF4BCB';
-    const glow   = document.getElementById('fp-glow-toggle')?.classList.contains('on');
-    const corner = _cornerStyle;
+  // ── READ ALL CONTROLS ──
+  function _ctrl(id) { return document.getElementById(id); }
+  function _val(id, def) { const el = _ctrl(id); return el ? (el.type === 'range' || el.type === 'number' ? parseFloat(el.value) : el.value) : def; }
+  function _on(id) { return _ctrl(id)?.classList.contains('on') ?? false; }
 
-    // Outer rect dimensions (400×560 canonical)
+  // ── BUILD SVG ──
+  function _buildSVG() {
     const W = 400, H = 560;
-    const x = inset, y = inset;
-    const w = W - inset * 2, h = H - inset * 2;
-    const cs = 8; // corner symbol size
+
+    // Border/fill widths per side (base + per-side offset)
+    const bw   = _val('fp-border-w', 18);
+    const oTop    = bw + _val('fp-off-top',    0);
+    const oRight  = bw + _val('fp-off-right',  0);
+    const oBottom = bw + _val('fp-off-bottom', 0);
+    const oLeft   = bw + _val('fp-off-left',   0);
+
+    // Inner window polygon (content hole) — four points with per-side offsets
+    const wx0 = oLeft,        wy0 = oTop;
+    const wx1 = W - oRight,   wy1 = oTop;
+    const wx2 = W - oRight,   wy2 = H - oBottom;
+    const wx3 = oLeft,        wy3 = H - oBottom;
+    const ww = wx1 - wx0, wh = wy2 - wy0;
+
+    // Stroke values
+    const outThick = _val('fp-out-thick', 6);
+    const outCol   = _val('fp-out-col', '#ffffff');
+    const outOp    = _val('fp-out-op', 100) / 100;
+    const fillCol  = _val('fp-fill-col', '#0a0a0f');
+    const fillOp   = _val('fp-fill-op', 95) / 100;
+    const inThick  = _val('fp-in-thick', 2);
+    const inCol    = _val('fp-in-col', '#00F6D6');
+    const accCol   = _val('fp-acc-col', '#FF4BCB');
+    const inGap    = _val('fp-in-gap', 4);
+    const radius   = _val('fp-radius', 0);
+    const skewX    = _val('fp-skew-x', 0);
+    const skewY    = _val('fp-skew-y', 0);
+    const cornerArm = _val('fp-corner-arm', 24);
+    const corner   = _cornerStyle;
+    const glow     = _on('fp-glow-toggle');
+    const halftone = _on('fp-halftone-toggle');
+    const scanlines= _on('fp-scan-toggle');
+    const badge    = _on('fp-badge-toggle');
+    const badgeTxt = _val('fp-badge-text', '01') || '01';
+    const speed    = _on('fp-speed-toggle');
+    const rip      = _on('fp-rip-toggle');
+
+    // Skew transform on the whole frame group
+    const skewTransform = (skewX !== 0 || skewY !== 0)
+      ? `transform="skewX(${skewX}) skewY(${skewY})"`
+      : '';
+
+    // The "frame body" polygon — full canvas minus the window hole
+    // Rendered as a path with even-odd fill rule (hole in middle)
+    const windowPath = radius > 0
+      ? `M${wx0+radius},${wy0} L${wx1-radius},${wy0} Q${wx1},${wy0} ${wx1},${wy0+radius} L${wx1},${wy2-radius} Q${wx1},${wy2} ${wx1-radius},${wy2} L${wx0+radius},${wy2} Q${wx0},${wy2} ${wx0},${wy2-radius} L${wx0},${wy0+radius} Q${wx0},${wy0} ${wx0+radius},${wy0} Z`
+      : `M${wx0},${wy0} L${wx1},${wy1} L${wx2},${wy2} L${wx3},${wy3} Z`;
+
+    const outerPath = `M0,0 L${W},0 L${W},${H} L0,${H} Z`;
+
+    // Fill rect (border area) using clip-path / even-odd rule
+    const fillPath = `<path d="${outerPath} ${windowPath}" fill="${fillCol}" fill-opacity="${fillOp}" fill-rule="evenodd"/>`;
+
+    // Outer stroke — strokes the outer boundary
+    const outStrokeSVG = outThick > 0
+      ? `<rect x="${outThick/2}" y="${outThick/2}" width="${W-outThick}" height="${H-outThick}" rx="${radius+outThick/2}" ry="${radius+outThick/2}" fill="none" stroke="${outCol}" stroke-opacity="${outOp}" stroke-width="${outThick}"/>`
+      : '';
+
+    // Inner stroke — strokes the window edge
+    const inStrokeSVG = inThick > 0 ? (() => {
+      const ix0 = wx0 - inGap, iy0 = wy0 - inGap;
+      const iw  = ww + inGap*2, ih = wh + inGap*2;
+      const ir  = Math.max(0, radius - 1);
+      return `<rect x="${ix0}" y="${iy0}" width="${iw}" height="${ih}" rx="${ir}" ry="${ir}" fill="none" stroke="url(#fp-grad-in)" stroke-width="${inThick}"/>`;
+    })() : '';
 
     // Corner decorations
     let cornerSVG = '';
-    if (corner === 'diamond') {
-      // Four diamonds at corners of the inner rect
-      const pts = [
-        [x, y], [x + w, y], [x, y + h], [x + w, y + h]
-      ];
-      pts.forEach(([cx, cy]) => {
-        cornerSVG += `<polygon points="${cx},${cy-cs} ${cx+cs},${cy} ${cx},${cy+cs} ${cx-cs},${cy}" fill="${col1}" opacity="0.9"/>`;
+    const cx0 = wx0, cy0 = wy0, cx1 = wx1, cy1 = wy1, cx2 = wx2, cy2 = wy2, cx3 = wx3, cy3 = wy3;
+    const arm = cornerArm;
+    if (corner === 'bracket') {
+      cornerSVG = `
+        <path d="M${cx0},${cy0+arm} L${cx0},${cy0} L${cx0+arm},${cy0}" fill="none" stroke="${inCol}" stroke-width="3" stroke-linecap="square"/>
+        <path d="M${cx1-arm},${cy1} L${cx1},${cy1} L${cx1},${cy1+arm}" fill="none" stroke="${inCol}" stroke-width="3" stroke-linecap="square"/>
+        <path d="M${cx3},${cy3-arm} L${cx3},${cy3} L${cx3+arm},${cy3}" fill="none" stroke="${accCol}" stroke-width="3" stroke-linecap="square"/>
+        <path d="M${cx2-arm},${cy2} L${cx2},${cy2} L${cx2},${cy2-arm}" fill="none" stroke="${accCol}" stroke-width="3" stroke-linecap="square"/>`;
+    } else if (corner === 'diamond') {
+      const cs = 7;
+      [[cx0,cy0,inCol],[cx1,cy1,inCol],[cx3,cy3,accCol],[cx2,cy2,accCol]].forEach(([px,py,c]) => {
+        cornerSVG += `<polygon points="${px},${py-cs} ${px+cs},${py} ${px},${py+cs} ${px-cs},${py}" fill="${c}"/>`;
       });
-    } else if (corner === 'bracket') {
-      const arm = 20;
-      // TL
-      cornerSVG += `<path d="M${x},${y+arm} L${x},${y} L${x+arm},${y}" fill="none" stroke="${col1}" stroke-width="${thick}" stroke-linecap="round"/>`;
-      // TR
-      cornerSVG += `<path d="M${x+w-arm},${y} L${x+w},${y} L${x+w},${y+arm}" fill="none" stroke="${col1}" stroke-width="${thick}" stroke-linecap="round"/>`;
-      // BL
-      cornerSVG += `<path d="M${x},${y+h-arm} L${x},${y+h} L${x+arm},${y+h}" fill="none" stroke="${col2}" stroke-width="${thick}" stroke-linecap="round"/>`;
-      // BR
-      cornerSVG += `<path d="M${x+w-arm},${y+h} L${x+w},${y+h} L${x+w},${y+h-arm}" fill="none" stroke="${col2}" stroke-width="${thick}" stroke-linecap="round"/>`;
     } else if (corner === 'dot') {
-      const dots = [[x,y,col1],[x+w,y,col1],[x,y+h,col2],[x+w,y+h,col2]];
-      dots.forEach(([cx,cy,c]) => {
-        cornerSVG += `<circle cx="${cx}" cy="${cy}" r="${cs*0.7}" fill="${c}" opacity="0.9"/>`;
+      [[cx0,cy0,inCol],[cx1,cy1,inCol],[cx3,cy3,accCol],[cx2,cy2,accCol]].forEach(([px,py,c]) => {
+        cornerSVG += `<circle cx="${px}" cy="${py}" r="5" fill="${c}"/>`;
       });
+    } else if (corner === 'rivet') {
+      [[cx0,cy0,inCol],[cx1,cy1,inCol],[cx3,cy3,accCol],[cx2,cy2,accCol]].forEach(([px,py,c]) => {
+        cornerSVG += `<circle cx="${px}" cy="${py}" r="7" fill="none" stroke="${c}" stroke-width="2"/>
+                      <circle cx="${px}" cy="${py}" r="3" fill="${c}"/>`;
+      });
+    } else if (corner === 'slash') {
+      [[cx0,cy0,inCol],[cx1,cy1,inCol],[cx3,cy3,accCol],[cx2,cy2,accCol]].forEach(([px,py,c]) => {
+        cornerSVG += `<line x1="${px-arm*0.6}" y1="${py+arm*0.6}" x2="${px+arm*0.6}" y2="${py-arm*0.6}" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`;
+      });
+    }
+
+    // Halftone pattern in border area
+    const halftoneDef = halftone ? `
+      <pattern id="fp-ht" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+        <circle cx="4" cy="4" r="1.5" fill="${inCol}" opacity="0.25"/>
+      </pattern>` : '';
+    const halftoneLayer = halftone
+      ? `<path d="${outerPath} ${windowPath}" fill="url(#fp-ht)" fill-rule="evenodd"/>`
+      : '';
+
+    // Scanlines pattern in border area
+    const scanDef = scanlines ? `
+      <pattern id="fp-scan" x="0" y="0" width="1" height="4" patternUnits="userSpaceOnUse">
+        <line x1="0" y1="0" x2="400" y2="0" stroke="${inCol}" stroke-width="0.5" opacity="0.15"/>
+      </pattern>` : '';
+    const scanLayer = scanlines
+      ? `<path d="${outerPath} ${windowPath}" fill="url(#fp-scan)" fill-rule="evenodd"/>`
+      : '';
+
+    // Speed lines in corners (emanating from top-right)
+    let speedSVG = '';
+    if (speed) {
+      const cx = W, cy = 0;
+      for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI / 2) + (i / 12) * (Math.PI * 0.7);
+        const len = 80 + (i % 3) * 30;
+        const ex = cx + Math.cos(angle) * len;
+        const ey = cy + Math.sin(angle) * len;
+        speedSVG += `<line x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}" stroke="${inCol}" stroke-width="${1 + (i%2)*0.5}" opacity="0.3" stroke-linecap="round"/>`;
+      }
+    }
+
+    // Ripped edge along top
+    let ripSVG = '';
+    if (rip) {
+      let d = `M0,${oTop} `;
+      const steps = 32;
+      for (let i = 0; i <= steps; i++) {
+        const px = (W / steps) * i;
+        const py = oTop + (Math.sin(i * 2.3) * 3) + (Math.cos(i * 5.1) * 2);
+        d += `L${px.toFixed(1)},${py.toFixed(1)} `;
+      }
+      d += `L${W},0 L0,0 Z`;
+      ripSVG = `<path d="${d}" fill="${fillCol}" fill-opacity="${fillOp}"/>`;
+    }
+
+    // Panel badge (bottom-left corner of border area)
+    let badgeSVG = '';
+    if (badge) {
+      const bx = oLeft + 4, by = H - oBottom + 3;
+      badgeSVG = `
+        <rect x="${bx-2}" y="${by}" width="${badgeTxt.length * 10 + 10}" height="18" rx="2" fill="${inCol}" opacity="0.9"/>
+        <text x="${bx+3}" y="${by+13}" font-family="monospace" font-size="11" font-weight="700" fill="#0a0a0f">${badgeTxt}</text>`;
     }
 
     // Glow filter
-    const filterDef = glow
-      ? `<filter id="fp-glow"><feGaussianBlur stdDeviation="4" result="blur"/>
-         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>`
+    const glowDef = glow
+      ? `<filter id="fp-glow-f" x="-20%" y="-20%" width="140%" height="140%">
+           <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+         </filter>`
       : '';
-    const filterAttr = glow ? 'filter="url(#fp-glow)"' : '';
+    const glowAttr = glow ? 'filter="url(#fp-glow-f)"' : '';
 
     return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
   <defs>
-    <linearGradient id="fp-g1" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="${col1}"/>
-      <stop offset="100%" stop-color="${col2}"/>
+    <linearGradient id="fp-grad-in" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${inCol}"/>
+      <stop offset="100%" stop-color="${accCol}"/>
     </linearGradient>
-    ${filterDef}
+    ${halftoneDef}${scanDef}${glowDef}
   </defs>
-  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${radius}" ry="${radius}"
-    fill="none" stroke="url(#fp-g1)" stroke-width="${thick}" ${filterAttr}/>
-  ${cornerSVG}
+  <g ${skewTransform} ${glowAttr}>
+    ${fillPath}
+    ${halftoneLayer}
+    ${scanLayer}
+    ${speedSVG}
+    ${outStrokeSVG}
+    ${inStrokeSVG}
+    ${cornerSVG}
+    ${ripSVG}
+    ${badgeSVG}
+  </g>
 </svg>`;
   }
 
-  // Preview: inject SVG into the preview frame div
   window._framesPreview = function() {
-    const previewEl = document.getElementById('fp-preview-frame');
-    if (!previewEl) return;
-    const svg = _buildSVG();
-    previewEl.innerHTML = svg;
-    const svgEl = previewEl.querySelector('svg');
-    if (svgEl) svgEl.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+    const el = document.getElementById('fp-preview-frame');
+    if (!el) return;
+    el.innerHTML = _buildSVG();
+    const svg = el.querySelector('svg');
+    if (svg) svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
   };
-
-  // Initial preview render
   window._framesPreview();
 
-  // Save current SVG frame
   window._framesSaveCurrent = async function() {
     const nameEl = document.getElementById('fp-name');
     const name   = nameEl?.value.trim() || 'My Frame';
-    const svg    = _buildSVG();
-    const frame  = {
-      id:             null,
-      name,
-      creator:        'user',
-      type:           'svg',
-      svgData:        svg,
-      compatibleWith: ['all'],
-      thumbnail:      null,
-      createdAt:      0
-    };
-    const saved = await saveFrame(frame);
-    // Flash success
+    const frame  = { id:null, name, creator:'user', type:'svg', svgData:_buildSVG(), compatibleWith:['all'], thumbnail:null, createdAt:0 };
+    await saveFrame(frame);
     const btn = document.getElementById('fp-save-btn');
     if (btn) { btn.textContent = '✓ saved!'; setTimeout(() => btn.textContent = '✦ save frame', 1800); }
-    // Clear name
     if (nameEl) nameEl.value = '';
   };
 
-  // Import PNG handler
   window._framesImportPNG = async function(input) {
     const file = input?.files?.[0];
     if (!file) return;
-    // Size guard: 2MB
-    if (file.size > 2 * 1024 * 1024) {
-      alert('PNG must be under 2MB');
-      input.value = '';
-      return;
-    }
+    if (file.size > 2 * 1024 * 1024) { alert('PNG must be under 2MB'); input.value=''; return; }
     const reader = new FileReader();
     reader.onload = async e => {
-      // Dimension guard via Image element
       const img = new Image();
       img.onload = async () => {
-        if (img.width > 1024 || img.height > 768) {
-          alert('PNG max size is 1024×768');
-          return;
-        }
-        const frame = {
-          id:             null,
-          name:           file.name.replace(/\.[^.]+$/, ''),
-          creator:        'user',
-          type:           'png',
-          pngData:        e.target.result,
-          compatibleWith: ['all'],
-          thumbnail:      null,
-          createdAt:      0
-        };
+        if (img.width > 1024 || img.height > 768) { alert('PNG max size is 1024x768'); return; }
+        const frame = { id:null, name:file.name.replace(/\.[^.]+$/,''), creator:'user', type:'png', pngData:e.target.result, compatibleWith:['all'], thumbnail:null, createdAt:0 };
         await saveFrame(frame);
-        // Switch to library to see it
         window._framesSwitchTab('library');
       };
       img.src = e.target.result;
@@ -691,54 +854,29 @@ export async function initFramesView() {
     input.value = '';
   };
 
-  // Render the library grid
   async function _framesRenderLibrary() {
     const grid = document.getElementById('fp-lib-grid');
     if (!grid) return;
     const frames = await getAllFrames();
-
-    if (!frames.length) {
-      grid.innerHTML = `<div class="frames-empty">No frames yet. Make one in the ✦ Make tab.</div>`;
-      return;
-    }
-
+    if (!frames.length) { grid.innerHTML = `<div class="frames-empty">No frames yet.</div>`; return; }
     grid.innerHTML = '';
     frames.forEach(frame => {
       const card = document.createElement('div');
       card.className = 'fp-lib-card';
-
       const thumb = document.createElement('div');
       thumb.className = 'fp-lib-thumb';
-
       if (frame.thumbnail) {
-        const img = document.createElement('img');
-        img.src = frame.thumbnail;
-        img.alt = frame.name;
-        thumb.appendChild(img);
+        const img = document.createElement('img'); img.src=frame.thumbnail; img.alt=frame.name; thumb.appendChild(img);
       } else if (frame.type === 'svg') {
         thumb.innerHTML = frame.svgData;
         const svg = thumb.querySelector('svg');
         if (svg) svg.style.cssText = 'width:100%;height:100%';
       }
-
-      const nameEl = document.createElement('div');
-      nameEl.className   = 'fp-lib-name';
-      nameEl.textContent = frame.name;
-
-      // Delete button (not for builtins)
-      const delBtn = document.createElement('button');
-      delBtn.className   = 'fp-lib-del';
-      delBtn.textContent = '✕';
-      delBtn.style.display = frame.creator === 'builtin' ? 'none' : '';
-      delBtn.addEventListener('click', async e => {
-        e.stopPropagation();
-        await deleteFrame(frame.id);
-        _framesRenderLibrary();
-      });
-
-      card.appendChild(thumb);
-      card.appendChild(nameEl);
-      card.appendChild(delBtn);
+      const nameEl = document.createElement('div'); nameEl.className='fp-lib-name'; nameEl.textContent=frame.name;
+      const delBtn = document.createElement('button'); delBtn.className='fp-lib-del'; delBtn.textContent='✕';
+      delBtn.style.display = frame.creator==='builtin' ? 'none' : '';
+      delBtn.addEventListener('click', async e => { e.stopPropagation(); await deleteFrame(frame.id); _framesRenderLibrary(); });
+      card.appendChild(thumb); card.appendChild(nameEl); card.appendChild(delBtn);
       grid.appendChild(card);
     });
   }
