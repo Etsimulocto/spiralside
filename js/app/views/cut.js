@@ -878,9 +878,19 @@ window._cutGenImage = function() {
 
   if (sourcePrint) {
     // CHARACTER clip — map print fields to imagine context
-    // Print schema: identity{name,title,vibe,species,pronouns,origin}, appearance{hair,eyes,style,marks,color_theme}
+    // Also pull scene + world from sibling clips in the same scene
     const ap = sourcePrint.appearance || {};
     const id = sourcePrint.identity   || {};
+
+    // Find sibling scene/world clips in the same scene row
+    const siblingClips = _cutState.scenes[sel.sceneIdx]?.clips || [];
+    const sibScene = siblingClips.map(c =>
+      _cutState.sceneCards.find(s => String(s.id || s.name) === c.sourceCard)
+    ).find(Boolean);
+    const sibWorld = siblingClips.map(c =>
+      _cutState.worldCards.find(w => String(w.id || w.name) === c.sourceCard)
+    ).find(Boolean);
+
     ctx = {
       subject:     id.name              || clip.speaker || 'character',
       hair:        ap.hair              || '',
@@ -892,8 +902,15 @@ window._cutGenImage = function() {
       pose:        ap.pose              || ap.description || '',
       artStyle:    ap.art_style         || '',
       lighting:    ap.lighting          || '',
-      renderStyle: ap.render_style      || ap.description ? '' : 'character portrait',
-      mood:        clip.mood            || '',
+      renderStyle: ap.render_style      || 'character portrait',
+      mood:        clip.mood            || sibScene?.mood || '',
+      // Pull scene/world context from sibling clips in same scene
+      scene:       sibScene?.location   || '',
+      world:       sibWorld?.name       || sibScene?.world || '',
+      biome:       sibWorld?.biome      || '',
+      timeOfDay:   sibScene?.time       || '',
+      camera:      sibScene?.camera     || '',
+      background:  sibScene?.visual_desc || sibScene?.caption || sibWorld?.visual_desc || sibWorld?.tagline || '',
       negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
     };
   } else if (sourceScene) {
