@@ -354,7 +354,10 @@ function _wireStudio() {
         subject:     g('st-world-name') || 'world environment',
         world:       g('st-world-name'),
         biome:       g('st-world-biome'),
-        visualDesc:  g('st-world-visual-desc') || g('st-world-tagline'),
+        // visual_desc first; fall back to lore snippet for old cards (not tagline)
+        visualDesc:  g('st-world-visual-desc') || g('st-world-lore').slice(0, 200),
+        // tagline stays as a short background descriptor
+        background:  g('st-world-tagline'),
         scene:       g('st-world-loc1'),
         artStyle:    'bloomcore concept art',
         renderStyle: 'environment art, wide establishing shot',
