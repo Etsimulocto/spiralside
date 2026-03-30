@@ -8,19 +8,29 @@
 
 // ── IDB HELPERS ───────────────────────────────────────────────────────────────
 // Open (or reuse) the spiralside IndexedDB and get the frames store
+// IDB version that includes the frames store.
+// We check the current version first, then bump only if needed.
+const FRAMES_DB_VERSION = 3;  // bump past existing version to trigger onupgradeneeded
+
 function _idb() {
   return new Promise((resolve, reject) => {
-    // Open with version bump only when frames store is absent
-    const req = indexedDB.open('spiralside', undefined);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('frames')) {
-        // id is the key path; auto-populated by saveFrame()
-        db.createObjectStore('frames', { keyPath: 'id' });
-      }
+    // First probe current version so we never go backwards
+    const probe = indexedDB.open('spiralside');
+    probe.onsuccess = e => {
+      const currentVersion = e.target.result.version;
+      e.target.result.close();
+      const targetVersion = Math.max(currentVersion, FRAMES_DB_VERSION);
+      const req = indexedDB.open('spiralside', targetVersion);
+      req.onupgradeneeded = ev => {
+        const db = ev.target.result;
+        if (!db.objectStoreNames.contains('frames')) {
+          db.createObjectStore('frames', { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = ev => resolve(ev.target.result);
+      req.onerror   = ev => reject(ev.target.error);
     };
-    req.onsuccess  = e => resolve(e.target.result);
-    req.onerror    = e => reject(e.target.error);
+    probe.onerror = e => reject(e.target.error);
   });
 }
 
