@@ -6,11 +6,28 @@
 // ============================================================
 
 let db = null; // single shared IDB connection
+let _dbReady = null; // promise that resolves when db is open
+
+// Returns db, waiting for initDB if not yet ready
+async function _getDB() {
+  if (db) return db;
+  if (_dbReady) return _dbReady;
+  // initDB hasn't been called yet — wait up to 3s
+  return new Promise((resolve, reject) => {
+    let waited = 0;
+    const t = setInterval(() => {
+      if (db) { clearInterval(t); resolve(db); return; }
+      waited += 50;
+      if (waited > 3000) { clearInterval(t); reject(new Error('[db] timeout waiting for initDB')); }
+    }, 50);
+  });
+}
 
 // ── INIT ──────────────────────────────────────────────────────
 // Open the database. Must be called before any other db* fn.
 export async function initDB() {
-  return new Promise((res, rej) => {
+  if (db) return db;  // already open — skip re-init
+  _dbReady = new Promise((res, rej) => {
     const req = indexedDB.open('spiralside', 7); // v7 adds frames store
 
     req.onupgradeneeded = e => {
@@ -30,12 +47,14 @@ export async function initDB() {
     req.onsuccess = e => { db = e.target.result; res(db); };
     req.onerror   = ()  => rej(req.error);
   });
+  return _dbReady;
 }
 
 // ── SET (upsert) ───────────────────────────────────────────────
 export async function dbSet(store, val) {
+  const _db = await _getDB();
   return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readwrite');
+    const tx  = _db.transaction(store, 'readwrite');
     const req = tx.objectStore(store).put(val);
     req.onsuccess = () => res();
     req.onerror   = () => rej(req.error);
@@ -44,8 +63,9 @@ export async function dbSet(store, val) {
 
 // ── GET (by key) ───────────────────────────────────────────────
 export async function dbGet(store, key) {
+  const _db = await _getDB();
   return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readonly');
+    const tx  = _db.transaction(store, 'readonly');
     const req = tx.objectStore(store).get(key);
     req.onsuccess = () => res(req.result);
     req.onerror   = () => rej(req.error);
@@ -54,8 +74,9 @@ export async function dbGet(store, key) {
 
 // ── GET ALL ────────────────────────────────────────────────────
 export async function dbGetAll(store) {
+  const _db = await _getDB();
   return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readonly');
+    const tx  = _db.transaction(store, 'readonly');
     const req = tx.objectStore(store).getAll();
     req.onsuccess = () => res(req.result);
     req.onerror   = () => rej(req.error);
@@ -64,8 +85,9 @@ export async function dbGetAll(store) {
 
 // ── DELETE (by key) ────────────────────────────────────────────
 export async function dbDelete(store, key) {
+  const _db = await _getDB();
   return new Promise((res, rej) => {
-    const tx  = db.transaction(store, 'readwrite');
+    const tx  = _db.transaction(store, 'readwrite');
     const req = tx.objectStore(store).delete(key);
     req.onsuccess = () => res();
     req.onerror   = () => rej(req.error);

@@ -409,7 +409,7 @@ export async function initFramesView() {
   view.dataset.init = '1';
 
   // Wire db.js functions into frames module
-  const { dbGet, dbSet, dbGetAll, dbDelete } = await import('../db.js');
+  const { dbGet, dbSet, dbGetAll, dbDelete } = await import('../app/db.js');
   _dbFns = { get: dbGet, set: dbSet, getAll: dbGetAll, del: dbDelete };
 
   // Inject tab-specific styles
