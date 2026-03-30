@@ -939,7 +939,7 @@ function _injectStyles() {
   s.id = 'frames-styles';
   s.textContent = `
     /* ── FRAMES VIEW SHELL ── */
-    #view-frames { display:flex; flex-direction:column; overflow:hidden; }
+    #view-frames { flex-direction:column; overflow:hidden; }
     #frames-inner { display:flex; flex-direction:column; flex:1; min-height:0; gap:0; }
 
     /* ── TABS ── */
