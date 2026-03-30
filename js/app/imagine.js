@@ -78,6 +78,7 @@ function _activateChip(groupId, val) {
 export function initImagine() {
   const el = document.getElementById('view-imagine');
   if (!el) return;
+  injectImagineStyles();
   el.innerHTML = buildGeneratorHTML();
   wireGenerator();
 }
@@ -402,9 +403,9 @@ function wireGenerator() {
 
 // ── STYLES ────────────────────────────────────────────────────
 export function injectImagineStyles() {
-  if (document.getElementById('imagine-styles')) return;
+  if (document.getElementById('imagine-styles-v2')) return;
   const s = document.createElement('style');
-  s.id = 'imagine-styles';
+  s.id = 'imagine-styles-v2';
   s.textContent = `
     /* ── VIEW SCROLL ── */
     #view-imagine { overflow-y: auto; padding: 16px 16px calc(80px + var(--safe-bot, 0px)); }
