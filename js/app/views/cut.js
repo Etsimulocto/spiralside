@@ -864,47 +864,79 @@ window._cutRenderAll = function() {
 window._cutGenImage = function() {
   const sel = _cutState.selectedClip;
   if (!sel) return;
-  // Build a smart prompt from clip + its source card data
-  let prompt = '';
   const clip = sel.clip;
-  // Try to find source print for character clips
+
+  // Store pending clip so imagine can return image back to cut
+  window._cutPendingClip = { sceneIdx: sel.sceneIdx, clipIdx: sel.clipIdx };
+
+  // Find source card data to populate structured fields
   const sourcePrint = _cutState.prints.find(p => String(p.id || p.name) === clip.sourceCard);
   const sourceScene = _cutState.sceneCards.find(c => String(c.id || c.name) === clip.sourceCard);
   const sourceWorld = _cutState.worldCards.find(w => String(w.id || w.name) === clip.sourceCard);
+
+  let ctx = {};
+
   if (sourcePrint) {
+    // CHARACTER clip — populate character fields
     const ap = sourcePrint.appearance || {};
-    const id = sourcePrint.identity || {};
-    const parts = [
-      id.name,
-      ap.description || '',
-      ap.hair ? 'hair: ' + ap.hair : '',
-      ap.eyes ? 'eyes: ' + ap.eyes : '',
-      ap.style ? 'wearing: ' + ap.style : '',
-      id.vibe || '',
-      ap.art_style || 'bloomcore character portrait',
-      'detailed, high quality',
-    ].filter(Boolean);
-    prompt = parts.join(', ');
+    const id = sourcePrint.identity   || {};
+    ctx = {
+      subject:     id.name        || clip.speaker || 'character',
+      hair:        ap.hair        || '',
+      eyes:        ap.eyes        || '',
+      clothing:    ap.style       || '',
+      marks:       ap.marks       || '',
+      species:     id.species     || '',
+      vibe:        id.vibe        || '',
+      pose:        ap.pose        || '',
+      artStyle:    ap.art_style   || '',
+      lighting:    ap.lighting    || '',
+      renderStyle: ap.render_style || 'character portrait',
+      mood:        clip.mood      || '',
+      negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
+    };
   } else if (sourceScene) {
-    prompt = [sourceScene.name, sourceScene.mood, sourceScene.time, sourceScene.location, sourceScene.camera, 'bloomcore art style'].filter(Boolean).join(', ');
+    // SCENE clip — populate scene fields
+    ctx = {
+      subject:  sourceScene.name     || clip.name || 'scene',
+      scene:    sourceScene.location || sourceScene.name || '',
+      world:    sourceScene.world    || '',
+      mood:     sourceScene.mood     || clip.mood || '',
+      timeOfDay: sourceScene.time   || '',
+      camera:   sourceScene.camera  || '',
+      artStyle: 'bloomcore art style',
+      negativePrompt: 'blurry, low quality, ugly',
+    };
   } else if (sourceWorld) {
-    prompt = [sourceWorld.name, sourceWorld.biome, sourceWorld.tagline, 'bloomcore environment art'].filter(Boolean).join(', ');
+    // WORLD clip — populate world/environment fields
+    ctx = {
+      subject:  sourceWorld.name    || clip.name || 'world',
+      world:    sourceWorld.name    || '',
+      biome:    sourceWorld.biome   || '',
+      scene:    sourceWorld.locations?.[0] || '',
+      artStyle: 'bloomcore environment art',
+      negativePrompt: 'blurry, low quality, ugly',
+    };
   } else {
-    prompt = clip.prompt || clip.dialogue || clip.name || '';
+    // BLANK clip — use whatever clip fields are set
+    ctx = {
+      subject: clip.name     || '',
+      mood:    clip.mood     || '',
+      scene:   clip.prompt   || '',
+    };
   }
-  // Store pending clip so imagine can return image
-  window._cutPendingClip = { sceneIdx: sel.sceneIdx, clipIdx: sel.clipIdx };
-  if (window.switchView) window.switchView('imagine');
-  setTimeout(() => {
-    const inp = document.getElementById('im-prompt');
-    if (inp) {
-      inp.value = prompt;
-      inp.dispatchEvent(new Event('input'));
-      // Auto-trigger generation after prompt is set
-      const btn = document.getElementById('im-go');
-      if (btn && !btn.disabled) btn.click();
-    }
-  }, 350);
+
+  // Route to imagine tab with structured context
+  if (window.imagineWithContext) {
+    window.imagineWithContext(ctx);
+  } else if (window.switchView) {
+    // Fallback if imagineWithContext not loaded yet
+    window.switchView('imagine');
+    setTimeout(() => {
+      const inp = document.getElementById('im-prompt');
+      if (inp) inp.value = ctx.subject || '';
+    }, 350);
+  }
 };
 
 // Called by imagine2.js after successful generation
