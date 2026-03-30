@@ -7,7 +7,7 @@ import { syncSave } from './sync.js';
 // ============================================================
 
 import { state, SPEAKER_COLORS }      from './state.js';
-import { getImagineModel, getImagineSize } from './imagine2.js';
+import { getImagineModel, getImagineSize } from './imagine.js';
 import { sb }                             from './auth.js';
 import { dbSet, dbGet }               from './db.js';
 import { addMessage, getChatMsgs }    from './chat.js';
