@@ -839,6 +839,42 @@ export async function initFramesView() {
   };
   window._framesPreview();
 
+  window._framesReset = function() {
+    const defaults = {
+      'fp-out-thick':6, 'fp-out-op':100,
+      'fp-border-w':18, 'fp-fill-op':95,
+      'fp-off-top':0, 'fp-off-right':0, 'fp-off-bottom':0, 'fp-off-left':0,
+      'fp-in-thick':2, 'fp-in-gap':4,
+      'fp-radius':0, 'fp-skew-x':0, 'fp-skew-y':0,
+      'fp-corner-arm':24,
+    };
+    const colorDefs = {
+      'fp-out-col':'#ffffff', 'fp-fill-col':'#0a0a0f',
+      'fp-in-col':'#00F6D6',  'fp-acc-col':'#FF4BCB',
+    };
+    Object.entries(defaults).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+      const lbl = document.getElementById(id + '-v') || document.getElementById(id + '-val');
+      if (lbl) lbl.textContent = val;
+    });
+    Object.entries(colorDefs).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+      const bg = document.getElementById(id + '-bg');
+      if (bg) bg.style.background = val;
+    });
+    ['fp-glow-toggle','fp-halftone-toggle','fp-scan-toggle','fp-badge-toggle','fp-speed-toggle','fp-rip-toggle']
+      .forEach(id => document.getElementById(id)?.classList.remove('on'));
+    const bt = document.getElementById('fp-badge-text');
+    if (bt) bt.value = '01';
+    _cornerStyle = 'bracket';
+    document.querySelectorAll('#fp-corner-chips .frames-chip').forEach(b => {
+      b.classList.toggle('active', b.dataset.corner === 'bracket');
+    });
+    window._framesPreview();
+  };
+
   window._framesSaveCurrent = async function() {
     const nameEl = document.getElementById('fp-name');
     const name   = nameEl?.value.trim() || 'My Frame';
