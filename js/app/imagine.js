@@ -35,6 +35,9 @@ export function getImagineSize()  { return { w: _selW, h: _selH }; }
 //   OTHER:     negativePrompt
 window.imagineWithContext = function(ctx = {}) {
   if (typeof switchView === 'function') switchView('imagine');
+  // Ensure imagine is initialized before trying to fill fields
+  // initImagine is idempotent — safe to call again
+  if (typeof window.initImagine === 'function') window.initImagine();
   setTimeout(() => {
     // Core prompt — name/subject goes here
     if (ctx.subject) {
