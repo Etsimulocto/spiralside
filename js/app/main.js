@@ -214,11 +214,11 @@ async function hydrateDataFromCloud(dbSet, dbGet) {
       // Write into IDB via the already-open connection
       await dbSet('sheets', { ...cloudYou, id: 'you' });
       // Also patch CHARACTERS.you directly so UI reflects it immediately
-      const { CHARACTERS } = await import('./sheet.js');
-      if (CHARACTERS && CHARACTERS.you) {
-        Object.assign(CHARACTERS.you, cloudYou);
+      const { CHARACTERS: _C } = await import('./state.js');
+      if (_C && _C.you) {
+        Object.assign(_C.you, cloudYou);
         window._youHandle = cloudYou.handle || window._youHandle;
-        try { renderActiveChar(CHARACTERS.you); } catch(_) {}
+        try { renderActiveChar('you'); } catch(_) {}
       }
       console.log('[sync] you_card overlaid from cloud');
     }
