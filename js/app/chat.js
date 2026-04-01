@@ -174,6 +174,7 @@ export async function sendMessage() {
 
     // Build system prompt from bot config
     const youCtx = buildYouContext();
+    console.log("[chat] youCtx length:", youCtx.length, "| handle:", window.CHARACTERS?.you?.handle || window._youHandle || "(none)");
     let sys = youCtx + `You are ${state.botName}.`;
     if (state.botPersonality) sys += ` ${state.botPersonality}`;
     if (state.botTone?.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
