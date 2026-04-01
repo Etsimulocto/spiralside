@@ -21,8 +21,7 @@ import { sb, checkAuthAndShow, listenAuthChanges,
 import { initDB, dbGet, dbGetAll, dbSet }          from './db.js';
 import { initChat, addMessage }                    from './chat.js';
 import { buildCharSelector, renderActiveChar,
-         saveSummarize, loadSavedSheets, exportCodex, importCodex,
-         buildCodexContext }          from './sheet.js';
+         saveSummarize, loadSavedSheets, exportCodex, importCodex }          from './sheet.js';
 import { initVault, renderVault,
          removeFile, loadVaultFromDB }             from './vault.js';
 import { initMusic }          from './music.js';
@@ -334,7 +333,6 @@ async function onAppReady() {
   updateGreeting();
   buildCharSelector();
   renderActiveChar('sky');
-  buildCodexContext();
 
   // 7. Load credit usage from server
   loadUsage();
