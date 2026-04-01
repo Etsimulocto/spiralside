@@ -761,6 +761,61 @@ function renderPrintCard(print) {
 // ── BUILD YOU CONTEXT ────────────────────────────────────────
 // Serializes the You card into a compact system prompt prefix
 // Called by chat.js to inject into every message's system prompt
+// ── BUILD CODEX CONTEXT ─────────────────────────────────────
+// Async — reads all user prints from IDB and caches as string
+// Called once at boot from main.js, stored on window._codexContext
+export async function buildCodexContext() {
+  try {
+    const { dbGetAll } = await import('./db.js');
+    const prints = await dbGetAll('prints');
+    const lines = [];
+    for (const p of prints) {
+      if (String(p.id).startsWith('builtin_')) continue;
+      if (p.id === 'you_card') continue;
+      const id = p.identity;
+      let line = id.name;
+      if (id.title) line += ' (' + id.title + ')';
+      if (id.vibe)  line += ' — ' + id.vibe;
+      if (p.story?.current_arc) line += '. Arc: ' + p.story.current_arc;
+      lines.push(line);
+    }
+    window._codexContext = lines.length
+      ? 'Characters in the user's world:
+' + lines.map(l => '- ' + l).join('
+') + '
+
+'
+      : '';
+  } catch(e) { window._codexContext = ''; }
+}
+
+// ── BUILD CODEX CONTEXT ─────────────────────────────────────
+// Async -- reads all user prints from IDB, caches on window._codexContext
+// Called once at boot after prints load. Sky reads all your Codex chars.
+export async function buildCodexContext() {
+  try {
+    const { dbGetAll } = await import("./db.js");
+    const prints = await dbGetAll("prints");
+    if (!prints || !prints.length) { window._codexContext = ""; return; }
+    const lines = [];
+    for (const p of prints) {
+      const nm = p.identity && p.identity.name;
+      if (!nm) continue;
+      const pid = String(p.id || "");
+      if (pid.startsWith("builtin_")) continue;
+      if (pid === "you_card") continue;
+      const id = p.identity;
+      let line = id.name;
+      if (id.title) line += " (" + id.title + ")";
+      if (id.vibe)  line += " -- " + id.vibe;
+      lines.push(line);
+    }
+    window._codexContext = lines.length
+      ? "Characters in the user's world:\n" + lines.map(function(l){ return "- " + l; }).join("\n") + "\n\n"
+      : "";
+  } catch(e) { window._codexContext = ""; }
+}
+
 export function buildYouContext() {
   const you = CHARACTERS.you;
   if (!you) return '';
@@ -793,7 +848,8 @@ export function buildYouContext() {
   if (you.influences) parts.push(`Influences: ${you.influences}.`);
   if (you.freetext)   parts.push(you.freetext);
   if (!parts.length) return '';
-  return 'About the person you are talking to:\n' + parts.join(' ') + '\n\n';
+  const _cx = window._codexContext || '';
+  return 'About the person you are talking to:\n' + parts.join(' ') + '\n\n' + _cx;
 }
 
 // ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────
