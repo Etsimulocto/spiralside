@@ -131,7 +131,8 @@ export async function sendMessage() {
   // getDemoResponse returns a string or null
   // null means "no scripted match — hit the API"
   // The third argument is the nudge callback — opens store panel
-  const demoReply = getDemoResponse(
+  const _youHandle = window.CHARACTERS?.you?.handle || window._youHandle || '';
+  const demoReply = (_youHandle.trim().length > 0) ? null : getDemoResponse(
     text,
     state.botName,
     () => state._openPanel('store'), state.isPaid
