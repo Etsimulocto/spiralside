@@ -560,6 +560,21 @@ async function _generate() {
       const a = document.createElement('a'); a.href = url; a.download = 'spiralside-gen.png'; a.click();
     });
 
+    // ── AUTO-SAVE TO OPFS ─────────────────────────────────────
+    // Silently write every generated image to device storage.
+    // No popup, no extra click. Lives in imagine/ subfolder.
+    if (window.opfsWrite) {
+      try {
+        const fname = 'imagine-' + Date.now() + '.png';
+        // Convert base64 data URL to Blob
+        const res   = await fetch(url);
+        const blob  = await res.blob();
+        await window.opfsWrite('imagine/' + fname, blob);
+      } catch(e) {
+        console.warn('[imagine] opfs auto-save failed:', e);
+      }
+    }
+
     document.getElementById('im-to-lib')?.addEventListener('click', async () => {
       const b = document.getElementById('im-to-lib');
       if (!b) return;
