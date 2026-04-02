@@ -17,22 +17,25 @@ function vaultViewHTML() {
              -webkit-overflow-scrolling:touch;">
 
       <!-- ── TOOLBAR ── -->
-      <div class="vault-toolbar">
-        <button class="vault-btn" id="add-file-btn">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <button id="add-file-btn" title="add file for Sky to read"
+          style="display:flex;align-items:center;gap:6px;padding:7px 12px;
+                 background:var(--surface);border:1px solid var(--border);border-radius:8px;
+                 color:var(--subtext);font-family:var(--font-ui);font-size:0.68rem;
+                 letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;flex-shrink:0;"
+          onmouseenter="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'"
+          onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--subtext)'">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
             <line x1="12" y1="18" x2="12" y2="12"/>
-            <line x1="9"  y1="15" x2="15" y2="15"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
           </svg>
           add file
         </button>
-        <button class="vault-btn" id="open-folder-btn">
-          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-          </svg>
-          folder
-        </button>
+        <div style="font-size:0.6rem;color:var(--subtext);letter-spacing:0.06em;opacity:0.6;">
+          files added here are visible to Sky in chat
+        </div>
       </div>
 
       <!-- ── FILE LIST ── -->
