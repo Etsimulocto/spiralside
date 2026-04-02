@@ -268,7 +268,8 @@ function _loadPanel(panel, id) {
     bloomslice: () => window.initBloomsliceView && window.initBloomsliceView(),
       bloomengine: () => window.initBloomEngineView && window.initBloomEngineView(),
     codex:()=>window.initCodexView&&window.initCodexView(),
-    spiral:()=>window.initSpiral&&window.initSpiral(),
+    spiral:()=>window.initSpiralView&&window.initSpiralView(),
+    frames:()=>window.initFramesView&&window.initFramesView(),
     cannonized:()=>window.initCannonizedView&&window.initCannonizedView(),
   };
   if (I[id]) I[id]();
