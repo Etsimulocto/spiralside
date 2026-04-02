@@ -113,7 +113,7 @@ export function toggleFAB() {
 // ── SPLIT MODE ────────────────────────────────────────────────
 let _splitOn = false;
 const _sv = { a: 'chat', b: 'pi' };
-const _TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide','cannonized','spiral'];
+const _TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide','cannonized','spiral','frames','bloomslice','bloomengine'];
 
 export function toggleSplitMode() {
   _splitOn = !_splitOn;
@@ -136,24 +136,102 @@ export function toggleSplitMode() {
 }
 window.toggleSplitMode = toggleSplitMode;
 
+// ── SPLIT TAB GROUPS ─────────────────────────────────────────
+// Row 1 — content / creative
+const _SPLIT_ROW1 = ['chat','pi','codex','forge','imagine','frames','cut','studio','quest','spiral','cannonized','library','music'];
+// Row 2 — tools / meta
+const _SPLIT_ROW2 = ['code','bloomslice','bloomengine','vault','guide','style','store','account'];
+
+function _saveSplitRowOrder(panel, rowIdx) {
+  const bar = document.getElementById('split-bar-' + panel + '-' + rowIdx);
+  if (!bar) return;
+  const order = [...bar.querySelectorAll('.split-tab[data-view]')].map(b => b.dataset.view);
+  try { localStorage.setItem('ss_split_order_' + panel + '_' + rowIdx, JSON.stringify(order)); } catch(e) {}
+}
+
+function _loadSplitRowOrder(panel, rowIdx, defaults) {
+  try {
+    const saved = localStorage.getItem('ss_split_order_' + panel + '_' + rowIdx);
+    if (saved) {
+      const arr = JSON.parse(saved);
+      if (arr.length === defaults.length && arr.every(id => defaults.includes(id))) return arr;
+    }
+  } catch(e) {}
+  return defaults;
+}
+
+function _initSplitDrag(bar, panel, rowIdx) {
+  let _drag = null;
+  bar.querySelectorAll('.split-tab[data-view]').forEach(btn => {
+    btn.draggable = true;
+    btn.addEventListener('dragstart', e => {
+      _drag = btn;
+      setTimeout(() => btn.style.opacity = '0.4', 0);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    btn.addEventListener('dragend', () => {
+      btn.style.opacity = '';
+      bar.querySelectorAll('.split-tab[data-view]').forEach(b => b.style.outline = '');
+      _drag = null;
+      _saveSplitRowOrder(panel, rowIdx);
+    });
+    btn.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!_drag || btn === _drag) return;
+      bar.querySelectorAll('.split-tab[data-view]').forEach(b => b.style.outline = '');
+      btn.style.outline = '2px solid var(--teal)';
+      const kids = [...bar.querySelectorAll('.split-tab[data-view]')];
+      const from = kids.indexOf(_drag);
+      const to   = kids.indexOf(btn);
+      if (from < to) bar.insertBefore(_drag, btn.nextSibling);
+      else           bar.insertBefore(_drag, btn);
+    });
+    btn.addEventListener('drop', e => {
+      e.preventDefault();
+      bar.querySelectorAll('.split-tab[data-view]').forEach(b => b.style.outline = '');
+    });
+  });
+}
+
+function _buildSplitBar(panel, rowIdx, tabs, isLastRow) {
+  const bar = document.createElement('div');
+  bar.className = 'split-tabbar';
+  bar.id = 'split-bar-' + panel + '-' + rowIdx;
+  const ordered = _loadSplitRowOrder(panel, rowIdx, tabs);
+  ordered.forEach(id => {
+    const btn = document.createElement('button');
+    btn.className = 'split-tab' + (_sv[panel] === id ? ' active' : '');
+    btn.textContent = id;
+    btn.dataset.view = id;
+    btn.onclick = () => _loadPanel(panel, id);
+    bar.appendChild(btn);
+  });
+  if (isLastRow && panel === 'b') {
+    const x = document.createElement('button');
+    x.className = 'split-tab';
+    x.textContent = 'x  exit split';
+    x.style.cssText = 'margin-left:auto;color:var(--pink);flex-shrink:0;';
+    x.onclick = () => window.toggleSplitMode();
+    bar.appendChild(x);
+  }
+  _initSplitDrag(bar, panel, rowIdx);
+  return bar;
+}
+
 function _buildPanels() {
   ['a','b'].forEach(p => {
     const panel = document.getElementById('split-panel-' + p);
     if (!panel || panel.querySelector('.split-tabbar')) return;
-    const bar = document.createElement('div');
-    bar.className = 'split-tabbar';
-    _TABS.forEach(id => {
-      const btn = document.createElement('button');
-      btn.className = 'split-tab' + (_sv[p] === id ? ' active' : '');
-      btn.textContent = id;
-      btn.onclick = () => _loadPanel(p, id);
-      bar.appendChild(btn);
-    });
+    const bar1 = _buildSplitBar(p, 0, _SPLIT_ROW1, false);
+    const div  = document.createElement('div');
+    div.style.cssText = 'height:1px;background:var(--border);flex-shrink:0;opacity:0.5;';
+    const bar2 = _buildSplitBar(p, 1, _SPLIT_ROW2, true);
     const host = document.createElement('div');
     host.className = 'split-view-host';
     host.id = 'split-host-' + p;
-    if(p==='b'){const x=document.createElement('button');x.className='split-tab';x.textContent='x  exit split';x.style.marginLeft='auto';x.style.color='var(--pink)';x.onclick=()=>window.toggleSplitMode();bar.appendChild(x);}
-    panel.appendChild(bar);
+    panel.appendChild(bar1);
+    panel.appendChild(div);
+    panel.appendChild(bar2);
     panel.appendChild(host);
   });
 }
