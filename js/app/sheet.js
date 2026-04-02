@@ -943,13 +943,13 @@ window.makeYouCard = async function() {
   console.log('[you_card] saved to prints IDB');
 };
 
-window.downloadYouCard = function() {
+window.downloadYouCard = async function() {
   if (!window._youCardCanvas) return;
   const you = window.CHARACTERS?.you;
   const id  = you?.card_id || 'you-card';
   const a   = document.createElement('a');
   const _youCardDataUrl = window._youCardCanvas.toDataURL('image/png');
-  // OPFS auto-save
+  // OPFS auto-save — fire and forget, never block the download
   if (window.opfsWrite) {
     try { const res = await fetch(_youCardDataUrl); const blob = await res.blob(); await window.opfsWrite('cards/' + id + '.png', blob); } catch(e) {}
   }
