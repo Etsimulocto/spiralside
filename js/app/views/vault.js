@@ -137,24 +137,33 @@ async function renderDeviceFiles() {
 
     return `
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;
-                  padding:8px;cursor:pointer;transition:border-color 0.2s;position:relative;"
+                  padding:8px;cursor:pointer;transition:border-color 0.2s;position:relative;
+                  display:flex;flex-direction:column;"
            onmouseenter="this.style.borderColor='${color}'"
            onmouseleave="this.style.borderColor='var(--border)'"
            onclick="window._opfsPreview && window._opfsPreview('${safePath}','${safeName}',${isImg})">
         ${thumbHtml}
         <div style="font-size:0.6rem;color:var(--text);white-space:nowrap;overflow:hidden;
-                    text-overflow:ellipsis;letter-spacing:0.02em;" title="${f.name}">
+                    text-overflow:ellipsis;letter-spacing:0.02em;margin-bottom:2px;" title="${f.name}">
           ${f.name}
         </div>
-        <div style="font-size:0.55rem;color:var(--subtext);margin-top:2px;">
+        <div style="font-size:0.55rem;color:var(--subtext);margin-bottom:6px;">
           ${subfold ? subfold + ' · ' : ''}${size}
         </div>
-        <button onclick="event.stopPropagation();window._opfsDeleteUI('${safePath}',this)"
-          style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;
-                 background:rgba(10,10,15,0.75);border:1px solid var(--border);
-                 color:var(--subtext);font-size:0.6rem;cursor:pointer;display:flex;
-                 align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;"
-          onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0'">✕</button>
+        <div style="display:flex;gap:4px;margin-top:auto;" onclick="event.stopPropagation()">
+          ${isImg || true ? `<button onclick="window._opfsDownload('${safePath}','${safeName}')"
+            style="flex:1;padding:4px;background:var(--surface2);border:1px solid var(--border);
+                   border-radius:6px;color:var(--subtext);font-size:0.65rem;cursor:pointer;
+                   transition:all 0.15s;font-family:var(--font-ui);"
+            onmouseenter="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'"
+            onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--subtext)'">↓</button>` : ''}
+          <button onclick="window._opfsDeleteUI('${safePath}',this)"
+            style="flex:1;padding:4px;background:var(--surface2);border:1px solid var(--border);
+                   border-radius:6px;color:var(--subtext);font-size:0.65rem;cursor:pointer;
+                   transition:all 0.15s;font-family:var(--font-ui);"
+            onmouseenter="this.style.borderColor='var(--pink)';this.style.color='var(--pink)'"
+            onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--subtext)'">✕</button>
+        </div>
       </div>`;
   }));
 
