@@ -99,7 +99,23 @@ export function initAccountView() {
 
         <!-- ── Account actions ── -->
         <div class="acct-section-title">account</div>
-        <button class="acct-signout-btn" onclick="window.handleSignout()">sign out</button>
+        <button class="acct-signout-btn" onclick="window.handleSignout()"><!-- PWA Install Banner -->
+    <div class="pwa-install-btn" style="
+      display:none;align-items:center;gap:12px;
+      background:linear-gradient(135deg,rgba(0,246,214,0.1),rgba(123,95,255,0.1));
+      border:1px solid rgba(0,246,214,0.3);border-radius:12px;
+      padding:14px 16px;margin-bottom:20px;cursor:pointer;transition:all 0.2s;"
+      onclick="window.triggerInstall()"
+      onmouseenter="this.style.borderColor='var(--teal)'"
+      onmouseleave="this.style.borderColor='rgba(0,246,214,0.3)'">
+      <div style="font-size:1.4rem;flex-shrink:0;">📱</div>
+      <div style="flex:1;">
+        <div style="font-size:0.78rem;color:var(--teal);font-weight:700;letter-spacing:0.04em;">install spiralside</div>
+        <div style="font-size:0.62rem;color:var(--subtext);margin-top:2px;line-height:1.4;">add to home screen · works offline · your files stay on device</div>
+      </div>
+      <div style="font-size:0.7rem;color:var(--teal);opacity:0.7;">+ add</div>
+    </div>
+    sign out</button>
         <button class="acct-buy-btn" onclick="window.switchView('store')">buy credits</button>
 
         <!-- ── About ── -->

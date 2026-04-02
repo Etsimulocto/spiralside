@@ -349,6 +349,36 @@ async function onAppReady() {
   initMusic();  // start background music
 }
 
+// ── PWA INSTALL PROMPT ───────────────────────────────────────
+// Capture the beforeinstallprompt event so we can trigger it from a button
+// Only fires on Chrome/Edge when the app is installable (not already installed)
+let _installPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();  // stop browser showing its own mini-bar
+  _installPrompt = e;
+  // Show our install button wherever it lives
+  document.querySelectorAll('.pwa-install-btn').forEach(b => b.style.display = 'flex');
+  console.log('[pwa] install prompt ready');
+});
+
+// Called by the install button
+window.triggerInstall = async function() {
+  if (!_installPrompt) return;
+  _installPrompt.prompt();
+  const { outcome } = await _installPrompt.userChoice;
+  console.log('[pwa] user choice:', outcome);
+  _installPrompt = null;
+  if (outcome === 'accepted') {
+    // Hide install buttons — already installed
+    document.querySelectorAll('.pwa-install-btn').forEach(b => b.style.display = 'none');
+  }
+};
+
+// Detect if already running as installed PWA
+window._isPWA = window.matchMedia('(display-mode: standalone)').matches
+             || window.navigator.standalone === true;
+
 // ── BOOT ──────────────────────────────────────────────────────
 // 1. Start comic intro
 // 2. When comic ends → check auth → route to app or auth screen
