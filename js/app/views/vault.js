@@ -118,7 +118,8 @@ async function renderDeviceFiles() {
       try {
         const file = await f.handle.getFile();
         const url  = URL.createObjectURL(file);
-        thumb = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px 6px 0 0;" onload="URL.revokeObjectURL(this.src)" />`;
+        // Note: intentionally not revoking immediately — image needs the URL to stay valid while visible
+        thumb = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px 6px 0 0;" />`;
       } catch(e) {}
     }
     const icon    = isImg ? '' : '📄';
