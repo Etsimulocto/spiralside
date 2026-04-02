@@ -878,8 +878,17 @@ export async function initFramesView() {
   window._framesSaveCurrent = async function() {
     const nameEl = document.getElementById('fp-name');
     const name   = nameEl?.value.trim() || 'My Frame';
-    const frame  = { id:null, name, creator:'user', type:'svg', svgData:_buildSVG(), compatibleWith:['all'], thumbnail:null, createdAt:0 };
+    const svgData = _buildSVG();
+    const frame  = { id:null, name, creator:'user', type:'svg', svgData, compatibleWith:['all'], thumbnail:null, createdAt:0 };
     await saveFrame(frame);
+    // ── OPFS auto-save — write SVG to frames/ folder ──
+    if (window.opfsWrite) {
+      try {
+        const fname = 'frame-' + (name.replace(/[^a-z0-9]/gi,'-').toLowerCase()) + '-' + Date.now() + '.svg';
+        const blob  = new Blob([svgData], { type: 'image/svg+xml' });
+        await window.opfsWrite('frames/' + fname, blob);
+      } catch(e) { console.warn('[frames] opfs save failed:', e); }
+    }
     const btn = document.getElementById('fp-save-btn');
     if (btn) { btn.textContent = '✓ saved!'; setTimeout(() => btn.textContent = '✦ save frame', 1800); }
     if (nameEl) nameEl.value = '';
