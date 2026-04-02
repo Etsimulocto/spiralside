@@ -54,6 +54,7 @@ import { initForgeView }           from './views/forge.js';
 import { initAccountView, updateAccountView }      from './views/account.js';
 import { initVaultView } from './views/vault.js';
 import { initFramesView } from '../frames/frames.js';
+import { opfsWrite, opfsList, opfsEstimate, opfsSupported, opfsSize } from './opfs.js';
 
 // ── EXPOSE GLOBALS ────────────────────────────────────────────
 // HTML onclick attributes need these on window.
@@ -125,6 +126,12 @@ window.initSpiralCutView    = initSpiralCutView;
 window.initQuestView    = initQuestView;
 window.initCutView     = initCutView;
 window.initFramesView  = initFramesView;
+// OPFS globals — auto-save to device storage
+window.opfsWrite     = opfsWrite;
+window.opfsList      = opfsList;
+window.opfsEstimate  = opfsEstimate;
+window.opfsSupported = opfsSupported;
+window.opfsSize      = opfsSize;
 window.awardXP    = awardXP;
 window.getXPState = getXPState;
 window.showXPGain = showXPGain;
