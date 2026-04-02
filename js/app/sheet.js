@@ -948,8 +948,13 @@ window.downloadYouCard = function() {
   const you = window.CHARACTERS?.you;
   const id  = you?.card_id || 'you-card';
   const a   = document.createElement('a');
+  const _youCardDataUrl = window._youCardCanvas.toDataURL('image/png');
+  // OPFS auto-save
+  if (window.opfsWrite) {
+    try { const res = await fetch(_youCardDataUrl); const blob = await res.blob(); await window.opfsWrite('cards/' + id + '.png', blob); } catch(e) {}
+  }
   a.download = id + '.png';
-  a.href     = window._youCardCanvas.toDataURL('image/png');
+  a.href     = _youCardDataUrl;
   a.click();
 };
 
@@ -989,8 +994,14 @@ export async function exportCodex() {
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a    = document.createElement('a');
-  a.href     = URL.createObjectURL(blob);
-  a.download = `spiralside-codex-${Date.now()}.json`;
+  const _codexUrl = URL.createObjectURL(blob);
+  const _codexName = `spiralside-codex-${Date.now()}.json`;
+  // OPFS auto-save
+  if (window.opfsWrite) {
+    try { await window.opfsWrite('cannonized/' + _codexName, blob); } catch(e) {}
+  }
+  a.href     = _codexUrl;
+  a.download = _codexName;
   a.click();
 }
 
