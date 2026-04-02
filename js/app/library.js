@@ -594,7 +594,11 @@ function renderLibrary() {
         <div class="lib-card-bar">
           <div class="lib-card-tag" style="color:${color}">${p.tag}</div>
           <div class="lib-card-actions">
-            <button onclick="event.stopPropagation();window.deletePanel('${p.id}')" title="delete">✕</button>
+            <button data-del-id="${p.id}" title="delete"
+              onclick="event.stopPropagation();
+                if(this.dataset.confirm==='1'){window.deletePanel('${p.id}');}
+                else{this.textContent='?';this.dataset.confirm='1';this.style.color='var(--pink)';
+                  setTimeout(()=>{if(this){this.textContent='✕';delete this.dataset.confirm;this.style.color='';}},2000);}">✕</button>
           </div>
         </div>
       </div>`;
@@ -619,7 +623,11 @@ function renderBooksView() {
           <div class="book-card-title">${b.title}</div>
           <div class="book-card-meta">${count} slot${count !== 1 ? 's' : ''} · tap to edit</div>
         </div>
-        <button onclick="event.stopPropagation();window.deleteBook('${b.id}')" class="book-del-btn">✕</button>
+        <button class="book-del-btn" data-del-id="${b.id}"
+          onclick="event.stopPropagation();
+            if(this.dataset.confirm==='1'){window.deleteBook('${b.id}');}
+            else{this.textContent='?';this.dataset.confirm='1';this.style.color='var(--pink)';
+              setTimeout(()=>{if(this){this.textContent='✕';delete this.dataset.confirm;this.style.color='';}},2000);}">✕</button>
       </div>`;
   }).join('');
 }
