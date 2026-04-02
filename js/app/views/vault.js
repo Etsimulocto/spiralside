@@ -181,22 +181,36 @@ async function renderDeviceFiles() {
     </div>`;
 }
 
-// Preview OPFS file — image lightbox or text modal matching vault preview style
+// Preview OPFS file — image lightbox using DOM (no URL in inline strings)
 window._opfsPreview = async function(path, name, isImg) {
   if (isImg) {
     const file = await window.opfsRead(path);
-    if (!file) return;
+    if (!file) { console.warn('[vault] opfsRead returned null for', path); return; }
     const url = URL.createObjectURL(file);
     const ov  = document.createElement('div');
     ov.style.cssText = 'position:fixed;inset:0;z-index:9000;background:rgba(10,10,15,0.9);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:20px;';
-    ov.innerHTML = `
-      <img src="${url}" style="max-width:100%;max-height:75dvh;border-radius:10px;display:block;" />
-      <div style="display:flex;gap:10px;">
-        <button onclick="window._opfsDownload('${path.replace(/'/g,"\'")}','${name.replace(/'/g,"\'")}');this.closest('div').parentNode.remove();"
-          style="padding:9px 18px;background:var(--teal);border:none;border-radius:8px;color:#000;font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;">↓ download</button>
-        <button onclick="this.closest('[style]').remove();URL.revokeObjectURL('${url}')"
-          style="padding:9px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;">close</button>
-      </div>`;
+
+    const img = document.createElement('img');
+    img.src = url;
+    img.style.cssText = 'max-width:100%;max-height:75dvh;border-radius:10px;display:block;';
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:10px;';
+
+    const dlBtn = document.createElement('button');
+    dlBtn.textContent = '↓ download';
+    dlBtn.style.cssText = 'padding:9px 18px;background:var(--teal);border:none;border-radius:8px;color:#000;font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;';
+    dlBtn.onclick = () => { window._opfsDownload(path, name); ov.remove(); URL.revokeObjectURL(url); };
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'close';
+    closeBtn.style.cssText = 'padding:9px 18px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;';
+    closeBtn.onclick = () => { ov.remove(); URL.revokeObjectURL(url); };
+
+    btnRow.appendChild(dlBtn);
+    btnRow.appendChild(closeBtn);
+    ov.appendChild(img);
+    ov.appendChild(btnRow);
     ov.addEventListener('click', e => { if (e.target === ov) { ov.remove(); URL.revokeObjectURL(url); } });
     document.body.appendChild(ov);
   } else {
@@ -222,7 +236,9 @@ window._opfsDeleteUI = async function(path, btn) {
     return;
   }
   await window.opfsDelete(path);
-  btn.closest('.vault-device-card')?.remove();
+  // Card is the grid item — walk up to the div with border-radius style
+  const card = btn.closest('[style*="border-radius:10px"]') || btn.parentElement?.parentElement;
+  if (card) card.remove();
 };
 
 // _injectDeviceStyles removed — now using inline styles matching vault grid

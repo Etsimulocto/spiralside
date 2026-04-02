@@ -54,11 +54,15 @@ export async function opfsWrite(path, data) {
 export async function opfsRead(path) {
   if (!SUPPORTED) return null;
   try {
-    const parts   = path.split('/');
+    const parts    = path.split('/');
     const filename = parts.pop();
-    const subdir   = parts.join('/') || null;
-    const dir      = await _dir(subdir);
-    const fh       = await dir.getFileHandle(filename);
+    // For nested subdirs like 'a/b', walk each level
+    const root = await _root();
+    let   dir  = root;
+    for (const part of parts) {
+      if (part) dir = await dir.getDirectoryHandle(part, { create: false });
+    }
+    const fh = await dir.getFileHandle(filename);
     return await fh.getFile();
   } catch(e) {
     console.warn('[opfs] read failed:', path, e);
