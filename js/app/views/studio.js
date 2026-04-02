@@ -254,6 +254,10 @@ function _wireStudio() {
     };
     await dbSet('scenes', scene);
     syncSave('scene_' + scene.id, scene).catch(() => {});  // cloud backup
+    // OPFS — save card data as JSON
+    if (window.opfsWrite) {
+      window.opfsWrite('scenes/' + scene.id + '.json', new Blob([JSON.stringify(scene)], {type:'application/json'})).catch(()=>{});
+    }
     if (_sceneEditId) scenes = scenes.map(s => s.id === _sceneEditId ? scene : s);
     else scenes.push(scene);
     _sceneEditId = null; _sceneImgData = null;
@@ -283,6 +287,10 @@ function _wireStudio() {
     };
     await dbSet('worlds', world);
     syncSave('world_' + world.id, world).catch(() => {});  // cloud backup
+    // OPFS — save card data as JSON
+    if (window.opfsWrite) {
+      window.opfsWrite('worlds/' + world.id + '.json', new Blob([JSON.stringify(world)], {type:'application/json'})).catch(()=>{});
+    }
     if (_worldEditId) worlds = worlds.map(w => w.id === _worldEditId ? world : w);
     else worlds.push(world);
     _worldEditId = null; _worldImgData = null;
@@ -378,9 +386,18 @@ function _wireStudio() {
     const item = type === 'scene' ? scenes.find(s => s.id === id) : worlds.find(w => w.id === id);
     if (!item) return;
     const canvas = type === 'scene' ? await renderSceneCard(item) : await renderWorldCard(item);
+    const dataUrl = canvas.toDataURL('image/png');
+    // ── OPFS auto-save ──
+    if (window.opfsWrite) {
+      try {
+        const res  = await fetch(dataUrl);
+        const blob = await res.blob();
+        await window.opfsWrite(type + 's/' + id + '.png', blob);
+      } catch(e) { console.warn('[studio] opfs save failed:', e); }
+    }
     const link = document.createElement('a');
     link.download = id + '.png';
-    link.href = canvas.toDataURL('image/png');
+    link.href = dataUrl;
     link.click();
   };
 }
