@@ -38,6 +38,9 @@ function vaultViewHTML() {
       <!-- ── FILE LIST ── -->
       <div id="vault-list"></div>
 
+      <!-- ── DEVICE FILES (OPFS) ── -->
+      <div id="vault-device-section"></div>
+
       <!-- ── HIDDEN FILE INPUT (wired by vault.js initVault) ── -->
       <input type="file" id="file-input" style="display:none"
         accept=".txt,.md,.pdf,.json,.js,.ts,.py,.html,.css,.csv,.png,.jpg,.jpeg,.webp,.mp3,.wav,.ogg,.flac,.m4a"
@@ -69,9 +72,145 @@ export function initVaultView() {
 
   // Render current files
   window.renderVault && window.renderVault();
+  // Render OPFS device files
+  _injectDeviceStyles();
+  renderDeviceFiles();
+}
+
+// ── OPFS DEVICE FILES SECTION ────────────────────────────
+// Reads from Origin Private File System and renders thumbnails.
+// Called on every vault open so list stays fresh.
+async function renderDeviceFiles() {
+  const wrap = document.getElementById('vault-device-section');
+  if (!wrap) return;
+
+  // OPFS not available (Firefox, older Safari)
+  if (!window.opfsList || !window.opfsSupported || !window.opfsSupported()) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  // Gather all files across known subdirs + root
+  const dirs  = ['imagine', 'frames', 'cannonized', null];
+  let   files = [];
+  for (const d of dirs) {
+    const list = await window.opfsList(d);
+    files = files.concat(list);
+  }
+
+  if (!files.length) {
+    wrap.innerHTML = `
+      <div class="vault-device-header">📱 on this device</div>
+      <div style="font-size:0.68rem;color:var(--subtext);padding:8px 0 4px;">
+        nothing saved yet — generate an image to auto-save here
+      </div>`;
+    return;
+  }
+
+  // Storage estimate
+  const est     = window.opfsEstimate ? await window.opfsEstimate() : null;
+  const estLine = est ? `${window.opfsSize(est.used)} used · ${est.pct}% of quota` : '';
+
+  const cards = await Promise.all(files.map(async f => {
+    const isImg = /\.(png|jpg|jpeg|webp|gif)$/i.test(f.name);
+    let   thumb = '';
+    if (isImg) {
+      try {
+        const file = await f.handle.getFile();
+        const url  = URL.createObjectURL(file);
+        thumb = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px 6px 0 0;" onload="URL.revokeObjectURL(this.src)" />`;
+      } catch(e) {}
+    }
+    const icon    = isImg ? '' : '📄';
+    const subfold = f.path.includes('/') ? f.path.split('/')[0] : 'root';
+    const date    = new Date(f.lastModified).toLocaleDateString();
+    const size    = window.opfsSize ? window.opfsSize(f.size) : '';
+    return `
+      <div class="vault-device-card" data-path="${f.path}">
+        <div class="vault-device-thumb">${thumb || '<div style="font-size:1.6rem;display:flex;align-items:center;justify-content:center;height:100%">' + icon + '</div>'}</div>
+        <div class="vault-device-info">
+          <div class="vault-device-name" title="${f.name}">${f.name}</div>
+          <div class="vault-device-meta">${subfold} · ${size} · ${date}</div>
+        </div>
+        <div style="display:flex;gap:6px;padding:0 8px 8px;">
+          ${isImg ? `<button class="vault-device-btn" onclick="window._opfsDownload('${f.path}','${f.name}')">↓</button>` : ''}
+          <button class="vault-device-btn" style="color:var(--pink);border-color:rgba(255,75,203,0.3);" onclick="window._opfsDeleteUI('${f.path}',this)">✕</button>
+        </div>
+      </div>`;
+  }));
+
+  wrap.innerHTML = `
+    <div class="vault-device-header">📱 on this device
+      ${estLine ? `<span style="font-size:0.58rem;color:var(--subtext);margin-left:8px;font-weight:400;">${estLine}</span>` : ''}
+    </div>
+    <div class="vault-device-grid">${cards.join('')}</div>`;
+}
+
+// Download a file from OPFS
+window._opfsDownload = async function(path, name) {
+  const file = await window.opfsRead(path);
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const a   = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+};
+
+// Delete with inline confirm
+window._opfsDeleteUI = async function(path, btn) {
+  if (btn.dataset.confirm !== '1') {
+    btn.textContent = '?'; btn.dataset.confirm = '1';
+    setTimeout(() => { if (btn) { btn.textContent = '✕'; delete btn.dataset.confirm; } }, 2000);
+    return;
+  }
+  await window.opfsDelete(path);
+  btn.closest('.vault-device-card')?.remove();
+};
+
+// Inject device section CSS once
+function _injectDeviceStyles() {
+  if (document.getElementById('vault-device-styles')) return;
+  const s = document.createElement('style');
+  s.id = 'vault-device-styles';
+  s.textContent = `
+    .vault-device-header {
+      font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;
+      color:var(--teal);font-weight:700;margin:20px 0 10px;
+      display:flex;align-items:center;gap:6px;
+    }
+    .vault-device-header::after { content:'';flex:1;height:1px;background:var(--border); }
+    .vault-device-grid {
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;
+    }
+    .vault-device-card {
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:8px;overflow:hidden;display:flex;flex-direction:column;
+      transition:border-color 0.2s;
+    }
+    .vault-device-card:hover { border-color:var(--teal); }
+    .vault-device-thumb {
+      width:100%;aspect-ratio:1;background:var(--muted);overflow:hidden;
+    }
+    .vault-device-info { padding:6px 8px 2px;flex:1; }
+    .vault-device-name {
+      font-size:0.62rem;color:var(--text);overflow:hidden;
+      text-overflow:ellipsis;white-space:nowrap;
+    }
+    .vault-device-meta { font-size:0.55rem;color:var(--subtext);margin-top:2px; }
+    .vault-device-btn {
+      flex:1;padding:5px;background:var(--surface2);
+      border:1px solid var(--border);border-radius:6px;
+      color:var(--subtext);font-size:0.7rem;cursor:pointer;
+      transition:all 0.15s;font-family:var(--font-ui);
+    }
+    .vault-device-btn:hover { border-color:var(--teal);color:var(--teal); }
+  `;
+  document.head.appendChild(s);
 }
 
 // onVaultOpen called by ui.js switchView on every revisit
 window.onVaultOpen = () => {
   window.renderVault && window.renderVault();
+  _injectDeviceStyles();
+  renderDeviceFiles();
 };
