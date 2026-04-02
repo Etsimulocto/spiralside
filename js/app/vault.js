@@ -29,7 +29,7 @@ export function initVault() {
   };
 
   // Folder picker button (uses File System Access API where available)
-  document.getElementById('open-folder-btn').addEventListener('click', handleFolderPick);
+  document.getElementById('open-folder-btn')?.addEventListener('click', handleFolderPick);
 }
 
 // ── HANDLE FILE INPUT ─────────────────────────────────────────
