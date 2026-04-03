@@ -459,23 +459,48 @@ const _authCallback = () => checkAuthAndShow(onAppReady);
           const p = panelMap[slot.panelId];
           if (!p) return null;
           const fObj = FILTERS_PEEK.find(f => f.id===(slot.filter||'none')) || FILTERS_PEEK[0];
-          const capText    = typeof slot.caption==='string' ? slot.caption : slot.caption?.text||'';
-          const capSpeaker = typeof slot.caption==='string' ? 'narrator'   : slot.caption?.speaker||'narrator';
+
+          // Build dialogue — textBoxes (new) or legacy caption fallback
+          let dialogue = [];
+          if (slot.textBoxes && slot.textBoxes.length) {
+            dialogue = slot.textBoxes
+              .filter(tb => tb.text && tb.text.trim())
+              .map(tb => ({
+                speaker:      tb.speaker      || 'narrator',
+                text:         tb.text.trim(),
+                style:        tb.style        || 'dialogue',
+                pos:          tb.pos          || null,
+                borderColor:  tb.borderColor  || null,
+                borderWidth:  tb.borderWidth  || null,
+                borderStyle:  tb.borderStyle  || null,
+                borderRadius: tb.borderRadius || null,
+                bgOpacity:    tb.bgOpacity    !== undefined ? tb.bgOpacity : null,
+                bgColor:      tb.bgColor      || null,
+                fontSize:     tb.fontSize     || null,
+              }));
+          } else {
+            const capText    = typeof slot.caption==='string' ? slot.caption : slot.caption?.text||'';
+            const capSpeaker = typeof slot.caption==='string' ? 'narrator'   : slot.caption?.speaker||'narrator';
+            if (capText) dialogue = [{speaker:capSpeaker, text:capText}];
+          }
+
           return {
-            image: p.dataURL, filter_css: fObj.css,
-            dialogue: capText ? [{speaker:capSpeaker,text:capText}] : [],
-            transition:'fade',
-            bg_gradient:'radial-gradient(ellipse at 50% 50%,#1a0a2e 0%,#101014 70%)',
+            image:      p.dataURL,
+            filter_css: fObj.css,
+            frame_svg:  slot.frameSVG || null,
+            dialogue,
+            transition: 'fade',
+            bg_gradient: 'radial-gradient(ellipse at 50% 50%,#1a0a2e 0%,#101014 70%)',
           };
         } else if (slot.type==='text' && slot.text) {
           return {
-            bg_gradient:'radial-gradient(ellipse at 50% 50%,#0a0a1a 0%,#101014 70%)',
-            dialogue:[{speaker:slot.speaker||'narrator',text:slot.text}],
-            transition:'fade',
+            bg_gradient: 'radial-gradient(ellipse at 50% 50%,#0a0a1a 0%,#101014 70%)',
+            dialogue: [{speaker:slot.speaker||'narrator', text:slot.text}],
+            transition: 'fade',
           };
         }
         return null;
-      }).filter(Boolean);
+      }).filter(p => p !== null && (p.image || p.dialogue?.length));
 
       if (comicPanels.length) {
         // label the skip button with the book title
