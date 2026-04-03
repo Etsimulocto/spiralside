@@ -164,12 +164,25 @@ function _bubbleStyle(line, speakerColor) {
   const bRadius = line.borderRadius || null;  // null = use style preset default
   const bgOp    = line.bgOpacity    !== undefined ? line.bgOpacity / 100 : null;
   const fSize   = line.fontSize     || null;
+  // bgColor is handled inside the custom block below
 
   const style   = line.style || 'dialogue';
 
   // If user has customized border/radius/opacity, build fully custom style
-  if (line.borderColor || line.borderWidth || line.borderRadius || line.bgOpacity !== undefined) {
-    const bg = 'rgba(10,10,14,' + (bgOp !== null ? bgOp : 0.88) + ')';
+  if (line.borderColor || line.borderWidth || line.borderRadius || line.bgOpacity !== undefined || line.bgColor) {
+    // Parse bgColor into rgba with opacity, or use default dark
+    let bg;
+    if (line.bgColor) {
+      // Convert hex to rgb + apply opacity
+      const hex = line.bgColor.replace('#','');
+      const r = parseInt(hex.slice(0,2),16);
+      const g = parseInt(hex.slice(2,4),16);
+      const b = parseInt(hex.slice(4,6),16);
+      const a = bgOp !== null ? bgOp : 0.88;
+      bg = 'rgba('+r+','+g+','+b+','+a+')';
+    } else {
+      bg = 'rgba(10,10,14,' + (bgOp !== null ? bgOp : 0.88) + ')';
+    }
     const radius = bRadius || '3px 12px 12px 12px';
     const border = bWidth === '0' ? 'none' : bWidth + ' ' + bStyle + ' ' + bColor;
     const fs = fSize || '0.84rem';

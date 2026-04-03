@@ -1430,6 +1430,7 @@ function renderTextBoxList(slot) {
     // Border color swatch
     const colDiv = document.createElement('div');
     colDiv.className = 'tb-swatch';
+    colDiv.title = 'border color';
     const colBg = document.createElement('div');
     colBg.className = 'tb-swatch-bg';
     const defaultCol = tb.borderColor || _speakerColor(tb.speaker);
@@ -1444,6 +1445,30 @@ function renderTextBoxList(slot) {
     });
     colDiv.appendChild(colBg); colDiv.appendChild(colInput);
     styleRow1.appendChild(colDiv);
+
+    // BG color swatch
+    const bgColDiv = document.createElement('div');
+    bgColDiv.className = 'tb-swatch';
+    bgColDiv.title = 'background color';
+    // Checkerboard indicator for transparent
+    bgColDiv.style.backgroundImage = 'linear-gradient(45deg,#333 25%,transparent 25%,transparent 75%,#333 75%),linear-gradient(45deg,#333 25%,transparent 25%,transparent 75%,#333 75%)';
+    bgColDiv.style.backgroundSize = '6px 6px';
+    bgColDiv.style.backgroundPosition = '0 0,3px 3px';
+    const bgColBg = document.createElement('div');
+    bgColBg.className = 'tb-swatch-bg';
+    const defaultBgCol = tb.bgColor || '#0a0a0f';
+    bgColBg.style.background = defaultBgCol;
+    bgColBg.style.opacity = tb.bgOpacity !== undefined ? tb.bgOpacity / 100 : 0.88;
+    const bgColInput = document.createElement('input');
+    bgColInput.type = 'color';
+    bgColInput.value = defaultBgCol;
+    bgColInput.addEventListener('input', () => {
+      tb.bgColor = bgColInput.value;
+      bgColBg.style.background = bgColInput.value;
+      _autoSaveTB();
+    });
+    bgColDiv.appendChild(bgColBg); bgColDiv.appendChild(bgColInput);
+    styleRow1.appendChild(bgColDiv);
 
     // Border width chips
     [['thin','1px'],['med','2px'],['thick','3px'],['none','0']].forEach(([lbl,val]) => {
@@ -1665,6 +1690,7 @@ function playTimeline() {
             borderStyle:  tb.borderStyle  || null,
             borderRadius: tb.borderRadius || null,
             bgOpacity:    tb.bgOpacity    !== undefined ? tb.bgOpacity : null,
+            bgColor:      tb.bgColor      || null,
             fontSize:     tb.fontSize     || null,
           }));
       } else {
