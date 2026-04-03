@@ -126,6 +126,7 @@ export function addMessage(text, role) {
     setTimeout(()=>document.addEventListener('click',()=>menu.remove(),{once:true}),0);
   });
 
+
     // Remove any existing menu
     document.querySelectorAll('.bubble-menu').forEach(m => m.remove());
     const menu = document.createElement('div');
