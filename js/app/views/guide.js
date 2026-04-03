@@ -141,8 +141,8 @@ const OVERLAYS = {
     { target: null,          title: 'Scenes + Worlds',  text: 'Scenes and worlds anchor your Imagine prompts for style consistency across sessions.',     char: 'grit', pos: 'center' },
   ],
   cut: [
-    { target: 'tab-spiralcut', title: 'SpiralCut',        text: 'Clip-based storyboard editor. Build your story panel by panel.',                        char: 'monday', pos: 'bottom' },
-    { target: null,            title: '3-Row Timeline',   text: 'CAST, SCENE, WORLD — drag cards from your Codex into each row.',                        char: 'cold',   pos: 'center' },
+    { target: 'tab-spiralcut', title: 'SpiralCut',      text: 'Clip-based storyboard editor. Build your story panel by panel.',                          char: 'monday', pos: 'bottom' },
+    { target: null,            title: '3-Row Timeline', text: 'CAST, SCENE, WORLD — drag cards from your Codex into each row.',                          char: 'cold',   pos: 'center' },
     { target: null,            title: 'Imagine Pipeline', text: 'Send a cut clip to Imagine for gen-image. It routes automatically.',                    char: 'sky',    pos: 'center' },
   ],
   forge: [
@@ -233,11 +233,14 @@ function injectCSS() {
 
     /* Card list */
     .guide-cards {
-      flex:1; overflow-y:auto;
+      flex:1; min-width:0; overflow-y:auto;
       padding:14px 16px calc(14px + var(--safe-bot));
       display:flex; flex-direction:column; gap:10px;
       -webkit-overflow-scrolling:touch;
+      scrollbar-width:thin; scrollbar-color:var(--muted) transparent;
     }
+    .guide-cards::-webkit-scrollbar { width:3px; }
+    .guide-cards::-webkit-scrollbar-thumb { background:var(--muted); border-radius:2px; }
 
     /* Hero block */
     .guide-hero {
@@ -332,6 +335,7 @@ function buildSection(sec) {
 
   let html = '';
 
+  // Hero block only on Start Here
   if (sec === 'start') {
     html += `
       <div class="guide-hero">
@@ -407,7 +411,7 @@ function startOverlay(key) {
   showStep();
 }
 
-function showStep() {
+async function showStep() {
   clearOverlay();
   if (overlayIdx >= overlaySteps.length) return;
 
@@ -415,15 +419,20 @@ function showStep() {
   const color = CHAR_COLOR[step.char] || '#7c6af7';
   const isLast = overlayIdx === overlaySteps.length - 1;
 
+  // Dim layer
   const dim = document.createElement('div');
   dim.id = 'guide-dim';
   dim.style.cssText = 'position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,0.65);';
   document.body.appendChild(dim);
 
+  // Highlight target
   let rect = null;
   if (step.target) {
     const el = document.getElementById(step.target);
     if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      // small delay so scroll settles before we measure rect
+      await new Promise(r => setTimeout(r, 120));
       rect = el.getBoundingClientRect();
       el.style.position  = 'relative';
       el.style.zIndex    = '7100';
@@ -433,6 +442,7 @@ function showStep() {
     }
   }
 
+  // Tooltip
   const tip = document.createElement('div');
   tip.id = 'guide-tip';
   tip.style.cssText = `
@@ -443,6 +453,8 @@ function showStep() {
     width:min(320px, calc(100vw - 32px));
     box-shadow:0 0 40px ${color}2a;
     font-family:'DM Mono',monospace;
+    max-height:60vh; overflow-y:auto;
+    scrollbar-width:thin; scrollbar-color:rgba(243,247,255,0.15) transparent;
   `;
   tip.innerHTML = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
@@ -459,6 +471,7 @@ function showStep() {
   `;
   document.body.appendChild(tip);
 
+  // Position tooltip
   positionTip(tip, rect, step.pos);
 
   document.getElementById('g-next').onclick = () => { overlayIdx++; clearHighlights(); showStep(); };
@@ -472,6 +485,7 @@ function positionTip(tip, rect, pos) {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     let left, top;
+
     if (!rect || pos === 'center') {
       left = (vw - tw) / 2;
       top  = (vh - th) / 2;
@@ -479,6 +493,7 @@ function positionTip(tip, rect, pos) {
       left = rect.left + rect.width / 2 - tw / 2;
       top  = pos === 'top' ? rect.top - th - 14 : rect.bottom + 14;
     }
+
     tip.style.left = Math.round(Math.max(8, Math.min(left, vw - tw - 8))) + 'px';
     tip.style.top  = Math.round(Math.max(8, Math.min(top,  vh - th - 8))) + 'px';
   });
