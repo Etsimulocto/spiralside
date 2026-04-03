@@ -139,34 +139,36 @@ const COMIC_SPEAKER_COLORS = {
 // ── POSITION MAP ───────────────────────────────────────────────
 // pos string → CSS for the overlay bubble container
 function _posCSS(pos) {
+  // wrap is position:absolute on comic-panel; bubble is position:relative inside it
+  const shared = 'position:absolute;z-index:11;max-width:82%;pointer-events:none;';
   const map = {
-    'top-left':    'top:8%;left:4%;right:auto;bottom:auto;',
-    'top-center':  'top:8%;left:50%;transform:translateX(-50%);right:auto;bottom:auto;',
-    'top-right':   'top:8%;right:4%;left:auto;bottom:auto;',
-    'mid-left':    'top:50%;transform:translateY(-50%);left:4%;right:auto;bottom:auto;',
-    'mid-center':  'top:50%;left:50%;transform:translate(-50%,-50%);right:auto;bottom:auto;',
-    'mid-right':   'top:50%;transform:translateY(-50%);right:4%;left:auto;bottom:auto;',
-    'bot-left':    'bottom:14%;left:4%;right:auto;top:auto;',
-    'bot-center':  'bottom:14%;left:50%;transform:translateX(-50%);right:auto;top:auto;',
-    'bot-right':   'bottom:14%;right:4%;left:auto;top:auto;',
+    'top-left':   shared + 'top:6%;left:4%;',
+    'top-center': shared + 'top:6%;left:50%;transform:translateX(-50%);',
+    'top-right':  shared + 'top:6%;right:4%;',
+    'mid-left':   shared + 'top:40%;left:4%;',
+    'mid-center': shared + 'top:40%;left:50%;transform:translateX(-50%);',
+    'mid-right':  shared + 'top:40%;right:4%;',
+    'bot-left':   shared + 'bottom:22%;left:4%;',
+    'bot-center': shared + 'bottom:22%;left:50%;transform:translateX(-50%);',
+    'bot-right':  shared + 'bottom:22%;right:4%;',
   };
   return map[pos] || map['bot-center'];
 }
 
 // ── STYLE MAP ─────────────────────────────────────────────────
 function _bubbleStyle(style, speakerColor) {
-  const base = 'position:absolute;z-index:11;max-width:80%;pointer-events:none;';
+  // No position here — positioning is on the wrap div
   const borderColor = speakerColor || '#00F6D6';
   switch(style) {
     case 'caption':
-      return base + 'background:rgba(10,10,14,0.82);border:none;border-top:2px solid '+borderColor+';padding:8px 12px;font-size:0.82rem;color:#F3F7FF;';
+      return 'background:rgba(10,10,14,0.88);border:none;border-top:2px solid '+borderColor+';padding:8px 12px;font-size:0.82rem;color:#F3F7FF;';
     case 'narration':
-      return base + 'background:rgba(10,10,14,0.75);border:1px solid rgba(243,247,255,0.2);border-radius:4px;padding:8px 12px;font-size:0.78rem;color:#F3F7FF;font-style:italic;';
+      return 'background:rgba(10,10,14,0.82);border:1px solid rgba(243,247,255,0.2);border-radius:4px;padding:8px 12px;font-size:0.78rem;color:#F3F7FF;font-style:italic;';
     case 'shout':
-      return base + 'background:rgba(255,75,203,0.12);border:2px solid '+borderColor+';border-radius:4px;padding:10px 14px;font-size:0.96rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.04em;';
+      return 'background:rgba(255,75,203,0.12);border:2px solid '+borderColor+';border-radius:4px;padding:10px 14px;font-size:0.96rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.04em;';
     case 'dialogue':
     default:
-      return base + 'background:rgba(10,10,14,0.88);border:2px solid '+borderColor+';border-radius:3px 12px 12px 12px;padding:10px 14px;';
+      return 'background:rgba(10,10,14,0.88);border:2px solid '+borderColor+';border-radius:3px 12px 12px 12px;padding:10px 14px;';
   }
 }
 
@@ -186,7 +188,7 @@ function _renderPositionedBubble(line) {
   wrap.className = 'comic-tb-overlay';
   wrap.style.cssText = _posCSS(line.pos || 'bot-center');
 
-  // Apply bubble style
+  // Bubble is a child of wrap — no extra positioning needed
   const bubble = document.createElement('div');
   bubble.style.cssText = _bubbleStyle(line.style, speakerColor);
 
