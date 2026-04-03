@@ -233,7 +233,7 @@ function injectCSS() {
 
     /* Card list */
     .guide-cards {
-      flex:1; width:100%; overflow-y:auto;
+      flex:1; overflow-y:auto;
       padding:14px 16px calc(14px + var(--safe-bot));
       display:flex; flex-direction:column; gap:10px;
       -webkit-overflow-scrolling:touch;
