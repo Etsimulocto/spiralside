@@ -144,6 +144,18 @@ function injectLibraryStyles() {
     }
     .tl-intro-btn:hover { border-color:var(--yellow); color:var(--yellow); }
     .tl-intro-btn.is-intro { border-color:var(--yellow); color:var(--yellow); background:rgba(255,217,61,0.1); }
+    .tl-export-btn {
+      padding:6px 10px; background:transparent; border:1px solid var(--border);
+      border-radius:20px; color:var(--subtext); font-size:0.62rem; font-family:var(--font-ui);
+      letter-spacing:0.06em; cursor:pointer; white-space:nowrap; transition:all 0.2s;
+    }
+    .tl-export-btn:hover { border-color:var(--teal); color:var(--teal); }
+    .tl-title-input {
+      flex:1; background:transparent; border:none; border-bottom:1px solid transparent;
+      color:var(--text); font-family:var(--font-ui); font-size:0.88rem; font-weight:700;
+      outline:none; min-width:0; transition:border-color 0.2s;
+    }
+    .tl-title-input:focus { border-bottom-color:var(--pink); }
 
     /* ── TWO-TRACK FILMSTRIP ── */
     .tl-tracks {
@@ -381,6 +393,7 @@ function buildLibraryHTML() {
         <div class="lib-toolbar" style="padding-bottom:0">
           <input class="book-title-input" id="book-title-input" placeholder="new book title..." />
           <button class="book-create-btn" id="book-new-btn">＋ create</button>
+          <button class="book-create-btn" id="book-import-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--subtext)" title="import .spiralbook.json">↑ import</button>
         </div>
         <div style="flex:1;overflow-y:auto;padding:12px 16px 80px">
           <div id="lib-books-list"></div>
@@ -399,11 +412,13 @@ function ensureOverlays() {
     tl.id = 'timeline-overlay';
     tl.innerHTML = `
       <div class="tl-header">
-        <span class="tl-title" id="tl-title">book</span>
-        <button class="tl-intro-btn" id="tl-make-intro" title="play this book on startup">⭐ make intro</button>
+        <input class="tl-title-input" id="tl-title" value="book" />
+        <button class="tl-export-btn" id="tl-export-btn" title="download book as JSON">↓ save</button>
+        <button class="tl-intro-btn" id="tl-make-intro" title="play this book on startup">⭐ intro</button>
         <button class="tl-play-btn" id="tl-play-btn">▶ play</button>
         <button class="tl-close-btn" id="tl-close-btn">✕</button>
       </div>
+      <input type="file" id="tl-import-input" accept=".json" style="display:none" />
       <div class="tl-tracks" id="tl-tracks">
         <div class="tl-track track-frame">
           <div class="tl-track-label">frames</div>
@@ -580,6 +595,8 @@ function wireLibraryControls() {
 
   document.getElementById('book-new-btn')
     .addEventListener('click', createNewBook);
+  document.getElementById('book-import-btn')
+    .addEventListener('click', () => document.getElementById('tl-import-input').click());
 
   document.querySelectorAll('.lib-tab').forEach(tab =>
     tab.addEventListener('click', () => {
@@ -597,6 +614,61 @@ function wireTimeline() {
   document.getElementById('tl-close-btn').addEventListener('click', closeTimeline);
   document.getElementById('tl-play-btn').addEventListener('click', playTimeline);
   document.getElementById('tl-make-intro').addEventListener('click', toggleBookIntro);
+
+  // Export: download book + panels as self-contained JSON
+  document.getElementById('tl-export-btn').addEventListener('click', () => {
+    const book = books.find(b => b.id === viewingBookId);
+    if (!book) return;
+    // Bundle panels referenced by this book's slots inline (dataURL included)
+    const usedPanelIds = new Set((book.slots || []).map(s => s.panelId).filter(Boolean));
+    const panelBundle  = panels.filter(p => usedPanelIds.has(p.id));
+    const bundle = { version: 1, book, panels: panelBundle };
+    const blob   = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+    const a      = document.createElement('a');
+    a.href       = URL.createObjectURL(blob);
+    a.download   = (book.title || 'book').replace(/[^a-z0-9]/gi, '-').toLowerCase() + '.spiralbook.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+
+  // Import: load a .spiralbook.json into IDB
+  document.getElementById('tl-import-input').addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const txt  = await file.text();
+      const data = JSON.parse(txt);
+      if (!data.book || !data.book.id) { alert('Not a valid .spiralbook file.'); return; }
+      // Deduplicate: give new IDs if already exists
+      const newBookId = 'book_' + Date.now();
+      const idMap     = {};  // old panelId -> new panelId
+      for (const p of (data.panels || [])) {
+        const newId = 'panel_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+        idMap[p.id] = newId;
+        const newPanel = { ...p, id: newId };
+        panels.push(newPanel);
+        await dbSet('panels', newPanel);
+      }
+      // Remap slot panelIds
+      const importedBook = {
+        ...data.book,
+        id: newBookId,
+        title: data.book.title + ' (imported)',
+        slots: (data.book.slots || []).map(s => ({
+          ...s,
+          panelId: idMap[s.panelId] || s.panelId,
+        })),
+        createdAt: Date.now(),
+      };
+      books.push(importedBook);
+      await dbSet('books', importedBook);
+      renderLibrary();
+      openBookTimeline(newBookId);
+    } catch(err) {
+      alert('Import failed: ' + err.message);
+    }
+    e.target.value = '';
+  });
 
   // add buttons in empty state
   document.getElementById('se-add-image').addEventListener('click', () => openSlotEditor(null, 'image'));
@@ -945,7 +1017,15 @@ export function openBookTimeline(id) {
   if (!book.slots) book.slots = [];
   viewingBookId = id;
   editingSlotIdx = null;
-  document.getElementById('tl-title').textContent = book.title;
+  const titleInput = document.getElementById('tl-title');
+  if (titleInput) {
+    titleInput.value = book.title;
+    // Save title on change
+    titleInput.oninput = () => {
+      const b = books.find(b => b.id === viewingBookId);
+      if (b) { b.title = titleInput.value || 'untitled book'; dbSet('books', b); renderBooksView(); }
+    };
+  }
   renderStrip(book);
   showSlotEmpty();
   document.getElementById('timeline-overlay').classList.add('open');
