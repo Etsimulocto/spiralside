@@ -209,9 +209,6 @@ function injectCSS() {
   const s = document.createElement('style');
   s.id = 'guide-styles';
   s.textContent = `
-    /* ── GUIDE SHELL ── */
-    #view-guide.active { flex-direction:column; overflow:hidden; flex:1; }
-
     /* Section pills */
     .guide-sections {
       display:flex; gap:6px; padding:12px 16px 0;
@@ -319,6 +316,7 @@ export function renderGuide() {
   if (!el) return;
 
   el.innerHTML = `
+    <div id="guide-inner" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
     <div class="guide-sections">
       ${SECTIONS.map(s => `
         <button class="guide-section-pill ${s === activeSection ? 'active' : ''}"
@@ -326,6 +324,7 @@ export function renderGuide() {
       `).join('')}
     </div>
     <div class="guide-cards">${buildSection(activeSection)}</div>
+    </div>
   `;
 }
 
