@@ -157,12 +157,11 @@ function injectLibraryStyles() {
       font-size:0.5rem; letter-spacing:0.14em; text-transform:uppercase;
       color:var(--subtext); padding:5px 16px 2px; flex-shrink:0;
     }
-    /* FRAME track (top) — shorter slots */
+    /* FRAME track (top) — same size as scene slots */
     .tl-track.track-frame .tl-strip-wrap {
       padding:4px 16px 4px;
     }
     .tl-track.track-frame .tl-slot {
-      height:44px;
       border-color:rgba(0,246,214,0.2);
       background:var(--surface2);
     }
@@ -176,6 +175,17 @@ function injectLibraryStyles() {
     .tl-track.track-frame .tl-slot.tl-frame-empty:hover {
       border-color:var(--teal); color:var(--teal);
     }
+    /* delete button on frame slots */
+    .tl-frame-del {
+      position:absolute; top:2px; right:2px; z-index:20;
+      width:16px; height:16px; border-radius:50%;
+      background:rgba(0,0,0,0.7); border:none;
+      color:rgba(255,255,255,0.6); font-size:0.5rem;
+      cursor:pointer; display:flex; align-items:center;
+      justify-content:center; line-height:1; padding:0;
+      transition:color 0.15s, background 0.15s;
+    }
+    .tl-frame-del:hover { background:var(--pink); color:#fff; }
     /* SCENE track (bottom) — full height slots */
     .tl-track.track-scene .tl-strip-wrap {
       padding:4px 16px 10px;
@@ -732,34 +742,71 @@ function renderStrip(book) {
       const fdiv = document.createElement('div');
       fdiv.className = 'tl-slot';
       fdiv.dataset.idx = idx;
-      fdiv.style.height = '44px';
 
       if (slot.frameSVG) {
-        // Show frame SVG preview
         fdiv.classList.add('has-frame');
-        fdiv.innerHTML = slot.frameSVG;
-        const svg = fdiv.querySelector('svg');
-        if (svg) svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
-        // Frame name tooltip
+
+        // Show the scene image as background (if image slot)
+        if (slot.type === 'image') {
+          const p = panels.find(x => x.id === slot.panelId);
+          if (p) {
+            const fObj = FILTERS.find(f => f.id === (slot.filter || 'none')) || FILTERS[0];
+            const bgImg = document.createElement('img');
+            bgImg.src = p.dataURL;
+            bgImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none';
+            bgImg.style.filter = fObj.css;
+            fdiv.appendChild(bgImg);
+          }
+        }
+
+        // Frame SVG overlay on top
+        const fovEl = document.createElement('div');
+        fovEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:2';
+        fovEl.innerHTML = slot.frameSVG;
+        const fsvg = fovEl.querySelector('svg');
+        if (fsvg) fsvg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+        fdiv.appendChild(fovEl);
+
+        // Frame name label
         const lbl = document.createElement('div');
-        lbl.style.cssText = 'position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:0.4rem;color:rgba(0,246,214,0.7);letter-spacing:0.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px';
+        lbl.style.cssText = 'position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:0.4rem;color:rgba(0,246,214,0.9);letter-spacing:0.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px;z-index:3;text-shadow:0 1px 3px #000';
         lbl.textContent = slot.frameName || '';
         fdiv.appendChild(lbl);
+
+        // Delete button — clears frame from slot
+        const delBtn = document.createElement('button');
+        delBtn.className = 'tl-frame-del';
+        delBtn.textContent = '✕';  // ✕
+        delBtn.title = 'remove frame';
+        delBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          const b = books.find(b => b.id === viewingBookId);
+          if (!b) return;
+          const s = b.slots[idx];
+          if (!s) return;
+          s.frameId = s.frameSVG = s.frameName = null;
+          if (editingSlotIdx === idx) {
+            window._pendingFrameId = window._pendingFrameSVG = window._pendingFrameName = null;
+            _updateFramePreview(null);
+          }
+          dbSet('books', b);
+          renderStrip(b);
+        });
+        fdiv.appendChild(delBtn);
+
       } else {
         // Empty placeholder — click to pick a frame for this slot
         fdiv.classList.add('tl-frame-empty');
         fdiv.textContent = '▣';  // ▣
       }
 
-      // Click frame slot → open frame picker for this scene slot
+      // Click frame slot → open frame picker
       fdiv.addEventListener('click', () => {
         if (!window.openFramePicker) return;
-        // First select the scene slot so editingSlotIdx is set
         editingSlotIdx = idx;
         refreshStripHighlight();
         window.openFramePicker({
           onSelect: (frame) => {
-            // Apply frame directly to slot and save
             const b = books.find(b => b.id === viewingBookId);
             if (!b) return;
             const s = b.slots[idx];
@@ -767,13 +814,11 @@ function renderStrip(book) {
             s.frameId   = frame ? frame.id      : null;
             s.frameSVG  = frame ? frame.svgData : null;
             s.frameName = frame ? frame.name    : null;
-            // Sync pending state so se-img-save also has it
             window._pendingFrameId   = s.frameId;
             window._pendingFrameSVG  = s.frameSVG;
             window._pendingFrameName = s.frameName;
             dbSet('books', b);
             renderStrip(b);
-            // If slot editor is open on this slot, refresh frame preview
             if (editingSlotIdx === idx) {
               _updateFramePreview(frame);
             }
