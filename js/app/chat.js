@@ -106,26 +106,26 @@ export function addMessage(text, role) {
     const menu = document.createElement('div');
     menu.className = 'bubble-menu';
     menu.style.cssText = 'position:absolute;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:10px;padding:4px;display:flex;gap:4px;box-shadow:0 4px 20px rgba(0,0,0,0.5);bottom:calc(100% + 4px);left:40px;';
-    const _menuItems = [
-      ['copy',    '📋', () => { const t = bubble.innerText || bubble.textContent; navigator.clipboard.writeText(t).then(() => { const p = bubble.style.outline; bubble.style.outline='2px solid var(--teal)'; setTimeout(()=>{bubble.style.outline=p;},600); }).catch(()=>{}); }],
-      ['crew',    '↩',    () => { import('./state.js').then(({state})=>{state.botName='Sky';state.botColor='#00F6D6';});import('./chat.js').then(({clearChat})=>clearChat()); }],
-      ['cannon',  '🔖', () => { import('./ui.js').then(({switchView})=>switchView('cannon')); }],
-      ['cut',     '✂️',  () => { import('./ui.js').then(({switchView})=>switchView('cut')); }],
-      ['speak',   '🔊', () => { const t = bubble.innerText || bubble.textContent; import('./models.js').then(({speakReply})=>speakReply(t)); }],
-    ];
-    _menuItems.forEach(([label, icon, action]) => {
+    [
+      ['copy',   '📋', () => { const t = bubble.innerText||bubble.textContent; navigator.clipboard.writeText(t).then(()=>{ const p=bubble.style.outline; bubble.style.outline='2px solid var(--teal)'; setTimeout(()=>{bubble.style.outline=p;},600); }).catch(()=>{}); }],
+      ['crew',   '↩',    () => { import('./state.js').then(({state})=>{state.botName='Sky';state.botColor='#00F6D6';});import('./chat.js').then(({clearChat})=>clearChat()); }],
+      ['cannon', '🔖', () => { import('./ui.js').then(({switchView})=>switchView('cannon')); }],
+      ['cut',    '✂️',  () => { import('./ui.js').then(({switchView})=>switchView('cut')); }],
+      ['speak',  '🔊', () => { const t=bubble.innerText||bubble.textContent; import('./models.js').then(({speakReply})=>speakReply(t)); }],
+    ].forEach(([label,icon,action]) => {
       const btn = document.createElement('button');
-      btn.title = label; btn.textContent = icon;
-      btn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:6px;color:#e8e8f0;transition:background 0.15s;';
-      btn.onmouseenter = () => btn.style.background = '#2a2a3e';
-      btn.onmouseleave = () => btn.style.background = 'none';
-      btn.onclick = (ev) => { ev.stopPropagation(); menu.remove(); action(); };
+      btn.title=label; btn.textContent=icon;
+      btn.style.cssText='background:none;border:none;cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:6px;color:#e8e8f0;transition:background 0.15s;';
+      btn.onmouseenter=()=>btn.style.background='#2a2a3e';
+      btn.onmouseleave=()=>btn.style.background='none';
+      btn.onclick=(ev)=>{ev.stopPropagation();menu.remove();action();};
       menu.appendChild(btn);
     });
-    wrap.style.position = 'relative';
+    wrap.style.position='relative';
     wrap.appendChild(menu);
-    setTimeout(() => document.addEventListener('click', () => menu.remove(), {once:true}), 0);
+    setTimeout(()=>document.addEventListener('click',()=>menu.remove(),{once:true}),0);
   });
+
     // Remove any existing menu
     document.querySelectorAll('.bubble-menu').forEach(m => m.remove());
     const menu = document.createElement('div');
