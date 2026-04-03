@@ -316,7 +316,6 @@ export function renderGuide() {
   if (!el) return;
 
   el.innerHTML = `
-    <div id="guide-inner" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
     <div class="guide-sections">
       ${SECTIONS.map(s => `
         <button class="guide-section-pill ${s === activeSection ? 'active' : ''}"
@@ -324,7 +323,6 @@ export function renderGuide() {
       `).join('')}
     </div>
     <div class="guide-cards">${buildSection(activeSection)}</div>
-    </div>
   `;
 }
 
