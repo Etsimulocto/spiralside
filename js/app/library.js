@@ -145,11 +145,45 @@ function injectLibraryStyles() {
     .tl-intro-btn:hover { border-color:var(--yellow); color:var(--yellow); }
     .tl-intro-btn.is-intro { border-color:var(--yellow); color:var(--yellow); background:rgba(255,217,61,0.1); }
 
-    /* filmstrip */
+    /* ── TWO-TRACK FILMSTRIP ── */
+    .tl-tracks {
+      flex-shrink:0; border-bottom:1px solid var(--border);
+      display:flex; flex-direction:column;
+    }
+    .tl-track {
+      display:flex; flex-direction:column; gap:0;
+    }
+    .tl-track-label {
+      font-size:0.5rem; letter-spacing:0.14em; text-transform:uppercase;
+      color:var(--subtext); padding:5px 16px 2px; flex-shrink:0;
+    }
+    /* FRAME track (top) — shorter slots */
+    .tl-track.track-frame .tl-strip-wrap {
+      padding:4px 16px 4px;
+    }
+    .tl-track.track-frame .tl-slot {
+      height:44px;
+      border-color:rgba(0,246,214,0.2);
+      background:var(--surface2);
+    }
+    .tl-track.track-frame .tl-slot:hover { border-color:var(--teal); transform:scale(1.04); }
+    .tl-track.track-frame .tl-slot.has-frame { border-color:rgba(0,246,214,0.5); }
+    .tl-track.track-frame .tl-slot.tl-frame-empty {
+      border-style:dashed; border-color:rgba(0,246,214,0.15);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.65rem; color:rgba(0,246,214,0.25);
+    }
+    .tl-track.track-frame .tl-slot.tl-frame-empty:hover {
+      border-color:var(--teal); color:var(--teal);
+    }
+    /* SCENE track (bottom) — full height slots */
+    .tl-track.track-scene .tl-strip-wrap {
+      padding:4px 16px 10px;
+    }
+    /* shared strip row */
     .tl-strip-wrap {
-      flex-shrink:0; overflow-x:auto; overflow-y:hidden;
-      padding:14px 16px 10px; display:flex; gap:10px;
-      border-bottom:1px solid var(--border);
+      overflow-x:auto; overflow-y:hidden;
+      display:flex; gap:10px;
       scrollbar-width:thin; scrollbar-color:var(--teal) var(--surface);
       -webkit-overflow-scrolling:touch;
     }
@@ -356,7 +390,16 @@ function ensureOverlays() {
         <button class="tl-play-btn" id="tl-play-btn">▶ play</button>
         <button class="tl-close-btn" id="tl-close-btn">✕</button>
       </div>
-      <div class="tl-strip-wrap" id="tl-strip"></div>
+      <div class="tl-tracks" id="tl-tracks">
+        <div class="tl-track track-frame">
+          <div class="tl-track-label">frames</div>
+          <div class="tl-strip-wrap" id="tl-frame-strip"></div>
+        </div>
+        <div class="tl-track track-scene">
+          <div class="tl-track-label">scene</div>
+          <div class="tl-strip-wrap" id="tl-strip"></div>
+        </div>
+      </div>
       <div id="slot-editor">
         <div class="se-empty" id="se-empty">
           <div class="se-empty-label">tap a slot or add a new one</div>
@@ -677,11 +720,71 @@ function renderBooksView() {
 
 // ── FILMSTRIP RENDER ──────────────────────────────────────────
 function renderStrip(book) {
-  const strip = document.getElementById('tl-strip');
+  const strip      = document.getElementById('tl-strip');
+  const frameStrip = document.getElementById('tl-frame-strip');
   if (!strip) return;
   strip.innerHTML = '';
+  if (frameStrip) frameStrip.innerHTML = '';
 
   (book.slots || []).forEach((slot, idx) => {
+    // ── FRAME TRACK slot ──────────────────────────────────
+    if (frameStrip) {
+      const fdiv = document.createElement('div');
+      fdiv.className = 'tl-slot';
+      fdiv.dataset.idx = idx;
+      fdiv.style.height = '44px';
+
+      if (slot.frameSVG) {
+        // Show frame SVG preview
+        fdiv.classList.add('has-frame');
+        fdiv.innerHTML = slot.frameSVG;
+        const svg = fdiv.querySelector('svg');
+        if (svg) svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+        // Frame name tooltip
+        const lbl = document.createElement('div');
+        lbl.style.cssText = 'position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:0.4rem;color:rgba(0,246,214,0.7);letter-spacing:0.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px';
+        lbl.textContent = slot.frameName || '';
+        fdiv.appendChild(lbl);
+      } else {
+        // Empty placeholder — click to pick a frame for this slot
+        fdiv.classList.add('tl-frame-empty');
+        fdiv.textContent = '▣';  // ▣
+      }
+
+      // Click frame slot → open frame picker for this scene slot
+      fdiv.addEventListener('click', () => {
+        if (!window.openFramePicker) return;
+        // First select the scene slot so editingSlotIdx is set
+        editingSlotIdx = idx;
+        refreshStripHighlight();
+        window.openFramePicker({
+          onSelect: (frame) => {
+            // Apply frame directly to slot and save
+            const b = books.find(b => b.id === viewingBookId);
+            if (!b) return;
+            const s = b.slots[idx];
+            if (!s) return;
+            s.frameId   = frame ? frame.id      : null;
+            s.frameSVG  = frame ? frame.svgData : null;
+            s.frameName = frame ? frame.name    : null;
+            // Sync pending state so se-img-save also has it
+            window._pendingFrameId   = s.frameId;
+            window._pendingFrameSVG  = s.frameSVG;
+            window._pendingFrameName = s.frameName;
+            dbSet('books', b);
+            renderStrip(b);
+            // If slot editor is open on this slot, refresh frame preview
+            if (editingSlotIdx === idx) {
+              _updateFramePreview(frame);
+            }
+          }
+        });
+      });
+
+      frameStrip.appendChild(fdiv);
+    }
+
+    // ── SCENE TRACK slot ──────────────────────────────────
     const div = document.createElement('div');
     div.className = 'tl-slot';
     div.dataset.idx = idx;
@@ -703,15 +806,6 @@ function renderStrip(book) {
           dot.style.background = CHAR_COLORS[slot.tag] || CHAR_COLORS.none;
           div.appendChild(dot);
         }
-        // Frame overlay on filmstrip thumbnail
-        if (slot.frameSVG) {
-          const fov = document.createElement('div');
-          fov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:5';
-          fov.innerHTML = slot.frameSVG;
-          const svg = fov.querySelector('svg');
-          if (svg) svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
-          div.appendChild(fov);
-        }
       } else {
         div.innerHTML += `<div class="tl-slot-text" style="color:var(--subtext)">missing image</div>`;
       }
@@ -727,7 +821,7 @@ function renderStrip(book) {
     // click → open slot editor
     div.addEventListener('click', () => openSlotEditor(idx, slot.type));
 
-    // drag & drop reorder
+    // drag & drop reorder (scene track only — frames follow automatically)
     div.setAttribute('draggable', 'true');
     div.addEventListener('dragstart', () => { _dragIdx = idx; div.classList.add('dragging'); });
     div.addEventListener('dragend',   () => { _dragIdx = null; div.classList.remove('dragging'); });
@@ -749,12 +843,20 @@ function renderStrip(book) {
     strip.appendChild(div);
   });
 
-  // add slot button
+  // add slot button (scene track only)
   const addDiv = document.createElement('div');
   addDiv.className = 'tl-slot tl-add';
   addDiv.textContent = '+';
   addDiv.addEventListener('click', () => showSlotTypeChoice());
   strip.appendChild(addDiv);
+
+  // Sync frame strip scroll to scene strip scroll
+  const sceneWrap = strip.parentElement;
+  const frameWrap = frameStrip?.parentElement;
+  if (sceneWrap && frameWrap) {
+    sceneWrap.onscroll = () => { frameWrap.scrollLeft = sceneWrap.scrollLeft; };
+    frameWrap.onscroll = () => { sceneWrap.scrollLeft = frameWrap.scrollLeft; };
+  }
 }
 
 // ── TIMELINE OPEN/CLOSE ───────────────────────────────────────
@@ -1033,8 +1135,13 @@ function updateTextPreview() {
 }
 
 function refreshStripHighlight() {
-  document.querySelectorAll('.tl-slot').forEach((el, idx) => {
-    el.classList.toggle('active', idx === editingSlotIdx);
+  // Scene track — highlight by dataset.idx
+  document.querySelectorAll('#tl-strip .tl-slot').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.idx) === editingSlotIdx);
+  });
+  // Frame track — highlight matching idx
+  document.querySelectorAll('#tl-frame-strip .tl-slot').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.idx) === editingSlotIdx);
   });
 }
 
