@@ -262,7 +262,7 @@ function injectQuestStyles() {
 
     /* -- DICE ROLLER -- */
     .q-dice-section { padding: 4px 12px 12px; }
-    .q-dice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 10px; }
+    .q-dice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
     .q-die { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 9px 4px 7px; cursor: pointer; transition: all 0.14s; user-select: none; }
     .q-die:active { transform: scale(0.93); }
     .q-die:hover  { border-color: rgba(124,106,247,0.5); background: rgba(124,106,247,0.07); }
@@ -292,6 +292,7 @@ function injectQuestStyles() {
     .q-dice-mod-btn { width: 26px; height: 26px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--subtext); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
     .q-dice-mod-btn:hover { border-color: var(--accent); color: var(--accent); }
     .q-dice-mod-val { font-size: 0.75rem; color: #7c6af7; min-width: 28px; text-align: center; border: 1px solid rgba(124,106,247,0.3); border-radius: 6px; padding: 2px 4px; background: rgba(124,106,247,0.07); }
+    .q-dice-result-span { grid-column: 2 / 5; align-self: stretch; }
 
   `;
   document.head.appendChild(s);
@@ -623,13 +624,13 @@ function renderQuest(el, char, events) {
         <div class="q-die" data-die="d100" data-sides="100" onclick="window._rollDie(this)"><div class="q-die-face">&#128175;</div><div class="q-die-label">d%</div></div>
         <div class="q-die" data-die="fate" data-sides="0"   onclick="window._rollDie(this)"><div class="q-die-face">&#10022;</div><div class="q-die-label">fate</div></div>
         <div class="q-die" data-die="coin" data-sides="-1"  onclick="window._rollDie(this)"><div class="q-die-face">&#129689;</div><div class="q-die-label">coin</div></div>
-      </div>
-      <div class="q-dice-result" id="q-dice-result">
-        <div>
-          <div class="q-dice-result-main" id="q-dice-main">-</div>
-          <div class="q-dice-result-label" id="q-dice-lbl">tap a die to roll</div>
+        <div class="q-dice-result q-dice-result-span" id="q-dice-result">
+          <div>
+            <div class="q-dice-result-main" id="q-dice-main">-</div>
+            <div class="q-dice-result-label" id="q-dice-lbl">tap a die to roll</div>
+          </div>
+          <div class="q-dice-history" id="q-dice-history"></div>
         </div>
-        <div class="q-dice-history" id="q-dice-history"></div>
       </div>
     </div>
 
