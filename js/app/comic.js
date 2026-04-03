@@ -115,8 +115,96 @@ function comicRender(idx, onFinish) {
     '<div class="comic-dot ' + (i === idx ? 'active' : i < idx ? 'done' : '') + '"></div>'
   ).join('');
 
+  // Clear positioned text overlays from previous panel
+  _clearPositionedOverlays();
+  // Reset dialogue box visibility
+  const _dlg = document.getElementById('comic-dialogue');
+  if (_dlg) _dlg.style.visibility = '';
+  // If all lines have pos, hide dialogue box preemptively
+  const _lines = p.dialogue || [];
+  if (_lines.length && _lines.every(l => l.pos)) {
+    if (_dlg) _dlg.style.visibility = 'hidden';
+  }
+
   comicLineIdx = 0;
-  comicTypeLine(p.dialogue || [], 0, onFinish);
+  comicTypeLine(_lines, 0, onFinish);
+}
+
+// ── SPEAKER COLOR MAP ─────────────────────────────────────────
+const COMIC_SPEAKER_COLORS = {
+  sky:'#00F6D6', monday:'#FF4BCB', cold:'#4DA3FF',
+  grit:'#FFD93D', you:'#7B5FFF', narrator:'rgba(243,247,255,0.85)',
+};
+
+// ── POSITION MAP ───────────────────────────────────────────────
+// pos string → CSS for the overlay bubble container
+function _posCSS(pos) {
+  const map = {
+    'top-left':    'top:8%;left:4%;right:auto;bottom:auto;',
+    'top-center':  'top:8%;left:50%;transform:translateX(-50%);right:auto;bottom:auto;',
+    'top-right':   'top:8%;right:4%;left:auto;bottom:auto;',
+    'mid-left':    'top:50%;transform:translateY(-50%);left:4%;right:auto;bottom:auto;',
+    'mid-center':  'top:50%;left:50%;transform:translate(-50%,-50%);right:auto;bottom:auto;',
+    'mid-right':   'top:50%;transform:translateY(-50%);right:4%;left:auto;bottom:auto;',
+    'bot-left':    'bottom:14%;left:4%;right:auto;top:auto;',
+    'bot-center':  'bottom:14%;left:50%;transform:translateX(-50%);right:auto;top:auto;',
+    'bot-right':   'bottom:14%;right:4%;left:auto;top:auto;',
+  };
+  return map[pos] || map['bot-center'];
+}
+
+// ── STYLE MAP ─────────────────────────────────────────────────
+function _bubbleStyle(style, speakerColor) {
+  const base = 'position:absolute;z-index:11;max-width:80%;pointer-events:none;';
+  const borderColor = speakerColor || '#00F6D6';
+  switch(style) {
+    case 'caption':
+      return base + 'background:rgba(10,10,14,0.82);border:none;border-top:2px solid '+borderColor+';padding:8px 12px;font-size:0.82rem;color:#F3F7FF;';
+    case 'narration':
+      return base + 'background:rgba(10,10,14,0.75);border:1px solid rgba(243,247,255,0.2);border-radius:4px;padding:8px 12px;font-size:0.78rem;color:#F3F7FF;font-style:italic;';
+    case 'shout':
+      return base + 'background:rgba(255,75,203,0.12);border:2px solid '+borderColor+';border-radius:4px;padding:10px 14px;font-size:0.96rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.04em;';
+    case 'dialogue':
+    default:
+      return base + 'background:rgba(10,10,14,0.88);border:2px solid '+borderColor+';border-radius:3px 12px 12px 12px;padding:10px 14px;';
+  }
+}
+
+// Clear all positioned text overlays on the panel
+function _clearPositionedOverlays() {
+  document.querySelectorAll('.comic-tb-overlay').forEach(el => el.remove());
+}
+
+// Render a positioned text box (typewriter) — returns the bubble el
+function _renderPositionedBubble(line) {
+  const panel = document.getElementById('comic-panel');
+  if (!panel) return null;
+
+  const speakerColor = COMIC_SPEAKER_COLORS[(line.speaker||'').toLowerCase()] || '#F3F7FF';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'comic-tb-overlay';
+  wrap.style.cssText = _posCSS(line.pos || 'bot-center');
+
+  // Apply bubble style
+  const bubble = document.createElement('div');
+  bubble.style.cssText = _bubbleStyle(line.style, speakerColor);
+
+  // Speaker label (not for narrator or empty)
+  if (line.speaker && line.speaker !== 'narrator') {
+    const spk = document.createElement('div');
+    spk.style.cssText = 'font-size:0.56rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:700;color:'+speakerColor+';margin-bottom:4px;';
+    spk.textContent = line.speaker;
+    bubble.appendChild(spk);
+  }
+
+  const textEl = document.createElement('div');
+  textEl.style.cssText = 'font-size:0.84rem;line-height:1.55;color:#F3F7FF;';
+  bubble.appendChild(textEl);
+  wrap.appendChild(bubble);
+  panel.appendChild(wrap);
+
+  return textEl;
 }
 
 function comicTypeLine(lines, idx, onFinish) {
@@ -124,29 +212,58 @@ function comicTypeLine(lines, idx, onFinish) {
   comicLineIdx = idx;
   if (idx >= lines.length) return;
 
-  const line      = lines[idx];
-  const speakerEl = document.getElementById('comic-speaker');
-  const textEl    = document.getElementById('comic-text');
-
-  speakerEl.textContent = line.speaker === 'narrator' ? '' : line.speaker;
-  speakerEl.className   = line.speaker.toLowerCase();
-  textEl.textContent    = '';
+  const line = lines[idx];
 
   if (comicTyping) clearInterval(comicTyping);
 
-  let i = 0;
-  const speed = line.speaker === 'narrator' ? 32 : 20;
+  if (line.pos) {
+    // ── POSITIONED TEXT BOX ─────────────────────────────────
+    // Clear previous overlays for this panel, then render at position
+    // (keep overlays from earlier lines — accumulate them)
+    const textEl = _renderPositionedBubble(line);
+    if (!textEl) { comicTyping = null; return; }
 
-  comicTyping = setInterval(function() {
-    textEl.textContent += line.text[i++];
-    if (i >= line.text.length) {
-      clearInterval(comicTyping);
-      comicTyping = null;
-      if (idx + 1 < lines.length) {
-        setTimeout(function() { comicTypeLine(lines, idx + 1, onFinish); }, 1100);
+    // Hide the standard dialogue box for positioned lines
+    const dlg = document.getElementById('comic-dialogue');
+    if (dlg) dlg.style.visibility = 'hidden';
+
+    let i = 0;
+    const speed = line.speaker === 'narrator' ? 32 : 20;
+    comicTyping = setInterval(function() {
+      textEl.textContent += line.text[i++];
+      if (i >= line.text.length) {
+        clearInterval(comicTyping);
+        comicTyping = null;
+        if (idx + 1 < lines.length) {
+          setTimeout(function() { comicTypeLine(lines, idx + 1, onFinish); }, 1100);
+        }
       }
-    }
-  }, speed);
+    }, speed);
+
+  } else {
+    // ── STANDARD DIALOGUE BOX (Sky intro compat) ─────────────
+    const dlg = document.getElementById('comic-dialogue');
+    if (dlg) dlg.style.visibility = '';
+    const speakerEl = document.getElementById('comic-speaker');
+    const textEl    = document.getElementById('comic-text');
+
+    speakerEl.textContent = line.speaker === 'narrator' ? '' : line.speaker;
+    speakerEl.className   = line.speaker.toLowerCase();
+    textEl.textContent    = '';
+
+    let i = 0;
+    const speed = line.speaker === 'narrator' ? 32 : 20;
+    comicTyping = setInterval(function() {
+      textEl.textContent += line.text[i++];
+      if (i >= line.text.length) {
+        clearInterval(comicTyping);
+        comicTyping = null;
+        if (idx + 1 < lines.length) {
+          setTimeout(function() { comicTypeLine(lines, idx + 1, onFinish); }, 1100);
+        }
+      }
+    }, speed);
+  }
 }
 
 function comicFlush() {
@@ -158,9 +275,19 @@ function comicFlush() {
   const line  = lines[comicLineIdx];
   if (!line) return;
 
-  document.getElementById('comic-text').textContent    = line.text;
-  document.getElementById('comic-speaker').textContent = line.speaker === 'narrator' ? '' : line.speaker;
-  document.getElementById('comic-speaker').className   = line.speaker.toLowerCase();
+  if (line.pos) {
+    // Flush to the last positioned overlay's text element
+    const overlays = document.querySelectorAll('.comic-tb-overlay');
+    const last = overlays[overlays.length - 1];
+    if (last) {
+      const textEl = last.querySelector('div:last-child');
+      if (textEl) textEl.textContent = line.text;
+    }
+  } else {
+    document.getElementById('comic-text').textContent    = line.text;
+    document.getElementById('comic-speaker').textContent = line.speaker === 'narrator' ? '' : line.speaker;
+    document.getElementById('comic-speaker').className   = line.speaker.toLowerCase();
+  }
 }
 
 function comicTap(onFinish) {
