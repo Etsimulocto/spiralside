@@ -275,7 +275,7 @@ function injectQuestStyles() {
     .q-die[data-die="d8"]   { border-color: rgba(77,163,255,0.25);  } .q-die[data-die="d8"]   .q-die-label { color: #4DA3FF; }
     .q-die[data-die="d10"]  { border-color: rgba(0,246,214,0.25);   } .q-die[data-die="d10"]  .q-die-label { color: #00F6D6; }
     .q-die[data-die="d12"]  { border-color: rgba(255,75,203,0.25);  } .q-die[data-die="d12"]  .q-die-label { color: #FF4BCB; }
-    .q-die[data-die="d20"]  { border-color: rgba(124,106,247,0.4); background: rgba(124,106,247,0.07); } .q-die[data-die="d20"] .q-die-label { color: #7c6af7; }
+    .q-die[data-die="d20"]  { border-color: rgba(124,106,247,0.4); } .q-die[data-die="d20"] .q-die-label { color: #7c6af7; }
     .q-die[data-die="d100"] { border-color: rgba(106,247,200,0.25); } .q-die[data-die="d100"] .q-die-label { color: #6af7c8; }
     .q-die[data-die="fate"] { border-color: rgba(255,211,61,0.25);  } .q-die[data-die="fate"] .q-die-label { color: #FFD93D; }
     .q-die[data-die="coin"] { border-color: rgba(255,211,61,0.3);   } .q-die[data-die="coin"] .q-die-label { color: #FFD93D; }
