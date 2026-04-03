@@ -472,13 +472,13 @@ async function showStep() {
   document.body.appendChild(tip);
 
   // Position tooltip
-  positionTip(tip, rect, step.pos);
+  positionTip(tip, rect, step.pos, step.target);
 
   document.getElementById('g-next').onclick = () => { overlayIdx++; clearHighlights(); showStep(); };
   document.getElementById('g-skip').onclick = () => { clearHighlights(); clearOverlay(); };
 }
 
-function positionTip(tip, rect, pos) {
+function positionTip(tip, rect, pos, targetId) {
   requestAnimationFrame(() => {
     const tw = tip.offsetWidth;
     const th = tip.offsetHeight;
@@ -486,7 +486,10 @@ function positionTip(tip, rect, pos) {
     const vh = window.innerHeight;
     let left, top;
 
-    if (!rect || pos === 'center') {
+    // Tab bar elements live in a scrollable row — always center the tooltip
+    // so it never snaps to an off-screen position after scrollIntoView
+    const isTab = targetId && targetId.startsWith('tab-');
+    if (!rect || pos === 'center' || isTab) {
       left = (vw - tw) / 2;
       top  = (vh - th) / 2;
     } else {
