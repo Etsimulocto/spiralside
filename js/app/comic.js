@@ -156,19 +156,38 @@ function _posCSS(pos) {
 }
 
 // ── STYLE MAP ─────────────────────────────────────────────────
-function _bubbleStyle(style, speakerColor) {
-  // No position here — positioning is on the wrap div
-  const borderColor = speakerColor || '#00F6D6';
+function _bubbleStyle(line, speakerColor) {
+  // If line has explicit style properties (from text box composer), use them directly
+  const bColor  = line.borderColor  || speakerColor || '#00F6D6';
+  const bWidth  = line.borderWidth  || '2px';
+  const bStyle  = line.borderStyle  || 'solid';
+  const bRadius = line.borderRadius || null;  // null = use style preset default
+  const bgOp    = line.bgOpacity    !== undefined ? line.bgOpacity / 100 : null;
+  const fSize   = line.fontSize     || null;
+
+  const style   = line.style || 'dialogue';
+
+  // If user has customized border/radius/opacity, build fully custom style
+  if (line.borderColor || line.borderWidth || line.borderRadius || line.bgOpacity !== undefined) {
+    const bg = 'rgba(10,10,14,' + (bgOp !== null ? bgOp : 0.88) + ')';
+    const radius = bRadius || '3px 12px 12px 12px';
+    const border = bWidth === '0' ? 'none' : bWidth + ' ' + bStyle + ' ' + bColor;
+    const fs = fSize || '0.84rem';
+    return 'background:'+bg+';border:'+border+';border-radius:'+radius+';padding:10px 14px;font-size:'+fs+';color:#F3F7FF;';
+  }
+
+  // Otherwise use style presets
+  const fs = fSize || null;
   switch(style) {
     case 'caption':
-      return 'background:rgba(10,10,14,0.88);border:none;border-top:2px solid '+borderColor+';padding:8px 12px;font-size:0.82rem;color:#F3F7FF;';
+      return 'background:rgba(10,10,14,0.88);border:none;border-top:2px solid '+bColor+';padding:8px 12px;font-size:'+(fs||'0.82rem')+';color:#F3F7FF;';
     case 'narration':
-      return 'background:rgba(10,10,14,0.82);border:1px solid rgba(243,247,255,0.2);border-radius:4px;padding:8px 12px;font-size:0.78rem;color:#F3F7FF;font-style:italic;';
+      return 'background:rgba(10,10,14,0.82);border:1px solid rgba(243,247,255,0.2);border-radius:4px;padding:8px 12px;font-size:'+(fs||'0.78rem')+';color:#F3F7FF;font-style:italic;';
     case 'shout':
-      return 'background:rgba(255,75,203,0.12);border:2px solid '+borderColor+';border-radius:4px;padding:10px 14px;font-size:0.96rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.04em;';
+      return 'background:rgba(255,75,203,0.12);border:2px solid '+bColor+';border-radius:4px;padding:10px 14px;font-size:'+(fs||'0.96rem')+';font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.04em;';
     case 'dialogue':
     default:
-      return 'background:rgba(10,10,14,0.88);border:2px solid '+borderColor+';border-radius:3px 12px 12px 12px;padding:10px 14px;';
+      return 'background:rgba(10,10,14,0.88);border:2px solid '+bColor+';border-radius:3px 12px 12px 12px;padding:10px 14px;font-size:'+(fs||'0.84rem')+';';
   }
 }
 
@@ -190,7 +209,7 @@ function _renderPositionedBubble(line) {
 
   // Bubble is a child of wrap — no extra positioning needed
   const bubble = document.createElement('div');
-  bubble.style.cssText = _bubbleStyle(line.style, speakerColor);
+  bubble.style.cssText = _bubbleStyle(line, speakerColor);
 
   // Speaker label (not for narrator or empty)
   if (line.speaker && line.speaker !== 'narrator') {

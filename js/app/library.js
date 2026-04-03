@@ -429,6 +429,31 @@ function injectLibraryStyles() {
       margin-top:4px;
     }
     .tb-add-btn:hover { border-color:var(--teal); color:var(--teal); }
+    /* text box style controls */
+    .tb-style-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:2px; }
+    .tb-swatch {
+      width:24px; height:24px; border-radius:6px; border:2px solid var(--border);
+      cursor:pointer; overflow:hidden; position:relative; flex-shrink:0;
+    }
+    .tb-swatch-bg { width:100%; height:100%; }
+    .tb-swatch input[type=color] {
+      position:absolute; inset:-4px; width:calc(100%+8px);
+      height:calc(100%+8px); border:none; cursor:pointer; opacity:0;
+    }
+    .tb-mini-chip {
+      padding:3px 7px; border-radius:4px; font-size:0.55rem;
+      border:1px solid var(--border); background:var(--surface2);
+      color:var(--subtext); cursor:pointer; font-family:var(--font-ui);
+      transition:all 0.12s; white-space:nowrap;
+    }
+    .tb-mini-chip.active { border-color:var(--teal); color:var(--teal); background:rgba(0,246,214,0.08); }
+    .tb-opacity-wrap { display:flex; align-items:center; gap:4px; flex:1; min-width:80px; }
+    .tb-opacity-label { font-size:0.5rem; color:var(--subtext); letter-spacing:0.08em; white-space:nowrap; }
+    .tb-opacity-slider { flex:1; accent-color:var(--teal); height:3px; }
+    .tb-section-divider {
+      font-size:0.48rem; letter-spacing:0.14em; text-transform:uppercase;
+      color:var(--subtext); opacity:0.6; margin-top:4px;
+    }
     /* live text overlays on slot editor preview */
     .se-tb-overlay {
       position:absolute; inset:0; pointer-events:none; z-index:3;
@@ -1398,9 +1423,111 @@ function renderTextBoxList(slot) {
       opts.appendChild(chip);
     });
 
+    // ── STYLE CONTROLS ──────────────────────────────────────
+    const styleRow1 = document.createElement('div');
+    styleRow1.className = 'tb-style-row';
+
+    // Border color swatch
+    const colDiv = document.createElement('div');
+    colDiv.className = 'tb-swatch';
+    const colBg = document.createElement('div');
+    colBg.className = 'tb-swatch-bg';
+    const defaultCol = tb.borderColor || _speakerColor(tb.speaker);
+    colBg.style.background = defaultCol;
+    const colInput = document.createElement('input');
+    colInput.type = 'color';
+    colInput.value = defaultCol;
+    colInput.addEventListener('input', () => {
+      tb.borderColor = colInput.value;
+      colBg.style.background = colInput.value;
+      _autoSaveTB();
+    });
+    colDiv.appendChild(colBg); colDiv.appendChild(colInput);
+    styleRow1.appendChild(colDiv);
+
+    // Border width chips
+    [['thin','1px'],['med','2px'],['thick','3px'],['none','0']].forEach(([lbl,val]) => {
+      const c = document.createElement('button');
+      c.className = 'tb-mini-chip' + ((tb.borderWidth||'2px')===val?' active':'');
+      c.textContent = lbl;
+      c.addEventListener('click', () => {
+        tb.borderWidth = val;
+        styleRow1.querySelectorAll('.tb-mini-chip[data-bw]').forEach(x=>x.classList.remove('active'));
+        c.classList.add('active');
+        _autoSaveTB();
+      });
+      c.dataset.bw = val;
+      styleRow1.appendChild(c);
+    });
+
+    // Opacity slider
+    const opWrap = document.createElement('div');
+    opWrap.className = 'tb-opacity-wrap';
+    const opLbl = document.createElement('div');
+    opLbl.className = 'tb-opacity-label';
+    opLbl.textContent = 'bg';
+    const opSlider = document.createElement('input');
+    opSlider.type = 'range'; opSlider.min = 0; opSlider.max = 100;
+    opSlider.value = tb.bgOpacity !== undefined ? tb.bgOpacity : 88;
+    opSlider.className = 'tb-opacity-slider';
+    opSlider.addEventListener('input', () => { tb.bgOpacity = parseInt(opSlider.value); _autoSaveTB(); });
+    opWrap.appendChild(opLbl); opWrap.appendChild(opSlider);
+    styleRow1.appendChild(opWrap);
+
+    const styleRow2 = document.createElement('div');
+    styleRow2.className = 'tb-style-row';
+
+    // Corner radius chips
+    const corners = [['sharp','0'],['soft','8px'],['pill','20px'],['bubble','3px 12px 12px 12px']];
+    corners.forEach(([lbl,val]) => {
+      const c = document.createElement('button');
+      c.className = 'tb-mini-chip' + ((tb.borderRadius||'3px 12px 12px 12px')===val?' active':'');
+      c.textContent = lbl;
+      c.addEventListener('click', () => {
+        tb.borderRadius = val;
+        styleRow2.querySelectorAll('.tb-mini-chip[data-cr]').forEach(x=>x.classList.remove('active'));
+        c.classList.add('active');
+        _autoSaveTB();
+      });
+      c.dataset.cr = val;
+      styleRow2.appendChild(c);
+    });
+
+    // Text size chips
+    [['sm','0.72rem'],['md','0.84rem'],['lg','1rem']].forEach(([lbl,val]) => {
+      const c = document.createElement('button');
+      c.className = 'tb-mini-chip' + ((tb.fontSize||'0.84rem')===val?' active':'');
+      c.textContent = lbl;
+      c.addEventListener('click', () => {
+        tb.fontSize = val;
+        styleRow2.querySelectorAll('.tb-mini-chip[data-fs]').forEach(x=>x.classList.remove('active'));
+        c.classList.add('active');
+        _autoSaveTB();
+      });
+      c.dataset.fs = val;
+      styleRow2.appendChild(c);
+    });
+
+    // Border style chips
+    [['solid','solid'],['dashed','dashed'],['dotted','dotted']].forEach(([lbl,val]) => {
+      const c = document.createElement('button');
+      c.className = 'tb-mini-chip' + ((tb.borderStyle||'solid')===val?' active':'');
+      c.textContent = lbl;
+      c.addEventListener('click', () => {
+        tb.borderStyle = val;
+        styleRow2.querySelectorAll('.tb-mini-chip[data-bs]').forEach(x=>x.classList.remove('active'));
+        c.classList.add('active');
+        _autoSaveTB();
+      });
+      c.dataset.bs = val;
+      styleRow2.appendChild(c);
+    });
+
     item.appendChild(hdr);
     item.appendChild(txt);
     item.appendChild(opts);
+    item.appendChild(styleRow1);
+    item.appendChild(styleRow2);
     list.appendChild(item);
   });
 }
