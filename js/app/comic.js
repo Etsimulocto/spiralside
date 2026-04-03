@@ -89,6 +89,25 @@ function comicRender(idx, onFinish) {
   bg.classList.add(p.transition || 'fade');
 
   document.getElementById('comic-crack').classList.toggle('show', !!p.crack);
+
+  // ── FRAME SVG OVERLAY ─────────────────────────────────────
+  // Panel carries frame_svg from the book timeline frame track
+  let _frmEl = document.getElementById('comic-frame-svg-overlay');
+  if (p.frame_svg) {
+    if (!_frmEl) {
+      _frmEl = document.createElement('div');
+      _frmEl.id = 'comic-frame-svg-overlay';
+      _frmEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:6;width:100%;height:100%';
+      document.getElementById('comic-panel')?.appendChild(_frmEl);
+    }
+    _frmEl.innerHTML = p.frame_svg;
+    const _fsvg = _frmEl.querySelector('svg');
+    if (_fsvg) _fsvg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+    _frmEl.style.display = '';
+  } else if (_frmEl) {
+    _frmEl.innerHTML = '';
+    _frmEl.style.display = 'none';
+  }
   if (idx >= 1) document.getElementById('comic-skip').classList.add('visible');
 
   const counter = document.getElementById('comic-counter');
