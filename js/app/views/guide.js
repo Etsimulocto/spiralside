@@ -225,7 +225,7 @@ function injectCSS() {
     }
     .guide-section-pill.active {
       background:rgba(124,106,247,0.15);
-      border-color:var(--accent); color:var(--accent);
+      border-color:var(--teal); color:var(--teal);
     }
 
     /* Card list */
@@ -248,13 +248,13 @@ function injectCSS() {
     .guide-hero-icon   { font-size:2rem; margin-bottom:8px; }
     .guide-hero-title  {
       font-family:var(--font-display); font-weight:800; font-size:1.05rem; margin-bottom:6px;
-      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      background:linear-gradient(135deg,var(--teal),var(--pink));
       -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     }
     .guide-hero-desc  { font-size:0.74rem; color:var(--subtext); line-height:1.6; margin-bottom:14px; }
     .guide-hero-btn   {
       padding:10px 24px;
-      background:linear-gradient(135deg,var(--accent),var(--accent2));
+      background:linear-gradient(135deg,var(--teal),var(--pink));
       border:none; border-radius:20px; color:#fff;
       font-family:var(--font-display); font-weight:700;
       font-size:0.8rem; cursor:pointer; letter-spacing:0.04em; transition:opacity 0.2s;
@@ -269,7 +269,7 @@ function injectCSS() {
       cursor:pointer; transition:border-color 0.2s, transform 0.15s;
       position:relative; overflow:hidden;
     }
-    .guide-card:hover  { border-color:var(--accent); transform:translateY(-1px); }
+    .guide-card:hover  { border-color:var(--teal); transform:translateY(-1px); }
     .guide-card.done   { opacity:0.55; }
     .guide-card.done:hover { opacity:0.8; }
 
@@ -277,7 +277,7 @@ function injectCSS() {
     .guide-card::before {
       content:''; position:absolute; left:0; top:12px; bottom:12px;
       width:3px; border-radius:0 2px 2px 0;
-      background:var(--accent); opacity:0; transition:opacity 0.2s;
+      background:var(--teal); opacity:0; transition:opacity 0.2s;
     }
     .guide-card:hover::before { opacity:1; }
 
@@ -300,9 +300,9 @@ function injectCSS() {
       display:flex; align-items:center; justify-content:center;
       color:var(--subtext); transition:all 0.2s;
     }
-    .guide-card:hover .guide-card-arrow { border-color:var(--accent); color:var(--accent); background:rgba(124,106,247,0.1); }
+    .guide-card:hover .guide-card-arrow { border-color:var(--teal); color:var(--teal); background:rgba(124,106,247,0.1); }
 
-    .guide-badge-new  { background:var(--accent2); color:#fff; font-size:0.5rem; letter-spacing:0.1em; padding:2px 6px; border-radius:10px; text-transform:uppercase; font-weight:700; }
+    .guide-badge-new  { background:var(--pink); color:#fff; font-size:0.5rem; letter-spacing:0.1em; padding:2px 6px; border-radius:10px; text-transform:uppercase; font-weight:700; }
     .guide-badge-done { font-size:0.75rem; }
 
     .guide-empty { text-align:center; padding:40px 20px; color:var(--subtext); font-size:0.78rem; }
