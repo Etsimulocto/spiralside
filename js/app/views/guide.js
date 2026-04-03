@@ -267,7 +267,7 @@ function injectCSS() {
       border-radius:14px; padding:14px 16px;
       display:flex; align-items:flex-start; gap:12px;
       cursor:pointer; transition:border-color 0.2s, transform 0.15s;
-      position:relative; overflow:hidden;
+      position:relative;
     }
     .guide-card:hover  { border-color:var(--teal); transform:translateY(-1px); }
     .guide-card.done   { opacity:0.55; }
