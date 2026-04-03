@@ -224,7 +224,7 @@ function injectLibraryStyles() {
       -webkit-overflow-scrolling:touch;
     }
     .tl-slot {
-      flex-shrink:0; width:60px; height:80px; border-radius:6px;
+      flex-shrink:0; width:80px; height:107px; border-radius:8px;
       border:2px solid var(--border); cursor:pointer;
       position:relative; overflow:hidden;
       transition:border-color 0.15s, transform 0.15s;
