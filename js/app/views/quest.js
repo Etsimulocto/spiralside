@@ -259,6 +259,40 @@ function injectQuestStyles() {
     .q-battle-close-btn { width: 100%; padding: 10px; background: rgba(124,106,247,0.1); border: 1px solid rgba(124,106,247,0.3); border-radius: 8px; color: #7c6af7; font-family: var(--font-ui); font-size: 0.72rem; letter-spacing: 0.08em; cursor: pointer; transition: background 0.15s; display: none; }
     .q-battle-close-btn.visible { display: block; }
     .q-battle-close-btn:hover { background: rgba(124,106,247,0.2); }
+
+    /* -- DICE ROLLER -- */
+    .q-dice-section { padding: 4px 12px 12px; }
+    .q-dice-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 10px; }
+    .q-die { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 9px 4px 7px; cursor: pointer; transition: all 0.14s; user-select: none; }
+    .q-die:active { transform: scale(0.93); }
+    .q-die:hover  { border-color: rgba(124,106,247,0.5); background: rgba(124,106,247,0.07); }
+    .q-die.rolling { animation: diceShake 0.35s ease; }
+    @keyframes diceShake { 0%,100% { transform: rotate(0deg) scale(1); } 20% { transform: rotate(-8deg) scale(1.08); } 50% { transform: rotate(6deg) scale(1.1); } 80% { transform: rotate(-4deg) scale(1.05); } }
+    .q-die-face { font-size: 1.3rem; line-height: 1; }
+    .q-die-label { font-size: 0.55rem; color: var(--subtext); letter-spacing: 0.08em; text-transform: uppercase; }
+    .q-die[data-die="d4"]   { border-color: rgba(255,107,107,0.25); } .q-die[data-die="d4"]   .q-die-label { color: #ff6b6b; }
+    .q-die[data-die="d6"]   { border-color: rgba(255,211,61,0.25);  } .q-die[data-die="d6"]   .q-die-label { color: #FFD93D; }
+    .q-die[data-die="d8"]   { border-color: rgba(77,163,255,0.25);  } .q-die[data-die="d8"]   .q-die-label { color: #4DA3FF; }
+    .q-die[data-die="d10"]  { border-color: rgba(0,246,214,0.25);   } .q-die[data-die="d10"]  .q-die-label { color: #00F6D6; }
+    .q-die[data-die="d12"]  { border-color: rgba(255,75,203,0.25);  } .q-die[data-die="d12"]  .q-die-label { color: #FF4BCB; }
+    .q-die[data-die="d20"]  { border-color: rgba(124,106,247,0.4); background: rgba(124,106,247,0.07); } .q-die[data-die="d20"] .q-die-label { color: #7c6af7; }
+    .q-die[data-die="d100"] { border-color: rgba(106,247,200,0.25); } .q-die[data-die="d100"] .q-die-label { color: #6af7c8; }
+    .q-die[data-die="fate"] { border-color: rgba(255,211,61,0.25);  } .q-die[data-die="fate"] .q-die-label { color: #FFD93D; }
+    .q-die[data-die="coin"] { border-color: rgba(255,211,61,0.3);   } .q-die[data-die="coin"] .q-die-label { color: #FFD93D; }
+    .q-dice-result { background: var(--surface); border: 1px solid var(--border); border-radius: 9px; padding: 11px 14px; display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+    .q-dice-result.flash { animation: resultFlash 0.4s ease; }
+    @keyframes resultFlash { 0%,100% { background: var(--surface); } 40% { background: rgba(124,106,247,0.15); border-color: rgba(124,106,247,0.5); } }
+    .q-dice-result-main { font-family: var(--font-display); font-size: 1.4rem; font-weight: 800; color: var(--text); line-height: 1; }
+    .q-dice-result-label { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.08em; margin-top: 3px; }
+    .q-dice-history { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+    .q-dice-hist-chip { font-size: 0.58rem; color: var(--subtext); background: var(--muted); border-radius: 4px; padding: 2px 6px; }
+    .q-dice-mod-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .q-dice-mod-label { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.08em; white-space: nowrap; }
+    .q-dice-mod-btns  { display: flex; gap: 4px; }
+    .q-dice-mod-btn { width: 26px; height: 26px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; color: var(--subtext); font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+    .q-dice-mod-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .q-dice-mod-val { font-size: 0.75rem; color: #7c6af7; min-width: 28px; text-align: center; border: 1px solid rgba(124,106,247,0.3); border-radius: 6px; padding: 2px 4px; background: rgba(124,106,247,0.07); }
+
   `;
   document.head.appendChild(s);
 }
@@ -569,6 +603,36 @@ function renderQuest(el, char, events) {
         : '<div class="q-inv-empty">no items yet</div>'}
     </div>
 
+    <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">dice &amp; chance</span><div class="q-rule-line"></div></div>
+    <div class="q-dice-section" id="q-dice-section">
+      <div class="q-dice-mod-row">
+        <span class="q-dice-mod-label">modifier</span>
+        <div class="q-dice-mod-btns">
+          <button class="q-dice-mod-btn" id="q-mod-down">-</button>
+          <div class="q-dice-mod-val" id="q-mod-val">+0</div>
+          <button class="q-dice-mod-btn" id="q-mod-up">+</button>
+        </div>
+      </div>
+      <div class="q-dice-grid">
+        <div class="q-die" data-die="d4"   data-sides="4"   onclick="window._rollDie(this)"><div class="q-die-face">&#9650;</div><div class="q-die-label">d4</div></div>
+        <div class="q-die" data-die="d6"   data-sides="6"   onclick="window._rollDie(this)"><div class="q-die-face">&#127922;</div><div class="q-die-label">d6</div></div>
+        <div class="q-die" data-die="d8"   data-sides="8"   onclick="window._rollDie(this)"><div class="q-die-face">&#128142;</div><div class="q-die-label">d8</div></div>
+        <div class="q-die" data-die="d10"  data-sides="10"  onclick="window._rollDie(this)"><div class="q-die-face">&#128311;</div><div class="q-die-label">d10</div></div>
+        <div class="q-die" data-die="d12"  data-sides="12"  onclick="window._rollDie(this)"><div class="q-die-face">&#127800;</div><div class="q-die-label">d12</div></div>
+        <div class="q-die" data-die="d20"  data-sides="20"  onclick="window._rollDie(this)"><div class="q-die-face">&#11039;</div><div class="q-die-label">d20</div></div>
+        <div class="q-die" data-die="d100" data-sides="100" onclick="window._rollDie(this)"><div class="q-die-face">&#128175;</div><div class="q-die-label">d%</div></div>
+        <div class="q-die" data-die="fate" data-sides="0"   onclick="window._rollDie(this)"><div class="q-die-face">&#10022;</div><div class="q-die-label">fate</div></div>
+        <div class="q-die" data-die="coin" data-sides="-1"  onclick="window._rollDie(this)"><div class="q-die-face">&#129689;</div><div class="q-die-label">coin</div></div>
+      </div>
+      <div class="q-dice-result" id="q-dice-result">
+        <div>
+          <div class="q-dice-result-main" id="q-dice-main">-</div>
+          <div class="q-dice-result-label" id="q-dice-lbl">tap a die to roll</div>
+        </div>
+        <div class="q-dice-history" id="q-dice-history"></div>
+      </div>
+    </div>
+
     <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">this month</span><div class="q-rule-line"></div></div>
     <div class="q-cal">
       <div class="q-cal-month">${monthName}</div>
@@ -652,6 +716,58 @@ function renderQuest(el, char, events) {
   if (_existing && _existing.parentElement === document.body) _existing.remove();
   const _mo = el.querySelector('#q-modal-overlay');
   if (_mo) document.body.appendChild(_mo);
+
+  // -- DICE ROLLER LOGIC --
+  let _diceModifier = 0;
+  let _diceHistory  = [];
+  const _modValEl = document.getElementById('q-mod-val');
+  const _modDown  = document.getElementById('q-mod-down');
+  const _modUp    = document.getElementById('q-mod-up');
+  function _updateModDisplay() { if (_modValEl) _modValEl.textContent = (_diceModifier >= 0 ? '+' : '') + _diceModifier; }
+  if (_modDown) _modDown.onclick = (e) => { e.stopPropagation(); _diceModifier = Math.max(-10, _diceModifier - 1); _updateModDisplay(); };
+  if (_modUp)   _modUp.onclick   = (e) => { e.stopPropagation(); _diceModifier = Math.min(10,  _diceModifier + 1); _updateModDisplay(); };
+
+  window._rollDie = (el) => {
+    const die   = el.dataset.die;
+    const sides = parseInt(el.dataset.sides);
+    el.classList.remove('rolling'); void el.offsetWidth; el.classList.add('rolling');
+    setTimeout(() => el.classList.remove('rolling'), 400);
+    let rawResult, display, label;
+    if (die === 'coin') {
+      rawResult = Math.random() < 0.5 ? 0 : 1;
+      display   = rawResult === 0 ? 'HEADS' : 'TAILS';
+      label     = 'coin flip';
+    } else if (die === 'fate') {
+      const fr = Math.floor(Math.random() * 6);
+      rawResult = fr < 2 ? -1 : fr < 4 ? 0 : 1;
+      const sym = rawResult === -1 ? '-' : rawResult === 0 ? 'o' : '+';
+      const lbl = rawResult === -1 ? 'minus' : rawResult === 0 ? 'blank' : 'plus';
+      const mod = rawResult + _diceModifier;
+      display = sym + (_diceModifier !== 0 ? ' -> ' + (mod >= 0 ? '+' : '') + mod : '');
+      label   = 'fate / ' + lbl + (_diceModifier !== 0 ? ' / mod ' + (_diceModifier > 0 ? '+' : '') + _diceModifier : '');
+    } else {
+      rawResult = Math.floor(Math.random() * sides) + 1;
+      const mod = rawResult + _diceModifier;
+      const n1  = rawResult === 1, nM = rawResult === sides;
+      let rs = String(mod);
+      if (n1)       rs = rawResult + ' (crit fail)' + (_diceModifier !== 0 ? ' -> ' + mod : '');
+      else if (nM)  rs = rawResult + ' (CRIT!)' + (_diceModifier !== 0 ? ' -> ' + mod : '');
+      else if (_diceModifier !== 0) rs = rawResult + ' -> ' + mod;
+      display = rs;
+      label   = die + (_diceModifier !== 0 ? ' / mod ' + (_diceModifier > 0 ? '+' : '') + _diceModifier : '') + (n1 ? ' / CRITICAL FAIL' : nM ? ' / CRITICAL HIT' : '');
+    }
+    const mainEl = document.getElementById('q-dice-main');
+    const lblEl  = document.getElementById('q-dice-lbl');
+    const resEl  = document.getElementById('q-dice-result');
+    const histEl = document.getElementById('q-dice-history');
+    if (mainEl) mainEl.textContent = display;
+    if (lblEl)  lblEl.textContent  = label;
+    if (resEl)  { resEl.classList.remove('flash'); void resEl.offsetWidth; resEl.classList.add('flash'); }
+    _diceHistory.unshift({ die, val: String(rawResult) });
+    if (_diceHistory.length > 5) _diceHistory.pop();
+    if (histEl) histEl.innerHTML = _diceHistory.map(h => '<div class="q-dice-hist-chip">' + h.die + ' ' + h.val + '</div>').join('');
+    if (sides > 0 && rawResult === sides && window.awardXP) window.awardXP('dice_nat_max').catch(() => {});
+  };
 
   document.getElementById('q-clear-btn').onclick = () => {
     if (!confirm('clear all quests and history?')) return;
