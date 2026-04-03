@@ -502,10 +502,8 @@ function ensureOverlays() {
           <div class="se-label">caption</div>
           <input class="se-input" id="se-cap-speaker" placeholder="speaker (blank = narrator)" />
           <textarea class="se-input" id="se-cap-text" rows="2" placeholder="dialogue or caption..." style="margin-top:6px"></textarea>
-          <div class="se-action-row">
-            <button class="se-save-btn" id="se-img-save">save panel</button>
-            <button class="se-del-btn" id="se-img-del">remove</button>
-          </div>
+          <!-- save panel / remove buttons removed — auto-saves on change, use header ↓ save to export -->
+          <button class="se-del-btn" id="se-img-del" style="margin-top:4px;width:100%">remove slot</button>
         </div>
       </div>
     `;
@@ -698,16 +696,23 @@ function wireTimeline() {
       const fObj = FILTERS.find(f => f.id === c.dataset.filter) || FILTERS[0];
       const img = document.getElementById('se-img-preview');
       if (img) img.style.filter = fObj.css;
+      if (editingSlotIdx !== null) saveImageSlot();
     })
   );
   document.querySelectorAll('#se-tag-chips .se-chip').forEach(c =>
     c.addEventListener('click', () => {
       document.querySelectorAll('#se-tag-chips .se-chip').forEach(x => x.classList.remove('active', 'tag-active'));
       c.classList.add('tag-active');
+      if (editingSlotIdx !== null) saveImageSlot();
     })
   );
-  document.getElementById('se-img-save').addEventListener('click', saveImageSlot);
-  document.getElementById('se-img-del').addEventListener('click',  deleteCurrentSlot);
+  // Auto-save image slot on any field change (no manual save button needed)
+  ['se-cap-speaker','se-cap-text'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      if (editingSlotIdx !== null) saveImageSlot();
+    });
+  });
+  document.getElementById('se-img-del').addEventListener('click', deleteCurrentSlot);
 
   // ── Frame overlay controls ────────────────────────────────────────
   document.getElementById('se-frame-pick-btn').addEventListener('click', () => {
