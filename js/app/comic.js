@@ -79,11 +79,31 @@ function comicRender(idx, onFinish) {
 
   const bg = document.getElementById('comic-bg');
   bg.className = '';
-  bg.style.cssText = p.image
-    ? 'background-image:url(' + p.image + ');background-size:cover;background-position:center;'
-    : 'background:' + p.bg_gradient + ';';
-  // apply filter effect if panel has one (from timeline slot editor)
-  bg.style.filter = (p.filter_css && p.filter_css !== 'none') ? p.filter_css : '';
+
+  if (p.image) {
+    // Real <img> tag — reliably fills container on all devices incl. iOS
+    // Remove any previous gradient, set neutral bg
+    bg.style.cssText = 'background:#08080d;';
+    // Reuse or create the img element
+    let _img = bg.querySelector('img.comic-panel-img');
+    if (!_img) {
+      _img = document.createElement('img');
+      _img.className = 'comic-panel-img';
+      _img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;';
+      bg.appendChild(_img);
+    }
+    _img.src = p.image;
+    _img.style.display = 'block';
+    // Apply filter to img, not bg container
+    _img.style.filter = (p.filter_css && p.filter_css !== 'none') ? p.filter_css : '';
+    bg.style.filter = '';
+  } else {
+    // Gradient panel — hide img if present, use CSS background
+    const _img = bg.querySelector('img.comic-panel-img');
+    if (_img) _img.style.display = 'none';
+    bg.style.cssText = 'background:' + (p.bg_gradient || '#08080d') + ';';
+    bg.style.filter = (p.filter_css && p.filter_css !== 'none') ? p.filter_css : '';
+  }
 
   void bg.offsetWidth;
   bg.classList.add(p.transition || 'fade');
