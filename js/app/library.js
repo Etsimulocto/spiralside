@@ -1729,7 +1729,7 @@ function playTimeline() {
         transition: 'fade',
       };
     }
-  }).filter(p => p.dialogue?.length || p.image);
+  }).filter(p => p.image || p.dialogue?.length);  // keep all image panels even with no dialogue
   const returnId = viewingBookId;
   closeTimeline();
   if (window.playCustomComic) {

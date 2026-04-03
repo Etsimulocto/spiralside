@@ -115,15 +115,31 @@ function comicRender(idx, onFinish) {
     '<div class="comic-dot ' + (i === idx ? 'active' : i < idx ? 'done' : '') + '"></div>'
   ).join('');
 
-  // Clear positioned text overlays from previous panel
+  // Always clear positioned overlays from any previous panel first
   _clearPositionedOverlays();
-  // Reset dialogue box visibility
+
   const _dlg = document.getElementById('comic-dialogue');
-  if (_dlg) _dlg.style.visibility = '';
-  // If all lines have pos, hide dialogue box preemptively
   const _lines = p.dialogue || [];
-  if (_lines.length && _lines.every(l => l.pos)) {
+
+  if (!_lines.length) {
+    // No dialogue at all — hide dialogue box, nothing to type
     if (_dlg) _dlg.style.visibility = 'hidden';
+    comicLineIdx = 0;
+    return;
+  }
+
+  if (_lines.every(l => l.pos)) {
+    // All lines are positioned overlays — hide standard dialogue box
+    if (_dlg) _dlg.style.visibility = 'hidden';
+  } else {
+    // At least one line uses the standard box — show it, clear contents
+    if (_dlg) {
+      _dlg.style.visibility = '';
+      const _sp = document.getElementById('comic-speaker');
+      const _tx = document.getElementById('comic-text');
+      if (_sp) _sp.textContent = '';
+      if (_tx) _tx.textContent = '';
+    }
   }
 
   comicLineIdx = 0;
@@ -252,14 +268,10 @@ function comicTypeLine(lines, idx, onFinish) {
 
   if (line.pos) {
     // ── POSITIONED TEXT BOX ─────────────────────────────────
-    // Clear previous overlays for this panel, then render at position
-    // (keep overlays from earlier lines — accumulate them)
+    // Accumulate overlays within this panel (do NOT clear between lines)
     const textEl = _renderPositionedBubble(line);
     if (!textEl) { comicTyping = null; return; }
-
-    // Hide the standard dialogue box for positioned lines
-    const dlg = document.getElementById('comic-dialogue');
-    if (dlg) dlg.style.visibility = 'hidden';
+    // Dialogue box visibility already set correctly in comicRender — don't touch it here
 
     let i = 0;
     const speed = line.speaker === 'narrator' ? 32 : 20;
