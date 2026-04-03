@@ -100,14 +100,13 @@ export function addMessage(text, role) {
 
   const bubble = wrap.querySelector('.msg-bubble');
   bubble.style.cursor = 'pointer';
-  // â”€â”€ BUBBLE CONTEXT MENU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   bubble.addEventListener('click', (e) => {
     document.querySelectorAll('.bubble-menu').forEach(m => m.remove());
     const menu = document.createElement('div');
     menu.className = 'bubble-menu';
     menu.style.cssText = 'position:absolute;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:10px;padding:4px;display:flex;gap:4px;box-shadow:0 4px 20px rgba(0,0,0,0.5);bottom:calc(100% + 4px);left:40px;';
     [
-      ['copy',   '📋', () => { const t = bubble.innerText||bubble.textContent; navigator.clipboard.writeText(t).then(()=>{ const p=bubble.style.outline; bubble.style.outline='2px solid var(--teal)'; setTimeout(()=>{bubble.style.outline=p;},600); }).catch(()=>{}); }],
+      ['copy',   '📋', () => { const t=bubble.innerText||bubble.textContent; navigator.clipboard.writeText(t).then(()=>{ const p=bubble.style.outline; bubble.style.outline='2px solid var(--teal)'; setTimeout(()=>{bubble.style.outline=p;},600); }).catch(()=>{}); }],
       ['crew',   '↩',    () => { import('./state.js').then(({state})=>{state.botName='Sky';state.botColor='#00F6D6';});import('./chat.js').then(({clearChat})=>clearChat()); }],
       ['cannon', '🔖', () => { import('./ui.js').then(({switchView})=>switchView('cannon')); }],
       ['cut',    '✂️',  () => { import('./ui.js').then(({switchView})=>switchView('cut')); }],
@@ -125,11 +124,186 @@ export function addMessage(text, role) {
     wrap.appendChild(menu);
     setTimeout(()=>document.addEventListener('click',()=>menu.remove(),{once:true}),0);
   });
+  msgList.appendChild(wrap);
+  msgList.scrollTop = msgList.scrollHeight;
 
+  return bubble;
+}
 
-    // Remove any existing menu
-    document.querySelectorAll('.bubble-menu').forEach(m => m.remove());
-    const menu = document.createElement('div');
-    menu.className = 'bubble-menu';
-    menu.style.cssText = 'position:absolute;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:10px;padding:4px;display:flex;gap:4px;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
-    const items = [
+// ── TYPING INDICATOR ──────────────────────────────────────
+function showTyping() {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg bot';
+  wrap.id = 'typing-indicator';
+  wrap.innerHTML = `
+    <div class="msg-avatar">${(state.botName?.[0] || 'S').toUpperCase()}</div>
+    <div class="msg-bubble">
+      <div class="typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  `;
+  msgList.appendChild(wrap);
+  msgList.scrollTop = msgList.scrollHeight;
+}
+
+function hideTyping() {
+  document.getElementById('typing-indicator')?.remove();
+}
+
+// ── SEND MESSAGE ──────────────────────────────────────────
+// Main entry point — called by button click and Enter key
+export async function sendMessage() {
+  const text = msgInput.value.trim();
+  if (!text) return;
+
+  // Clear input immediately
+  msgInput.value = '';
+  msgInput.style.height = 'auto';
+
+  // Show user bubble
+  addMessage(text, 'user');
+  state.messageCount = (state.messageCount || 0) + 1;
+
+  // Show typing dots while we figure out the reply
+  showTyping();
+
+  // ── DEMO CHECK ────────────────────────────────────────
+  // getDemoResponse returns a string or null
+  // null means "no scripted match — hit the API"
+  // The third argument is the nudge callback — opens store panel
+  const _youHandle = window.CHARACTERS?.you?.handle || window._youHandle || '';
+  const demoReply = (_youHandle.trim().length > 0) ? null : getDemoResponse(
+    text,
+    state.botName,
+    () => state._openPanel('store'), state.isPaid
+  );
+
+  if (demoReply !== null) {
+    // Scripted reply — no API call, no credit deduction
+    hideTyping();
+    addMessage(demoReply, 'bot');
+    return;
+  }
+
+  // ── API CALL ──────────────────────────────────────────
+  // Fall through to Railway backend
+  try {
+    // Refresh token if needed
+    let token = state.session?.access_token;
+    if (!token) {
+      const { createClient } = supabase;
+      const sb = createClient(
+        'https://qfawusrelwthxabfbglg.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E'
+      );
+      const { data } = await sb.auth.getSession();
+      token = data?.session?.access_token;
+      if (token) state.session = data.session;
+    }
+
+    if (!token) {
+      hideTyping();
+      addMessage('Please sign in to chat.', 'bot');
+      return;
+    }
+
+    // Build vault context from any loaded files
+    const vault = (state.vaultFiles || [])
+      .map(f => `[file:${f.name}]\n${f.content}`)
+      .join('\n\n');
+
+    // Build system prompt from bot config
+    const youCtx = buildYouContext();
+    console.log("[chat] youCtx length:", youCtx.length, "| handle:", window.CHARACTERS?.you?.handle || window._youHandle || "(none)");
+    const _CREW_IDS = ['sky', 'cold', 'monday', 'grit'];
+    const _activeBotId = (state.botName || '').toLowerCase();
+    const _isCrewActive = !state.botName || _CREW_IDS.includes(_activeBotId);
+    let sys;
+    if (_isCrewActive) {
+      // No custom bot â€” crew speaks together
+      sys = youCtx + 'You are the Spiralside crew: Sky, Cold, Monday, and GRIT. ' +
+        'Each has a distinct voice. Sky is luminous and declarative. Cold is quiet and precise. ' +
+        'Monday is chaotic and energetic. GRIT is direct and build-focused. ' +
+        'Respond as whichever crew member fits the moment, or let them bounce off each other. ' +
+        'Be genuine. Never break character.';
+    } else {
+      // Custom bot focused â€” crew in background
+      sys = youCtx + `You are ${state.botName}.`;
+      if (state.botPersonality) sys += ` ${state.botPersonality}`;
+      if (state.botTone?.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
+      sys += ' The Spiralside crew (Sky, Cold, Monday, GRIT) exist in the background of this world. Be genuine and concise. Never break character.';
+    }
+
+    const resp = await fetch(`${RAIL}/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        model: window.selectedModel || 'haiku',
+        message:       text,
+        system_prompt: sys,
+        vault_context: vault,
+        bot_name:      state.botName,
+      }),
+    });
+
+    const data = await resp.json();
+    hideTyping();
+
+    if (!resp.ok) {
+      // 429 = lifetime free limit hit — open store
+      if (resp.status === 429) {
+        addMessage(data.detail || 'Free messages used up. Add credits to keep going.', 'bot');
+        setTimeout(() => state._openPanel('store'), 800);
+        return;
+      }
+      addMessage(`\u26A0\uFE0F ${data.detail || 'Something went wrong.'}`, 'bot');
+      return;
+    }
+
+    addMessage(data.reply, 'bot');
+    speakReply(data.reply);
+    if (window.awardXP) window.awardXP('chat_message').then(r => { if (r && r.xpAwarded > 0 && window.showXPGain) window.showXPGain(r.xpAwarded, 'chat'); });
+
+    // Update credit/usage display if main.js exposed updateCreditDisplay globally
+    if (data.usage && typeof updateCreditDisplay === 'function') {
+      const u = data.usage;
+      state.totalMessages  = u.total_messages  ?? state.totalMessages;
+      state.credits        = u.credits_remaining ?? state.credits;
+      state.isPaid         = u.is_paid ?? state.isPaid;
+      updateCreditDisplay();
+    }
+
+    // Update character sheet every 5 messages
+    if (state.messageCount % 5 === 0 && typeof updateSheet === 'function') {
+      updateSheet(text, data.reply);
+    }
+
+  } catch (err) {
+    hideTyping();
+    addMessage('Connection issue. Try again.', 'bot');
+    console.error('[chat] fetch error:', err);
+  }
+}
+
+// ── GET CHAT MESSAGES ────────────────────────────────────────
+// Returns array of {role, text} from current DOM — used by sheet.js
+// to summarize the conversation for character sheet updates
+export function getChatMsgs() {
+  if (!msgList) return [];
+  return [...msgList.querySelectorAll('.msg')].map(el => ({
+    role: el.classList.contains('user') ? 'user' : 'bot',
+    text: el.querySelector('.msg-bubble')?.textContent || '',
+  }));
+}
+
+// ── CLEAR CHAT ────────────────────────────────────────────
+// Called from build.js when companion is saved / changed
+export function clearChat(greetingText) {
+  if (!msgList) return;
+  msgList.innerHTML = '';
+  addMessage(greetingText || "Hey. I'm here.", 'bot');
+}
