@@ -59,6 +59,30 @@ export function initChat(openPanelFn) {
 // ── ADD MESSAGE TO DOM ────────────────────────────────────
 // role: 'user' | 'bot'
 // Returns the bubble element so callers can stream into it
+// -- CREW VOICE COLORS --
+const _CREW_COLORS = { SKY: '#00F6D6', COLD: '#4DA3FF', MONDAY: '#FF4BCB', GRIT: '#FFD93D' };
+
+function _parseCrewVoices(text) {
+  const names = Object.keys(_CREW_COLORS);
+  if (!names.some(n => text.includes(n + ':'))) return null;
+  const parts = text.split(/((?:SKY|COLD|MONDAY|GRIT):)/);
+  let out = '', current = null;
+  parts.forEach(p => {
+    const m = p.match(/^(SKY|COLD|MONDAY|GRIT):$/);
+    if (m) { current = m[1]; return; }
+    if (current) {
+      const col = _CREW_COLORS[current];
+      out += '<span class="crew-line" style="display:block;margin-bottom:10px;">' +
+        '<span style="font-size:0.58rem;letter-spacing:0.12em;color:' + col + ';opacity:0.85;display:block;margin-bottom:3px;">' + current + '</span>' +
+        '<span>' + p.trim() + '</span></span>';
+      current = null;
+    } else if (p.trim()) {
+      out += '<span style="display:block;">' + p.trim() + '</span>';
+    }
+  });
+  return out || null;
+}
+
 export function addMessage(text, role) {
   const wrap = document.createElement('div');
   wrap.className = `msg ${role}`;
@@ -68,9 +92,10 @@ export function addMessage(text, role) {
     ? (state.botName?.[0] || 'S').toUpperCase()
     : (state.user?.email?.[0] || 'U').toUpperCase();
 
+  const _crewHTML = (role === 'bot') ? _parseCrewVoices(text) : null;
   wrap.innerHTML = `
     <div class="msg-avatar">${initial}</div>
-    <div class="msg-bubble">${text}</div>
+    <div class="msg-bubble">${_crewHTML || text}</div>
   `;
 
   const bubble = wrap.querySelector('.msg-bubble');
