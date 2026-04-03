@@ -125,34 +125,44 @@ function injectLibraryStyles() {
     }
     #timeline-overlay.open { transform:translateY(0); }
 
-    /* header */
+    /* header — two-row compact mobile layout */
     .tl-header {
-      display:flex; align-items:center; gap:10px;
-      padding:14px 16px; border-bottom:1px solid var(--border); flex-shrink:0;
+      display:flex; flex-direction:column; gap:0;
+      border-bottom:1px solid var(--border); flex-shrink:0;
     }
+    .tl-header-top {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 14px 6px;
+    }
+    .tl-header-btns {
+      display:flex; align-items:center; gap:6px;
+      padding:0 14px 8px; overflow-x:auto;
+      scrollbar-width:none; -webkit-overflow-scrolling:touch;
+    }
+    .tl-header-btns::-webkit-scrollbar { display:none; }
     .tl-title { font-size:0.88rem; font-weight:700; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .tl-play-btn {
-      padding:7px 14px; background:var(--teal); border:none; border-radius:20px;
-      color:#0a0a0f; font-size:0.68rem; font-weight:700; cursor:pointer;
-      letter-spacing:0.06em; white-space:nowrap; font-family:var(--font-ui);
+      padding:6px 14px; background:var(--teal); border:none; border-radius:20px;
+      color:#0a0a0f; font-size:0.65rem; font-weight:700; cursor:pointer;
+      letter-spacing:0.06em; white-space:nowrap; font-family:var(--font-ui); flex-shrink:0;
     }
-    .tl-close-btn { background:none; border:none; color:var(--subtext); font-size:1.2rem; cursor:pointer; padding:4px 6px; }
+    .tl-close-btn { background:none; border:none; color:var(--subtext); font-size:1.1rem; cursor:pointer; padding:4px; flex-shrink:0; }
     .tl-intro-btn {
-      padding:6px 10px; background:transparent; border:1px solid var(--border);
-      border-radius:20px; color:var(--subtext); font-size:0.62rem; font-family:var(--font-ui);
-      letter-spacing:0.06em; cursor:pointer; white-space:nowrap; transition:all 0.2s;
+      padding:5px 10px; background:transparent; border:1px solid var(--border);
+      border-radius:20px; color:var(--subtext); font-size:0.58rem; font-family:var(--font-ui);
+      letter-spacing:0.06em; cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0;
     }
     .tl-intro-btn:hover { border-color:var(--yellow); color:var(--yellow); }
     .tl-intro-btn.is-intro { border-color:var(--yellow); color:var(--yellow); background:rgba(255,217,61,0.1); }
     .tl-export-btn {
-      padding:6px 10px; background:transparent; border:1px solid var(--border);
-      border-radius:20px; color:var(--subtext); font-size:0.62rem; font-family:var(--font-ui);
-      letter-spacing:0.06em; cursor:pointer; white-space:nowrap; transition:all 0.2s;
+      padding:5px 10px; background:transparent; border:1px solid var(--border);
+      border-radius:20px; color:var(--subtext); font-size:0.58rem; font-family:var(--font-ui);
+      letter-spacing:0.06em; cursor:pointer; white-space:nowrap; transition:all 0.2s; flex-shrink:0;
     }
     .tl-export-btn:hover { border-color:var(--teal); color:var(--teal); }
     .tl-title-input {
       flex:1; background:transparent; border:none; border-bottom:1px solid transparent;
-      color:var(--text); font-family:var(--font-ui); font-size:0.88rem; font-weight:700;
+      color:var(--text); font-family:var(--font-ui); font-size:0.84rem; font-weight:700;
       outline:none; min-width:0; transition:border-color 0.2s;
     }
     .tl-title-input:focus { border-bottom-color:var(--pink); }
@@ -166,12 +176,12 @@ function injectLibraryStyles() {
       display:flex; flex-direction:column; gap:0;
     }
     .tl-track-label {
-      font-size:0.5rem; letter-spacing:0.14em; text-transform:uppercase;
-      color:var(--subtext); padding:5px 16px 2px; flex-shrink:0;
+      font-size:0.46rem; letter-spacing:0.12em; text-transform:uppercase;
+      color:var(--subtext); padding:3px 12px 1px; flex-shrink:0;
     }
-    /* FRAME track (top) — same size as scene slots */
+    /* FRAME track (top) — compact for mobile */
     .tl-track.track-frame .tl-strip-wrap {
-      padding:4px 16px 4px;
+      padding:3px 12px 3px;
     }
     .tl-track.track-frame .tl-slot {
       border-color:rgba(0,246,214,0.2);
@@ -202,19 +212,19 @@ function injectLibraryStyles() {
     .tl-slot:hover .tl-scene-del { opacity:1; }
     .tl-scene-del:hover { background:var(--pink); color:#fff; }
     .tl-scene-del.confirm { background:var(--pink); color:#fff; opacity:1; }
-    /* SCENE track (bottom) — full height slots */
+    /* SCENE track (bottom) */
     .tl-track.track-scene .tl-strip-wrap {
-      padding:4px 16px 10px;
+      padding:3px 12px 8px;
     }
     /* shared strip row */
     .tl-strip-wrap {
       overflow-x:auto; overflow-y:hidden;
-      display:flex; gap:10px;
+      display:flex; gap:8px;
       scrollbar-width:thin; scrollbar-color:var(--teal) var(--surface);
       -webkit-overflow-scrolling:touch;
     }
     .tl-slot {
-      flex-shrink:0; width:72px; height:96px; border-radius:8px;
+      flex-shrink:0; width:60px; height:80px; border-radius:6px;
       border:2px solid var(--border); cursor:pointer;
       position:relative; overflow:hidden;
       transition:border-color 0.15s, transform 0.15s;
@@ -246,7 +256,7 @@ function injectLibraryStyles() {
     .tl-slot.dragging { opacity:0.4; transform:scale(0.95); }
     .tl-slot.drag-over { border-color:var(--teal); transform:scale(1.06); }
 
-    /* ── SLOT EDITOR (bottom sheet) ── */
+    /* ── SLOT EDITOR ── */
     #slot-editor {
       flex:1; display:flex; flex-direction:column; overflow:hidden;
       min-height:0;
@@ -269,13 +279,13 @@ function injectLibraryStyles() {
 
     /* slot editor - active panel */
     .se-panel {
-      flex:1; overflow-y:auto; padding:16px 16px 80px;
-      display:flex; flex-direction:column; gap:12px;
+      flex:1; overflow-y:auto; padding:12px 14px 80px;
+      display:flex; flex-direction:column; gap:10px;
     }
-    .se-row { display:flex; align-items:center; gap:10px; }
-    .se-label { font-size:0.6rem; color:var(--subtext); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; }
+    .se-row { display:flex; align-items:flex-start; gap:10px; }
+    .se-label { font-size:0.58rem; color:var(--subtext); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:5px; }
     .se-preview-wrap {
-      width:80px; height:106px; flex-shrink:0; border-radius:8px;
+      width:70px; height:93px; flex-shrink:0; border-radius:8px;
       overflow:hidden; border:1px solid var(--border); background:var(--surface);
       display:flex; align-items:center; justify-content:center; cursor:pointer;
     }
@@ -283,7 +293,7 @@ function injectLibraryStyles() {
     .se-preview-wrap.text-card {
       font-size:0.58rem; color:var(--subtext); text-align:center; padding:6px;
     }
-    .se-fields { flex:1; display:flex; flex-direction:column; gap:8px; }
+    .se-fields { flex:1; display:flex; flex-direction:column; gap:6px; min-width:0; }
     .se-input {
       width:100%; background:var(--surface2); border:1px solid var(--border);
       border-radius:8px; padding:9px 11px; color:var(--text);
@@ -292,7 +302,7 @@ function injectLibraryStyles() {
     }
     .se-input:focus { border-color:var(--teal); }
     .se-input::placeholder { color:var(--subtext); }
-    .se-chips { display:flex; gap:6px; flex-wrap:wrap; }
+    .se-chips { display:flex; gap:5px; flex-wrap:wrap; }
     .se-chip {
       padding:5px 10px; background:var(--surface2); border:1px solid var(--border);
       border-radius:20px; font-size:0.65rem; cursor:pointer; color:var(--subtext);
@@ -370,8 +380,8 @@ function injectLibraryStyles() {
     .tb-list { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
     .tb-item {
       background:var(--surface2); border:1px solid var(--border);
-      border-radius:10px; padding:10px 12px;
-      display:flex; flex-direction:column; gap:8px;
+      border-radius:10px; padding:9px 10px;
+      display:flex; flex-direction:column; gap:7px;
       position:relative;
     }
     .tb-item.tb-active { border-color:var(--teal); }
@@ -399,16 +409,16 @@ function injectLibraryStyles() {
       width:100%; background:var(--bg); border:1px solid var(--border);
       border-radius:6px; padding:8px 10px; color:var(--text);
       font-family:var(--font-ui); font-size:0.78rem; resize:none;
-      outline:none; line-height:1.5; min-height:52px;
+      outline:none; line-height:1.5; min-height:44px;
     }
     .tb-text-input:focus { border-color:var(--teal); }
     .tb-text-input::placeholder { color:var(--subtext); }
     .tb-options { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
     .tb-pos-grid {
-      display:grid; grid-template-columns:repeat(3,18px); gap:2px;
+      display:grid; grid-template-columns:repeat(3,16px); gap:2px;
     }
     .tb-pos-cell {
-      width:18px; height:14px; border-radius:2px;
+      width:16px; height:12px; border-radius:2px;
       background:var(--border); cursor:pointer; border:none;
       transition:background 0.15s;
     }
@@ -430,7 +440,7 @@ function injectLibraryStyles() {
     }
     .tb-add-btn:hover { border-color:var(--teal); color:var(--teal); }
     /* text box style controls */
-    .tb-style-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:2px; }
+    .tb-style-row { display:flex; gap:5px; align-items:center; flex-wrap:wrap; margin-top:2px; }
     .tb-swatch {
       width:24px; height:24px; border-radius:6px; border:2px solid var(--border);
       cursor:pointer; overflow:hidden; position:relative; flex-shrink:0;
@@ -441,7 +451,7 @@ function injectLibraryStyles() {
       height:calc(100%+8px); border:none; cursor:pointer; opacity:0;
     }
     .tb-mini-chip {
-      padding:3px 7px; border-radius:4px; font-size:0.55rem;
+      padding:3px 6px; border-radius:4px; font-size:0.52rem;
       border:1px solid var(--border); background:var(--surface2);
       color:var(--subtext); cursor:pointer; font-family:var(--font-ui);
       transition:all 0.12s; white-space:nowrap;
@@ -513,11 +523,15 @@ function ensureOverlays() {
     tl.id = 'timeline-overlay';
     tl.innerHTML = `
       <div class="tl-header">
-        <input class="tl-title-input" id="tl-title" value="book" />
-        <button class="tl-export-btn" id="tl-export-btn" title="download book as JSON">↓ save</button>
-        <button class="tl-intro-btn" id="tl-make-intro" title="play this book on startup">⭐ intro</button>
-        <button class="tl-play-btn" id="tl-play-btn">▶ play</button>
-        <button class="tl-close-btn" id="tl-close-btn">✕</button>
+        <div class="tl-header-top">
+          <input class="tl-title-input" id="tl-title" value="book" />
+          <button class="tl-play-btn" id="tl-play-btn">▶ play</button>
+          <button class="tl-close-btn" id="tl-close-btn">✕</button>
+        </div>
+        <div class="tl-header-btns">
+          <button class="tl-export-btn" id="tl-export-btn" title="download book as JSON">↓ save</button>
+          <button class="tl-intro-btn" id="tl-make-intro" title="play this book on startup">⭐ intro</button>
+        </div>
       </div>
       <input type="file" id="tl-import-input" accept=".json" style="display:none" />
       <div class="tl-tracks" id="tl-tracks">
