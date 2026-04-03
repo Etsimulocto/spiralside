@@ -195,6 +195,13 @@ export function renderActiveChar(id) {
   // Only custom Codex bots get the talk-to button so users can focus them
   const _CREW = ['sky', 'cold', 'monday', 'grit'];
   const _isCustomBot = !char.isUser && !_CREW.includes(char.id || id);
+  // Reset to crew mode when viewing a crew card
+  if (!_isCustomBot && !char.isUser) {
+    import('./state.js').then(({ state }) => {
+      state.botName  = 'Sky';
+      state.botColor = '#00F6D6';
+    });
+  }
   if (talkBtn && _isCustomBot) {
     talkBtn.style.display    = 'block';
     talkBtn.textContent      = `talk to ${char.name}`;
