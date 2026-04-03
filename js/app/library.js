@@ -441,7 +441,7 @@ function injectLibraryStyles() {
     }
     .se-tb-bubble .tb-sp { font-size:0.44rem; letter-spacing:0.1em;
       text-transform:uppercase; font-weight:700; margin-bottom:2px; display:block; }
-  \`;
+  `;
   document.head.appendChild(s);
 }
 
