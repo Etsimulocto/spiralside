@@ -432,15 +432,15 @@ const _authCallback = () => checkAuthAndShow(onAppReady);
   try {
     const books  = await _peekIDBBooks();
     const introId = await _peekIDBConfig('intro_book_id');
+    // Only replace Sky intro if user has explicitly set an intro book
+    // Without an explicit introId, always show Sky's intro
+    if (!introId) {
+      if (!playedUserBook) initComic(_authCallback);
+      return;
+    }
+
     const valid  = (books || [])
-      .filter(b => b.slots && b.slots.some(s => s.type==='image' || (s.type==='text' && s.text)))
-      .sort((a, b) => {
-        if (introId) {
-          if (a.id === introId) return -1;
-          if (b.id === introId) return  1;
-        }
-        return (b.createdAt||0) - (a.createdAt||0);
-      });
+      .filter(b => b.id === introId && b.slots && b.slots.some(s => s.type==='image' || (s.type==='text' && s.text)));
 
     if (valid.length) {
       const book   = valid[0];
