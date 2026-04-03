@@ -881,6 +881,27 @@ export async function initFramesView() {
     const svgData = _buildSVG();
     const frame  = { id:null, name, creator:'user', type:'svg', svgData, compatibleWith:['all'], thumbnail:null, createdAt:0 };
     await saveFrame(frame);
+
+    // ── Rasterize SVG → PNG → save to Library gallery ──
+    // Frame appears as a selectable image panel in the book editor gallery.
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 400; canvas.height = 560;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0f0f18';
+      ctx.fillRect(0, 0, 400, 560);
+      await new Promise(resolve => {
+        const blob = new Blob([svgData], { type: 'image/svg+xml' });
+        const url  = URL.createObjectURL(blob);
+        const img  = new Image();
+        img.onload  = () => { ctx.drawImage(img, 0, 0, 400, 560); URL.revokeObjectURL(url); resolve(); };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(); };
+        img.src = url;
+      });
+      if (window.saveImageToLibrary) {
+        await window.saveImageToLibrary(canvas.toDataURL('image/png'), name + ' (frame)');
+      }
+    } catch(e) { console.warn('[frames] library panel save failed:', e); }
     // ── OPFS auto-save — write SVG to frames/ folder ──
     if (window.opfsWrite) {
       try {

@@ -402,8 +402,9 @@ function ensureOverlays() {
         </div>
         <div class="se-panel" id="se-image-edit-panel" style="display:none">
           <div class="se-row">
-            <div class="se-preview-wrap" id="se-img-preview-wrap">
+            <div class="se-preview-wrap" id="se-img-preview-wrap" style="position:relative">
               <img id="se-img-preview" src="" alt="" />
+              <div id="se-frame-overlay" style="position:absolute;inset:0;pointer-events:none;z-index:2"></div>
             </div>
             <div class="se-fields">
               <div class="se-label">filter</div>
@@ -418,6 +419,12 @@ function ensureOverlays() {
                 <button class="se-chip" data-tag="cold" style="color:#4DA3FF">cold</button>
                 <button class="se-chip" data-tag="grit" style="color:#FFD93D">grit</button>
               </div>
+              <div class="se-label" style="margin-top:6px">frame overlay</div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <button class="se-chip" id="se-frame-pick-btn" style="border-color:var(--teal);color:var(--teal)">&#9635; pick frame</button>
+                <button class="se-chip" id="se-frame-clear-btn" style="display:none">&#10005; clear</button>
+              </div>
+              <div id="se-frame-name" style="font-size:0.58rem;color:var(--subtext);margin-top:3px"></div>
             </div>
           </div>
           <div class="se-label">caption</div>
@@ -572,9 +579,45 @@ function wireTimeline() {
   );
   document.getElementById('se-img-save').addEventListener('click', saveImageSlot);
   document.getElementById('se-img-del').addEventListener('click',  deleteCurrentSlot);
+
+  // ── Frame overlay controls ────────────────────────────────────────
+  document.getElementById('se-frame-pick-btn').addEventListener('click', () => {
+    if (!window.openFramePicker) { alert('Frame module not loaded.'); return; }
+    window.openFramePicker({
+      onSelect: (frame) => {
+        window._pendingFrameId   = frame ? frame.id      : null;
+        window._pendingFrameSVG  = frame ? frame.svgData : null;
+        window._pendingFrameName = frame ? frame.name    : null;
+        _updateFramePreview(frame);
+      }
+    });
+  });
+  document.getElementById('se-frame-clear-btn').addEventListener('click', () => {
+    window._pendingFrameId = window._pendingFrameSVG = window._pendingFrameName = null;
+    _updateFramePreview(null);
+  });
 }
 
 // ── GALLERY RENDER ────────────────────────────────────────────
+// ── FRAME PREVIEW HELPER ───────────────────────────────────────────
+function _updateFramePreview(frame) {
+  const overlay  = document.getElementById('se-frame-overlay');
+  const nameEl   = document.getElementById('se-frame-name');
+  const clearBtn = document.getElementById('se-frame-clear-btn');
+  if (!overlay) return;
+  if (frame && frame.svgData) {
+    overlay.innerHTML = frame.svgData;
+    const svg = overlay.querySelector('svg');
+    if (svg) svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+    if (nameEl)   nameEl.textContent = frame.name || 'frame';
+    if (clearBtn) clearBtn.style.display = '';
+  } else {
+    overlay.innerHTML = '';
+    if (nameEl)   nameEl.textContent = '';
+    if (clearBtn) clearBtn.style.display = 'none';
+  }
+}
+
 function renderLibrary() {
   const grid = document.getElementById('lib-grid');
   if (!grid) return;
@@ -659,6 +702,15 @@ function renderStrip(book) {
           dot.className = 'tl-slot-tag';
           dot.style.background = CHAR_COLORS[slot.tag] || CHAR_COLORS.none;
           div.appendChild(dot);
+        }
+        // Frame overlay on filmstrip thumbnail
+        if (slot.frameSVG) {
+          const fov = document.createElement('div');
+          fov.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:5';
+          fov.innerHTML = slot.frameSVG;
+          const svg = fov.querySelector('svg');
+          if (svg) svg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+          div.appendChild(fov);
         }
       } else {
         div.innerHTML += `<div class="tl-slot-text" style="color:var(--subtext)">missing image</div>`;
@@ -874,8 +926,17 @@ function showImageEditPanel(slot) {
     c.classList.remove('active', 'tag-active');
     if (c.dataset.tag === (slot.tag || 'none')) c.classList.add('tag-active');
   });
-  document.getElementById('se-cap-speaker').value = slot.caption?.speaker || slot.speaker || '';
-  document.getElementById('se-cap-text').value    = slot.caption?.text    || slot.caption  || '';
+  // caption can be string (legacy) OR {speaker,text} object — handle both
+  const _capObj = (typeof slot.caption === 'object' && slot.caption !== null) ? slot.caption : {};
+  const _capStr = typeof slot.caption === 'string' ? slot.caption : '';
+  document.getElementById('se-cap-speaker').value = _capObj.speaker || slot.speaker || '';
+  document.getElementById('se-cap-text').value    = _capObj.text    || _capStr     || '';
+
+  // Restore frame overlay from slot
+  window._pendingFrameId   = slot.frameId   || null;
+  window._pendingFrameSVG  = slot.frameSVG  || null;
+  window._pendingFrameName = slot.frameName || null;
+  _updateFramePreview(slot.frameSVG ? { svgData: slot.frameSVG, name: slot.frameName || 'frame' } : null);
 }
 
 function renderPickerGrid() {
@@ -920,6 +981,10 @@ function saveImageSlot() {
     speaker: document.getElementById('se-cap-speaker').value.trim(),
     text:    document.getElementById('se-cap-text').value.trim(),
   };
+  // Persist frame overlay (null = cleared)
+  slot.frameId   = window._pendingFrameId   || null;
+  slot.frameSVG  = window._pendingFrameSVG  || null;
+  slot.frameName = window._pendingFrameName || null;
   dbSet('books', book);
   renderStrip(book);
   refreshStripHighlight();
@@ -987,6 +1052,7 @@ function playTimeline() {
       return {
         image:      p?.dataURL || '',
         filter_css: filterObj.css,
+        frame_svg:  slot.frameSVG || null,
         dialogue:   capText ? [{ speaker: capSpeaker, text: capText }] : [],
         transition: 'fade',
         bg_gradient: 'radial-gradient(ellipse at 50% 50%,#1a0a2e 0%,#101014 70%)',
