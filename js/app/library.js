@@ -750,20 +750,8 @@ function renderStrip(book) {
       if (slot.frameSVG) {
         fdiv.classList.add('has-frame');
 
-        // Show the scene image as background (if image slot)
-        if (slot.type === 'image') {
-          const p = panels.find(x => x.id === slot.panelId);
-          if (p) {
-            const fObj = FILTERS.find(f => f.id === (slot.filter || 'none')) || FILTERS[0];
-            const bgImg = document.createElement('img');
-            bgImg.src = p.dataURL;
-            bgImg.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none';
-            bgImg.style.filter = fObj.css;
-            fdiv.appendChild(bgImg);
-          }
-        }
-
-        // Frame SVG overlay on top
+        // Frame SVG only on dark background — no scene image here
+        // (composite preview is in the slot editor, not the filmstrip)
         const fovEl = document.createElement('div');
         fovEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:2';
         fovEl.innerHTML = slot.frameSVG;
