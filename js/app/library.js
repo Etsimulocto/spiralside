@@ -1654,7 +1654,19 @@ function playTimeline() {
       if (slot.textBoxes && slot.textBoxes.length) {
         dialogue = slot.textBoxes
           .filter(tb => tb.text?.trim())
-          .map(tb => ({ speaker: tb.speaker || 'narrator', text: tb.text.trim(), style: tb.style, pos: tb.pos }));
+          .map(tb => ({
+            speaker:      tb.speaker      || 'narrator',
+            text:         tb.text.trim(),
+            style:        tb.style,
+            pos:          tb.pos,
+            // custom visual style properties — passed through to _bubbleStyle in comic.js
+            borderColor:  tb.borderColor  || null,
+            borderWidth:  tb.borderWidth  || null,
+            borderStyle:  tb.borderStyle  || null,
+            borderRadius: tb.borderRadius || null,
+            bgOpacity:    tb.bgOpacity    !== undefined ? tb.bgOpacity : null,
+            fontSize:     tb.fontSize     || null,
+          }));
       } else {
         const capText    = typeof slot.caption === 'string' ? slot.caption : slot.caption?.text || '';
         const capSpeaker = typeof slot.caption === 'string' ? 'narrator'   : slot.caption?.speaker || 'narrator';
