@@ -228,6 +228,16 @@ export async function bakeFrameToPNG(contentEl, frame, filename) {
 export async function openFramePicker(opts = {}) {
   opts = Object.assign({ surface: null, onSelect: null }, opts);
 
+  // ── Lazy-init IDB so this works even if Frames tab was never visited ──
+  if (!_dbFns) {
+    try {
+      const { dbGet, dbSet, dbGetAll, dbDelete } = await import('../app/db.js');
+      _dbFns = { get: dbGet, set: dbSet, getAll: dbGetAll, del: dbDelete };
+    } catch(e) {
+      console.warn('[frames] db lazy-init failed:', e);
+    }
+  }
+
   // Remove any existing picker
   document.getElementById('ss-frame-picker')?.remove();
 
