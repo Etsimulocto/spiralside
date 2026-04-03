@@ -175,8 +175,8 @@ function injectLibraryStyles() {
     .tl-track.track-frame .tl-slot.tl-frame-empty:hover {
       border-color:var(--teal); color:var(--teal);
     }
-    /* delete button on frame slots */
-    .tl-frame-del {
+    /* delete buttons on frame and scene slots */
+    .tl-frame-del, .tl-scene-del {
       position:absolute; top:2px; right:2px; z-index:20;
       width:16px; height:16px; border-radius:50%;
       background:rgba(0,0,0,0.7); border:none;
@@ -186,6 +186,10 @@ function injectLibraryStyles() {
       transition:color 0.15s, background 0.15s;
     }
     .tl-frame-del:hover { background:var(--pink); color:#fff; }
+    .tl-scene-del { opacity:0; transition:opacity 0.15s, background 0.15s; }
+    .tl-slot:hover .tl-scene-del { opacity:1; }
+    .tl-scene-del:hover { background:var(--pink); color:#fff; }
+    .tl-scene-del.confirm { background:var(--pink); color:#fff; opacity:1; }
     /* SCENE track (bottom) — full height slots */
     .tl-track.track-scene .tl-strip-wrap {
       padding:4px 16px 10px;
@@ -859,6 +863,42 @@ function renderStrip(book) {
       div.style.background = 'var(--surface2)';
       div.innerHTML += `<div class="tl-slot-text" style="color:${color}">${slot.speaker ? `<b>${slot.speaker}</b><br>` : ''}${slot.text || ''}</div>`;
     }
+
+    // Delete button — appears on hover, requires confirm tap
+    const sceneDelBtn = document.createElement('button');
+    sceneDelBtn.className = 'tl-scene-del';
+    sceneDelBtn.textContent = '✕';
+    sceneDelBtn.title = 'remove slot';
+    sceneDelBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      if (sceneDelBtn.dataset.confirm === '1') {
+        // Confirmed — delete slot
+        const b = books.find(b => b.id === viewingBookId);
+        if (!b) return;
+        b.slots.splice(idx, 1);
+        if (editingSlotIdx === idx) {
+          editingSlotIdx = null;
+          showSlotEmpty();
+        } else if (editingSlotIdx !== null && editingSlotIdx > idx) {
+          editingSlotIdx--;
+        }
+        dbSet('books', b);
+        renderStrip(b);
+      } else {
+        // First tap — request confirm
+        sceneDelBtn.dataset.confirm = '1';
+        sceneDelBtn.classList.add('confirm');
+        sceneDelBtn.textContent = '?';
+        setTimeout(() => {
+          if (sceneDelBtn) {
+            delete sceneDelBtn.dataset.confirm;
+            sceneDelBtn.classList.remove('confirm');
+            sceneDelBtn.textContent = '✕';
+          }
+        }, 2000);
+      }
+    });
+    div.appendChild(sceneDelBtn);
 
     // highlight active
     if (idx === editingSlotIdx) div.classList.add('active');
