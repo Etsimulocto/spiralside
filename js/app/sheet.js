@@ -191,7 +191,11 @@ export function renderActiveChar(id) {
 
   // ── talk-to button — sets persona and switches to chat ──
   const talkBtn = document.getElementById('talk-to-btn');
-  if (talkBtn && !char.isUser) {
+  // Crew members (sky/cold/monday/grit) are always present â€” no talk-to button
+  // Only custom Codex bots get the talk-to button so users can focus them
+  const _CREW = ['sky', 'cold', 'monday', 'grit'];
+  const _isCustomBot = !char.isUser && !_CREW.includes(char.id || id);
+  if (talkBtn && _isCustomBot) {
     talkBtn.style.display    = 'block';
     talkBtn.textContent      = `talk to ${char.name}`;
     talkBtn.style.background = `linear-gradient(135deg,${char.color}33,${char.color}11)`;
@@ -200,7 +204,7 @@ export function renderActiveChar(id) {
     talkBtn.style.boxShadow  = `0 0 20px ${char.color}22`;
     talkBtn.onclick          = () => _setPersonaAndChat(char);
   } else if (talkBtn) {
-    talkBtn.style.display = 'none'; // hide for user's own sheet
+    talkBtn.style.display = 'none'; // hide for crew + user's own sheet
   }
 
   // Trait bars

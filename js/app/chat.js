@@ -175,10 +175,24 @@ export async function sendMessage() {
     // Build system prompt from bot config
     const youCtx = buildYouContext();
     console.log("[chat] youCtx length:", youCtx.length, "| handle:", window.CHARACTERS?.you?.handle || window._youHandle || "(none)");
-    let sys = youCtx + `You are ${state.botName}.`;
-    if (state.botPersonality) sys += ` ${state.botPersonality}`;
-    if (state.botTone?.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
-    sys += ' Be genuine and concise. Never break character.';
+    const _CREW_IDS = ['sky', 'cold', 'monday', 'grit'];
+    const _activeBotId = (state.botName || '').toLowerCase();
+    const _isCrewActive = !state.botName || _CREW_IDS.includes(_activeBotId);
+    let sys;
+    if (_isCrewActive) {
+      // No custom bot â€” crew speaks together
+      sys = youCtx + 'You are the Spiralside crew: Sky, Cold, Monday, and GRIT. ' +
+        'Each has a distinct voice. Sky is luminous and declarative. Cold is quiet and precise. ' +
+        'Monday is chaotic and energetic. GRIT is direct and build-focused. ' +
+        'Respond as whichever crew member fits the moment, or let them bounce off each other. ' +
+        'Be genuine. Never break character.';
+    } else {
+      // Custom bot focused â€” crew in background
+      sys = youCtx + `You are ${state.botName}.`;
+      if (state.botPersonality) sys += ` ${state.botPersonality}`;
+      if (state.botTone?.length)  sys += ` Tone: ${state.botTone.join(', ')}.`;
+      sys += ' The Spiralside crew (Sky, Cold, Monday, GRIT) exist in the background of this world. Be genuine and concise. Never break character.';
+    }
 
     const resp = await fetch(`${RAIL}/chat`, {
       method: 'POST',
