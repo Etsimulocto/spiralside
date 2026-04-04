@@ -1,6 +1,6 @@
 // ============================================================
-// SPIRALSIDE — PI VIEW v1.1
-// Bloomslice Studio — maker/STEM tab + GPIO Patchbay
+// SPIRALSIDE — PI VIEW v1.2
+// Bloomslice Studio — maker/STEM tab + GPIO Patchbay (inline fields)
 // Nimbis anchor: js/app/views/pi.js
 // ============================================================
 
@@ -26,7 +26,7 @@ let isRunning   = false;
 let lastCode    = '';
 let lastBuild   = null;
 
-// ── GPIO PATCHBAY STATE ──────────────────────────────────
+// ── GPIO PATCHBAY DATA ────────────────────────────────────
 const PB_PINS = [
   {num:1,  name:'3.3V',   type:'pwr33'},
   {num:2,  name:'5V',     type:'pwr5'},
@@ -70,11 +70,7 @@ const PB_PINS = [
   {num:40, name:'GPIO21', type:'spi',  alt:'SCLK1'},
 ];
 const PB_COLORS = {pwr33:'#e04444',pwr5:'#c44444',gnd:'#555',gpio:'#2b7fd4',i2c:'#7b4fc9',spi:'#7b4fc9',uart:'#1a9e6a'};
-const PB_IO = ['IN','OUT','IN/OUT','CLK','DATA','PWM'];
-const pbAssign = {};
-let pbEditPin = null;
-let pbSelIO   = null;
-let pbOpen    = false;
+let pbOpen = false;
 
 // ── INIT ──────────────────────────────────────────────────
 export function initPiView() {
@@ -91,7 +87,7 @@ export function initPiView() {
 
 // ── DOM ───────────────────────────────────────────────────
 function renderDOM(wrap) {
-  // LEFT COLUMN
+  // ── LEFT COLUMN ──
   const colLeft = document.createElement('div');
   colLeft.id = 'pi-col-left';
 
@@ -182,11 +178,11 @@ function renderDOM(wrap) {
 
   wrap.appendChild(colLeft);
 
-  // RIGHT COLUMN
+  // ── RIGHT COLUMN ──
   const colRight = document.createElement('div');
   colRight.id = 'pi-col-right';
 
-  // OUTPUT AREA
+  // Output area
   const outWrap = document.createElement('div');
   outWrap.id = 'pi-out-wrap';
 
@@ -211,11 +207,11 @@ function renderDOM(wrap) {
 
   colRight.appendChild(outWrap);
 
-  // PATCHBAY PANEL — collapsible, sits between output and chat input
+  // ── PATCHBAY PANEL ── collapsible, inline fields, no modal
   const pbPanel = document.createElement('div');
   pbPanel.id = 'pi-pb-panel';
 
-  // header row with toggle button
+  // header with toggle
   const pbHeader = document.createElement('div');
   pbHeader.id = 'pi-pb-header';
 
@@ -231,63 +227,88 @@ function renderDOM(wrap) {
 
   pbPanel.appendChild(pbHeader);
 
-  // collapsible body — fixed height scrollable
+  // body — fixed height, scrollable
   const pbBody = document.createElement('div');
   pbBody.id = 'pi-pb-body';
   pbBody.style.display = 'none';
 
+  // column header row
+  const pbColHdr = document.createElement('div');
+  pbColHdr.id = 'pi-pb-col-hdr';
+  pbColHdr.innerHTML = '<span></span><span>pin</span><span>connected to</span><span>to pin #</span><span>wire color</span><span>note</span>';
+  pbBody.appendChild(pbColHdr);
+
+  // scrollable pin list
   const pbScroll = document.createElement('div');
   pbScroll.id = 'pi-pb-scroll';
 
-  // color legend
-  const pbLegend = document.createElement('div');
-  pbLegend.id = 'pi-pb-legend';
-  [['#e04444','3.3V'],['#c44','5V'],['#555','GND'],['#2b7fd4','GPIO'],['#7b4fc9','SPI/I2C'],['#1a9e6a','UART'],['#e88a1a','assigned']].forEach(function(pair) {
-    const leg = document.createElement('span');
-    leg.className = 'pb-leg';
-    const dot = document.createElement('span');
-    dot.className = 'pb-leg-dot';
-    dot.style.background = pair[0];
-    const lbl = document.createTextNode(pair[1]);
-    leg.appendChild(dot);
-    leg.appendChild(lbl);
-    pbLegend.appendChild(leg);
-  });
-  pbScroll.appendChild(pbLegend);
+  // one row per pin (all 40)
+  PB_PINS.forEach(function(pin) {
+    const row = document.createElement('div');
+    row.className = 'pb-row';
+    row.dataset.pin = pin.num;
 
-  // pin grid — populated by pbRender()
-  const pbGrid = document.createElement('div');
-  pbGrid.id = 'pi-pb-grid';
-  pbScroll.appendChild(pbGrid);
+    // colored dot with pin number
+    const dot = document.createElement('div');
+    dot.className = 'pb-dot';
+    dot.style.background = PB_COLORS[pin.type] || '#2b7fd4';
+    dot.title = pin.name + (pin.alt ? ' / ' + pin.alt : '');
+    dot.textContent = pin.num;
+    row.appendChild(dot);
+
+    // pin name label (fixed, not editable)
+    const pinName = document.createElement('div');
+    pinName.className = 'pb-pin-name';
+    pinName.textContent = pin.alt || pin.name;
+    pinName.title = pin.name;
+    row.appendChild(pinName);
+
+    // "connected to" — what component/wire is on this pin
+    const inLabel = document.createElement('input');
+    inLabel.className = 'pb-in pb-in-label';
+    inLabel.placeholder = 'component...';
+    inLabel.dataset.field = 'label';
+    inLabel.dataset.pin   = pin.num;
+    if (['pwr33','pwr5','gnd'].includes(pin.type)) {
+      inLabel.disabled = true;
+      inLabel.placeholder = pin.name;
+    }
+    row.appendChild(inLabel);
+
+    // "to pin #" on the other device
+    const inToPin = document.createElement('input');
+    inToPin.className = 'pb-in pb-in-topin';
+    inToPin.placeholder = 'e.g. D4';
+    inToPin.dataset.field = 'topin';
+    inToPin.dataset.pin   = pin.num;
+    if (['pwr33','pwr5','gnd'].includes(pin.type)) inToPin.disabled = true;
+    row.appendChild(inToPin);
+
+    // wire color
+    const inColor = document.createElement('input');
+    inColor.className = 'pb-in pb-in-color';
+    inColor.placeholder = 'red...';
+    inColor.dataset.field = 'color';
+    inColor.dataset.pin   = pin.num;
+    if (['pwr33','pwr5','gnd'].includes(pin.type)) inColor.disabled = true;
+    row.appendChild(inColor);
+
+    // note
+    const inNote = document.createElement('input');
+    inNote.className = 'pb-in pb-in-note';
+    inNote.placeholder = 'note...';
+    inNote.dataset.field = 'note';
+    inNote.dataset.pin   = pin.num;
+    row.appendChild(inNote);
+
+    pbScroll.appendChild(row);
+  });
 
   pbBody.appendChild(pbScroll);
   pbPanel.appendChild(pbBody);
-
-  // modal for pin assignment
-  const pbModal = document.createElement('div');
-  pbModal.id = 'pi-pb-modal';
-  pbModal.style.display = 'none';
-  pbModal.innerHTML = [
-    '<div id="pi-pb-modal-box">',
-    '<div id="pi-pb-modal-title">pin config</div>',
-    '<div id="pi-pb-modal-info"></div>',
-    '<div class="pb-field"><div class="pb-field-label">label / what\'s connected</div>',
-    '<input id="pi-pb-label" placeholder="e.g. DHT22, LED red..." /></div>',
-    '<div class="pb-field"><div class="pb-field-label">direction</div>',
-    '<div id="pi-pb-io-chips"></div></div>',
-    '<div class="pb-field"><div class="pb-field-label">notes</div>',
-    '<input id="pi-pb-notes" placeholder="optional..." /></div>',
-    '<div class="pb-modal-btns">',
-    '<button id="pi-pb-clear-btn" class="pb-btn-clear">clear</button>',
-    '<button id="pi-pb-cancel-btn">cancel</button>',
-    '<button id="pi-pb-save-btn" class="pb-btn-save">save</button>',
-    '</div></div>',
-  ].join('');
-  pbPanel.appendChild(pbModal);
-
   colRight.appendChild(pbPanel);
 
-  // CHAT CONSOLE (input bar)
+  // ── CHAT CONSOLE ──
   const consoleEl = document.createElement('div');
   consoleEl.id = 'pi-console';
 
@@ -357,23 +378,12 @@ function wireEvents(wrap) {
   document.getElementById('pi-save-btn').addEventListener('click', saveCard);
   document.getElementById('pi-dl-btn').addEventListener('click', downloadCard);
 
-  // wire patchbay toggle
+  // patchbay toggle — show/hide body
   document.getElementById('pi-pb-toggle').addEventListener('click', function() {
     pbOpen = !pbOpen;
-    const body = document.getElementById('pi-pb-body');
-    if (body) body.style.display = pbOpen ? 'block' : 'none';
+    document.getElementById('pi-pb-body').style.display = pbOpen ? 'block' : 'none';
     this.textContent = pbOpen ? 'hide' : 'show';
-    if (pbOpen) pbRender();
   });
-
-  // wire patchbay modal buttons
-  document.getElementById('pi-pb-modal').addEventListener('click', function(e) {
-    if (e.target === this) pbCloseModal();
-  });
-  document.getElementById('pi-pb-save-btn').addEventListener('click', pbSavePin);
-  document.getElementById('pi-pb-cancel-btn').addEventListener('click', pbCloseModal);
-  document.getElementById('pi-pb-clear-btn').addEventListener('click', pbClearPin);
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') pbCloseModal(); });
 }
 
 // ── GENERATE ──────────────────────────────────────────────
@@ -399,7 +409,6 @@ async function generate() {
     const token = state.session && state.session.access_token;
     if (!token) { showErr('Please sign in.'); return; }
 
-    // inject patchbay wiring context into prompt if any pins are assigned
     const ctx = pbContextString();
     const fullPrompt = ctx ? prompt + '\n\n[WIRING CONTEXT]\n' + ctx : prompt;
 
@@ -430,10 +439,7 @@ async function generate() {
 function renderOutput(el, text) {
   el.innerHTML = '';
   const lines  = text.split('\n');
-  let inCode   = false;
-  let lang     = '';
-  let codeBuf  = [];
-  let textBuf  = [];
+  let inCode = false, lang = '', codeBuf = [], textBuf = [];
 
   function _md(t) {
     return t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code style="background:var(--surface);padding:1px 4px;border-radius:3px;font-size:0.85em">$1</code>');
@@ -443,11 +449,11 @@ function renderOutput(el, text) {
     textBuf.forEach(line => {
       if (!line.trim()) return;
       const d = document.createElement('div');
-      if (line.startsWith('### ')) { d.className='pi-h3'; d.innerHTML=_md(line.slice(4)); }
-      else if (line.startsWith('## ')) { d.className='pi-h2'; d.innerHTML=_md(line.slice(3)); }
-      else if (line.startsWith('# '))  { d.className='pi-h1'; d.innerHTML=_md(line.slice(2)); }
-      else if (line.match(/^[-*] /))   { d.className='pi-li'; d.innerHTML=_md(line.slice(2)); }
-      else                              { d.className='pi-prose'; d.innerHTML=_md(line); }
+      if      (line.startsWith('### ')) { d.className='pi-h3'; d.innerHTML=_md(line.slice(4)); }
+      else if (line.startsWith('## '))  { d.className='pi-h2'; d.innerHTML=_md(line.slice(3)); }
+      else if (line.startsWith('# '))   { d.className='pi-h1'; d.innerHTML=_md(line.slice(2)); }
+      else if (line.match(/^[-*] /))    { d.className='pi-li'; d.innerHTML=_md(line.slice(2)); }
+      else                               { d.className='pi-prose'; d.innerHTML=_md(line); }
       el.appendChild(d);
     });
     textBuf = [];
@@ -456,26 +462,16 @@ function renderOutput(el, text) {
     if (!codeBuf.length) return;
     const wrap = document.createElement('div');
     wrap.className = 'pi-code-wrap';
-    if (lang) {
-      const badge = document.createElement('span');
-      badge.className = 'pi-lang-badge';
-      badge.textContent = lang;
-      wrap.appendChild(badge);
-    }
-    const pre  = document.createElement('pre');
-    pre.className = 'pi-code-block';
-    const code = document.createElement('code');
-    code.textContent = codeBuf.join('\n');
-    pre.appendChild(code);
-    wrap.appendChild(pre);
-    el.appendChild(wrap);
+    if (lang) { const badge = document.createElement('span'); badge.className='pi-lang-badge'; badge.textContent=lang; wrap.appendChild(badge); }
+    const pre = document.createElement('pre'); pre.className='pi-code-block';
+    const code = document.createElement('code'); code.textContent=codeBuf.join('\n'); pre.appendChild(code);
+    wrap.appendChild(pre); el.appendChild(wrap);
     codeBuf = []; lang = '';
   }
-
   lines.forEach(line => {
     if (line.startsWith('```')) {
-      if (!inCode) { flushText(); inCode = true; lang = line.slice(3).trim(); }
-      else         { flushCode(); inCode = false; }
+      if (!inCode) { flushText(); inCode=true; lang=line.slice(3).trim(); }
+      else         { flushCode(); inCode=false; }
     } else if (inCode) { codeBuf.push(line); }
     else               { textBuf.push(line); }
   });
@@ -497,7 +493,7 @@ function extractCode(text) {
   const lines = text.split('\n');
   let inCode = false, buf = [];
   for (const line of lines) {
-    if (line.startsWith('```') && !inCode) { inCode = true; continue; }
+    if (line.startsWith('```') && !inCode) { inCode=true; continue; }
     if (line.startsWith('```') && inCode)  { break; }
     if (inCode) buf.push(line);
   }
@@ -516,7 +512,7 @@ async function runPiston() {
     const resp = await fetch(PISTON_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ language: 'python', version: '3.10', files: [{ content: lastCode }] }),
+      body: JSON.stringify({ language:'python', version:'3.10', files:[{ content:lastCode }] }),
     });
     const data   = await resp.json();
     const stdout = (data && data.run && data.run.stdout) || '';
@@ -527,7 +523,7 @@ async function runPiston() {
       runOut.textContent = '\u26a0 GPIO/hardware modules need a real Pi. Pure Python runs fine here.';
     } else if (out) {
       runOut.style.color = stderr ? '#FF4BCB' : '#00F6D6';
-      runOut.textContent = out.slice(0, 300);
+      runOut.textContent = out.slice(0,300);
     } else {
       runOut.style.color = '#9090c0';
       runOut.textContent = '(no output)';
@@ -563,17 +559,17 @@ function parseCard(prompt, text) {
   const lines = text.split('\n');
   const components = []; let inComp = false;
   for (const line of lines) {
-    if (line.indexOf('COMPONENTS NEEDED') !== -1) { inComp = true; continue; }
-    if (inComp && line.trim() === '') { inComp = false; continue; }
-    if (inComp) { const c = line.replace(/^[-*#\d.\s\u2022]+/,'').trim(); if (c) components.push(c); if (components.length >= 6) inComp = false; }
+    if (line.indexOf('COMPONENTS NEEDED') !== -1) { inComp=true; continue; }
+    if (inComp && line.trim() === '') { inComp=false; continue; }
+    if (inComp) { const c=line.replace(/^[-*#\d.\s\u2022]+/,'').trim(); if (c) components.push(c); if (components.length>=6) inComp=false; }
   }
   const what_you_learn = []; let inLearn = false;
   for (const line of lines) {
-    if (line.indexOf('WHAT YOU') !== -1 && line.indexOf('LEARN') !== -1) { inLearn = true; continue; }
-    if (inLearn && line.trim() === '') { inLearn = false; continue; }
-    if (inLearn) { const c = line.replace(/^[-*#\d.\s\u2022]+/,'').trim(); if (c) what_you_learn.push(c); if (what_you_learn.length >= 4) inLearn = false; }
+    if (line.indexOf('WHAT YOU') !== -1 && line.indexOf('LEARN') !== -1) { inLearn=true; continue; }
+    if (inLearn && line.trim() === '') { inLearn=false; continue; }
+    if (inLearn) { const c=line.replace(/^[-*#\d.\s\u2022]+/,'').trim(); if (c) what_you_learn.push(c); if (what_you_learn.length>=4) inLearn=false; }
   }
-  const desc = lines.find(l => l.trim() && !l.startsWith('#') && !l.startsWith('=') && l.length > 10) || prompt;
+  const desc = lines.find(l => l.trim() && !l.startsWith('#') && !l.startsWith('=') && l.length>10) || prompt;
   return {
     id: generateCardId('build'), type: 'build', title,
     author: (state.user && state.user.email && state.user.email.split('@')[0]) || 'maker',
@@ -618,8 +614,8 @@ function _addBckCard(build) {
   if (ph) ph.remove();
   const card = document.createElement('div');
   card.className = 'pi-bck-card';
-  const idEl = document.createElement('div'); idEl.className = 'pi-bck-id'; idEl.textContent = build.id;
-  const nameEl = document.createElement('div'); nameEl.className = 'pi-bck-name'; nameEl.textContent = build.title || build.id;
+  const idEl   = document.createElement('div'); idEl.className='pi-bck-id'; idEl.textContent=build.id;
+  const nameEl = document.createElement('div'); nameEl.className='pi-bck-name'; nameEl.textContent=build.title||build.id;
   card.appendChild(idEl); card.appendChild(nameEl);
   card.onclick = function() { renderCardPreview(build); };
   list.insertBefore(card, list.firstChild);
@@ -632,9 +628,9 @@ async function refreshBckList() {
     if (!list) return;
     list.innerHTML = '';
     if (!all || !all.length) {
-      const ph = document.createElement('div'); ph.className = 'pi-bck-ph'; ph.textContent = 'no cards yet'; list.appendChild(ph); return;
+      const ph = document.createElement('div'); ph.className='pi-bck-ph'; ph.textContent='no cards yet'; list.appendChild(ph); return;
     }
-    all.slice().reverse().forEach(item => { _addBckCard(item.data || item); });
+    all.slice().reverse().forEach(item => { _addBckCard(item.data||item); });
   } catch(e) {}
 }
 
@@ -654,134 +650,28 @@ function setRunMsg(msg, color) {
   el.textContent = msg;
 }
 
-// ── GPIO PATCHBAY FUNCTIONS ───────────────────────────────
-
-// Returns dot color — orange if assigned, type-color otherwise
-function pbGetColor(pin) {
-  return (pbAssign[pin.num] && pbAssign[pin.num].label) ? '#e88a1a' : (PB_COLORS[pin.type] || '#2b7fd4');
-}
-
-// Renders all 20 rows of 2 pins each into #pi-pb-grid
-function pbRender() {
-  const grid = document.getElementById('pi-pb-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  for (let i = 0; i < 40; i += 2) {
-    const pL = PB_PINS[i], pR = PB_PINS[i+1];
-    const aL = pbAssign[pL.num], aR = pbAssign[pR.num];
-    const row = document.createElement('div');
-    row.className = 'pb-row';
-
-    // left label (text-align right, overflows with ellipsis)
-    const lblL = document.createElement('div');
-    lblL.className = 'pb-pin-lbl pb-pin-lbl-left';
-    lblL.style.color = aL ? 'var(--text)' : 'var(--subtext)';
-    lblL.title = aL ? aL.label : (pL.alt || pL.name);
-    if (aL) { lblL.innerHTML = '<strong>' + aL.label + '</strong>' + (aL.dir ? ' <em>[' + aL.dir + ']</em>' : ''); }
-    else     { lblL.textContent = pL.alt || pL.name; }
-    row.appendChild(lblL);
-
-    // left pin dot
-    const dotL = document.createElement('div');
-    dotL.className = 'pb-dot' + (aL ? ' pb-dot-assigned' : '');
-    dotL.style.background = pbGetColor(pL);
-    dotL.textContent = pL.num;
-    dotL.title = 'Pin ' + pL.num + ': ' + pL.name;
-    dotL.addEventListener('click', function() { pbOpenModal(pL.num); });
-    row.appendChild(dotL);
-
-    // right pin dot
-    const dotR = document.createElement('div');
-    dotR.className = 'pb-dot' + (aR ? ' pb-dot-assigned' : '');
-    dotR.style.background = pbGetColor(pR);
-    dotR.textContent = pR.num;
-    dotR.title = 'Pin ' + pR.num + ': ' + pR.name;
-    dotR.addEventListener('click', function() { pbOpenModal(pR.num); });
-    row.appendChild(dotR);
-
-    // right label
-    const lblR = document.createElement('div');
-    lblR.className = 'pb-pin-lbl pb-pin-lbl-right';
-    lblR.style.color = aR ? 'var(--text)' : 'var(--subtext)';
-    lblR.title = aR ? aR.label : (pR.alt || pR.name);
-    if (aR) { lblR.innerHTML = '<strong>' + aR.label + '</strong>' + (aR.dir ? ' <em>[' + aR.dir + ']</em>' : ''); }
-    else     { lblR.textContent = pR.alt || pR.name; }
-    row.appendChild(lblR);
-
-    grid.appendChild(row);
-  }
-}
-
-// Opens the pin assignment modal
-function pbOpenModal(num) {
-  pbEditPin = num;
-  const pin     = PB_PINS.find(function(p) { return p.num === num; });
-  const a       = pbAssign[num] || {};
-  const titleEl = document.getElementById('pi-pb-modal-title');
-  const infoEl  = document.getElementById('pi-pb-modal-info');
-  const lblEl   = document.getElementById('pi-pb-label');
-  const notesEl = document.getElementById('pi-pb-notes');
-  const chipsEl = document.getElementById('pi-pb-io-chips');
-  if (!titleEl) return;
-  titleEl.textContent = 'Pin ' + num + ' \u2014 ' + pin.name;
-  infoEl.textContent  = (pin.alt ? pin.alt + ' \u00b7 ' : '') + 'Type: ' + pin.type.toUpperCase();
-  lblEl.value   = a.label || '';
-  notesEl.value = a.notes  || '';
-  pbSelIO = a.dir || null;
-  chipsEl.innerHTML = '';
-  const isPwr = ['pwr33','pwr5','gnd'].includes(pin.type);
-  PB_IO.forEach(function(io) {
-    const chip = document.createElement('div');
-    chip.className = 'pb-io-chip' + (pbSelIO === io ? ' pb-io-chip-sel' : '');
-    chip.textContent = io;
-    chip.style.opacity = isPwr ? '0.3' : '1';
-    chip.style.pointerEvents = isPwr ? 'none' : 'auto';
-    chip.addEventListener('click', function() {
-      document.querySelectorAll('.pb-io-chip').forEach(function(c) { c.classList.remove('pb-io-chip-sel'); });
-      chip.classList.add('pb-io-chip-sel');
-      pbSelIO = io;
-    });
-    chipsEl.appendChild(chip);
-  });
-  const modal = document.getElementById('pi-pb-modal');
-  if (modal) modal.style.display = 'flex';
-  setTimeout(function() { lblEl.focus(); }, 80);
-}
-
-function pbSavePin() {
-  const label = (document.getElementById('pi-pb-label').value || '').trim();
-  if (label) {
-    pbAssign[pbEditPin] = { label: label, dir: pbSelIO || '', notes: (document.getElementById('pi-pb-notes').value || '').trim() };
-  } else {
-    delete pbAssign[pbEditPin];
-  }
-  pbCloseModal();
-  pbRender();
-}
-
-function pbClearPin() {
-  delete pbAssign[pbEditPin];
-  pbCloseModal();
-  pbRender();
-}
-
-function pbCloseModal() {
-  const modal = document.getElementById('pi-pb-modal');
-  if (modal) modal.style.display = 'none';
-  pbEditPin = null;
-}
-
-// Returns wiring context string to inject into prompts
+// ── PATCHBAY — reads live input values, no stored state ──
+// Collects all filled-in rows and returns a prompt context string
 function pbContextString() {
+  const rows = document.querySelectorAll('.pb-row');
   const lines = [];
-  Object.keys(pbAssign).forEach(function(num) {
-    const pin = PB_PINS.find(function(p) { return p.num === parseInt(num); });
-    const a   = pbAssign[num];
-    if (pin && a && a.label) {
-      lines.push('Pin ' + num + ' (' + pin.name + ') -> ' + a.label + (a.dir ? ' [' + a.dir + ']' : '') + (a.notes ? ' -- ' + a.notes : ''));
+  rows.forEach(function(row) {
+    const pinNum  = row.dataset.pin;
+    const pin     = PB_PINS.find(function(p) { return p.num === parseInt(pinNum); });
+    const label   = (row.querySelector('.pb-in-label')  || {}).value || '';
+    const topin   = (row.querySelector('.pb-in-topin')  || {}).value || '';
+    const color   = (row.querySelector('.pb-in-color')  || {}).value || '';
+    const note    = (row.querySelector('.pb-in-note')   || {}).value || '';
+    if (label.trim() || topin.trim()) {
+      let s = 'Pin ' + pinNum + ' (' + (pin ? pin.name : '?') + ')';
+      if (label.trim()) s += ' -> ' + label.trim();
+      if (topin.trim()) s += ' [to: ' + topin.trim() + ']';
+      if (color.trim()) s += ' [wire: ' + color.trim() + ']';
+      if (note.trim())  s += ' -- ' + note.trim();
+      lines.push(s);
     }
   });
-  return lines.length ? 'GPIO assignments:\n' + lines.join('\n') : '';
+  return lines.length ? 'GPIO wiring:\n' + lines.join('\n') : '';
 }
 
 // ── STYLES ────────────────────────────────────────────────
@@ -844,45 +734,35 @@ function injectPiStyles() {
     '.pi-li::before{content:"\u00b7";position:absolute;left:2px;color:var(--teal);}',
     '.pi-prose{font-size:0.71rem;color:var(--text);margin:1px 0;line-height:1.55;}',
     '.pi-prose:empty{display:none;}',
-    /* patchbay */
+    /* ── patchbay ── */
     '#pi-pb-panel{flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);}',
     '#pi-pb-header{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;}',
     '#pi-pb-title{font-size:0.62rem;letter-spacing:0.1em;color:var(--subtext);text-transform:uppercase;font-family:var(--font-ui);}',
     '#pi-pb-toggle{font-size:0.6rem;letter-spacing:0.08em;color:var(--teal);background:transparent;border:1px solid rgba(0,246,214,0.3);border-radius:12px;padding:2px 9px;cursor:pointer;font-family:var(--font-ui);transition:background 0.15s;}',
     '#pi-pb-toggle:hover{background:rgba(0,246,214,0.08);}',
     '#pi-pb-body{border-top:1px solid var(--border);}',
-    '#pi-pb-scroll{height:200px;overflow-y:auto;overflow-x:hidden;padding:8px 10px;}',
+    /* column header */
+    '#pi-pb-col-hdr{display:grid;grid-template-columns:22px 56px 1fr 60px 60px 80px;gap:4px;align-items:center;padding:4px 8px 3px;border-bottom:1px solid var(--border);}',
+    '#pi-pb-col-hdr span{font-size:0.55rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtext);font-family:var(--font-ui);}',
+    /* scrollable list */
+    '#pi-pb-scroll{height:180px;overflow-y:auto;overflow-x:hidden;padding:3px 8px 6px;}',
     '#pi-pb-scroll::-webkit-scrollbar{width:3px;}',
     '#pi-pb-scroll::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px;}',
-    '#pi-pb-legend{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}',
-    '.pb-leg{display:flex;align-items:center;gap:4px;font-size:0.58rem;color:var(--subtext);font-family:var(--font-ui);}',
-    '.pb-leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}',
-    '#pi-pb-grid{display:flex;flex-direction:column;gap:2px;}',
-    '.pb-row{display:grid;grid-template-columns:1fr 22px 22px 1fr;gap:3px;align-items:center;}',
-    '.pb-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;transition:transform 0.1s;flex-shrink:0;border:1.5px solid transparent;}',
-    '.pb-dot:hover{transform:scale(1.2);}',
-    '.pb-dot-assigned{border-color:rgba(255,255,255,0.35);}',
-    '.pb-pin-lbl{font-size:0.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-ui);}',
-    '.pb-pin-lbl strong{font-weight:600;color:var(--text);}',
-    '.pb-pin-lbl em{font-style:normal;color:var(--teal);font-size:0.58rem;}',
-    '.pb-pin-lbl-left{text-align:right;padding-right:2px;}',
-    '.pb-pin-lbl-right{text-align:left;padding-left:2px;}',
-    '#pi-pb-modal{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;}',
-    '#pi-pb-modal-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px;width:290px;max-width:92vw;}',
-    '#pi-pb-modal-title{font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:8px;font-family:var(--font-ui);}',
-    '#pi-pb-modal-info{font-size:0.65rem;color:var(--teal);background:rgba(0,246,214,0.06);border-radius:5px;padding:4px 8px;margin-bottom:10px;}',
-    '.pb-field{margin-bottom:10px;}',
-    '.pb-field-label{font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtext);margin-bottom:4px;font-family:var(--font-ui);}',
-    '.pb-field input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:7px 10px;color:var(--text);font-family:var(--font-ui);font-size:0.78rem;outline:none;}',
-    '.pb-field input:focus{border-color:var(--teal);}',
-    '#pi-pb-io-chips{display:flex;gap:5px;flex-wrap:wrap;}',
-    '.pb-io-chip{padding:4px 9px;font-size:0.65rem;border-radius:16px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--subtext);font-family:var(--font-ui);}',
-    '.pb-io-chip-sel{background:rgba(0,246,214,0.12);color:var(--teal);border-color:rgba(0,246,214,0.4);}',
-    '.pb-modal-btns{display:flex;gap:6px;margin-top:14px;}',
-    '.pb-modal-btns button{flex:1;padding:7px;font-size:0.72rem;border-radius:7px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--subtext);font-family:var(--font-ui);}',
-    '.pb-btn-save{background:rgba(0,246,214,0.12) !important;color:var(--teal) !important;border-color:rgba(0,246,214,0.4) !important;}',
-    '.pb-btn-clear{color:#FF4BCB !important;border-color:rgba(255,75,203,0.3) !important;}',
-    '@media(max-width:640px){#pi-panes{flex-direction:column;}#pi-left{flex:none;height:55%;border-right:none;border-bottom:1px solid var(--border);}#pi-right{flex:none;height:45%;}}'
+    /* each pin row */
+    '.pb-row{display:grid;grid-template-columns:22px 56px 1fr 60px 60px 80px;gap:4px;align-items:center;padding:2px 0;}',
+    '.pb-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;flex-shrink:0;}',
+    '.pb-pin-name{font-size:0.62rem;color:var(--subtext);font-family:var(--font-ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    /* inline inputs */
+    '.pb-in{background:var(--bg);border:1px solid transparent;border-radius:4px;padding:2px 5px;color:var(--text);font-family:var(--font-ui);font-size:0.65rem;outline:none;width:100%;min-width:0;}',
+    '.pb-in:focus{border-color:var(--teal);}',
+    '.pb-in:hover:not(:disabled){border-color:var(--border);}',
+    '.pb-in:disabled{opacity:0.25;cursor:not-allowed;}',
+    '.pb-in::placeholder{color:var(--subtext);opacity:0.5;}',
+    '.pb-in-label{flex:1;}',
+    '.pb-in-topin{width:100%;}',
+    '.pb-in-color{width:100%;}',
+    '.pb-in-note{width:100%;}',
+    '@media(max-width:640px){#pi-panes{flex-direction:column;}}'
   ].join('');
   document.head.appendChild(s);
 }
