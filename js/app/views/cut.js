@@ -107,7 +107,9 @@ async function loadBinData() {
     const rawWorlds = await cutIDBGetAll('worlds');
     _cutState.worldCards = rawWorlds;
     const rawPrints = await cutIDBGetAll('prints');
-    _cutState.prints = rawPrints.map(p => ({
+    _cutState.prints = rawPrints
+      .filter(p => p.id !== 'builtin_you')  // exclude You placeholder — not a real cast member
+      .map(p => ({
       ...p,
       name:  p.identity?.name  || p.name  || 'character',
       trait: p.identity?.title || p.trait || p.identity?.identity_line || '',
