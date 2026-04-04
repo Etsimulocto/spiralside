@@ -520,18 +520,15 @@ function renderCutPreview() {
 
   const clip = sel.clip;
   const color = speakerColor(clip.speaker);
-  const bgStyle = clip.imageDataUrl
-    ? `background-image:url(${clip.imageDataUrl});background-size:cover;background-position:center;`
-    : '';
-
+  const bgStyle = clip.imageDataUrl ? `background-image:url(${clip.imageDataUrl});background-size:cover;background-position:center;` : '';
+  const videoEl = clip.videoUrl ? `<video autoplay loop muted playsinline style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1" src="${clip.videoUrl}"></video>` : '';
   return `
     <div class="cut-preview">
       <div class="cut-preview-bg has-image" style="${bgStyle}"></div>
-      <div class="cut-preview-tag" style="color:${color}">
-        ${(clip.speaker || 'narrator').toLowerCase()} &middot; ${clip.name || 'clip'}
-      </div>
-      <div class="cut-preview-count">${clipCount} clips &middot; ${totalSecs}s</div>
-      <div class="cut-preview-dialogue" style="border-color:${color}">
+      ${videoEl}
+      <div class="cut-preview-tag" style="color:${color};z-index:3">${(clip.speaker || 'narrator').toLowerCase()} &middot; ${clip.name || 'clip'}${clip.videoUrl ? ' &middot; &#9654;' : ''}</div>
+      <div class="cut-preview-count" style="z-index:3">${clipCount} clips &middot; ${totalSecs}s</div>
+      <div class="cut-preview-dialogue" style="border-color:${color};z-index:3">
         <div class="cut-preview-speaker" style="color:${color}">${clip.speaker || 'narrator'}</div>
         <div class="cut-preview-text">${clip.dialogue || '&mdash;'}</div>
       </div>
@@ -1004,19 +1001,45 @@ window._cutReceiveImage = function(imageDataUrl) {
   setTimeout(() => renderCutView(), 100);
 };
 
-window._cutGenClip = function() {
-  alert('Clip generation — wan 2.2 pipeline coming soon!');
+window._cutGenClip = async function() {
+  const sel = _cutState.selectedClip;
+  if (!sel) return;
+  const clip = sel.clip;
+  if (!clip.imageDataUrl) { alert('Generate an image first.'); return; }
+  clip.status = '⟳ generating...';
+  renderCutView();
+  try {
+    const { getToken } = await import('../auth.js');
+    const token = await getToken();
+    if (!token) { alert('Sign in required.'); return; }
+    const prompt = [clip.speaker && clip.speaker !== 'narrator' ? clip.speaker : '', clip.mood || '', clip.dialogue ? clip.dialogue.slice(0,80) : '', clip.prompt || ''].filter(Boolean).join(', ');
+    const r = await fetch('https://web-production-4e6f3.up.railway.app/generate-clip', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ image_url: clip.imageDataUrl, prompt: prompt || 'cinematic motion', duration: Math.min(clip.dur || 5, 5) }),
+    });
+    const data = await r.json();
+    if (!r.ok) { clip.status = clip.imageDataUrl ? '✦ image' : 'no image'; renderCutView(); alert(data.detail || 'Failed.'); return; }
+    clip.videoUrl = data.video_url;
+    clip.status = '✦ clip ready';
+    _cutState.selectedClip = { sceneIdx: sel.sceneIdx, clipIdx: sel.clipIdx, clip };
+    saveCutScenes();
+    renderCutView();
+  } catch(e) {
+    clip.status = clip.imageDataUrl ? '✦ image' : 'no image';
+    renderCutView();
+    alert('Error: ' + e.message);
+  }
 };
 
 window._cutExportClip = function() {
   const sel = _cutState.selectedClip;
-  if (!sel || !sel.clip.imageDataUrl) {
-    alert('No image to export yet. Generate an image first.');
-    return;
-  }
+  if (!sel) return;
+  const clip = sel.clip;
   const a = document.createElement('a');
-  a.href = sel.clip.imageDataUrl;
-  a.download = (sel.clip.name || 'clip') + '.png';
+  if (clip.videoUrl) { a.href = clip.videoUrl; a.download = (clip.name||'clip')+'.mp4'; }
+  else if (clip.imageDataUrl) { a.href = clip.imageDataUrl; a.download = (clip.name||'clip')+'.png'; }
+  else { alert('Nothing to export yet.'); return; }
   a.click();
 };
 
