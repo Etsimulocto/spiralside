@@ -292,36 +292,61 @@ function renderDOM(wrap) {
     inToPin.dataset.pin   = pin.num;
     row.appendChild(inToPin);
 
-    // wire color — 10 tap-to-select chips, selected gets a ring
+    // wire color — one swatch box, click opens popover with 10 chips
     const colorWrap = document.createElement('div');
     colorWrap.className = 'pb-color-wrap';
-    // hidden input stores the selected color name for pbContextString
+    colorWrap.style.position = 'relative';
+
+    // hidden value store
     const inColorHidden = document.createElement('input');
     inColorHidden.type = 'hidden';
     inColorHidden.className = 'pb-color-native';
-    inColorHidden.dataset.field = 'color';
-    inColorHidden.dataset.pin   = pin.num;
+    inColorHidden.dataset.pin = pin.num;
     inColorHidden.value = '';
     colorWrap.appendChild(inColorHidden);
-    // 10 preset chips
+
+    // the single visible box — shows current color or neutral
+    const colorBox = document.createElement('div');
+    colorBox.className = 'pb-color-box';
+    colorBox.title = 'pick wire color';
+    colorWrap.appendChild(colorBox);
+
+    // popover with 10 chips (hidden until colorBox clicked)
+    const popover = document.createElement('div');
+    popover.className = 'pb-color-pop';
     PB_WIRE_PRESETS.forEach(function(p) {
       const chip = document.createElement('div');
       chip.className = 'pb-color-chip';
       chip.style.background = p.hex;
       chip.title = p.name;
-      chip.addEventListener('click', function() {
-        // deselect siblings
-        colorWrap.querySelectorAll('.pb-color-chip').forEach(function(c) { c.classList.remove('pb-color-chip-sel'); });
+      chip.addEventListener('click', function(e) {
+        e.stopPropagation();
         if (inColorHidden.value === p.name) {
-          // clicking selected chip deselects it
+          // deselect
           inColorHidden.value = '';
+          colorBox.style.background = '';
+          colorBox.classList.remove('pb-color-box-set');
         } else {
-          chip.classList.add('pb-color-chip-sel');
           inColorHidden.value = p.name;
+          colorBox.style.background = p.hex;
+          colorBox.classList.add('pb-color-box-set');
         }
+        popover.classList.remove('pb-color-pop-open');
       });
-      colorWrap.appendChild(chip);
+      popover.appendChild(chip);
     });
+    colorWrap.appendChild(popover);
+
+    // toggle popover on box click
+    colorBox.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // close all other open popovers first
+      document.querySelectorAll('.pb-color-pop-open').forEach(function(el) {
+        if (el !== popover) el.classList.remove('pb-color-pop-open');
+      });
+      popover.classList.toggle('pb-color-pop-open');
+    });
+
     row.appendChild(colorWrap);
 
     // note
@@ -414,6 +439,13 @@ function wireEvents(wrap) {
     pbOpen = !pbOpen;
     document.getElementById('pi-pb-body').style.display = pbOpen ? 'block' : 'none';
     this.textContent = pbOpen ? 'hide' : 'show';
+  });
+
+  // close any open color popovers when clicking elsewhere
+  document.addEventListener('click', function() {
+    document.querySelectorAll('.pb-color-pop-open').forEach(function(el) {
+      el.classList.remove('pb-color-pop-open');
+    });
   });
 }
 
@@ -792,11 +824,15 @@ function injectPiStyles() {
     '.pb-in-label{flex:1;}',
     '.pb-in-topin{width:100%;}',
     '.pb-in-note{width:100%;}',
-    /* color chip selector */
-    '.pb-color-wrap{display:flex;align-items:center;gap:2px;min-width:0;flex-wrap:nowrap;}',
-    '.pb-color-chip{width:14px;height:14px;border-radius:3px;cursor:pointer;flex-shrink:0;border:2px solid transparent;transition:border-color 0.1s,transform 0.1s;box-sizing:border-box;}',
-    '.pb-color-chip:hover{transform:scale(1.2);}',
-    '.pb-color-chip-sel{border-color:#fff !important;}',
+    /* color box + popover */
+    '.pb-color-wrap{position:relative;display:flex;align-items:center;}',
+    '.pb-color-box{width:22px;height:20px;border-radius:4px;border:1px solid var(--border);cursor:pointer;background:var(--muted);transition:border-color 0.15s;}',
+    '.pb-color-box:hover{border-color:var(--teal);}',
+    '.pb-color-box-set{border-color:rgba(255,255,255,0.3);}',
+    '.pb-color-pop{display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px;z-index:9999;flex-direction:row;gap:4px;flex-wrap:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.5);}',
+    '.pb-color-pop-open{display:flex;}',
+    '.pb-color-chip{width:18px;height:18px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color 0.1s,transform 0.1s;box-sizing:border-box;flex-shrink:0;}',
+    '.pb-color-chip:hover{transform:scale(1.15);border-color:rgba(255,255,255,0.4);}',
     '@media(max-width:640px){#pi-panes{flex-direction:column;}}'
   ].join('');
   document.head.appendChild(s);
