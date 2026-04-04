@@ -23,26 +23,26 @@ function _beInjectCSS() {
   const s = document.createElement('style');
   s.id = 'be-css';
   s.textContent = [
-    '#be-inner{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;background:#0a0a0f;font-family:var(--font-ui,monospace);}',
-    '#be-canvas{display:block;flex:0 0 auto;background:#101014;width:100%;cursor:crosshair;}',
-    '#be-wells-hint{font-size:8px;color:#333;letter-spacing:.08em;padding:2px 10px;background:#080810;flex-shrink:0;}',
-    '#be-panel{flex:1;overflow-y:auto;overflow-x:hidden;background:#0e0e16;-webkit-overflow-scrolling:touch;}',
-    '#be-panel-inner{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1a1a22;}',
+    '#be-inner{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;background:var(--bg,#0a0a0f);font-family:var(--font-ui,monospace);}',
+    '#be-canvas{display:block;flex:0 0 auto;background:var(--surface,#101014);width:100%;cursor:crosshair;}',
+    '#be-wells-hint{font-size:8px;color:var(--subtext,#6060A0);letter-spacing:.08em;padding:2px 10px;background:var(--bg,#080810);flex-shrink:0;}',
+    '#be-panel{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--surface,#0e0e16);-webkit-overflow-scrolling:touch;}',
+    '#be-panel-inner{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border,#1a1a22);}',
     '@media(max-width:540px){#be-panel-inner{grid-template-columns:1fr;}}',
-    '.be-mod{background:#0e0e16;padding:10px;}',
-    '.be-title{font-size:9px;color:#4DA3FF;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid #1a1a2a;padding-bottom:4px;}',
+    '.be-mod{background:var(--surface,#0e0e16);padding:10px;}',
+    '.be-title{font-size:9px;color:var(--teal,#00F6D6);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;border-bottom:1px solid var(--border,#1a1a2a);padding-bottom:4px;}',
     '.be-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}',
-    '.be-row label{font-size:8px;color:#556;letter-spacing:.06em;width:88px;flex-shrink:0;text-transform:uppercase;}',
-    '.be-row input[type=range]{flex:1;accent-color:#00F6D6;height:2px;cursor:pointer;}',
-    '.be-val{font-size:9px;color:#00F6D6;width:28px;text-align:right;flex-shrink:0;}',
-    '#be-bar{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;background:#080810;border-top:1px solid #1a1a22;font-size:8px;letter-spacing:.1em;flex-shrink:0;}',
-    '#be-status{color:#FF4BCB;}',
-    '#be-stats{color:#444;display:flex;gap:12px;}',
-    '.be-stat span{color:#00F6D6;}',
-    '#be-bloom-btn{background:transparent;border:1px solid #FF4BCB44;color:#FF4BCB;font-family:var(--font-ui,monospace);font-size:8px;letter-spacing:.1em;padding:3px 8px;cursor:pointer;border-radius:2px;}',
-    '#be-bloom-btn:hover{background:#FF4BCB22;}',
-    '#be-reset-btn{background:transparent;border:1px solid #4DA3FF44;color:#4DA3FF;font-family:var(--font-ui,monospace);font-size:8px;letter-spacing:.1em;padding:3px 8px;cursor:pointer;border-radius:2px;margin-right:4px;}',
-    '#be-reset-btn:hover{background:#4DA3FF22;}',
+    '.be-row label{font-size:8px;color:var(--subtext,#6060A0);letter-spacing:.06em;width:88px;flex-shrink:0;text-transform:uppercase;}',
+    '.be-row input[type=range]{flex:1;accent-color:var(--teal,#00F6D6);height:2px;cursor:pointer;}',
+    '.be-val{font-size:9px;color:var(--teal,#00F6D6);width:28px;text-align:right;flex-shrink:0;}',
+    '#be-bar{display:flex;justify-content:space-between;align-items:center;padding:4px 10px;background:var(--bg,#080810);border-top:1px solid var(--border,#1a1a22);font-size:8px;letter-spacing:.1em;flex-shrink:0;}',
+    '#be-status{color:var(--pink,#FF4BCB);}',
+    '#be-stats{color:var(--subtext,#6060A0);display:flex;gap:12px;}',
+    '.be-stat span{color:var(--teal,#00F6D6);}',
+    '#be-bloom-btn{background:transparent;border:1px solid var(--pink,#FF4BCB);color:var(--pink,#FF4BCB);font-family:var(--font-ui,monospace);font-size:8px;letter-spacing:.1em;padding:3px 8px;cursor:pointer;border-radius:2px;}',
+    '#be-bloom-btn:hover{background:rgba(255,75,203,0.13);}',
+    '#be-reset-btn{background:transparent;border:1px solid var(--teal,#4DA3FF);color:var(--teal,#4DA3FF);font-family:var(--font-ui,monospace);font-size:8px;letter-spacing:.1em;padding:3px 8px;cursor:pointer;border-radius:2px;margin-right:4px;}',
+    '#be-reset-btn:hover{background:rgba(77,163,255,0.13);}',
     '#view-bloomengine.active{display:flex;flex-direction:column;overflow:hidden;flex:1;}',
   ].join('');
   document.head.appendChild(s);
@@ -153,12 +153,13 @@ function _beLoop() {
   const bounce=_beG('bounce')/100;
   const COLS=BE_PALETTES[palIdx%BE_PALETTES.length];
 
+  const _bgHex = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim() || '#0a0a0f';
   if (st.bloomPhase>0) {
     ctx.fillStyle='rgba(243,247,255,'+st.bloomPhase*0.15+')';ctx.fillRect(0,0,W,H);
     st.bloomPhase-=0.012;
-    if (st.bloomPhase<=0){st.bloomPhase=0;st.particles=[_beSpawn(null,null,4,0)];ctx.fillStyle='#101014';ctx.fillRect(0,0,W,H);}
+    if (st.bloomPhase<=0){st.bloomPhase=0;st.particles=[_beSpawn(null,null,4,0)];ctx.fillStyle=_bgHex;ctx.fillRect(0,0,W,H);}
   } else {
-    ctx.fillStyle=invert?'rgba(243,247,255,'+(0.08+ghost*0.12)+')':'rgba(10,10,15,'+(0.12+ghost*0.15)+')';
+    ctx.fillStyle=invert?'rgba(243,247,255,'+(0.08+ghost*0.12)+')':(_bgHex+(Math.round((0.12+ghost*0.15)*255)).toString(16).padStart(2,'0'));
     ctx.fillRect(0,0,W,H);
   }
 
@@ -263,6 +264,13 @@ function _beWire() {
   });
   document.getElementById('be-bloom-btn').addEventListener('click',()=>{st.bloomPhase=1.0;});
   window.addEventListener('resize',()=>setTimeout(_beSetSize,0));
+  const _cs = getComputedStyle(document.documentElement);
+  const _t  = _cs.getPropertyValue('--teal').trim()   || '#00F6D6';
+  const _pk = _cs.getPropertyValue('--pink').trim()   || '#FF4BCB';
+  const _pu = _cs.getPropertyValue('--purple').trim() || '#7B5FFF';
+  BE_PALETTES[0][0] = _t;
+  BE_PALETTES[0][2] = _pk;
+  BE_PALETTES[0][3] = _pu;
   st.particles=[_beSpawn(null,null,4,0)];
   if(st.animId)cancelAnimationFrame(st.animId);
   _beLoop();
