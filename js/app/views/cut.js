@@ -886,16 +886,17 @@ window._cutGenImage = async function() {
   if (sourcePrint) {
     // CHARACTER clip — map print fields to imagine context
     // If this is the You card print, overlay richer you_card fields from sheets store
-    const youCard = (sourcePrint.id === 'builtin_you' || sourcePrint.metadata?.is_archetype)
-      ? await cutGetYouCard()
-      : null;
+    const _handle = window._youHandle || '';
+    const _isYou  = sourcePrint.id === 'builtin_you'
+                 || (_handle && clip.speaker && clip.speaker.toLowerCase() === _handle.toLowerCase());
+    const youCard = _isYou ? await cutGetYouCard() : null;
     const ap = youCard
-      ? { hair: youCard.hair, eyes: youCard.eyes, style: youCard.style_aesthetic,
-          marks: youCard.marks, pose: youCard.pose, art_style: youCard.art_style }
+      ? { hair: youCard.hair, eyes: youCard.eyes, style: youCard.style,
+          marks: youCard.marks, pose: '', art_style: '' }
       : (sourcePrint.appearance || {});
     const id = youCard
-      ? { name: youCard.handle || youCard.name, vibe: youCard.vibe,
-          species: youCard.species, title: youCard.title }
+      ? { name: youCard.handle || youCard.name || clip.speaker, vibe: youCard.vibe,
+          species: '', title: '' }
       : (sourcePrint.identity || {});
 
     // Find sibling scene/world clips in the same scene row
