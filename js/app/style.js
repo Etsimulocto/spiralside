@@ -140,25 +140,29 @@ export function initStylePanel() {
     if (saved) {
       pendingStyle = { ...DEFAULT_STYLE, ...JSON.parse(saved) };
       applyStyleVars(pendingStyle);
-      // Sync slider positions to match saved values so dragging starts from correct point
+      // Sync all slider positions to saved values so dragging starts from correct point
       const brSlider = document.querySelector('[oninput*="bubble-radius"][oninput*="sv-br-v"]');
       const mgSlider = document.querySelector('[oninput*="msg-spacing"][oninput*="sv-mg-v"]');
+      const bwSlider = document.querySelector('[oninput*="previewBubbleWidth"]');
       const brVal    = document.getElementById('sv-br-v');
       const mgVal    = document.getElementById('sv-mg-v');
+      const bwVal    = document.getElementById('sv-bw');
       const fsSlider = document.getElementById('font-size-slider');
       const fsVal    = document.getElementById('font-size-val');
       const ssSlider = document.getElementById('subtext-size-slider');
       const ssVal    = document.getElementById('subtext-size-val');
       const lhSlider = document.querySelector('[oninput*="previewLineHeight"]');
       const lhVal    = document.getElementById('line-height-val');
-      if (brSlider) { brSlider.value = pendingStyle.bubbleRadius || 14; }
-      if (brVal)    { brVal.textContent = pendingStyle.bubbleRadius || 14; }
-      if (mgSlider) { mgSlider.value = pendingStyle.msgSpacing || 10; }
-      if (mgVal)    { mgVal.textContent = pendingStyle.msgSpacing || 10; }
-      if (fsSlider) { fsSlider.value = pendingStyle.fontSize || 16; }
-      if (fsVal)    { fsVal.textContent = (pendingStyle.fontSize || 16) + 'px'; }
-      if (ssSlider) { ssSlider.value = pendingStyle.subtextSize || 13; }
-      if (ssVal)    { ssVal.textContent = (pendingStyle.subtextSize || 13) + 'px'; }
+      if (brSlider) brSlider.value = pendingStyle.bubbleRadius || 14;
+      if (brVal)    brVal.textContent = pendingStyle.bubbleRadius || 14;
+      if (mgSlider) mgSlider.value = Math.min(pendingStyle.msgSpacing || 10, parseInt(mgSlider.max) || 28);
+      if (mgVal)    mgVal.textContent = pendingStyle.msgSpacing || 10;
+      if (bwSlider) bwSlider.value = parseInt(pendingStyle.bubbleMaxWidth) || 75;
+      if (bwVal)    bwVal.textContent = (parseInt(pendingStyle.bubbleMaxWidth) || 75) + '%';
+      if (fsSlider) fsSlider.value = pendingStyle.fontSize || 16;
+      if (fsVal)    fsVal.textContent = (pendingStyle.fontSize || 16) + 'px';
+      if (ssSlider) ssSlider.value = pendingStyle.subtextSize || 13;
+      if (ssVal)    ssVal.textContent = (pendingStyle.subtextSize || 13) + 'px';
       if (lhSlider && pendingStyle.lineHeight) {
         lhSlider.value = Math.round(parseFloat(pendingStyle.lineHeight) * 100);
         if (lhVal) lhVal.textContent = pendingStyle.lineHeight;
@@ -271,8 +275,9 @@ export function selectFont(type, el) {
 }
 
 export function previewSlider(key, val) {
-  if (key === 'bubble-radius') pendingStyle.bubbleRadius = parseInt(val);
-  if (key === 'msg-spacing')   pendingStyle.msgSpacing   = parseInt(val);
+  if (key === 'bubble-radius')    pendingStyle.bubbleRadius   = parseInt(val);
+  if (key === 'msg-spacing')      pendingStyle.msgSpacing     = parseInt(val);
+  if (key === 'bubble-max-width') pendingStyle.bubbleMaxWidth = parseInt(val);
   applyStyleVars(pendingStyle);
 }
 
@@ -294,8 +299,9 @@ export function applyStyleVars(s) {
   r.setProperty('--subtext',       s.subtext    || '#6060A0');
   r.setProperty('--user-bubble',   s.userbubble || s.purple || '#7B5FFF');
   r.setProperty('--bubble-user-bg', s.userbubble || s.purple || '#7B5FFF');
-  r.setProperty('--bubble-radius', (s.bubbleRadius || 14) + 'px');
-  r.setProperty('--msg-spacing',   (s.msgSpacing   || 10)  + 'px');
+  r.setProperty('--bubble-radius',    (s.bubbleRadius   || 14)   + 'px');
+  r.setProperty('--msg-spacing',      (s.msgSpacing     || 10)   + 'px');
+  r.setProperty('--bubble-max-width', (parseInt(s.bubbleMaxWidth) || 75) + '%');
   r.setProperty('--font-ui',       s.fontUi      || "'DM Mono',monospace");
   r.setProperty('--font-display',  s.fontDisplay || "'Syne',sans-serif");
   r.setProperty('--font-size-base', (s.fontSize    || 16) + 'px');
