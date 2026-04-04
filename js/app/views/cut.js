@@ -868,7 +868,7 @@ window._cutRenderAll = function() {
   alert('Render all — wan 2.2 video pipeline coming soon!');
 };
 
-window._cutGenImage = function() {
+window._cutGenImage = async function() {
   const sel = _cutState.selectedClip;
   if (!sel) return;
   const clip = sel.clip;
