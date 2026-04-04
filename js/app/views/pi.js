@@ -292,49 +292,36 @@ function renderDOM(wrap) {
     inToPin.dataset.pin   = pin.num;
     row.appendChild(inToPin);
 
-    // wire color — swatch picker + preset chips
+    // wire color — 10 tap-to-select chips, selected gets a ring
     const colorWrap = document.createElement('div');
     colorWrap.className = 'pb-color-wrap';
-
-    // native color input hidden behind swatch
-    const inColorNative = document.createElement('input');
-    inColorNative.type = 'color';
-    inColorNative.className = 'pb-color-native';
-    inColorNative.value = '#888888';
-    inColorNative.dataset.field = 'color';
-    inColorNative.dataset.pin   = pin.num;
-    colorWrap.appendChild(inColorNative);
-
-    // visible swatch div that triggers the color picker
-    const swatch = document.createElement('div');
-    swatch.className = 'pb-color-swatch';
-    swatch.style.background = '#888888';
-    swatch.title = 'pick wire color';
-    swatch.addEventListener('click', function() { inColorNative.click(); });
-    inColorNative.addEventListener('input', function() {
-      swatch.style.background = inColorNative.value;
-      // store hex as a named color if it matches a preset
-      const match = PB_WIRE_PRESETS.find(function(p) { return p.hex.toLowerCase() === inColorNative.value.toLowerCase(); });
-      swatch.title = match ? match.name : inColorNative.value;
-    });
-    colorWrap.appendChild(swatch);
-
-    // preset color chips row
-    const presets = document.createElement('div');
-    presets.className = 'pb-color-presets';
+    // hidden input stores the selected color name for pbContextString
+    const inColorHidden = document.createElement('input');
+    inColorHidden.type = 'hidden';
+    inColorHidden.className = 'pb-color-native';
+    inColorHidden.dataset.field = 'color';
+    inColorHidden.dataset.pin   = pin.num;
+    inColorHidden.value = '';
+    colorWrap.appendChild(inColorHidden);
+    // 10 preset chips
     PB_WIRE_PRESETS.forEach(function(p) {
       const chip = document.createElement('div');
       chip.className = 'pb-color-chip';
       chip.style.background = p.hex;
       chip.title = p.name;
       chip.addEventListener('click', function() {
-        inColorNative.value = p.hex;
-        swatch.style.background = p.hex;
-        swatch.title = p.name;
+        // deselect siblings
+        colorWrap.querySelectorAll('.pb-color-chip').forEach(function(c) { c.classList.remove('pb-color-chip-sel'); });
+        if (inColorHidden.value === p.name) {
+          // clicking selected chip deselects it
+          inColorHidden.value = '';
+        } else {
+          chip.classList.add('pb-color-chip-sel');
+          inColorHidden.value = p.name;
+        }
       });
-      presets.appendChild(chip);
+      colorWrap.appendChild(chip);
     });
-    colorWrap.appendChild(presets);
     row.appendChild(colorWrap);
 
     // note
@@ -704,16 +691,14 @@ function pbContextString() {
     const pin     = PB_PINS.find(function(p) { return p.num === parseInt(pinNum); });
     const label   = (row.querySelector('.pb-in-label')  || {}).value || '';
     const topin   = (row.querySelector('.pb-in-topin')  || {}).value || '';
-    const color   = (row.querySelector('.pb-color-native') || {}).value || '';
+    const colorEl = row.querySelector('.pb-color-native');
+    const color   = colorEl ? colorEl.value : '';
     const note    = (row.querySelector('.pb-in-note')   || {}).value || '';
     if (label.trim() || topin.trim()) {
       let s = 'Pin ' + pinNum + ' (' + (pin ? pin.name : '?') + ')';
       if (label.trim()) s += ' -> ' + label.trim();
       if (topin.trim()) s += ' [to: ' + topin.trim() + ']';
-      if (color.trim() && color !== '#888888') {
-        const cp = PB_WIRE_PRESETS.find(function(p) { return p.hex.toLowerCase() === color.toLowerCase(); });
-        s += ' [wire: ' + (cp ? cp.name : color) + ']';
-      }
+      if (color.trim()) s += ' [wire: ' + color.trim() + ']';
       if (note.trim())  s += ' -- ' + note.trim();
       lines.push(s);
     }
@@ -807,14 +792,11 @@ function injectPiStyles() {
     '.pb-in-label{flex:1;}',
     '.pb-in-topin{width:100%;}',
     '.pb-in-note{width:100%;}',
-    /* color picker cell */
-    '.pb-color-wrap{display:flex;align-items:center;gap:3px;min-width:0;}',
-    '.pb-color-native{position:absolute;width:0;height:0;opacity:0;pointer-events:none;}',
-    '.pb-color-swatch{width:18px;height:18px;border-radius:4px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;transition:transform 0.1s;}',
-    '.pb-color-swatch:hover{transform:scale(1.15);}',
-    '.pb-color-presets{display:flex;gap:2px;flex-wrap:nowrap;overflow:hidden;}',
-    '.pb-color-chip{width:12px;height:18px;border-radius:3px;cursor:pointer;flex-shrink:0;transition:transform 0.1s;}',
-    '.pb-color-chip:hover{transform:scaleY(1.2);}',
+    /* color chip selector */
+    '.pb-color-wrap{display:flex;align-items:center;gap:2px;min-width:0;flex-wrap:nowrap;}',
+    '.pb-color-chip{width:14px;height:14px;border-radius:3px;cursor:pointer;flex-shrink:0;border:2px solid transparent;transition:border-color 0.1s,transform 0.1s;box-sizing:border-box;}',
+    '.pb-color-chip:hover{transform:scale(1.2);}',
+    '.pb-color-chip-sel{border-color:#fff !important;}',
     '@media(max-width:640px){#pi-panes{flex-direction:column;}}'
   ].join('');
   document.head.appendChild(s);
