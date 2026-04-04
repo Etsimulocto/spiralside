@@ -292,10 +292,9 @@ function renderDOM(wrap) {
     inToPin.dataset.pin   = pin.num;
     row.appendChild(inToPin);
 
-    // wire color — one swatch box, click opens popover with 10 chips
+    // wire color — one swatch box, click opens body-level popover (avoids clip)
     const colorWrap = document.createElement('div');
     colorWrap.className = 'pb-color-wrap';
-    colorWrap.style.position = 'relative';
 
     // hidden value store
     const inColorHidden = document.createElement('input');
@@ -305,13 +304,13 @@ function renderDOM(wrap) {
     inColorHidden.value = '';
     colorWrap.appendChild(inColorHidden);
 
-    // the single visible box — shows current color or neutral
+    // the single visible swatch box
     const colorBox = document.createElement('div');
     colorBox.className = 'pb-color-box';
     colorBox.title = 'pick wire color';
     colorWrap.appendChild(colorBox);
 
-    // popover with 10 chips (hidden until colorBox clicked)
+    // popover lives on body so it's never clipped by scroll containers
     const popover = document.createElement('div');
     popover.className = 'pb-color-pop';
     PB_WIRE_PRESETS.forEach(function(p) {
@@ -319,10 +318,9 @@ function renderDOM(wrap) {
       chip.className = 'pb-color-chip';
       chip.style.background = p.hex;
       chip.title = p.name;
-      chip.addEventListener('click', function(e) {
-        e.stopPropagation();
+      chip.addEventListener('mousedown', function(e) {
+        e.preventDefault(); e.stopPropagation();
         if (inColorHidden.value === p.name) {
-          // deselect
           inColorHidden.value = '';
           colorBox.style.background = '';
           colorBox.classList.remove('pb-color-box-set');
@@ -331,20 +329,24 @@ function renderDOM(wrap) {
           colorBox.style.background = p.hex;
           colorBox.classList.add('pb-color-box-set');
         }
-        popover.classList.remove('pb-color-pop-open');
+        pbCloseColorPop();
       });
       popover.appendChild(chip);
     });
-    colorWrap.appendChild(popover);
+    document.body.appendChild(popover);
 
-    // toggle popover on box click
+    // open: position popover centered on screen, high z-index
     colorBox.addEventListener('click', function(e) {
       e.stopPropagation();
-      // close all other open popovers first
-      document.querySelectorAll('.pb-color-pop-open').forEach(function(el) {
-        if (el !== popover) el.classList.remove('pb-color-pop-open');
-      });
-      popover.classList.toggle('pb-color-pop-open');
+      pbCloseColorPop();
+      const r = colorBox.getBoundingClientRect();
+      const pw = 240; // popover width approx
+      const left = Math.max(8, Math.min(r.left, window.innerWidth - pw - 8));
+      const top  = r.top - 38; // above the box
+      popover.style.left = left + 'px';
+      popover.style.top  = top  + 'px';
+      popover._owner = colorBox;
+      popover.classList.add('pb-color-pop-open');
     });
 
     row.appendChild(colorWrap);
@@ -442,10 +444,13 @@ function wireEvents(wrap) {
   });
 
   // close any open color popovers when clicking elsewhere
-  document.addEventListener('click', function() {
-    document.querySelectorAll('.pb-color-pop-open').forEach(function(el) {
-      el.classList.remove('pb-color-pop-open');
-    });
+  document.addEventListener('click', function() { pbCloseColorPop(); });
+}
+
+// closes the open color popover (body-level, shared across all rows)
+function pbCloseColorPop() {
+  document.querySelectorAll('.pb-color-pop-open').forEach(function(el) {
+    el.classList.remove('pb-color-pop-open');
   });
 }
 
@@ -829,7 +834,7 @@ function injectPiStyles() {
     '.pb-color-box{width:22px;height:20px;border-radius:4px;border:1px solid var(--border);cursor:pointer;background:var(--muted);transition:border-color 0.15s;}',
     '.pb-color-box:hover{border-color:var(--teal);}',
     '.pb-color-box-set{border-color:rgba(255,255,255,0.3);}',
-    '.pb-color-pop{display:none;position:absolute;bottom:calc(100% + 4px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px;z-index:9999;flex-direction:row;gap:4px;flex-wrap:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.5);}',
+    '.pb-color-pop{display:none;position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px;z-index:99999;flex-direction:row;gap:5px;flex-wrap:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.7);}',
     '.pb-color-pop-open{display:flex;}',
     '.pb-color-chip{width:18px;height:18px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:border-color 0.1s,transform 0.1s;box-sizing:border-box;flex-shrink:0;}',
     '.pb-color-chip:hover{transform:scale(1.15);border-color:rgba(255,255,255,0.4);}',
