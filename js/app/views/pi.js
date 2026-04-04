@@ -340,11 +340,12 @@ function renderDOM(wrap) {
       e.stopPropagation();
       pbCloseColorPop();
       const r = colorBox.getBoundingClientRect();
-      const pw = 240; // popover width approx
-      const left = Math.max(8, Math.min(r.left, window.innerWidth - pw - 8));
-      const top  = r.top - 38; // above the box
-      popover.style.left = left + 'px';
-      popover.style.top  = top  + 'px';
+      const pw   = 244; // approx popover width
+      const right = window.innerWidth - r.right; // distance from viewport right
+      const top   = r.top - 38;
+      popover.style.right = Math.max(4, right) + 'px';
+      popover.style.left  = 'auto';
+      popover.style.top   = top + 'px';
       popover._owner = colorBox;
       popover.classList.add('pb-color-pop-open');
     });
@@ -811,14 +812,14 @@ function injectPiStyles() {
     '#pi-pb-toggle:hover{background:rgba(0,246,214,0.08);}',
     '#pi-pb-body{border-top:1px solid var(--border);}',
     /* column header */
-    '#pi-pb-col-hdr{display:grid;grid-template-columns:22px 54px 1fr 58px 90px 76px;gap:4px;align-items:center;padding:4px 8px 3px;border-bottom:1px solid var(--border);}',
+    '#pi-pb-col-hdr{display:grid;grid-template-columns:22px 54px 1fr 58px 28px 1fr;gap:4px;align-items:center;padding:4px 8px 3px;border-bottom:1px solid var(--border);}',
     '#pi-pb-col-hdr span{font-size:0.55rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtext);font-family:var(--font-ui);}',
     /* scrollable list */
     '#pi-pb-scroll{height:180px;overflow-y:auto;overflow-x:hidden;padding:3px 8px 6px;}',
     '#pi-pb-scroll::-webkit-scrollbar{width:3px;}',
     '#pi-pb-scroll::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px;}',
     /* each pin row */
-    '.pb-row{display:grid;grid-template-columns:22px 54px 1fr 58px 90px 76px;gap:4px;align-items:center;padding:2px 0;}',
+    '.pb-row{display:grid;grid-template-columns:22px 54px 1fr 58px 28px 1fr;gap:4px;align-items:center;padding:2px 0;}',
     '.pb-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;flex-shrink:0;}',
     '.pb-pin-name{font-size:0.62rem;color:var(--subtext);font-family:var(--font-ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     /* inline inputs */
