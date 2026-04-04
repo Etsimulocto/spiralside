@@ -137,7 +137,33 @@ export function initStylePanel() {
   ).join('');
   try {
     const saved = localStorage.getItem('ss_style');
-    if (saved) { pendingStyle = { ...DEFAULT_STYLE, ...JSON.parse(saved) }; applyStyleVars(pendingStyle); }
+    if (saved) {
+      pendingStyle = { ...DEFAULT_STYLE, ...JSON.parse(saved) };
+      applyStyleVars(pendingStyle);
+      // Sync slider positions to match saved values so dragging starts from correct point
+      const brSlider = document.querySelector('[oninput*="bubble-radius"][oninput*="sv-br-v"]');
+      const mgSlider = document.querySelector('[oninput*="msg-spacing"][oninput*="sv-mg-v"]');
+      const brVal    = document.getElementById('sv-br-v');
+      const mgVal    = document.getElementById('sv-mg-v');
+      const fsSlider = document.getElementById('font-size-slider');
+      const fsVal    = document.getElementById('font-size-val');
+      const ssSlider = document.getElementById('subtext-size-slider');
+      const ssVal    = document.getElementById('subtext-size-val');
+      const lhSlider = document.querySelector('[oninput*="previewLineHeight"]');
+      const lhVal    = document.getElementById('line-height-val');
+      if (brSlider) { brSlider.value = pendingStyle.bubbleRadius || 14; }
+      if (brVal)    { brVal.textContent = pendingStyle.bubbleRadius || 14; }
+      if (mgSlider) { mgSlider.value = pendingStyle.msgSpacing || 10; }
+      if (mgVal)    { mgVal.textContent = pendingStyle.msgSpacing || 10; }
+      if (fsSlider) { fsSlider.value = pendingStyle.fontSize || 16; }
+      if (fsVal)    { fsVal.textContent = (pendingStyle.fontSize || 16) + 'px'; }
+      if (ssSlider) { ssSlider.value = pendingStyle.subtextSize || 13; }
+      if (ssVal)    { ssVal.textContent = (pendingStyle.subtextSize || 13) + 'px'; }
+      if (lhSlider && pendingStyle.lineHeight) {
+        lhSlider.value = Math.round(parseFloat(pendingStyle.lineHeight) * 100);
+        if (lhVal) lhVal.textContent = pendingStyle.lineHeight;
+      }
+    }
   } catch {}
 }
 
@@ -274,6 +300,7 @@ export function applyStyleVars(s) {
   r.setProperty('--font-display',  s.fontDisplay || "'Syne',sans-serif");
   r.setProperty('--font-size-base', (s.fontSize    || 16) + 'px');
   r.setProperty('--subtext-size',   (s.subtextSize || 13) + 'px');
+  r.setProperty('--line-height',    s.lineHeight   || '1.55');
 }
 
 function updateSwatches() {
