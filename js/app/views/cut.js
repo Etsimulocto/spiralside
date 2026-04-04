@@ -9,7 +9,7 @@
 // ── IDB HELPER ─────────────────────────────────────────────
 function cutIDB(store, mode) {
   return new Promise((res, rej) => {
-    const req = indexedDB.open('spiralside', 6);
+    const req = indexedDB.open('spiralside');  // no version — use existing
     req.onsuccess = e => {
       const db = e.target.result;
       try { res(db.transaction(store, mode).objectStore(store)); }
