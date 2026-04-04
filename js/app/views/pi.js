@@ -70,6 +70,19 @@ const PB_PINS = [
   {num:40, name:'GPIO21', type:'spi',  alt:'SCLK1'},
 ];
 const PB_COLORS = {pwr33:'#e04444',pwr5:'#c44444',gnd:'#555',gpio:'#2b7fd4',i2c:'#7b4fc9',spi:'#7b4fc9',uart:'#1a9e6a'};
+// Common wire colors for quick selection
+const PB_WIRE_PRESETS = [
+  {name:'red',    hex:'#e03030'},
+  {name:'black',  hex:'#222222'},
+  {name:'white',  hex:'#eeeeee'},
+  {name:'yellow', hex:'#f0c020'},
+  {name:'orange', hex:'#f07820'},
+  {name:'green',  hex:'#28a040'},
+  {name:'blue',   hex:'#2060d0'},
+  {name:'purple', hex:'#8040c0'},
+  {name:'brown',  hex:'#7a4010'},
+  {name:'gray',   hex:'#888888'},
+];
 let pbOpen = false;
 
 // ── INIT ──────────────────────────────────────────────────
@@ -269,10 +282,6 @@ function renderDOM(wrap) {
     inLabel.placeholder = 'component...';
     inLabel.dataset.field = 'label';
     inLabel.dataset.pin   = pin.num;
-    if (['pwr33','pwr5','gnd'].includes(pin.type)) {
-      inLabel.disabled = true;
-      inLabel.placeholder = pin.name;
-    }
     row.appendChild(inLabel);
 
     // "to pin #" on the other device
@@ -281,17 +290,52 @@ function renderDOM(wrap) {
     inToPin.placeholder = 'e.g. D4';
     inToPin.dataset.field = 'topin';
     inToPin.dataset.pin   = pin.num;
-    if (['pwr33','pwr5','gnd'].includes(pin.type)) inToPin.disabled = true;
     row.appendChild(inToPin);
 
-    // wire color
-    const inColor = document.createElement('input');
-    inColor.className = 'pb-in pb-in-color';
-    inColor.placeholder = 'red...';
-    inColor.dataset.field = 'color';
-    inColor.dataset.pin   = pin.num;
-    if (['pwr33','pwr5','gnd'].includes(pin.type)) inColor.disabled = true;
-    row.appendChild(inColor);
+    // wire color — swatch picker + preset chips
+    const colorWrap = document.createElement('div');
+    colorWrap.className = 'pb-color-wrap';
+
+    // native color input hidden behind swatch
+    const inColorNative = document.createElement('input');
+    inColorNative.type = 'color';
+    inColorNative.className = 'pb-color-native';
+    inColorNative.value = '#888888';
+    inColorNative.dataset.field = 'color';
+    inColorNative.dataset.pin   = pin.num;
+    colorWrap.appendChild(inColorNative);
+
+    // visible swatch div that triggers the color picker
+    const swatch = document.createElement('div');
+    swatch.className = 'pb-color-swatch';
+    swatch.style.background = '#888888';
+    swatch.title = 'pick wire color';
+    swatch.addEventListener('click', function() { inColorNative.click(); });
+    inColorNative.addEventListener('input', function() {
+      swatch.style.background = inColorNative.value;
+      // store hex as a named color if it matches a preset
+      const match = PB_WIRE_PRESETS.find(function(p) { return p.hex.toLowerCase() === inColorNative.value.toLowerCase(); });
+      swatch.title = match ? match.name : inColorNative.value;
+    });
+    colorWrap.appendChild(swatch);
+
+    // preset color chips row
+    const presets = document.createElement('div');
+    presets.className = 'pb-color-presets';
+    PB_WIRE_PRESETS.forEach(function(p) {
+      const chip = document.createElement('div');
+      chip.className = 'pb-color-chip';
+      chip.style.background = p.hex;
+      chip.title = p.name;
+      chip.addEventListener('click', function() {
+        inColorNative.value = p.hex;
+        swatch.style.background = p.hex;
+        swatch.title = p.name;
+      });
+      presets.appendChild(chip);
+    });
+    colorWrap.appendChild(presets);
+    row.appendChild(colorWrap);
 
     // note
     const inNote = document.createElement('input');
@@ -660,13 +704,16 @@ function pbContextString() {
     const pin     = PB_PINS.find(function(p) { return p.num === parseInt(pinNum); });
     const label   = (row.querySelector('.pb-in-label')  || {}).value || '';
     const topin   = (row.querySelector('.pb-in-topin')  || {}).value || '';
-    const color   = (row.querySelector('.pb-in-color')  || {}).value || '';
+    const color   = (row.querySelector('.pb-color-native') || {}).value || '';
     const note    = (row.querySelector('.pb-in-note')   || {}).value || '';
     if (label.trim() || topin.trim()) {
       let s = 'Pin ' + pinNum + ' (' + (pin ? pin.name : '?') + ')';
       if (label.trim()) s += ' -> ' + label.trim();
       if (topin.trim()) s += ' [to: ' + topin.trim() + ']';
-      if (color.trim()) s += ' [wire: ' + color.trim() + ']';
+      if (color.trim() && color !== '#888888') {
+        const cp = PB_WIRE_PRESETS.find(function(p) { return p.hex.toLowerCase() === color.toLowerCase(); });
+        s += ' [wire: ' + (cp ? cp.name : color) + ']';
+      }
       if (note.trim())  s += ' -- ' + note.trim();
       lines.push(s);
     }
@@ -742,26 +789,32 @@ function injectPiStyles() {
     '#pi-pb-toggle:hover{background:rgba(0,246,214,0.08);}',
     '#pi-pb-body{border-top:1px solid var(--border);}',
     /* column header */
-    '#pi-pb-col-hdr{display:grid;grid-template-columns:22px 56px 1fr 60px 60px 80px;gap:4px;align-items:center;padding:4px 8px 3px;border-bottom:1px solid var(--border);}',
+    '#pi-pb-col-hdr{display:grid;grid-template-columns:22px 54px 1fr 58px 90px 76px;gap:4px;align-items:center;padding:4px 8px 3px;border-bottom:1px solid var(--border);}',
     '#pi-pb-col-hdr span{font-size:0.55rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtext);font-family:var(--font-ui);}',
     /* scrollable list */
     '#pi-pb-scroll{height:180px;overflow-y:auto;overflow-x:hidden;padding:3px 8px 6px;}',
     '#pi-pb-scroll::-webkit-scrollbar{width:3px;}',
     '#pi-pb-scroll::-webkit-scrollbar-thumb{background:var(--muted);border-radius:2px;}',
     /* each pin row */
-    '.pb-row{display:grid;grid-template-columns:22px 56px 1fr 60px 60px 80px;gap:4px;align-items:center;padding:2px 0;}',
+    '.pb-row{display:grid;grid-template-columns:22px 54px 1fr 58px 90px 76px;gap:4px;align-items:center;padding:2px 0;}',
     '.pb-dot{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;flex-shrink:0;}',
     '.pb-pin-name{font-size:0.62rem;color:var(--subtext);font-family:var(--font-ui);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     /* inline inputs */
     '.pb-in{background:var(--bg);border:1px solid transparent;border-radius:4px;padding:2px 5px;color:var(--text);font-family:var(--font-ui);font-size:0.65rem;outline:none;width:100%;min-width:0;}',
     '.pb-in:focus{border-color:var(--teal);}',
-    '.pb-in:hover:not(:disabled){border-color:var(--border);}',
-    '.pb-in:disabled{opacity:0.25;cursor:not-allowed;}',
+    '.pb-in:hover{border-color:var(--border);}',
     '.pb-in::placeholder{color:var(--subtext);opacity:0.5;}',
     '.pb-in-label{flex:1;}',
     '.pb-in-topin{width:100%;}',
-    '.pb-in-color{width:100%;}',
     '.pb-in-note{width:100%;}',
+    /* color picker cell */
+    '.pb-color-wrap{display:flex;align-items:center;gap:3px;min-width:0;}',
+    '.pb-color-native{position:absolute;width:0;height:0;opacity:0;pointer-events:none;}',
+    '.pb-color-swatch{width:18px;height:18px;border-radius:4px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;transition:transform 0.1s;}',
+    '.pb-color-swatch:hover{transform:scale(1.15);}',
+    '.pb-color-presets{display:flex;gap:2px;flex-wrap:nowrap;overflow:hidden;}',
+    '.pb-color-chip{width:12px;height:18px;border-radius:3px;cursor:pointer;flex-shrink:0;transition:transform 0.1s;}',
+    '.pb-color-chip:hover{transform:scaleY(1.2);}',
     '@media(max-width:640px){#pi-panes{flex-direction:column;}}'
   ].join('');
   document.head.appendChild(s);
