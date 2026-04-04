@@ -81,12 +81,12 @@
     .codex-card-action { padding:5px 12px; background:var(--surface); border:1px solid var(--border); border-radius:6px; color:var(--subtext); font-size:0.65rem; cursor:pointer; transition:all 0.2s; }
     .codex-card-action:hover { border-color:var(--teal); color:var(--teal); }
     .codex-card-action.danger:hover { border-color:var(--pink); color:var(--pink); }
-    .codex-empty { text-align:center; padding:48px 20px; color:var(--subtext); font-size:0.78rem; line-height:1.7; }
+    .codex-empty { text-align:center; padding:48px 20px; color:var(--subtext); font-size:0.78rem; line-height:var(--line-height,1.7); }
     .codex-field { margin-bottom:12px; }
     .codex-field label { display:block; font-size:0.6rem; letter-spacing:0.12em; color:var(--subtext); text-transform:uppercase; margin-bottom:5px; }
     .codex-field input, .codex-field textarea, .codex-field select { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:9px 12px; color:var(--text); font-family:var(--font-ui); font-size:0.78rem; outline:none; }
     .codex-field input:focus, .codex-field textarea:focus, .codex-field select:focus { border-color:var(--teal); }
-    .codex-field textarea { resize:vertical; min-height:60px; line-height:1.5; }
+    .codex-field textarea { resize:vertical; min-height:60px; line-height:var(--line-height,1.5); }
     .codex-field-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .codex-img-slot { width:100%; aspect-ratio:16/9; background:var(--surface); border:2px dashed var(--border); border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative; font-size:0.68rem; color:var(--subtext); }
     .codex-img-slot:hover { border-color:var(--teal); }
@@ -100,11 +100,11 @@
     .imagine-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; display:flex; flex-direction:column; gap:8px; }
     .imagine-label { font-size:0.62rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtext); font-family:var(--font-ui); }
     .imagine-sublabel { color:var(--teal); font-size:0.58rem; margin-left:6px; }
-    .imagine-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-family:var(--font-ui); font-size:0.82rem; outline:none; resize:none; transition:border-color 0.2s; line-height:1.5; }
+    .imagine-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text); font-family:var(--font-ui); font-size:0.82rem; outline:none; resize:none; transition:border-color 0.2s; line-height:var(--line-height,1.5); }
     .imagine-input:focus { border-color:var(--teal); }
     .imagine-input::placeholder { color:var(--subtext); }
     .size-chips { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-    .size-chip { padding:10px 8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--subtext); cursor:pointer; transition:all 0.15s; text-align:center; line-height:1.5; font-family:var(--font-ui); font-size:0.75rem; }
+    .size-chip { padding:10px 8px; background:var(--bg); border:1px solid var(--border); border-radius:8px; color:var(--subtext); cursor:pointer; transition:all 0.15s; text-align:center; line-height:var(--line-height,1.5); font-family:var(--font-ui); font-size:0.75rem; }
     .size-chip.active { border-color:var(--teal); color:var(--teal); background:rgba(0,246,214,0.08); }
     .size-sub { font-size:0.6rem; color:var(--teal); display:block; opacity:0.8; }
     .imagine-btn { width:100%; padding:14px; background:linear-gradient(135deg,var(--teal),var(--purple)); border:none; border-radius:12px; color:#fff; font-family:var(--font-display); font-weight:700; font-size:0.88rem; cursor:pointer; letter-spacing:0.06em; transition:opacity 0.2s; }
@@ -212,7 +212,7 @@
     #comic-speaker.cold     { color: var(--blue); }
     #comic-speaker.grit     { color: var(--yellow); }
     #comic-speaker.narrator { color: var(--text); font-style: italic; letter-spacing: 0.06em; }
-    #comic-text { font-size: 0.88rem; line-height: 1.65; color: var(--text); min-height: 42px; }
+    #comic-text { font-size: 0.88rem; line-height: var(--line-height,1.65); color: var(--text); min-height: 42px; }
 
     /* ── AUTH SCREEN ────────────────────────────────────────── */
     #screen-auth {
@@ -288,7 +288,7 @@
     .auth-success { color: var(--teal) !important; }
     .auth-terms {
       font-size: 0.62rem; color: var(--subtext); text-align: center;
-      margin-top: 20px; line-height: 1.6;
+      margin-top: 20px; line-height: var(--line-height,1.6);
     }
     .auth-terms a { color: var(--teal); text-decoration: none; }
     .pw-wrap { position: relative; }
@@ -478,7 +478,7 @@
     #msg-input {
       flex: 1; background: transparent; border: none; outline: none;
       color: var(--text); font-size: 0.82rem; resize: none;
-      max-height: 100px; line-height: 1.5; padding-top: 4px;
+      max-height: 100px; line-height: var(--line-height,1.5); padding-top: 4px;
     }
     #msg-input::placeholder { color: var(--subtext); }
     .input-actions { display: flex; gap: 6px; align-items: center; }
@@ -547,7 +547,7 @@
     .trait-val { font-size: 0.72rem; }
     .trait-bar-bg { height: 4px; background: var(--muted); border-radius: 2px; overflow: hidden; }
     .trait-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease; }
-    .lore-text { font-size: 0.78rem; line-height: 1.65; color: var(--text); padding: 14px 18px 18px; }
+    .lore-text { font-size: 0.78rem; line-height: var(--line-height,1.65); color: var(--text); padding: 14px 18px 18px; }
     .sheet-field-row { padding: 0 18px 14px; }
     .sheet-field-label { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
     .sheet-field-input {
@@ -598,7 +598,7 @@
       padding: 4px; border-radius: 4px; font-size: 0.9rem; transition: color 0.2s;
     }
     .vault-del:hover { color: var(--pink); }
-    .empty-state { text-align: center; padding: 48px 20px; color: var(--subtext); font-size: 0.78rem; line-height: 1.8; }
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--subtext); font-size: 0.78rem; line-height: var(--line-height,1.8); }
     .empty-icon { font-size: 2.5rem; margin-bottom: 14px; }
 
     /* ── BUILD VIEW ─────────────────────────────────────────── */
@@ -830,9 +830,9 @@
     .feature-name { flex: 1; font-size: 0.78rem; }
     .pricing-explainer { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:20px; }
     .pe-title { font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--subtext); margin-bottom:6px; }
-    .pe-body { font-size:0.78rem; line-height:1.6; color:var(--text); }
+    .pe-body { font-size:0.78rem; line-height:var(--line-height,1.6); color:var(--text); }
     .feature-sub { font-size:0.62rem; color:var(--subtext); margin-top:1px; }
-    .pe-blurb { font-size:0.68rem; color:var(--subtext); margin:-4px 0 10px; line-height:1.5; }
+    .pe-blurb { font-size:0.68rem; color:var(--subtext); margin:-4px 0 10px; line-height:var(--line-height,1.5); }
     .feature-cost { font-size: 0.7rem; color: var(--teal); letter-spacing: 0.04em; }
 
     /* ACCOUNT TAB */
@@ -1201,7 +1201,7 @@
       border-radius: 4px; transition: color 0.2s;
     }
     .lib-card-actions button:hover { color: var(--pink); }
-    .lib-empty { text-align: center; padding: 48px 20px; color: var(--subtext); font-size: 0.78rem; line-height: 1.8; }
+    .lib-empty { text-align: center; padding: 48px 20px; color: var(--subtext); font-size: 0.78rem; line-height: var(--line-height,1.8); }
 
     /* books */
     #lib-books-view { flex: 1; overflow-y: auto; padding: 12px 16px 80px; display: none; }
@@ -1578,7 +1578,7 @@
       color: rgba(255,255,255,0.45);
       text-align: center;
       padding: 0 12px 8px;
-      line-height: 1.5;
+      line-height: var(--line-height,1.5);
       position: relative;
       z-index: 2;
       white-space: nowrap;
@@ -1711,7 +1711,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.717</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.718</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -1937,7 +1937,7 @@
             <div class="sheet-name" id="sheet-char-name">—</div>
             <div class="sheet-trait" id="sheet-char-trait">—</div>
             <div class="sheet-mood" id="sheet-char-mood">● —</div>
-            <div id="sheet-identity-line" style="font-size:0.82rem;line-height:1.5;margin-top:10px;padding:0 4px;font-style:italic;display:none;"></div>
+            <div id="sheet-identity-line" style="font-size:0.82rem;line-height:var(--line-height,1.5);margin-top:10px;padding:0 4px;font-style:italic;display:none;"></div>
             <div id="sheet-vibe" style="font-size:0.7rem;color:var(--subtext);margin-top:4px;padding:0 4px;letter-spacing:0.04em;display:none;opacity:0.7;"></div>
           </div>
         </div>
@@ -2149,7 +2149,7 @@
           <div id="font-size-preview" style="
             margin-top:8px;padding:10px 12px;background:var(--surface2);
             border-radius:8px;border:1px solid var(--border);
-            font-size:1rem;line-height:1.6;color:var(--text)
+            font-size:1rem;line-height:var(--line-height,1.6);color:var(--text)
           ">The quick brown fox jumps over the lazy dog. 0123456789</div>
         </div>
 
@@ -2495,7 +2495,7 @@
     <div style="margin-bottom:20px;">
       <div style="font-family:var(--font-ui);font-size:0.65rem;letter-spacing:0.2em;color:var(--teal);opacity:0.6;margin-bottom:4px;">SPIRALSIDE ARCHIVE SYSTEM</div>
 <div style="font-family:var(--font-ui);font-size:1.4rem;letter-spacing:0.1em;color:var(--text);font-weight:600;">∴ cannonized</div>
-      <div style="font-family:var(--font-ui);font-size:0.72rem;color:var(--subtext);margin-top:6px;line-height:1.5;">paste any conversation thread below. cannonized will extract the binding moment, key language, and format it as a memory block you can save and share with sky later.</div>
+      <div style="font-family:var(--font-ui);font-size:0.72rem;color:var(--subtext);margin-top:6px;line-height:var(--line-height,1.5);">paste any conversation thread below. cannonized will extract the binding moment, key language, and format it as a memory block you can save and share with sky later.</div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
@@ -2533,7 +2533,7 @@
     <div style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.15em;color:var(--teal);opacity:0.7;margin-bottom:5px;">RAW TRANSCRIPT</div>
     <textarea id="cz-transcript" rows="10"
       placeholder="paste your conversation here..."
-      style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-ui);font-size:0.78rem;line-height:1.7;padding:14px;outline:none;resize:vertical;margin-bottom:12px;"></textarea>
+      style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-ui);font-size:0.78rem;line-height:var(--line-height,1.7);padding:14px;outline:none;resize:vertical;margin-bottom:12px;"></textarea>
 
     <button onclick="czForge()" id="cz-btn"
       style="width:100%;padding:13px;background:transparent;border:1px solid var(--teal);border-radius:10px;color:var(--teal);font-family:var(--font-ui);font-size:0.82rem;letter-spacing:0.1em;cursor:pointer;margin-bottom:20px;transition:all 0.2s;text-transform:lowercase;">
@@ -2543,15 +2543,15 @@
     <div id="cz-output" style="display:none;">
       <div style="margin-bottom:14px;">
         <div style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.15em;color:var(--teal);opacity:0.6;margin-bottom:6px;">BINDING MOMENT</div>
-        <div id="cz-binding" style="background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--teal);border-radius:0 8px 8px 0;padding:12px 14px;font-family:var(--font-ui);font-size:0.82rem;line-height:1.7;color:var(--text);"></div>
+        <div id="cz-binding" style="background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--teal);border-radius:0 8px 8px 0;padding:12px 14px;font-family:var(--font-ui);font-size:0.82rem;line-height:var(--line-height,1.7);color:var(--text);"></div>
       </div>
       <div style="margin-bottom:14px;">
         <div style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.15em;color:var(--teal);opacity:0.6;margin-bottom:6px;">EXACT LANGUAGE ∴ VERBATIM</div>
-        <div id="cz-exact" style="background:var(--surface);border:1px solid var(--border);border-left:2px solid #ffe600;border-radius:0 8px 8px 0;padding:12px 14px;font-family:var(--font-ui);font-size:0.78rem;line-height:1.8;color:#ffe600;white-space:pre-wrap;"></div>
+        <div id="cz-exact" style="background:var(--surface);border:1px solid var(--border);border-left:2px solid #ffe600;border-radius:0 8px 8px 0;padding:12px 14px;font-family:var(--font-ui);font-size:0.78rem;line-height:var(--line-height,1.8);color:#ffe600;white-space:pre-wrap;"></div>
       </div>
       <div style="margin-bottom:14px;">
         <div style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.15em;color:var(--teal);opacity:0.6;margin-bottom:6px;">CONTEXT</div>
-        <div id="cz-context" style="background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--border);border-radius:0 8px 8px 0;padding:12px 14px;font-family:var(--font-ui);font-size:0.82rem;line-height:1.7;color:var(--text);"></div>
+        <div id="cz-context" style="background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--border);border-radius:0 8px 8px 0;padding:12px 14px;font-family:var(--font-ui);font-size:0.82rem;line-height:var(--line-height,1.7);color:var(--text);"></div>
       </div>
       <div style="margin-bottom:20px;">
         <div style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.15em;color:var(--teal);opacity:0.6;margin-bottom:8px;">TAGS</div>
@@ -2573,7 +2573,7 @@
       <div style="font-family:var(--font-ui);font-size:0.72rem;letter-spacing:0.15em;color:var(--teal);opacity:0.7;animation:czPulse 1.5s ease-in-out infinite;">∴ cannonizing...</div>
     </div>
 
-    <div id="cz-error" style="display:none;background:rgba(255,45,120,0.08);border:1px solid rgba(255,45,120,0.3);border-radius:10px;padding:14px;font-family:var(--font-ui);font-size:0.78rem;color:#ff2d78;line-height:1.6;margin-bottom:20px;"></div>
+    <div id="cz-error" style="display:none;background:rgba(255,45,120,0.08);border:1px solid rgba(255,45,120,0.3);border-radius:10px;padding:14px;font-family:var(--font-ui);font-size:0.78rem;color:#ff2d78;line-height:var(--line-height,1.6);margin-bottom:20px;"></div>
 
   </div>
 </div><!-- /#view-cannonized -->
