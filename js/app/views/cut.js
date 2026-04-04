@@ -46,6 +46,11 @@ async function cutIDBGet(store, key) {
   });
 }
 
+// Read user's You card from sheets store — has hair/eyes/vibe/clothing etc at top level
+async function cutGetYouCard() {
+  try { return await cutIDBGet('sheets', 'you'); } catch { return null; }
+}
+
 // ── MODULE STATE ───────────────────────────────────────────
 let _cutState = {
   scenes: [],
@@ -880,9 +885,18 @@ window._cutGenImage = function() {
 
   if (sourcePrint) {
     // CHARACTER clip — map print fields to imagine context
-    // Also pull scene + world from sibling clips in the same scene
-    const ap = sourcePrint.appearance || {};
-    const id = sourcePrint.identity   || {};
+    // If this is the You card print, overlay richer you_card fields from sheets store
+    const youCard = (sourcePrint.id === 'builtin_you' || sourcePrint.metadata?.is_archetype)
+      ? await cutGetYouCard()
+      : null;
+    const ap = youCard
+      ? { hair: youCard.hair, eyes: youCard.eyes, style: youCard.style_aesthetic,
+          marks: youCard.marks, pose: youCard.pose, art_style: youCard.art_style }
+      : (sourcePrint.appearance || {});
+    const id = youCard
+      ? { name: youCard.handle || youCard.name, vibe: youCard.vibe,
+          species: youCard.species, title: youCard.title }
+      : (sourcePrint.identity || {});
 
     // Find sibling scene/world clips in the same scene row
     const siblingClips = _cutState.scenes[sel.sceneIdx]?.clips || [];
