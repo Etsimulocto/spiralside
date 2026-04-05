@@ -25,6 +25,21 @@ const DEFAULT_STYLE = {
 
 let pendingStyle = { ...DEFAULT_STYLE };
 let styleInited  = false;
+let _autoSaveTimer = null;  // debounce handle for autosave
+
+// Autosave pendingStyle to localStorage on every change (debounced 800ms).
+// This means Ctrl+R never loses work -- you don't have to hit "apply + save" first.
+// Cloud sync still only happens on explicit "apply + save" to avoid hammering the API.
+function _autoSave() {
+  if (_autoSaveTimer) clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(() => {
+    try {
+      const _save = { ...pendingStyle };
+      delete _save.bgImageData;  // never serialize raw image data -- it lives in IDB
+      localStorage.setItem('ss_style', JSON.stringify(_save));
+    } catch(e) { /* quota exceeded or private mode -- silently skip */ }
+  }, 800);
+}
 
 // ── BG CONTROL VARS (must be declared before startParticles) ──
 let particleSpeed  = 3;
@@ -307,6 +322,8 @@ export function applyStyleVars(s) {
   r.setProperty('--font-size-base', (s.fontSize    || 16) + 'px');
   r.setProperty('--subtext-size',   (s.subtextSize || 13) + 'px');
   r.setProperty('--line-height',    s.lineHeight   || '1.55');
+  // Autosave every visual change so Ctrl+R never loses work
+  _autoSave();
 }
 
 function updateSwatches() {
