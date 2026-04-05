@@ -1715,7 +1715,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.755</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.756</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3293,7 +3293,78 @@ async function czLoadArchive() {
       delBtn.style.cssText = "background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;padding:2px 4px;border-radius:4px;font-family:var(--font-ui);";
       delBtn.textContent = "✕";
       delBtn.onclick = () => czDeleteBlock(b.id, delBtn);
+
+      const menuBtn = document.createElement("button");
+      menuBtn.style.cssText = "background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.85rem;padding:2px 8px;border-radius:4px;font-family:var(--font-ui);letter-spacing:0.05em;";
+      menuBtn.textContent = "⋯";
+      menuBtn.onclick = (ev) => {
+        ev.stopPropagation();
+        document.querySelectorAll(".cz-card-menu").forEach(m => m.remove());
+        const menu = document.createElement("div");
+        menu.className = "cz-card-menu";
+        menu.style.cssText = "position:fixed;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:14px;padding:10px;display:flex;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,0.85);bottom:70px;left:50%;transform:translateX(-50%);";
+        [
+          ["copy text", () => {
+            const t = [b.binding_moment, b.exact_language, b.context].filter(Boolean).join("\n\n");
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(t).catch(() => {});
+            } else {
+              const ta = document.createElement("textarea");
+              ta.value = t; ta.style.cssText = "position:fixed;opacity:0;top:0;left:0;";
+              document.body.appendChild(ta); ta.focus(); ta.select();
+              try { document.execCommand("copy"); } catch(_) {}
+              document.body.removeChild(ta);
+            }
+            menu.remove();
+          }],
+          ["JSON", () => {
+            const blob = new Blob([JSON.stringify(b.block_json || b, null, 2)], {type:"application/json"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "canon-" + (b.session_id || b.id || Date.now()) + ".json";
+            a.click(); menu.remove();
+          }],
+          ["txt", () => {
+            const SEP = "─".repeat(40);
+            const laws = (b.laws_established||[]);
+            const txt = "∴ CANNONIZED MEMORY BLOCK\n" + "=".repeat(50) +
+              "\nDATE     " + (b.session_date||"") +
+              "\nWEIGHT   " + (b.canon_weight||"").toUpperCase() +
+              "\nTAGS     " + (b.tags||[]).join(", ") +
+              "\n\n" + SEP + "\nBINDING MOMENT\n" + (b.binding_moment||"") +
+              "\n\n" + SEP + "\nEXACT LANGUAGE\n" + (b.exact_language||"") +
+              "\n\n" + SEP + "\nCONTEXT\n" + (b.context||"") +
+              (laws.length ? "\n\n" + SEP + "\nLAWS\n" + laws.join("\n") : "") +
+              "\n" + "=".repeat(50);
+            const blob = new Blob([txt], {type:"text/plain"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "canon-" + (b.session_id || b.id || Date.now()) + ".txt";
+            a.click(); menu.remove();
+          }],
+        ].forEach(([label, action]) => {
+          const btn = document.createElement("button");
+          btn.textContent = label;
+          btn.style.cssText = "background:none;border:1px solid #2a2a3e;border-radius:8px;color:#e8e8f0;cursor:pointer;font-family:var(--font-ui);font-size:0.7rem;padding:8px 14px;white-space:nowrap;-webkit-tap-highlight-color:transparent;";
+          btn.addEventListener("touchstart", () => btn.style.background = "#2a2a3e", {passive:true});
+          btn.addEventListener("touchend",   () => btn.style.background = "none",    {passive:true});
+          btn.onmouseenter = () => btn.style.background = "#2a2a3e";
+          btn.onmouseleave = () => btn.style.background = "none";
+          btn.onclick = (e2) => { e2.stopPropagation(); action(); };
+          menu.appendChild(btn);
+        });
+        document.body.appendChild(menu);
+        setTimeout(() => {
+          function dismiss(e3) {
+            if (!menu.contains(e3.target)) { menu.remove(); document.removeEventListener("click", dismiss); document.removeEventListener("touchend", dismiss); }
+          }
+          document.addEventListener("click", dismiss);
+          document.addEventListener("touchend", dismiss);
+        }, 60);
+      };
+
       rightMeta.appendChild(sizeSpan);
+      rightMeta.appendChild(menuBtn);
       rightMeta.appendChild(delBtn);
 
       topRow.appendChild(leftMeta);
