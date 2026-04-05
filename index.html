@@ -1715,7 +1715,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.741</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.742</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -2551,14 +2551,20 @@
         <div style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.15em;color:var(--teal);opacity:0.6;margin-bottom:8px;">TAGS</div>
         <div id="cz-tags" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
       </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <button onclick="czSaveToMemory()"
+          style="flex:1;padding:11px;background:linear-gradient(135deg,var(--teal),var(--purple));border:none;border-radius:10px;color:#000;font-family:var(--font-ui);font-size:0.72rem;letter-spacing:0.06em;cursor:pointer;font-weight:700;transition:all 0.2s;">
+          ∴ save to sky's memory
+        </button>
+      </div>
       <div style="display:flex;gap:8px;margin-bottom:30px;">
         <button onclick="czDownloadJSON()"
-          style="flex:1;padding:11px;background:linear-gradient(135deg,#00F6D622,#7c6af722);border:1px solid #00F6D655;border-radius:10px;color:#00F6D6;font-family:var(--font-ui);font-size:0.72rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">
-          ↓ save memory block JSON
+          style="flex:1;padding:9px;background:transparent;border:1px solid rgba(0,246,214,0.3);border-radius:10px;color:var(--teal);font-family:var(--font-ui);font-size:0.68rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">
+          ↓ JSON
         </button>
         <button onclick="czDownloadTXT()"
-          style="flex:1;padding:11px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">
-          ↓ save as text
+          style="flex:1;padding:9px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.68rem;letter-spacing:0.06em;cursor:pointer;transition:all 0.2s;">
+          ↓ text
         </button>
       </div>
     </div>
@@ -2568,6 +2574,28 @@
     </div>
 
     <div id="cz-error" style="display:none;background:rgba(255,45,120,0.08);border:1px solid rgba(255,45,120,0.3);border-radius:10px;padding:14px;font-family:var(--font-ui);font-size:0.78rem;color:#ff2d78;line-height:var(--line-height,1.6);margin-bottom:20px;"></div>
+    <div id="cz-save-msg" style="display:none;background:rgba(0,246,214,0.08);border:1px solid rgba(0,246,214,0.25);border-radius:10px;padding:12px 14px;font-family:var(--font-ui);font-size:0.75rem;color:var(--teal);margin-bottom:20px;letter-spacing:0.04em;"></div>
+
+    <!-- ∴ ARCHIVE: storage bar + saved blocks list -->
+    <div id="cz-archive" style="margin-top:8px;">
+
+      <!-- storage bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.15em;color:var(--teal);opacity:0.7;">MEMORY ARCHIVE</div>
+        <div id="cz-size-label" style="font-family:var(--font-ui);font-size:0.6rem;color:var(--subtext);letter-spacing:0.08em;">loading...</div>
+      </div>
+      <div style="height:3px;background:var(--muted);border-radius:2px;margin-bottom:4px;overflow:hidden;">
+        <div id="cz-size-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--teal),var(--purple));border-radius:2px;transition:width 0.6s ease;"></div>
+      </div>
+      <div id="cz-size-sub" style="font-family:var(--font-ui);font-size:0.62rem;color:var(--subtext);margin-bottom:16px;"></div>
+
+      <!-- filter chips -->
+      <div id="cz-filter-row" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;"></div>
+
+      <!-- blocks list -->
+      <div id="cz-blocks-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+
+    </div>
 
   </div>
 </div><!-- /#view-cannonized -->
@@ -3100,7 +3128,172 @@ ${'='.repeat(50)}`;
 document.addEventListener('DOMContentLoaded', () => {
   const d = document.getElementById('cz-date');
   if (d) d.valueAsDate = new Date();
+  czLoadArchive();
 });
+
+// ─── FREE TIER LIMIT ─────────────────────────────────────
+const CZ_FREE_LIMIT_BYTES = 5 * 1024 * 1024; // 5MB free
+
+// ─── SAVE TO SUPABASE ─────────────────────────────────────
+async function czSaveToMemory() {
+  const block = window._czLastBlock;
+  if (!block) return;
+  const msgEl = document.getElementById('cz-save-msg');
+  msgEl.style.display = 'block';
+  msgEl.textContent = '∴ saving to memory...';
+
+  try {
+    const { data: { session } } = await window._sb.auth.getSession();
+    if (!session) { msgEl.style.color='#ff2d78'; msgEl.textContent = '∴ not signed in'; return; }
+
+    const blockStr  = JSON.stringify(block);
+    const sizeBytes = new TextEncoder().encode(blockStr).length;
+
+    // check quota
+    const { data: usage } = await window._sb
+      .from('canon_blocks')
+      .select('size_bytes')
+      .eq('user_id', session.user.id);
+
+    const totalUsed = (usage || []).reduce((s, r) => s + (r.size_bytes || 0), 0);
+
+    if (totalUsed + sizeBytes > CZ_FREE_LIMIT_BYTES) {
+      msgEl.style.color = '#ff2d78';
+      msgEl.textContent = '∴ free storage full (5MB). upgrade for more.';
+      return;
+    }
+
+    const row = {
+      user_id:          session.user.id,
+      session_id:       block.session_id || null,
+      session_date:     block.session_date || null,
+      platform:         block.platform || null,
+      canon_weight:     block.canon_weight || 'medium',
+      binding_moment:   block.binding_moment || null,
+      exact_language:   block.exact_language || null,
+      context:          block.context || null,
+      laws_established: block.laws_established || [],
+      tags:             block.tags || [],
+      block_json:       block,
+      size_bytes:       sizeBytes
+    };
+
+    const { error } = await window._sb.from('canon_blocks').insert(row);
+    if (error) throw error;
+
+    msgEl.style.color = 'var(--teal)';
+    msgEl.textContent = '∴ saved to sky' + (chr(39)) + 's memory archive';
+    czLoadArchive();
+  } catch(e) {
+    msgEl.style.color = '#ff2d78';
+    msgEl.textContent = '∴ error: ' + e.message;
+  }
+}
+
+// ─── LOAD ARCHIVE FROM SUPABASE ───────────────────────────
+let _czActiveFilter = null;
+
+async function czLoadArchive() {
+  const listEl  = document.getElementById('cz-blocks-list');
+  const barEl   = document.getElementById('cz-size-bar');
+  const labelEl = document.getElementById('cz-size-label');
+  const subEl   = document.getElementById('cz-size-sub');
+  const filterEl= document.getElementById('cz-filter-row');
+  if (!listEl) return;
+
+  try {
+    const { data: { session } } = await window._sb.auth.getSession();
+    if (!session) { listEl.innerHTML = '<div style="font-family:var(--font-ui);font-size:0.72rem;color:var(--subtext);text-align:center;padding:20px 0;">sign in to view your archive</div>'; return; }
+
+    let query = window._sb
+      .from('canon_blocks')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+
+    if (_czActiveFilter) query = query.contains('tags', [_czActiveFilter]);
+
+    const { data: blocks, error } = await query;
+    if (error) throw error;
+
+    // storage math
+    const totalUsed  = (blocks || []).reduce((s, r) => s + (r.size_bytes || 0), 0);
+    const pct        = Math.min(100, (totalUsed / CZ_FREE_LIMIT_BYTES) * 100);
+    const usedKB     = (totalUsed / 1024).toFixed(1);
+    const limitMB    = (CZ_FREE_LIMIT_BYTES / 1024 / 1024).toFixed(0);
+    const count      = (blocks || []).length;
+
+    barEl.style.width  = pct + '%';
+    barEl.style.background = pct > 80 ? 'linear-gradient(90deg,var(--pink),#ff2d78)' : 'linear-gradient(90deg,var(--teal),var(--purple))';
+    labelEl.textContent = usedKB + ' KB / ' + limitMB + ' MB';
+    subEl.textContent   = count + ' block' + (count !== 1 ? 's' : '') + ' saved' + (pct > 80 ? ' — nearing limit' : '');
+
+    // build filter chips from all tags
+    const allTags = {};
+    (blocks || []).forEach(b => (b.tags || []).forEach(t => allTags[t] = (allTags[t]||0)+1));
+    filterEl.innerHTML = '';
+    if (Object.keys(allTags).length > 0) {
+      const clearChip = document.createElement('span');
+      clearChip.textContent = 'all';
+      clearChip.onclick = () => { _czActiveFilter = null; czLoadArchive(); };
+      clearChip.style.cssText = 'font-family:var(--font-ui);font-size:0.62rem;letter-spacing:0.08em;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid ' + (!_czActiveFilter ? 'var(--teal)' : 'var(--border)') + ';color:' + (!_czActiveFilter ? 'var(--teal)' : 'var(--subtext)') + ';background:transparent;';
+      filterEl.appendChild(clearChip);
+      Object.keys(allTags).sort().forEach(tag => {
+        const chip = document.createElement('span');
+        chip.textContent = tag + ' ' + allTags[tag];
+        chip.onclick = () => { _czActiveFilter = tag; czLoadArchive(); };
+        chip.style.cssText = 'font-family:var(--font-ui);font-size:0.62rem;letter-spacing:0.08em;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid ' + (_czActiveFilter === tag ? 'var(--teal)' : 'var(--border)') + ';color:' + (_czActiveFilter === tag ? 'var(--teal)' : 'var(--subtext)') + ';background:transparent;';
+        filterEl.appendChild(chip);
+      });
+    }
+
+    // render blocks
+    if (!blocks || blocks.length === 0) {
+      listEl.innerHTML = '<div style="font-family:var(--font-ui);font-size:0.72rem;color:var(--subtext);text-align:center;padding:24px 0;line-height:1.7;">no memories archived yet.<br>cannonize a thread and save it to sky' + chr(39) + 's memory.</div>';
+      return;
+    }
+
+    const weightColors = { foundational: 'var(--teal)', high: 'var(--pink)', medium: 'var(--yellow)', low: 'var(--subtext)' };
+
+    listEl.innerHTML = blocks.map(b => {
+      const wColor = weightColors[b.canon_weight] || 'var(--subtext)';
+      const tags = (b.tags || []).slice(0, 4).map(t => '<span style="font-size:0.6rem;padding:2px 7px;border-radius:10px;background:rgba(0,246,214,0.07);border:1px solid rgba(0,246,214,0.15);color:var(--teal);">' + t + '</span>').join('');
+      const date = b.session_date || b.created_at?.slice(0,10) || '—';
+      const sizeStr = b.size_bytes < 1024 ? b.size_bytes + ' B' : (b.size_bytes/1024).toFixed(1) + ' KB';
+      return '<div style="background:var(--surface);border:1px solid var(--border);border-left:2px solid ' + wColor + ';border-radius:0 10px 10px 0;padding:12px 14px;position:relative;">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<span style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:' + wColor + ';">' + (b.canon_weight || 'medium') + '</span>' +
+            '<span style="font-family:var(--font-ui);font-size:0.6rem;color:var(--subtext);">' + date + '</span>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:8px;">' +
+            '<span style="font-family:var(--font-ui);font-size:0.58rem;color:var(--subtext);">' + sizeStr + '</span>' +
+            '<button onclick="czDeleteBlock(' + chr(39) + b.id + chr(39) + ',this)" style="background:none;border:none;color:var(--subtext);cursor:pointer;font-size:0.7rem;padding:2px 4px;border-radius:4px;font-family:var(--font-ui);">✕</button>' +
+          '</div>' +
+        '</div>' +
+        '<div style="font-family:var(--font-ui);font-size:0.78rem;line-height:1.55;color:var(--text);margin-bottom:6px;">' + (b.binding_moment || '—') + '</div>' +
+        (b.exact_language ? '<div style="font-family:var(--font-ui);font-size:0.7rem;color:#ffe600;font-style:italic;margin-bottom:8px;line-height:1.5;">' + chr(34) + b.exact_language.slice(0,120) + (b.exact_language.length > 120 ? '...' : '') + chr(34) + '</div>' : '') +
+        '<div style="display:flex;gap:5px;flex-wrap:wrap;">' + tags + '</div>' +
+      '</div>';
+    }).join('');
+
+  } catch(e) {
+    listEl.innerHTML = '<div style="font-family:var(--font-ui);font-size:0.72rem;color:#ff2d78;">error loading archive: ' + e.message + '</div>';
+  }
+}
+
+// ─── DELETE BLOCK ─────────────────────────────────────────
+async function czDeleteBlock(id, btn) {
+  if (!confirm('Remove this memory block?')) return;
+  btn.textContent = '...';
+  try {
+    const { error } = await window._sb.from('canon_blocks').delete().eq('id', id);
+    if (error) throw error;
+    czLoadArchive();
+  } catch(e) {
+    btn.textContent = '!';
+  }
+}
 
   // ── SKYLINE TICKER ─────────────────────────────────────────
   // Shows both buildings on load so dev can verify,
