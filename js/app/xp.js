@@ -196,7 +196,14 @@ let _initialized = false;
 // Loads state, handles midnight reset, awards daily login XP.
 export async function initXP() {
   _state = await loadXPState();
+  const _prevDate = _state.lastActiveDate;
   _state = _handleDayReset(_state);
+  // Save immediately after day reset so streak + lastActiveDate are
+  // durable before the async login bonus write. Ctrl+R during the
+  // login bonus gap no longer resets the streak.
+  if (_state.lastActiveDate !== _prevDate) {
+    await saveXPState(_state);
+  }
   _state = await _awardDailyLogin(_state);
   _initialized = true;
   return _state;
