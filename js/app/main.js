@@ -62,6 +62,7 @@ window.initColorSketches = initColorSketches;
 window.recolorSketch = recolorSketch;
 // Only expose what's called from inline HTML.
 window.switchAuthTab     = switchAuthTab;
+window._sb               = sb;
 window.togglePw          = togglePw;
 window.handleLogin       = handleLogin;
 window.handleSignup      = handleSignup;

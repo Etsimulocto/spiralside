@@ -1715,7 +1715,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.742</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.743</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3128,7 +3128,12 @@ ${'='.repeat(50)}`;
 document.addEventListener('DOMContentLoaded', () => {
   const d = document.getElementById('cz-date');
   if (d) d.valueAsDate = new Date();
-  czLoadArchive();
+  // _sb is set by main.js module — wait for it before loading archive
+  function _waitSbThenLoad(tries) {
+    if (window._sb) { czLoadArchive(); return; }
+    if (tries > 0) setTimeout(() => _waitSbThenLoad(tries - 1), 200);
+  }
+  _waitSbThenLoad(20);
 });
 
 // ─── FREE TIER LIMIT ─────────────────────────────────────
