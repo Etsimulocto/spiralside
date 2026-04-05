@@ -131,7 +131,29 @@ export function addMessage(text, role) {
     [
       ['copy',   '📋', () => { copyText(bubble.innerText||bubble.textContent); }],
       ['crew',   '↩',  () => { import('./state.js').then(({state})=>{state.botName='Sky';state.botColor='#00F6D6';});import('./chat.js').then(({clearChat})=>clearChat()); }],
-      ['cannon', '🔖', () => { import('./ui.js').then(({switchView})=>switchView('cannonized')); }],
+      ['cannon', '🔖', () => {
+        const bubbleText = bubble.innerText || bubble.textContent || '';
+        import('./ui.js').then(({switchView}) => {
+          switchView('cannonized');
+          // Wait for view to be visible then populate fields
+          setTimeout(() => {
+            const ta = document.getElementById('cz-transcript');
+            const dt = document.getElementById('cz-date');
+            const pl = document.getElementById('cz-platform');
+            const ch = document.getElementById('cz-characters');
+            if (ta) ta.value = bubbleText.trim();
+            if (dt) dt.valueAsDate = new Date();
+            if (pl) pl.value = 'Spiralside';
+            if (ch) {
+              // Try to detect speaker from msg-speaker label above bubble
+              const speakerEl = wrap.querySelector('.msg-speaker');
+              ch.value = speakerEl ? speakerEl.textContent.trim() : 'Sky';
+            }
+            // Auto-fire the forge
+            if (typeof czForge === 'function') czForge();
+          }, 150);
+        });
+      }],
       ['cut',    '✂️', () => { import('./ui.js').then(({switchView})=>switchView('cut')); }],
       ['speak',  '🔊', () => { const t=bubble.innerText||bubble.textContent; import('./models.js').then(({speakReply})=>speakReply(t)); }],
     ].forEach(([label,icon,action]) => {
