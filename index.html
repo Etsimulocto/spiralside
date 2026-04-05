@@ -1715,7 +1715,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.758</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.759</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -2530,9 +2530,10 @@
       style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:var(--font-ui);font-size:0.78rem;line-height:var(--line-height,1.7);padding:14px;outline:none;resize:vertical;margin-bottom:12px;"></textarea>
 
     <button onclick="czForge()" id="cz-btn"
-      style="width:100%;padding:13px;background:transparent;border:1px solid var(--teal);border-radius:10px;color:var(--teal);font-family:var(--font-ui);font-size:0.82rem;letter-spacing:0.1em;cursor:pointer;margin-bottom:20px;transition:all 0.2s;text-transform:lowercase;">
+      style="width:100%;padding:13px;background:transparent;border:1px solid var(--teal);border-radius:10px;color:var(--teal);font-family:var(--font-ui);font-size:0.82rem;letter-spacing:0.1em;cursor:pointer;margin-bottom:6px;transition:all 0.2s;text-transform:lowercase;">
       ∴ cannonize this thread
     </button>
+    <div id="cz-cost-label" style="text-align:center;font-family:var(--font-ui);font-size:0.62rem;letter-spacing:0.1em;color:var(--subtext);margin-bottom:16px;">loading...</div>
 
     <div id="cz-output" style="display:none;">
       <div style="margin-bottom:14px;">
@@ -3042,9 +3043,18 @@ Transcript:
 ${raw}`;
 
   try {
+    // Get auth token
+    let token = '';
+    if (window._sb) {
+      const { data } = await window._sb.auth.getSession();
+      token = data?.session?.access_token || '';
+    }
     const res = await fetch('/api/cannonize', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token,
+      },
       body: JSON.stringify({
         raw_transcript: raw,
         session_date: date,
@@ -3053,9 +3063,24 @@ ${raw}`;
         platform: platform
       })
     });
-    const block = await res.json();
-    if (!res.ok) throw new Error(block.error || 'Server error');
+    const data_resp = await res.json();
+    if (!res.ok) throw new Error(data_resp.error || 'Server error');
+    const block = data_resp.block || data_resp;
     window._czLastBlock = block;
+    // Update cost label with remaining free uses
+    if (data_resp.usage) {
+      const u = data_resp.usage;
+      const costEl = document.getElementById('cz-cost-label');
+      if (costEl) {
+        if (u.free_remaining > 0) {
+          costEl.textContent = u.free_remaining + ' free cannonize' + (u.free_remaining === 1 ? '' : 's') + ' remaining';
+          costEl.style.color = 'var(--teal)';
+        } else {
+          costEl.textContent = '140 cr per cannonize';
+          costEl.style.color = 'var(--subtext)';
+        }
+      }
+    }
     czRender(block);
   } catch(err) {
     document.getElementById('cz-error').style.display = 'block';
@@ -3128,13 +3153,44 @@ ${'='.repeat(50)}`;
 document.addEventListener('DOMContentLoaded', () => {
   const d = document.getElementById('cz-date');
   if (d) d.valueAsDate = new Date();
-  // _sb is set by main.js module — wait for it before loading archive
   function _waitSbThenLoad(tries) {
-    if (window._sb) { czLoadArchive(); return; }
+    if (window._sb) { czLoadArchive(); czUpdateCostLabel(); return; }
     if (tries > 0) setTimeout(() => _waitSbThenLoad(tries - 1), 200);
   }
   _waitSbThenLoad(20);
 });
+
+async function czUpdateCostLabel() {
+  const costEl = document.getElementById('cz-cost-label');
+  if (!costEl) return;
+  try {
+    if (!window._sb) return;
+    const { data: { session } } = await window._sb.auth.getSession();
+    if (!session) { costEl.textContent = 'sign in to cannonize'; return; }
+    const { data } = await window._sb
+      .from('user_usage')
+      .select('cannonize_count, is_paid, credits')
+      .eq('user_id', session.user.id)
+      .single();
+    if (!data) { costEl.textContent = '5 free cannonizes'; costEl.style.color = 'var(--teal)'; return; }
+    const count = data.cannonize_count || 0;
+    const FREE  = 5;
+    const remaining = Math.max(0, FREE - count);
+    if (remaining > 0) {
+      costEl.textContent = remaining + ' free cannonize' + (remaining === 1 ? '' : 's') + ' remaining';
+      costEl.style.color = 'var(--teal)';
+    } else if (data.is_paid) {
+      costEl.textContent = '140 cr per cannonize · ' + Math.round(data.credits || 0).toLocaleString() + ' cr available';
+      costEl.style.color = 'var(--subtext)';
+    } else {
+      costEl.textContent = 'free uses up · add credits to continue';
+      costEl.style.color = 'var(--pink)';
+    }
+  } catch(e) {
+    costEl.textContent = '5 free cannonizes';
+    costEl.style.color = 'var(--teal)';
+  }
+}
 
 // ─── FREE TIER LIMIT ─────────────────────────────────────
 const CZ_FREE_LIMIT_BYTES = 5 * 1024 * 1024; // 5MB free
