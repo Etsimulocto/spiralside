@@ -3,24 +3,35 @@ export const config = { api: { bodyParser: true } };
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
   const { raw_transcript, session_date, canon_weight, characters, platform } = req.body || {};
-  if (!raw_transcript || !raw_transcript.trim()) return res.status(400).json({ error: 'raw_transcript required' });
+  if (!raw_transcript) return res.status(400).json({ error: 'raw_transcript required' });
+
+  // Get auth token from request header — pass through to Railway
+  const authHeader = req.headers['authorization'] || '';
+
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
+    const railResp = await fetch('https://web-production-4e6f3.up.railway.app/cannonize', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000,
-        system: 'You are Cannonized, memory forge for Spiralside. Extract structured memory blocks from transcripts. Respond ONLY with valid JSON — no markdown, no preamble — with these exact keys: session_id, session_date, platform, characters_present, canon_weight (low|medium|high|foundational), binding_moment (1-3 sentences: what locked in), exact_language (verbatim key phrases — never paraphrase), context (why it mattered), laws_established (array of rules/protocols), tags (array), summary_short (1-2 sentences under 40 words: who + what happened + why it mattered — for context injection), embed_text (dense flat paragraph combining characters, binding moment, key phrases, laws, and tags — optimized for semantic search)',
-        messages: [{ role: 'user', content: 'Date: '+(session_date||'unknown')+' Weight: '+(canon_weight||'high')+' Characters: '+(characters||'unknown')+' Platform: '+(platform||'unknown')+'\n\nTranscript:\n'+raw_transcript }]
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader,
+      },
+      body: JSON.stringify({ raw_transcript, session_date, canon_weight, characters, platform }),
     });
-    const data = await r.json();
-    if (r.status !== 200) return res.status(r.status).json({ error: data.error && data.error.message });
-    const text = (data.content || []).map(b => b.text || '').join('');
-    const block = JSON.parse(text.replace(/```json|```/g,'').trim());
-    return res.status(200).json(block);
-  } catch(err) { return res.status(500).json({ error: err.message }); }
+
+    const data = await railResp.json();
+
+    if (!railResp.ok) {
+      return res.status(railResp.status).json({ error: data.detail || 'Railway error' });
+    }
+
+    // Return block + usage info to frontend
+    return res.status(200).json(data.block || data);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 }
