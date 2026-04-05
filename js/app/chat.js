@@ -100,29 +100,72 @@ export function addMessage(text, role) {
 
   const bubble = wrap.querySelector('.msg-bubble');
   bubble.style.cursor = 'pointer';
-  bubble.addEventListener('click', (e) => {
+
+  // ── BUBBLE MENU BUILDER ───────────────────────────────
+  function showBubbleMenu(e) {
+    if (e && e.preventDefault) e.preventDefault();
     document.querySelectorAll('.bubble-menu').forEach(m => m.remove());
+
+    // clipboard fallback for iOS Safari
+    function copyText(t) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).catch(() => _fallbackCopy(t));
+      } else {
+        _fallbackCopy(t);
+      }
+      const p = bubble.style.outline;
+      bubble.style.outline = '2px solid var(--teal)';
+      setTimeout(() => { bubble.style.outline = p; }, 600);
+    }
+    function _fallbackCopy(t) {
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      try { document.execCommand('copy'); } catch(_) {}
+      document.body.removeChild(ta);
+    }
+
     const menu = document.createElement('div');
     menu.className = 'bubble-menu';
-    menu.style.cssText = 'position:absolute;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:10px;padding:4px;display:flex;gap:4px;box-shadow:0 4px 20px rgba(0,0,0,0.5);bottom:calc(100% + 4px);left:40px;';
+    menu.style.cssText = 'position:absolute;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:12px;padding:6px;display:flex;gap:6px;box-shadow:0 8px 32px rgba(0,0,0,0.7);bottom:calc(100% + 8px);left:0;right:0;justify-content:center;';
     [
-      ['copy',   '📋', () => { const t=bubble.innerText||bubble.textContent; navigator.clipboard.writeText(t).then(()=>{ const p=bubble.style.outline; bubble.style.outline='2px solid var(--teal)'; setTimeout(()=>{bubble.style.outline=p;},600); }).catch(()=>{}); }],
-      ['crew',   '↩',    () => { import('./state.js').then(({state})=>{state.botName='Sky';state.botColor='#00F6D6';});import('./chat.js').then(({clearChat})=>clearChat()); }],
-      ['cannon', '🔖', () => { import('./ui.js').then(({switchView})=>switchView('cannon')); }],
-      ['cut',    '✂️',  () => { import('./ui.js').then(({switchView})=>switchView('cut')); }],
+      ['copy',   '📋', () => { copyText(bubble.innerText||bubble.textContent); }],
+      ['crew',   '↩',  () => { import('./state.js').then(({state})=>{state.botName='Sky';state.botColor='#00F6D6';});import('./chat.js').then(({clearChat})=>clearChat()); }],
+      ['cannon', '🔖', () => { import('./ui.js').then(({switchView})=>switchView('cannonized')); }],
+      ['cut',    '✂️', () => { import('./ui.js').then(({switchView})=>switchView('cut')); }],
       ['speak',  '🔊', () => { const t=bubble.innerText||bubble.textContent; import('./models.js').then(({speakReply})=>speakReply(t)); }],
     ].forEach(([label,icon,action]) => {
       const btn = document.createElement('button');
-      btn.title=label; btn.textContent=icon;
-      btn.style.cssText='background:none;border:none;cursor:pointer;font-size:1rem;padding:4px 6px;border-radius:6px;color:#e8e8f0;transition:background 0.15s;';
-      btn.onmouseenter=()=>btn.style.background='#2a2a3e';
-      btn.onmouseleave=()=>btn.style.background='none';
-      btn.onclick=(ev)=>{ev.stopPropagation();menu.remove();action();};
+      btn.title = label; btn.textContent = icon;
+      btn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1.2rem;padding:8px 10px;border-radius:8px;color:#e8e8f0;-webkit-tap-highlight-color:transparent;';
+      btn.addEventListener('touchstart', () => btn.style.background = '#2a2a3e', {passive:true});
+      btn.addEventListener('touchend',   () => btn.style.background = 'none',    {passive:true});
+      btn.onmouseenter = () => btn.style.background = '#2a2a3e';
+      btn.onmouseleave = () => btn.style.background = 'none';
+      btn.onclick = (ev) => { ev.stopPropagation(); menu.remove(); action(); };
       menu.appendChild(btn);
     });
-    wrap.style.position='relative';
+    wrap.style.position = 'relative';
     wrap.appendChild(menu);
-    setTimeout(()=>document.addEventListener('click',()=>menu.remove(),{once:true}),0);
+    setTimeout(() => document.addEventListener('click',  () => menu.remove(), {once:true}), 50);
+    setTimeout(() => document.addEventListener('touchend',() => menu.remove(), {once:true}), 50);
+  }
+
+  // Long-press for mobile, click for desktop
+  let _pressTimer = null;
+  bubble.addEventListener('touchstart', (e) => {
+    _pressTimer = setTimeout(() => { _pressTimer = null; showBubbleMenu(e); }, 500);
+  }, {passive:true});
+  bubble.addEventListener('touchend', () => {
+    if (_pressTimer) { clearTimeout(_pressTimer); _pressTimer = null; }
+  }, {passive:true});
+  bubble.addEventListener('touchmove', () => {
+    if (_pressTimer) { clearTimeout(_pressTimer); _pressTimer = null; }
+  }, {passive:true});
+  bubble.addEventListener('click', (e) => {
+    // desktop only — skip if touch already handled
+    if (e.pointerType === 'touch') return;
+    showBubbleMenu(e);
   });
   msgList.appendChild(wrap);
   msgList.scrollTop = msgList.scrollHeight;
