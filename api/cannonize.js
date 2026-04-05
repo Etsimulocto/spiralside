@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000,
         system: 'You are Cannonized, memory forge for Spiralside. Extract structured memory blocks from transcripts. Respond ONLY with valid JSON — no markdown, no preamble — with these exact keys: session_id, session_date, platform, characters_present, canon_weight (low|medium|high|foundational), binding_moment (1-3 sentences: what locked in), exact_language (verbatim key phrases — never paraphrase), context (why it mattered), laws_established (array of rules/protocols), tags (array), summary_short (1-2 sentences under 40 words: who + what happened + why it mattered — for context injection), embed_text (dense flat paragraph combining characters, binding moment, key phrases, laws, and tags — optimized for semantic search)',
         messages: [{ role: 'user', content: 'Date: '+(session_date||'unknown')+' Weight: '+(canon_weight||'high')+' Characters: '+(characters||'unknown')+' Platform: '+(platform||'unknown')+'\n\nTranscript:\n'+raw_transcript }]
       })
