@@ -127,7 +127,7 @@ export function addMessage(text, role) {
 
     const menu = document.createElement('div');
     menu.className = 'bubble-menu';
-    menu.style.cssText = 'position:absolute;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:12px;padding:6px;display:flex;gap:6px;box-shadow:0 8px 32px rgba(0,0,0,0.7);bottom:calc(100% + 8px);left:0;right:0;justify-content:center;';
+    menu.style.cssText = 'position:fixed;z-index:9999;background:#111118;border:1px solid #2a2a3e;border-radius:16px 16px 0 0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:12px;box-shadow:0 -4px 32px rgba(0,0,0,0.8);bottom:0;left:0;right:0;justify-content:center;align-items:center;';
     [
       ['copy',   '📋', () => { copyText(bubble.innerText||bubble.textContent); }],
       ['crew',   '↩',  () => { import('./state.js').then(({state})=>{state.botName='Sky';state.botColor='#00F6D6';});import('./chat.js').then(({clearChat})=>clearChat()); }],
@@ -159,7 +159,7 @@ export function addMessage(text, role) {
     ].forEach(([label,icon,action]) => {
       const btn = document.createElement('button');
       btn.title = label; btn.textContent = icon;
-      btn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1.2rem;padding:8px 10px;border-radius:8px;color:#e8e8f0;-webkit-tap-highlight-color:transparent;';
+      btn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:1.6rem;padding:10px 14px;border-radius:10px;color:#e8e8f0;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;';
       btn.addEventListener('touchstart', () => btn.style.background = '#2a2a3e', {passive:true});
       btn.addEventListener('touchend',   () => btn.style.background = 'none',    {passive:true});
       btn.onmouseenter = () => btn.style.background = '#2a2a3e';
@@ -169,8 +169,14 @@ export function addMessage(text, role) {
     });
     wrap.style.position = 'relative';
     wrap.appendChild(menu);
-    setTimeout(() => document.addEventListener('click',  () => menu.remove(), {once:true}), 50);
-    setTimeout(() => document.addEventListener('touchend',() => menu.remove(), {once:true}), 50);
+    // Dismiss on tap outside the menu
+    setTimeout(() => {
+      function dismiss(e) {
+        if (!menu.contains(e.target)) { menu.remove(); document.removeEventListener('click', dismiss); document.removeEventListener('touchend', dismiss); }
+      }
+      document.addEventListener('click', dismiss);
+      document.addEventListener('touchend', dismiss);
+    }, 100);
   }
 
   // Long-press for mobile, click for desktop
