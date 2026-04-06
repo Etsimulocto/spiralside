@@ -454,7 +454,8 @@ function renderQuest(el, char, events) {
   const streak = _xps ? (_xps.streakDays||0) : 0;
 
   // HP = flavor: streak * 8 + 50, clamped 10-100
-  const hp     = Math.min(100, Math.max(10, streak*8+50));
+  const _hpBonus = parseInt(localStorage.getItem('ss_quest_hp_bonus') || '0');
+  const hp     = Math.min(100, Math.max(10, streak*8+50+_hpBonus));
   const atkPct = Math.round((char.atk||10)/20*100);
   const defPct = Math.round((char.def||8)/20*100);
   const witPct = Math.round((char.wit||12)/20*100);
@@ -696,8 +697,44 @@ function renderQuest(el, char, events) {
     if (!window.consumeItem) return;
     const xps2 = window.getXPState ? window.getXPState() : null;
     const item2 = xps2 && xps2.items ? xps2.items.find(i => i.id===itemId) : null;
+    if (!item2) return;
+
+    // ── ITEM EFFECTS ─────────────────────────────────────────
+    const baseId = item2.id.replace(/_\d+$/, ''); // strip timestamp suffix
+
+    if (item2.isLoot) {
+      // Loot items: flavor toast only, then consume
+      showLootToast(item2.icon + ' ' + item2.use_text);
+
+    } else if (baseId === 'health_pot') {
+      // Health Potion: +5 HP flavor = +1 streak day equivalent in the delta layer
+      // We fake it by boosting HP display via a temporary ss_quest_hp_bonus
+      const cur = parseInt(localStorage.getItem('ss_quest_hp_bonus') || '0');
+      localStorage.setItem('ss_quest_hp_bonus', String(Math.min(42, cur + 5)));
+      showLootToast(item2.icon + ' health potion used — +5 HP');
+
+    } else if (baseId === 'tome') {
+      // Candle & Tome: +0.1 WIT one-shot — apply immediately to delta store
+      const d = loadBattleDeltas();
+      d.wit = Math.round(((d.wit||0) + 0.1) * 10) / 10;
+      saveBattleDeltas(d);
+      showLootToast(item2.icon + ' tome studied — +0.1 WIT');
+
+    } else if (baseId === 'ward_stone') {
+      // Ward Stone: set flag — next battle loss becomes a win
+      localStorage.setItem('ss_quest_ward', '1');
+      showLootToast(item2.icon + ' ward stone activated — next defeat blocked');
+
+    } else if (baseId === 'coin_charm' || baseId === 'crk_shield' || baseId === 'rusty_sword') {
+      // Passive items — explain they are already active
+      showLootToast(item2.icon + ' ' + item2.name + ' is passive — already active');
+      return; // don't consume
+
+    } else {
+      showLootToast(item2.icon + ' ' + (item2.use_text || item2.name + ' used'));
+    }
+
     await window.consumeItem(itemId);
-    if (item2 && item2.isLoot && item2.use_text) showLootToast(item2.icon+' '+item2.use_text);
     const el2 = document.getElementById('view-quest');
     if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2,c2,e2); }
   };
@@ -929,6 +966,12 @@ function showBattleOverlay(quest, char) {
   }
 
   function finish(didWin) {
+    // Ward Stone: consume to block a defeat
+    if (!didWin && localStorage.getItem('ss_quest_ward') === '1') {
+      localStorage.removeItem('ss_quest_ward');
+      didWin = true;
+      addLog('\u26E8 ward stone shatters — defeat blocked!', 'system');
+    }
     done = true; won = didWin;
     if (turnTimer) { clearTimeout(turnTimer); turnTimer = null; }
     if (didWin) {
