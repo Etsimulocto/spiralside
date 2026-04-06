@@ -370,10 +370,10 @@ function statusForDate(dateStr) {
 }
 
 function loadEvents()    { try { return JSON.parse(localStorage.getItem('ss_quest_events') || '[]'); } catch { return []; } }
-function saveEvents(evs) { localStorage.setItem('ss_quest_events', JSON.stringify(evs)); }
+function saveEvents(evs) { localStorage.setItem('ss_quest_events', JSON.stringify(evs)); syncSave('quest_events', evs).catch(()=>{}); }
 function saveCharacter(c){ localStorage.setItem('ss_quest_char', JSON.stringify(c)); syncSave('quest_char', c).catch(()=>{}); }
 function loadResolved()  { try { return JSON.parse(localStorage.getItem('ss_quest_resolved') || '[]'); } catch { return []; } }
-function markResolved(id){ const r=loadResolved(); if(!r.includes(id)){r.push(id);localStorage.setItem('ss_quest_resolved',JSON.stringify(r));} }
+function markResolved(id){ const r=loadResolved(); if(!r.includes(id)){r.push(id);localStorage.setItem('ss_quest_resolved',JSON.stringify(r)); syncSave('quest_resolved', r).catch(()=>{});} }
 
 function readCodexYou() {
   return new Promise(resolve => {
@@ -1161,6 +1161,26 @@ export async function initQuestView() {
     char = defaultCharacter(botName);
     saveCharacter(char);
   }
+
+  // Pull cloud-saved events and resolved list, merge with local
+  try {
+    const [cloudEvs, cloudRes] = await Promise.all([
+      syncLoad('quest_events'),
+      syncLoad('quest_resolved'),
+    ]);
+    if (Array.isArray(cloudEvs) && cloudEvs.length > 0) {
+      // Merge: union by id, cloud wins on conflict
+      const local = loadEvents();
+      const merged = [...cloudEvs];
+      local.forEach(ev => { if (!merged.find(c => c.id === ev.id)) merged.push(ev); });
+      localStorage.setItem('ss_quest_events', JSON.stringify(merged));
+    }
+    if (Array.isArray(cloudRes) && cloudRes.length > 0) {
+      const localRes = loadResolved();
+      const mergedRes = [...new Set([...cloudRes, ...localRes])];
+      localStorage.setItem('ss_quest_resolved', JSON.stringify(mergedRes));
+    }
+  } catch(e) { console.warn('[quest] cloud merge failed:', e); }
 
   const events = loadEvents();
   renderQuest(el, char, events);
