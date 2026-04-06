@@ -38,11 +38,12 @@ function injectQuestStyles() {
 
     .q-sheet-row { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
     .q-portrait {
-      width: 90px; height: 90px; background: var(--surface);
+      width: 110px; align-self: stretch; background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; position: relative; overflow: hidden;
     }
+    .q-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
     .q-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
     .q-lv-pip {
       position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
