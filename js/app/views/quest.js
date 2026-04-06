@@ -1146,8 +1146,15 @@ export async function initQuestView() {
     if (el) { const c = await loadCharacter(); const e = loadEvents(); renderQuest(el, c, e); }
     return;
   }
-  dropRandomLoot();
-  setTimeout(resolveCompletedQuests, 800);
+  // sessionStorage guard — survives Ctrl+R within same tab session
+  // Only drop loot and resolve idle quests once per browser session, not per module load
+  const _sessionKey = 'ss_quest_session_' + new Date().toISOString().slice(0,10);
+  const _alreadyRan = sessionStorage.getItem(_sessionKey);
+  if (!_alreadyRan) {
+    sessionStorage.setItem(_sessionKey, '1');
+    dropRandomLoot();
+    setTimeout(resolveCompletedQuests, 800);
+  }
 
   // Re-render when cloud hydration brings fresh You card data
   window.addEventListener('cloud:hydrated', async () => {
