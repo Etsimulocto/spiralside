@@ -375,6 +375,9 @@ function saveCharacter(c){ localStorage.setItem('ss_quest_char', JSON.stringify(
 function loadResolved()  { try { return JSON.parse(localStorage.getItem('ss_quest_resolved') || '[]'); } catch { return []; } }
 function markResolved(id){ const r=loadResolved(); if(!r.includes(id)){r.push(id);localStorage.setItem('ss_quest_resolved',JSON.stringify(r)); syncSave('quest_resolved', r).catch(()=>{});} }
 
+function loadBattleDeltas()  { try { return JSON.parse(localStorage.getItem('ss_quest_deltas') || '{}'); } catch { return {}; } }
+function saveBattleDeltas(d) { localStorage.setItem('ss_quest_deltas', JSON.stringify(d)); syncSave('quest_deltas', d).catch(()=>{}); }
+
 function readCodexYou() {
   return new Promise(resolve => {
     try {
@@ -411,10 +414,14 @@ async function loadCharacter() {
   if (you && (you.handle || you.vibe)) {
     const stats = traitsToStats(you.traits);
     const base = JSON.parse(localStorage.getItem('ss_quest_char') || 'null') || {};
+    const deltas = loadBattleDeltas();
     return {
       name:you.handle||base.name||'Wanderer', class:you.vibe||base.class||'adventurer',
       arc:you.arc||you.vibe||'', portrait_base64:you.portrait_base64||base.portrait_base64||null,
-      atk:stats.atk, def:stats.def, wit:stats.wit, luk:stats.luk,
+      atk:  Math.round(Math.max(1, Math.min(20, stats.atk  + (deltas.atk||0))) * 10) / 10,
+      def:  Math.round(Math.max(1, Math.min(20, stats.def  + (deltas.def||0))) * 10) / 10,
+      wit:  Math.round(Math.max(1, Math.min(20, stats.wit  + (deltas.wit||0))) * 10) / 10,
+      luk:  Math.round(Math.max(1, Math.min(20, stats.luk  + (deltas.luk||0))) * 10) / 10,
       level:base.level||1, xp:base.xp||0, xpNext:base.xpNext||100,
       hairColor:base.hairColor||'#5a3a1a', skinColor:base.skinColor||'#FDDBB4', fromCodex:true,
     };
@@ -896,24 +903,22 @@ function showBattleOverlay(quest, char) {
   }
 
   function applyStatDeltas(didWin) {
-    // Each stat gets 0 or ±1; win biases positive, loss biases negative
     const STATS = ['atk','def','wit','luk'];
-    const labels = { atk:'ATK', def:'DEF', wit:'WIT', luk:'LUK' };
+    const stored = loadBattleDeltas();
     STATS.forEach(s => {
       const roll = Math.random();
       let delta = 0;
       if (didWin) {
-        // win: 50% +0.1, 20% -0.1, 30% no change
         delta = roll < 0.50 ? 0.1 : roll < 0.70 ? -0.1 : 0;
       } else {
-        // loss: 20% +0.1, 50% -0.1, 30% no change
         delta = roll < 0.20 ? 0.1 : roll < 0.70 ? -0.1 : 0;
       }
       if (delta !== 0) {
         statDeltas[s] = delta;
-        char[s] = Math.round(Math.max(1, Math.min(20, (char[s]||10) + delta)) * 10) / 10;
+        stored[s] = Math.round(((stored[s]||0) + delta) * 10) / 10;
       }
     });
+    saveBattleDeltas(stored);
     // Render delta chips
     Object.entries(statDeltas).forEach(([s, d]) => {
       const chip = document.createElement('div');
@@ -921,8 +926,6 @@ function showBattleOverlay(quest, char) {
       chip.textContent = (d > 0 ? '+' : '') + d.toFixed(1) + ' ' + ({atk:'ATK',def:'DEF',wit:'WIT',luk:'LUK'}[s]);
       deltasEl.appendChild(chip);
     });
-    // Persist
-    saveCharacter(char);
   }
 
   function finish(didWin) {
