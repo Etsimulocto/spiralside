@@ -903,22 +903,22 @@ function showBattleOverlay(quest, char) {
       const roll = Math.random();
       let delta = 0;
       if (didWin) {
-        // win: 50% +1, 20% -1, 30% no change
-        delta = roll < 0.50 ? 1 : roll < 0.70 ? -1 : 0;
+        // win: 50% +0.1, 20% -0.1, 30% no change
+        delta = roll < 0.50 ? 0.1 : roll < 0.70 ? -0.1 : 0;
       } else {
-        // loss: 20% +1, 50% -1, 30% no change
-        delta = roll < 0.20 ? 1 : roll < 0.70 ? -1 : 0;
+        // loss: 20% +0.1, 50% -0.1, 30% no change
+        delta = roll < 0.20 ? 0.1 : roll < 0.70 ? -0.1 : 0;
       }
       if (delta !== 0) {
         statDeltas[s] = delta;
-        char[s] = Math.max(1, Math.min(20, (char[s]||10) + delta));
+        char[s] = Math.round(Math.max(1, Math.min(20, (char[s]||10) + delta)) * 10) / 10;
       }
     });
     // Render delta chips
     Object.entries(statDeltas).forEach(([s, d]) => {
       const chip = document.createElement('div');
       chip.className = 'q-stat-delta ' + (d > 0 ? 'up' : 'down');
-      chip.textContent = (d > 0 ? '+' : '') + d + ' ' + ({atk:'ATK',def:'DEF',wit:'WIT',luk:'LUK'}[s]);
+      chip.textContent = (d > 0 ? '+' : '') + d.toFixed(1) + ' ' + ({atk:'ATK',def:'DEF',wit:'WIT',luk:'LUK'}[s]);
       deltasEl.appendChild(chip);
     });
     // Persist
