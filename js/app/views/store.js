@@ -171,6 +171,7 @@ export function initStoreView() {
   updateStoreView();
   if (window.updateCreditDisplay) window.updateCreditDisplay();
   updateAdsOffBtn();
+  setTimeout(updateStoragePlanBtn, 500);
 }
 
 // ── ADS-OFF BUTTON STATE ──────────────────────────────────────
@@ -199,6 +200,56 @@ export function updateStoreView() {
     if (subEl) subEl.textContent = 'free demo — buy credits to unlock real AI';
   }
 }
+
+// ── STORAGE PLAN ──────────────────────────────────────────────
+async function updateStoragePlanBtn() {
+  const btn = document.getElementById('storage-plan-btn');
+  if (!btn || !window._sb) return;
+  try {
+    const { data: { session } } = await window._sb.auth.getSession();
+    if (!session) { btn.textContent = 'sign in'; return; }
+    const { data } = await window._sb
+      .from('user_usage')
+      .select('storage_plan, storage_expires_at')
+      .eq('user_id', session.user.id)
+      .single();
+    const plan = data?.storage_plan || 'free';
+    const exp  = data?.storage_expires_at;
+    if (plan === 'archive' && exp && new Date(exp) > new Date()) {
+      const d = new Date(exp).toLocaleDateString();
+      btn.textContent = 'active until ' + d;
+      btn.style.borderColor = 'var(--teal)';
+      btn.style.color = 'var(--teal)';
+      btn.style.background = 'rgba(0,246,214,0.08)';
+    } else {
+      btn.textContent = 'subscribe $2/mo';
+      btn.style.borderColor = 'var(--teal)';
+      btn.style.color = 'var(--teal)';
+      btn.style.background = 'transparent';
+    }
+  } catch(e) {
+    btn.textContent = 'subscribe $2/mo';
+  }
+}
+
+window.toggleStoragePlan = async function() {
+  if (!state.user) { alert('Sign in first.'); return; }
+  const btn = document.getElementById('storage-plan-btn');
+  // For now route through PayPal like credit packs but for $2 sub
+  // Future: Stripe recurring billing
+  try {
+    let token = state.session?.access_token;
+    if (!token) { const {data} = await window._sb.auth.getSession(); token = data?.session?.access_token; }
+    const r = await fetch('https://web-production-4e6f3.up.railway.app/create-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ amount: '2', storage_plan: 'archive' })
+    });
+    const d = await r.json();
+    if (!r.ok) { alert(d.detail || 'Error'); return; }
+    window.location.href = d.approve_url;
+  } catch(e) { alert('Payment error. Try again.'); }
+};
 
 // ── TOGGLE ADS OFF (window-exposed) ──────────────────────────
 // Nimbis anchor: toggleAdsOff
