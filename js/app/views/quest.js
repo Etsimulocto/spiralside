@@ -1140,6 +1140,12 @@ function showQuestCompleteCard(ev, gold) {
 
 // ── PUBLIC INIT ───────────────────────────────────────────────
 export async function initQuestView() {
+  if (_initialized) {
+    // Re-render only — skip loot drop and idle resolve on revisit
+    const el = document.getElementById('view-quest');
+    if (el) { const c = await loadCharacter(); const e = loadEvents(); renderQuest(el, c, e); }
+    return;
+  }
   dropRandomLoot();
   setTimeout(resolveCompletedQuests, 800);
 
