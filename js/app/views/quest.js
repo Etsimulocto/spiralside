@@ -501,37 +501,99 @@ function renderQuest(el, char, events) {
   const todayNum=now2.getDate();
   const resolved2=loadResolved();
 
-  // Map each calendar day to a terrain type
+  // ── POPULATION COUNTER ───────────────────────────────────────
+  // Every resolved quest = +1 villager. Milestone titles change map header.
+  const totalResolved = resolved2.length;
+  const popTitles = [[0,'wilderness'],[3,'outpost'],[8,'hamlet'],[15,'village'],[25,'town'],[40,'city'],[60,'kingdom']];
+  const kingdomTitle = [...popTitles].reverse().find(([n])=>totalResolved>=n)?.[1] || 'wilderness';
+  const popLabel = 'pop: '+totalResolved;
+
+  // ── THREAT METER ─────────────────────────────────────────────
+  // Abandoned quests (in events but not resolved and past due) = threat skulls
+  const today0 = new Date(); today0.setHours(0,0,0,0);
+  const abandoned = events.filter(ev => {
+    if (resolved2.includes(ev.id)) return false;
+    const d = new Date(ev.date+'T00:00:00');
+    return d < today0;
+  });
+  const threatLevel = abandoned.length;
+  const threatLabel = threatLevel > 0 ? (threatLevel >= 5 ? 'SIEGE!' : threatLevel+' threat') : '';
+
+  // ── WEATHER SYSTEM ────────────────────────────────────────────
+  // Deterministic from date seed — same weather all day, changes daily
+  const dateSeed = parseInt(now2.toISOString().slice(0,10).replace(/-/g,''));
+  const weatherRoll = dateSeed % 7;
+  const WEATHERS = [
+    { id:'sun',   label:'sunny',   icon:'&#9728;',  atkMod:+1, defMod:0,  desc:'ATK +1 today' },
+    { id:'sun',   label:'sunny',   icon:'&#9728;',  atkMod:+1, defMod:0,  desc:'ATK +1 today' },
+    { id:'rain',  label:'rainy',   icon:'&#9928;',  atkMod:-1, defMod:0,  desc:'enemy ATK -1' },
+    { id:'rain',  label:'rainy',   icon:'&#9928;',  atkMod:-1, defMod:0,  desc:'enemy ATK -1' },
+    { id:'cloud', label:'cloudy',  icon:'&#9729;',  atkMod:0,  defMod:0,  desc:'neutral' },
+    { id:'snow',  label:'snowing', icon:'&#10052;', atkMod:0,  defMod:+1, desc:'DEF +1, turns slow' },
+    { id:'storm', label:'storm',   icon:'&#9928;&#10217;', atkMod:+2, defMod:-1, desc:'wild ATK +2, DEF -1' },
+  ];
+  const weather = WEATHERS[weatherRoll];
+  // Expose weather mod for battle system
+  window._questWeather = weather;
+
+  // ── BOSS TILE ────────────────────────────────────────────────
+  // Last day of month = boss tile. Boss determined by month name.
+  const MONTH_BOSSES = ['Frost Wraith','Storm Leviathan','Bloom Colossus','Rain Specter',
+    'Plague Golem','Sun Devourer','Tide Beast','Harvest Fiend',
+    'Void Stalker','Iron Titan','Frost Drake','Year's End Lich'];
+  const monthBoss = MONTH_BOSSES[month];
+  const isBossMonth = todayNum === daysInMonth; // boss day = last day
+
+  // ── TILE TYPE LOGIC ──────────────────────────────────────────
   function getTileType(dayNum) {
     const dateStr = year+'-'+String(month+1).padStart(2,'0')+'-'+String(dayNum).padStart(2,'0');
     const dayEvents = events.filter(e => e.date === dateStr);
     const isToday = dayNum === todayNum;
     const isPast  = dayNum < todayNum;
     const isFuture= dayNum > todayNum;
+    const isLastDay = dayNum === daysInMonth;
+    if (isLastDay && !isFuture) return 'boss';            // boss tile — past or today
+    if (isLastDay && isFuture)  return 'bosscoming';      // boss looming
     if (isToday) return 'campfire';
-    if (isFuture && dayEvents.length) return 'forest';     // event planned
-    if (isFuture) return 'water';                          // unexplored
-    // Past days
-    if (!dayEvents.length) return isPast ? 'grass' : 'water';
+    if (isFuture && dayEvents.length) return 'forest';
+    if (isFuture) return 'water';
+    if (!dayEvents.length) {
+      // Abandoned = skull tile
+      const dayAbandoned = abandoned.some(ev => ev.date === dateStr);
+      return dayAbandoned ? 'skull' : 'grass';
+    }
     const anyResolved = dayEvents.some(e => resolved2.includes(e.id));
-    if (anyResolved) return 'castle';                      // completed quest
-    return 'path';                                         // event exists, not done
+    if (anyResolved) return 'castle';
+    return 'path';
   }
 
-  // SVG tile generators — all viewBox 0 0 20 20
-  function tileSVG(type) {
+  // ── SVG TILE GENERATORS ──────────────────────────────────────
+  function tileSVG(type, dayNum) {
+    // Weather overlay tint for today
+    const wx = (dayNum === todayNum) ? weather.id : null;
+    const weatherTint = wx==='rain'?'rgba(30,60,120,0.35)':wx==='snow'?'rgba(200,230,255,0.2)':wx==='storm'?'rgba(60,20,80,0.4)':wx==='sun'?'rgba(255,200,50,0.12)':'';
+    const wRect = weatherTint ? '<rect width="20" height="20" fill="'+weatherTint+'" rx="2"/>' : '';
     switch(type) {
       case 'water': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
         + '<rect width="20" height="20" fill="#0a1628"/>'
         + '<path d="M2 8 Q5 6 8 8 Q11 10 14 8 Q17 6 20 8" fill="none" stroke="#1a3a6a" stroke-width="1.2"/>'
         + '<path d="M0 13 Q4 11 7 13 Q10 15 14 13 Q17 11 20 13" fill="none" stroke="#1a3a6a" stroke-width="1"/>'
-        + '</svg>';
+        + wRect+'</svg>';
       case 'grass': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
         + '<rect width="20" height="20" fill="#0d1f0d"/>'
         + '<rect x="3" y="12" width="2" height="5" rx="1" fill="#1a3d1a"/>'
         + '<rect x="7" y="10" width="2" height="7" rx="1" fill="#1a3d1a"/>'
         + '<rect x="12" y="11" width="2" height="6" rx="1" fill="#1a3d1a"/>'
         + '<rect x="16" y="13" width="2" height="4" rx="1" fill="#1a3d1a"/>'
+        + wRect+'</svg>';
+      case 'skull': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#180808"/>'
+        + '<ellipse cx="10" cy="9" rx="5" ry="5.5" fill="#3a1010"/>'
+        + '<rect x="7" y="13" width="6" height="3" rx="1" fill="#3a1010"/>'
+        + '<circle cx="8" cy="9" r="1.5" fill="#100404"/>'
+        + '<circle cx="12" cy="9" r="1.5" fill="#100404"/>'
+        + '<rect x="8.5" y="13.5" width="1" height="2" fill="#100404"/>'
+        + '<rect x="10.5" y="13.5" width="1" height="2" fill="#100404"/>'
         + '</svg>';
       case 'path': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
         + '<rect width="20" height="20" fill="#1a1208"/>'
@@ -539,13 +601,13 @@ function renderQuest(el, char, events) {
         + '<circle cx="10" cy="6" r="1" fill="#6a5030"/>'
         + '<circle cx="10" cy="10" r="1" fill="#6a5030"/>'
         + '<circle cx="10" cy="14" r="1" fill="#6a5030"/>'
-        + '</svg>';
+        + wRect+'</svg>';
       case 'forest': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
         + '<rect width="20" height="20" fill="#0a180a"/>'
         + '<polygon points="10,2 6,10 14,10" fill="#1a4a1a"/>'
         + '<polygon points="10,6 5,14 15,14" fill="#225522"/>'
         + '<rect x="9" y="14" width="2" height="4" fill="#3a2010"/>'
-        + '</svg>';
+        + wRect+'</svg>';
       case 'castle': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
         + '<rect width="20" height="20" fill="#0d0d18"/>'
         + '<rect x="3" y="8" width="14" height="10" fill="#2a2a4a"/>'
@@ -558,7 +620,7 @@ function renderQuest(el, char, events) {
         + '<rect x="8" y="13" width="4" height="5" fill="#1a1a30"/>'
         + '<rect x="6" y="11" width="3" height="2" fill="#FFD93D33"/>'
         + '<rect x="11" y="11" width="3" height="2" fill="#FFD93D33"/>'
-        + '</svg>';
+        + wRect+'</svg>';
       case 'campfire': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
         + '<rect width="20" height="20" fill="#100808"/>'
         + '<ellipse cx="10" cy="16" rx="5" ry="1.5" fill="#3a2010"/>'
@@ -567,6 +629,16 @@ function renderQuest(el, char, events) {
         + '<ellipse cx="10" cy="11" rx="2.5" ry="3.5" fill="#FF6B00"/>'
         + '<ellipse cx="10" cy="11" rx="1.5" ry="2.5" fill="#FFD93D"/>'
         + '<ellipse cx="10" cy="12" rx="0.8" ry="1.2" fill="#fff8"/>'
+        + wRect+'</svg>';
+      case 'boss': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#1a0a00"/>'
+        + '<polygon points="10,1 12,7 19,7 13,11 15,18 10,14 5,18 7,11 1,7 8,7" fill="#3a1a00" stroke="#FF4BCB" stroke-width="0.5"/>'
+        + '<circle cx="10" cy="10" r="3" fill="#FF4BCB44"/>'
+        + '<text x="10" y="13" text-anchor="middle" font-size="6" fill="#FF4BCB">!</text>'
+        + '</svg>';
+      case 'bosscoming': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#120808"/>'
+        + '<polygon points="10,2 12,8 18,8 13,12 15,18 10,14 5,18 7,12 2,8 8,8" fill="#2a0a0a" stroke="#ff4bcb44" stroke-width="0.5"/>'
         + '</svg>';
       default: return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" fill="#0a0a0f"/></svg>';
     }
@@ -578,8 +650,10 @@ function renderQuest(el, char, events) {
     const d=i+1;
     const type=getTileType(d);
     const isToday=d===todayNum;
-    return '<div class="q-cal-tile'+(isToday?' today':'')+'">'
-      + tileSVG(type)
+    const isBoss=type==='boss'||type==='bosscoming';
+    return '<div class="q-cal-tile'+(isToday?' today':'')+(isBoss?' boss-tile':'')+'"'
+      + (isBoss?' title="'+monthBoss+'"':'')+'>'
+      + tileSVG(type, d)
       + '<span class="tile-num">'+d+'</span>'
       + '</div>';
   }).join('');
@@ -755,8 +829,23 @@ function renderQuest(el, char, events) {
 
     <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">the map</span><div class="q-rule-line"></div></div>
     <div class="q-cal">
-      <div class="q-cal-month"><span>${monthName}</span><span class="q-cal-legend"><span class="q-cal-leg">&#x1f30a; unknown</span><span class="q-cal-leg">&#x1f332; planned</span><span class="q-cal-leg">&#x1f3f0; done</span><span class="q-cal-leg">&#x1f525; today</span></span></div>
+      <div class="q-cal-month">
+        <span>${kingdomTitle} <span style="opacity:0.4;font-size:0.55rem">${popLabel}</span></span>
+        <span style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:0.62rem;color:#FFD93D">${weather.icon} ${weather.label}</span>
+          <span style="font-size:0.6rem;color:var(--subtext)">${weather.desc}</span>
+          ${threatLabel ? '<span style="font-size:0.6rem;color:#ff6b6b;letter-spacing:0.06em">&#9760; '+threatLabel+'</span>' : ''}
+        </span>
+      </div>
+      ${isBossMonth ? '<div style="font-size:0.62rem;color:#FF4BCB;text-align:center;padding:4px 0;letter-spacing:0.08em">&#9733; boss day: '+monthBoss+' awaits &#9733;</div>' : '<div style="font-size:0.58rem;color:#FF4BCB44;text-align:center;padding:2px 0;letter-spacing:0.06em">'+monthBoss+' stirs at month's end</div>'}
       <div class="q-cal-grid">${calDayLabels}${calEmpties}${calDays}</div>
+      <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:0.48rem;color:var(--subtext);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 20 20"><rect width="20" height="20" fill="#0a1628"/><path d="M2 8 Q5 6 8 8 Q11 10 14 8" fill="none" stroke="#1a3a6a" stroke-width="2"/></svg>unknown</span>
+        <span style="font-size:0.48rem;color:var(--subtext);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 20 20"><rect width="20" height="20" fill="#0a180a"/><polygon points="10,2 6,10 14,10" fill="#1a4a1a"/></svg>planned</span>
+        <span style="font-size:0.48rem;color:var(--subtext);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 20 20"><rect width="20" height="20" fill="#0d0d18"/><rect x="4" y="6" width="12" height="10" fill="#2a2a4a"/></svg>settled</span>
+        <span style="font-size:0.48rem;color:var(--subtext);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 20 20"><rect width="20" height="20" fill="#180808"/><circle cx="10" cy="9" r="5" fill="#3a1010"/></svg>threat</span>
+        <span style="font-size:0.48rem;color:#FF4BCB;display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 20 20"><rect width="20" height="20" fill="#1a0a00"/><polygon points="10,1 12,7 19,7 13,11 15,18 10,14 5,18 7,11 1,7 8,7" fill="#3a1a00" stroke="#FF4BCB" stroke-width="1"/></svg>boss</span>
+      </div>
     </div>
 
     <button class="q-add-btn" id="q-add-btn">+ add calendar event</button>
@@ -863,6 +952,16 @@ function renderQuest(el, char, events) {
     const ev  = evs.find(e => e.id === questId);
     if (!ev) return;
     const q = seedQuestFromEvent(ev);
+    // Boss day override — last day of month gets the month boss
+    const now3 = new Date();
+    const lastDay = new Date(now3.getFullYear(), now3.getMonth()+1, 0).getDate();
+    const MONTH_BOSSES2 = ['Frost Wraith','Storm Leviathan','Bloom Colossus','Rain Specter',
+      'Plague Golem','Sun Devourer','Tide Beast','Harvest Fiend',
+      'Void Stalker','Iron Titan','Frost Drake','Year's End Lich'];
+    if (now3.getDate() === lastDay) {
+      q.title = MONTH_BOSSES2[now3.getMonth()];
+      q.isBoss = true;
+    }
     showBattleOverlay(q, char);
   };
 
@@ -1073,9 +1172,24 @@ const ENEMY_ROSTER = {
   'Journey to Unknown Lands':{ name:'Road Troll',        lore:'lives under every detour',           atk:4, hp:24 },
 };
 const DEFAULT_ENEMY = { name:'Shadow', lore:'origin unknown', atk:3, hp:20 };
+// Month bosses — injected dynamically by _questFight on last day of month
+const BOSS_ROSTER = {
+  'Frost Wraith':     { name:'Frost Wraith',     lore:'born from January's longest night', atk:7, hp:45 },
+  'Storm Leviathan':  { name:'Storm Leviathan',  lore:'older than the calendar itself',     atk:8, hp:50 },
+  'Bloom Colossus':   { name:'Bloom Colossus',   lore:'grows stronger with each petal',     atk:6, hp:42 },
+  'Rain Specter':     { name:'Rain Specter',      lore:'you have seen it before. in the drain.', atk:6, hp:40 },
+  'Plague Golem':     { name:'Plague Golem',      lore:'assembled from skipped appointments', atk:7, hp:44 },
+  'Sun Devourer':     { name:'Sun Devourer',      lore:'it was there at the solstice',       atk:8, hp:48 },
+  'Tide Beast':       { name:'Tide Beast',         lore:'pulls everything toward the deep',   atk:7, hp:46 },
+  'Harvest Fiend':    { name:'Harvest Fiend',      lore:'came with the first cold morning',   atk:7, hp:43 },
+  'Void Stalker':     { name:'Void Stalker',       lore:'followed you here from September',   atk:8, hp:50 },
+  'Iron Titan':       { name:'Iron Titan',          lore:'forged from every missed deadline',  atk:9, hp:55 },
+  'Frost Drake':      { name:'Frost Drake',         lore:'descended when the clocks changed',  atk:8, hp:52 },
+  'Year's End Lich': { name:'Year's End Lich',    lore:'remembers everything you didn't do',atk:10,hp:60},
+};
 
 function showBattleOverlay(quest, char) {
-  const enemyDef = ENEMY_ROSTER[quest.title] || DEFAULT_ENEMY;
+  const enemyDef = BOSS_ROSTER[quest.title] || ENEMY_ROSTER[quest.title] || DEFAULT_ENEMY;
   const xps = window.getXPState ? window.getXPState() : null;
   const gold = xps ? (xps.gold||0) : 0;
   const streak = xps ? (xps.streakDays||0) : 0;
@@ -1098,13 +1212,16 @@ function _startBattle(quest, char, enemyDef, streak, diceMod) {
   const _defBuff = _invItems.filter(i => i.stat === 'def' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
   const _witBuff = _invItems.filter(i => i.stat === 'wit' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
 
-  const yourAtk = (char.atk || 10) + _atkBuff + dm.atkBonus;
-  const yourDef = (char.def || 8)  + _defBuff + dm.defBonus;
+  // Weather modifier
+  const _wx = window._questWeather || { atkMod:0, defMod:0, label:'', desc:'' };
+  const yourAtk = (char.atk || 10) + _atkBuff + dm.atkBonus + _wx.atkMod;
+  const yourDef = (char.def || 8)  + _defBuff + dm.defBonus + _wx.defMod;
   const yourWit = (char.wit || 12) + _witBuff + dm.witBonus;
-  const enemyAtkTotal = enemyDef.atk + (dm.enemyAtkBonus||0);
+  const enemyAtkTotal = enemyDef.atk + (dm.enemyAtkBonus||0) + (_wx.id==='rain'||_wx.id==='snow' ? -1 : 0);
 
   const _buffLines = [];
   if (dm.desc) _buffLines.push(dm.desc);
+  if (_wx.label) _buffLines.push(_wx.label+': '+_wx.desc);
   if (_atkBuff > 0) _buffLines.push('+' + _atkBuff + ' ATK (item)');
   if (_defBuff > 0) _buffLines.push('+' + _defBuff + ' DEF (item)');
   if (_hpBonusBattle > 0) _buffLines.push('+' + _hpBonusBattle + ' HP (potion)');
