@@ -38,7 +38,7 @@ function injectQuestStyles() {
 
     .q-sheet-row { display: flex; gap: 0; border-bottom: 1px solid var(--border); }
     .q-portrait {
-      width: 80px; min-height: 96px; background: var(--surface);
+      width: 90px; height: 90px; background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; position: relative; overflow: hidden;
