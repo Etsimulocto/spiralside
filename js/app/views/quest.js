@@ -438,8 +438,37 @@ function buildMiiSvg(char) {
   return `<svg viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg" style="width:52px;height:52px"><ellipse cx="23" cy="14" rx="14" ry="10" fill="${hair}"/><ellipse cx="23" cy="22" rx="13" ry="14" fill="${skin}"/><rect x="9" y="8" width="28" height="10" rx="5" fill="${hair}"/><ellipse cx="18" cy="20" rx="2.5" ry="3.5" fill="#222"/><ellipse cx="28" cy="20" rx="2.5" ry="3.5" fill="#222"/><circle cx="19" cy="19" r="0.8" fill="#fff"/><circle cx="29" cy="19" r="0.8" fill="#fff"/><path d="M18.5 27 Q23 31 27.5 27" fill="none" stroke="#c0705a" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="10" cy="22" rx="2" ry="2.5" fill="${skin}"/><ellipse cx="36" cy="22" rx="2" ry="2.5" fill="${skin}"/></svg>`;
 }
 
+// ── ITEM DECAY ───────────────────────────────────────────────
+// Scans inventory for expired timed items, fires end effects, removes them.
+// Coin Charm awards +1g on expiry. Others toast and drop silently.
+async function expireItems() {
+  if (!window.getXPState || !window.consumeItem) return;
+  const xps = window.getXPState();
+  const items = (xps && xps.items) || [];
+  const now = Date.now();
+  let anyExpired = false;
+  for (const item of [...items]) {
+    if (!item.expiresAt || now < item.expiresAt) continue;
+    const baseId = (item.id || '').replace(/_\d+$/, '');
+    if (baseId === 'coin_charm') {
+      if (window.awardGold) await window.awardGold(1);
+      showLootToast((item.icon||'') + ' coin charm expired — +1g collected');
+    } else {
+      showLootToast((item.icon||'') + ' ' + item.name + ' wore off');
+    }
+    await window.consumeItem(item.id);
+    anyExpired = true;
+  }
+  // If anything dropped, re-render so status effects + inventory update
+  if (anyExpired) {
+    const el2 = document.getElementById('view-quest');
+    if (el2) { const c2 = await loadCharacter(); const e2 = loadEvents(); renderQuest(el2, c2, e2); }
+  }
+}
+
 // ── RENDER ────────────────────────────────────────────────────
 function renderQuest(el, char, events) {
+  expireItems(); // async fire-and-forget — re-renders itself if anything expired
   const resolved = loadResolved();
   const allQuests = events.map(seedQuestFromEvent);
   const activeQuests   = allQuests.filter(q => q.status==='active' && !resolved.includes(q.id));
