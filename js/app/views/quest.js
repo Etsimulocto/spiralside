@@ -879,6 +879,105 @@ function renderQuest(el, char, events) {
   };
 }
 
+// ── PRE-BATTLE DICE SYSTEM ───────────────────────────────────
+const BATTLE_DICE = [
+  { die:'d4',  face:'&#9650;',   label:'d4',   sides:4,   desc:'+1 ATK this fight',              cost:0 },
+  { die:'d6',  face:'&#127922;', label:'d6',   sides:6,   desc:'+1 DEF this fight',              cost:0 },
+  { die:'d8',  face:'&#128142;', label:'d8',   sides:8,   desc:'+1 random stat',                 cost:0 },
+  { die:'d10', face:'&#128311;', label:'d10',  sides:10,  desc:'+5 HP this fight',               cost:0 },
+  { die:'d12', face:'&#127800;', label:'d12',  sides:12,  desc:'+2 ATK (costs 1g)',              cost:1 },
+  { die:'d20', face:'&#11039;',  label:'d20',  sides:20,  desc:'20=crit first turn / 1=curse',   cost:0 },
+  { die:'d100',face:'&#128175;', label:'d%',   sides:100, desc:'every 10pts = +1 stat',          cost:0 },
+  { die:'fate',face:'&#10022;',  label:'fate', sides:0,   desc:'+buff / blank / -debuff',        cost:0 },
+  { die:'coin',face:'&#129689;', label:'coin', sides:-1,  desc:'heads=first / tails=enemy+2ATK', cost:0 },
+];
+
+function rollBattleDie(dieObj) {
+  const mod = { atkBonus:0,defBonus:0,witBonus:0,hpBonus:0,critFirst:false,goFirst:true,enemyAtkBonus:0,desc:'' };
+  if (dieObj.die === 'coin') {
+    const heads = Math.random() < 0.5;
+    mod.goFirst = heads; mod.enemyAtkBonus = heads ? 0 : 2;
+    mod.desc = heads ? 'coin: heads — you strike first!' : 'coin: tails — enemy surges (+2 ATK)';
+  } else if (dieObj.die === 'fate') {
+    const r = Math.floor(Math.random()*6);
+    if (r < 2)      { mod.atkBonus=1; mod.defBonus=1; mod.desc='fate: plus — +1 ATK +1 DEF'; }
+    else if (r < 4) { mod.desc='fate: blank — the spiral is silent'; }
+    else            { mod.atkBonus=-1; mod.desc='fate: minus — -1 ATK'; }
+  } else if (dieObj.die === 'd4')  { mod.atkBonus=1; mod.desc='d4: +1 ATK'; }
+  else if (dieObj.die === 'd6')    { mod.defBonus=1; mod.desc='d6: +1 DEF'; }
+  else if (dieObj.die === 'd8')    {
+    const picks=['atkBonus','defBonus','witBonus'];
+    const pick=picks[Math.floor(Math.random()*3)];
+    mod[pick]=1;
+    const lbl=pick==='atkBonus'?'ATK':pick==='defBonus'?'DEF':'WIT';
+    mod.desc='d8: +1 '+lbl+' (random)';
+  } else if (dieObj.die === 'd10') { mod.hpBonus=5; mod.desc='d10: +5 HP'; }
+  else if (dieObj.die === 'd12')   { mod.atkBonus=2; mod.desc='d12: +2 ATK'; }
+  else if (dieObj.die === 'd20')   {
+    const roll=Math.floor(Math.random()*20)+1;
+    if (roll===20)     { mod.critFirst=true; mod.desc='d20: NAT 20 — CRIT FIRST TURN!'; }
+    else if (roll===1) { mod.goFirst=false; mod.desc='d20: nat 1 — cursed, enemy strikes first'; }
+    else               { const b=Math.floor(roll/5); mod.atkBonus=b; mod.desc='d20: rolled '+roll+' (+'+b+' ATK)'; }
+  } else if (dieObj.die === 'd100') {
+    const roll=Math.floor(Math.random()*100)+1;
+    const b=Math.floor(roll/10);
+    const picks=['atkBonus','defBonus','witBonus','hpBonus'];
+    const pick=picks[Math.floor(Math.random()*picks.length)];
+    mod[pick]=b;
+    const lbl=pick==='atkBonus'?'ATK':pick==='defBonus'?'DEF':pick==='witBonus'?'WIT':'HP';
+    mod.desc='d%: rolled '+roll+' (+'+b+' '+lbl+')';
+  }
+  return mod;
+}
+
+function showPreBattleDice(enemyDef, gold, onReady) {
+  const nullMod = { atkBonus:0,defBonus:0,witBonus:0,hpBonus:0,critFirst:false,goFirst:true,enemyAtkBonus:0,desc:'' };
+  const overlay = document.createElement('div');
+  overlay.className = 'q-battle-overlay';
+  overlay.style.zIndex = '9600';
+  const gridHTML = BATTLE_DICE.map((d,idx) => {
+    const cant = d.cost > 0 && gold < d.cost;
+    return '<button class="pb-die-btn" data-idx="'+idx+'" style="background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 4px;cursor:pointer;text-align:center;font-family:var(--font-ui);transition:all 0.14s;'+(cant?'opacity:0.3;pointer-events:none;':'')+'">'
+      + '<div style="font-size:1.3rem;line-height:1">'+d.face+'</div>'
+      + '<div style="font-size:0.52rem;color:var(--subtext);letter-spacing:0.08em;margin-top:3px">'+d.label+(d.cost>0?' ('+d.cost+'g)':'')+'</div>'
+      + '</button>';
+  }).join('');
+  overlay.innerHTML = '<div class="q-battle-card" style="max-width:400px">'
+    + '<div class="q-battle-header"><span class="q-battle-title">pre-battle</span>'
+    + '<span class="q-battle-tap-hint" style="color:#FFD93D">'+enemyDef.name+' awaits</span></div>'
+    + '<div style="font-size:0.75rem;color:var(--subtext);text-align:center;margin-bottom:12px">roll a die for a bonus — or skip</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'+gridHTML+'</div>'
+    + '<div id="pb-result" style="min-height:32px;font-size:0.72rem;color:#FFD93D;text-align:center;padding:7px;background:rgba(255,211,61,0.06);border:1px solid rgba(255,211,61,0.12);border-radius:8px;margin-bottom:12px;display:none"></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button id="pb-skip" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer">skip</button>'
+    + '<button id="pb-fight" style="flex:2;padding:10px;background:rgba(0,246,214,0.08);border:1px solid rgba(0,246,214,0.2);border-radius:8px;color:#00F6D6;font-family:var(--font-ui);font-size:0.72rem;cursor:pointer" disabled>fight!</button>'
+    + '</div></div>';
+  document.body.appendChild(overlay);
+
+  const resultEl = overlay.querySelector('#pb-result');
+  const fightBtn = overlay.querySelector('#pb-fight');
+  let chosenMod = null;
+
+  overlay.querySelectorAll('.pb-die-btn').forEach(btn => {
+    btn.onclick = async () => {
+      const dieObj = BATTLE_DICE[parseInt(btn.dataset.idx)];
+      if (dieObj.cost > 0 && window.spendGold) {
+        const r = await window.spendGold(dieObj.cost);
+        if (!r.success) { resultEl.textContent='not enough gold'; resultEl.style.display='block'; return; }
+      }
+      overlay.querySelectorAll('.pb-die-btn').forEach(b => { b.style.opacity='0.3'; b.style.pointerEvents='none'; });
+      btn.style.opacity='1'; btn.style.borderColor='#FFD93D'; btn.style.background='rgba(255,211,61,0.1)';
+      chosenMod = rollBattleDie(dieObj);
+      resultEl.textContent = chosenMod.desc; resultEl.style.display='block';
+      fightBtn.disabled=false; fightBtn.style.background='rgba(0,246,214,0.18)'; fightBtn.style.borderColor='rgba(0,246,214,0.4)';
+    };
+  });
+
+  const proceed = (mod) => { overlay.remove(); onReady(mod || nullMod); };
+  overlay.querySelector('#pb-skip').onclick = () => proceed(null);
+  fightBtn.onclick = () => proceed(chosenMod);
+}
+
 // ── BATTLE SYSTEM ────────────────────────────────────────────
 const ENEMY_ROSTER = {
   'The Grind Dungeon':      { name:'Deadline Wraith',    lore:'feeds on unfinished tasks',         atk:4, hp:22 },
@@ -896,31 +995,37 @@ const DEFAULT_ENEMY = { name:'Shadow', lore:'origin unknown', atk:3, hp:20 };
 function showBattleOverlay(quest, char) {
   const enemyDef = ENEMY_ROSTER[quest.title] || DEFAULT_ENEMY;
   const xps = window.getXPState ? window.getXPState() : null;
+  const gold = xps ? (xps.gold||0) : 0;
   const streak = xps ? (xps.streakDays||0) : 0;
+  showPreBattleDice(enemyDef, gold, (diceMod) => { _startBattle(quest, char, enemyDef, streak, diceMod); });
+}
 
-  // HP — base flavor + health potion bonus
+function _startBattle(quest, char, enemyDef, streak, diceMod) {
+  const dm = diceMod || { atkBonus:0,defBonus:0,witBonus:0,hpBonus:0,critFirst:false,goFirst:true,enemyAtkBonus:0,desc:'' };
+
+  // HP — base + potion bonus + dice bonus
   const _hpBonusBattle = parseInt(localStorage.getItem('ss_quest_hp_bonus') || '0');
-  let yourHP    = Math.min(100, Math.max(10, streak*8+50+_hpBonusBattle));
+  let yourHP    = Math.min(100, Math.max(10, streak*8+50+_hpBonusBattle+dm.hpBonus));
   let yourMaxHP = yourHP;
   let enemyHP   = enemyDef.hp + Math.floor(Math.random()*8);
   let enemyMaxHP= enemyHP;
 
-  // Stats — char already includes battle deltas; add active timed item buffs on top
+  // Stats — char includes battle deltas + item buffs + dice modifier
   const _invItems = (window.getXPState ? window.getXPState() : null)?.items || [];
   const _atkBuff = _invItems.filter(i => i.stat === 'atk' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
   const _defBuff = _invItems.filter(i => i.stat === 'def' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
   const _witBuff = _invItems.filter(i => i.stat === 'wit' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
 
-  const yourAtk = (char.atk || 10) + _atkBuff;
-  const yourDef = (char.def || 8)  + _defBuff;
-  const yourWit = (char.wit || 12) + _witBuff;
+  const yourAtk = (char.atk || 10) + _atkBuff + dm.atkBonus;
+  const yourDef = (char.def || 8)  + _defBuff + dm.defBonus;
+  const yourWit = (char.wit || 12) + _witBuff + dm.witBonus;
+  const enemyAtkTotal = enemyDef.atk + (dm.enemyAtkBonus||0);
 
-  // Collect active buff labels to log at battle start
   const _buffLines = [];
-  if (_atkBuff > 0) _buffLines.push('+' + _atkBuff + ' ATK');
-  if (_defBuff > 0) _buffLines.push('+' + _defBuff + ' DEF');
-  if (_witBuff > 0) _buffLines.push('+' + _witBuff + ' WIT');
-  if (_hpBonusBattle > 0) _buffLines.push('+' + _hpBonusBattle + ' HP');
+  if (dm.desc) _buffLines.push(dm.desc);
+  if (_atkBuff > 0) _buffLines.push('+' + _atkBuff + ' ATK (item)');
+  if (_defBuff > 0) _buffLines.push('+' + _defBuff + ' DEF (item)');
+  if (_hpBonusBattle > 0) _buffLines.push('+' + _hpBonusBattle + ' HP (potion)');
   if (localStorage.getItem('ss_quest_ward') === '1') _buffLines.push('ward stone ready');
 
   let done = false;
@@ -1050,7 +1155,7 @@ function showBattleOverlay(quest, char) {
       addLog('you read the attack — dodged!', 'dmg-enemy');
       updateBars();
     } else {
-      const rawDmg  = Math.floor(enemyDef.atk/2) + Math.floor(Math.random()*3);
+      const rawDmg  = Math.floor(enemyAtkTotal/2) + Math.floor(Math.random()*3);
       const enemyDmg = Math.max(1, rawDmg - defMit);
       yourHP = Math.max(0, yourHP - enemyDmg);
       addLog(enemyDef.name + ' hits for ' + enemyDmg, 'dmg-you');
@@ -1071,7 +1176,7 @@ function showBattleOverlay(quest, char) {
       enemyHP = Math.max(0, enemyHP - yd);
       if (enemyHP <= 0) { updateBars(); finish(true); return; }
       const defMit = Math.floor(yourDef/8);
-      const ed = Math.max(1, Math.floor(enemyDef.atk/2) + Math.floor(Math.random()*3) - defMit);
+      const ed = Math.max(1, Math.floor(enemyAtkTotal/2) + Math.floor(Math.random()*3) - defMit);
       yourHP = Math.max(0, yourHP - ed);
       if (yourHP <= 0) { updateBars(); finish(false); return; }
     }
@@ -1088,8 +1193,27 @@ function showBattleOverlay(quest, char) {
 
   // Kick off first turn after a short breath
   addLog('the battle begins...', 'system');
-  if (_buffLines.length) addLog('items active: ' + _buffLines.join(', '), 'system');
-  turnTimer = setTimeout(runTurn, 600);
+  if (_buffLines.length) addLog('buffs: ' + _buffLines.join(' / '), 'system');
+  if (!dm.goFirst) {
+    addLog(enemyDef.name + ' seizes initiative!', 'dmg-you');
+    const ed0 = Math.max(1, Math.floor(enemyAtkTotal/2)+Math.floor(Math.random()*3)-Math.floor(yourDef/8));
+    yourHP = Math.max(0, yourHP - ed0);
+    addLog(enemyDef.name + ' strikes for ' + ed0, 'dmg-you');
+    updateBars();
+    if (yourHP <= 0) { finish(false); return; }
+  }
+  let _critUsed = false;
+  turnTimer = setTimeout(() => {
+    if (dm.critFirst && !_critUsed) {
+      _critUsed = true;
+      const critDmg = Math.floor(yourAtk/2)*2 + Math.floor(Math.random()*3);
+      enemyHP = Math.max(0, enemyHP - critDmg);
+      addLog('CRIT! you strike for ' + critDmg + ' dmg', 'dmg-enemy');
+      updateBars();
+      if (enemyHP <= 0) { finish(true); return; }
+      turnTimer = setTimeout(runTurn, 900);
+    } else { runTurn(); }
+  }, 600);
 }
 
 // ── LOOT DROP ────────────────────────────────────────────────
