@@ -1,14 +1,13 @@
 // ============================================================
-// SPIRALSIDE — STORE VIEW v1.0
-// Full-page store tab — credits, buy packs, feature pricing
+// SPIRALSIDE — STORE VIEW v2.0
+// Credits, packs, feature pricing, storage plans, gifts
 // Nimbis anchor: js/app/views/store.js
 // ============================================================
 import { state } from '../state.js';
 import { buyPack } from '../ui.js';
 
-// store always re-renders fresh — no initialized guard
+const RAIL = 'https://web-production-4e6f3.up.railway.app';
 
-// Called by switchView('store') — renders once, updates on revisit
 function injectStoreStyles() {
   if (document.getElementById('ss-store-styles')) return;
   const s = document.createElement('style');
@@ -16,48 +15,28 @@ function injectStoreStyles() {
   s.textContent = `
     #view-store { overflow-y: auto; -webkit-overflow-scrolling: touch; }
     .ads-off-building {
-      flex-shrink: 0;
-      width: 44px; height: 52px;
-      background: #0b0b12;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-bottom: none;
-      border-radius: 3px 3px 0 0;
-      cursor: pointer;
-      position: relative;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: flex-end;
-      transition: border-color 0.2s;
-      padding-bottom: 4px;
+      flex-shrink: 0; width: 44px; height: 52px; background: #0b0b12;
+      border: 1px solid rgba(255,255,255,0.08); border-bottom: none;
+      border-radius: 3px 3px 0 0; cursor: pointer; position: relative;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      transition: border-color 0.2s; padding-bottom: 4px;
     }
     .ads-off-building:hover { border-color: rgba(0,246,214,0.45); }
     .ads-off-building.active { border-color: rgba(0,246,214,0.6); background: rgba(0,246,214,0.05); }
-    .aob-wins {
-      display: flex; flex-direction: column;
-      align-items: center; gap: 3px;
-      position: absolute; top: 6px; left: 0; right: 0;
-    }
+    .aob-wins { display: flex; flex-direction: column; align-items: center; gap: 3px; position: absolute; top: 6px; left: 0; right: 0; }
     .aob-row { display: flex; gap: 3px; }
-    .aob-w {
-      width: 5px; height: 5px; border-radius: 1px;
-      background: rgba(255,255,255,0.06);
-      transition: background 0.3s;
-    }
+    .aob-w { width: 5px; height: 5px; border-radius: 1px; background: rgba(255,255,255,0.06); transition: background 0.3s; }
     .ads-off-building.active .aob-w { background: rgba(0,246,214,0.55); }
-    .aob-label {
-      font-family: var(--font-ui, 'DM Mono', monospace);
-      font-size: 0.45rem; letter-spacing: 0.06em;
-      color: rgba(255,255,255,0.3);
-      text-align: center; line-height: 1.2;
-    }
+    .aob-label { font-family: var(--font-ui,'DM Mono',monospace); font-size: 0.45rem; letter-spacing: 0.06em; color: rgba(255,255,255,0.3); text-align: center; line-height: 1.2; }
     .ads-off-building.active .aob-label { color: rgba(0,246,214,0.7); }
     .view-scroll-body { padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 0; flex: 1; min-height: 0; overflow-y: auto; }
     .credit-hero { background: linear-gradient(135deg, rgba(0,246,214,0.08), rgba(124,106,247,0.08)); border: 1px solid var(--border); border-radius: 16px; padding: 28px 20px; text-align: center; margin-bottom: 20px; }
     .credit-amount { font-family: var(--font-display); font-size: 2.8rem; font-weight: 800; color: var(--teal); line-height: 1; }
     .credit-label { font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--subtext); margin-top: 6px; }
     .credit-sub { font-size: 0.72rem; color: var(--subtext); margin-top: 8px; }
-    .pricing-explainer { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; }
-    .pe-title { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--subtext); margin-bottom: 6px; }
-    .pe-body { font-size: 0.78rem; line-height: 1.6; color: var(--text); }
+    .pricing-explainer { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; }
+    .pe-title { font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--subtext); margin-bottom: 4px; }
+    .pe-body { font-size: 0.75rem; line-height: 1.5; color: var(--text); }
     .view-section-title { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--subtext); margin: 20px 0 10px; display: flex; align-items: center; gap: 8px; }
     .view-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     .pack-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 4px; }
@@ -72,7 +51,7 @@ function injectStoreStyles() {
     .feature-icon { font-size: 1rem; width: 26px; text-align: center; flex-shrink: 0; }
     .feature-name { flex: 1; font-size: 0.78rem; color: var(--text); }
     .feature-sub { font-size: 0.62rem; color: var(--subtext); margin-top: 1px; }
-    .feature-cost { font-size: 0.72rem; color: var(--teal); letter-spacing: 0.04em; }
+    .feature-cost { font-size: 0.72rem; color: var(--teal); letter-spacing: 0.04em; white-space: nowrap; }
     .gift-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 4px; }
     .gift-desc { font-size: 0.75rem; color: var(--subtext); line-height: 1.6; margin-bottom: 14px; }
     .gift-send-row { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -87,6 +66,9 @@ function injectStoreStyles() {
     .gift-msg { font-size: 0.72rem; margin-top: 10px; min-height: 18px; }
     .gift-msg.ok { color: var(--teal); }
     .gift-msg.err { color: var(--pink); }
+    .storage-subscribe-btn { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.08em; padding: 4px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--teal); color: var(--teal); background: transparent; transition: all 0.2s; white-space: nowrap; }
+    .storage-subscribe-btn:hover { background: rgba(0,246,214,0.1); }
+    .storage-subscribe-btn.active { background: rgba(0,246,214,0.12); border-color: var(--teal); }
   `;
   document.head.appendChild(s);
 }
@@ -103,9 +85,10 @@ export function initStoreView() {
         <div class="credit-sub" id="store-free-msg">free demo — buy credits to unlock real AI</div>
       </div>
       <div class="pricing-explainer">
-        <div class="pe-title">how we charge</div>
+        <div class="pe-title">how credits work</div>
         <div class="pe-body">1 cr = $0.0001. You pay API cost + 17% for hosting. No markup beyond that. Credits never expire.</div>
       </div>
+
       <div class="view-section-title">buy credits</div>
       <div class="pack-grid">
         <div class="pack-card" onclick="window.buyPack('5')">
@@ -114,7 +97,7 @@ export function initStoreView() {
           <div class="pack-bonus">starter</div>
         </div>
         <div class="pack-card popular" onclick="window.buyPack('10')">
-          <div class="pack-tag">✦ popular</div>
+          <div class="pack-tag">&#10022; popular</div>
           <div class="pack-price">$10</div>
           <div class="pack-credits">1,100,000 cr</div>
           <div class="pack-bonus">+100,000 bonus</div>
@@ -125,18 +108,33 @@ export function initStoreView() {
           <div class="pack-bonus">+400,000 bonus</div>
         </div>
       </div>
+
       <div class="view-section-title">live feature pricing</div>
-      <div class="feature-row"><div class="feature-icon">⚡</div><div class="feature-name">chat — haiku<div class="feature-sub">fast · cost+17%</div></div><div class="feature-cost">~140 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">◎</div><div class="feature-name">chat — sky / 4o<div class="feature-sub">character · cost+17%</div></div><div class="feature-cost">~23 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">✦</div><div class="feature-name">chat — sonnet<div class="feature-sub">smart · cost+17%</div></div><div class="feature-cost">~527 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">🎨</div><div class="feature-name">image generation<div class="feature-sub">flux schnell</div></div><div class="feature-cost">500 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">🎙️</div><div class="feature-name">text to speech<div class="feature-sub">elevenlabs · sky only</div></div><div class="feature-cost">~2 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">🎤</div><div class="feature-name">speech to text<div class="feature-sub">browser native · free</div></div><div class="feature-cost">0 cr</div></div>
-      <div class="feature-row"><div class="feature-icon">📹</div><div class="feature-name">video generation<div class="feature-sub">wan 2.2</div>
-      <div class="feature-row"><div class="feature-icon" style="font-size:0.85rem;">∴</div><div class="feature-name">cannonize thread<div class="feature-sub">haiku · 5 free then cost+17%</div></div><div class="feature-cost">~140 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#9889;</div><div class="feature-name">chat &mdash; haiku<div class="feature-sub">fast &middot; cost+17%</div></div><div class="feature-cost">~140 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#9678;</div><div class="feature-name">chat &mdash; sky / 4o<div class="feature-sub">character &middot; cost+17%</div></div><div class="feature-cost">~23 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#10022;</div><div class="feature-name">chat &mdash; sonnet<div class="feature-sub">smart &middot; cost+17%</div></div><div class="feature-cost">~527 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#127912;</div><div class="feature-name">image generation<div class="feature-sub">flux schnell</div></div><div class="feature-cost">500 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#127897;</div><div class="feature-name">text to speech<div class="feature-sub">elevenlabs &middot; sky only</div></div><div class="feature-cost">~2 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#127908;</div><div class="feature-name">speech to text<div class="feature-sub">browser native &middot; free</div></div><div class="feature-cost">0 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#128249;</div><div class="feature-name">video generation<div class="feature-sub">wan 2.2 &middot; coming soon</div></div><div class="feature-cost">2,000 cr</div></div>
+      <div class="feature-row"><div class="feature-icon">&#8756;</div><div class="feature-name">cannonize thread<div class="feature-sub">haiku &middot; 5 free then cost+17%</div></div><div class="feature-cost">~140 cr</div></div>
+
       <div class="view-section-title" style="margin-top:24px;">storage plans</div>
-      <div class="feature-row" style="background:linear-gradient(135deg,rgba(0,246,214,0.06),rgba(123,95,255,0.06));border-color:rgba(0,246,214,0.2);"><div class="feature-icon" style="font-size:0.75rem;letter-spacing:0;">[free]</div><div class="feature-name">free storage<div class="feature-sub">canon blocks only · 5 MB</div></div><div class="feature-cost" style="color:var(--subtext)">free</div></div>
-      <div class="feature-row" style="position:relative;overflow:hidden;"><div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--purple));"></div><div class="feature-icon" style="font-size:0.85rem;">✦</div><div class="feature-name">archive plan<div class="feature-sub">2 GB total · images, files, canon</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;"><div class="feature-cost">$2 / mo</div><div id="storage-plan-btn" onclick="window.toggleStoragePlan()" style="font-family:var(--font-ui);font-size:0.6rem;letter-spacing:0.08em;padding:3px 10px;border-radius:20px;cursor:pointer;border:1px solid var(--teal);color:var(--teal);background:transparent;">loading...</div></div></div></div><div class="feature-cost">2,000 cr</div></div>
+      <div class="feature-row" style="background:linear-gradient(135deg,rgba(0,246,214,0.05),rgba(123,95,255,0.05));border-color:rgba(0,246,214,0.15);">
+        <div class="feature-icon" style="font-size:0.7rem;font-weight:700;">FREE</div>
+        <div class="feature-name">free storage<div class="feature-sub">canon blocks only &middot; 5 MB</div></div>
+        <div class="feature-cost" style="color:var(--subtext)">free</div>
+      </div>
+      <div class="feature-row" style="position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--purple));"></div>
+        <div class="feature-icon">&#10024;</div>
+        <div class="feature-name">archive plan<div class="feature-sub">2 GB total &middot; images, files, canon</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+          <div class="feature-cost">$2 / mo</div>
+          <button id="storage-plan-btn" class="storage-subscribe-btn" onclick="window.toggleStoragePlan()">loading...</button>
+        </div>
+      </div>
+
       <div class="view-section-title" style="margin-top:24px;">gift credits</div>
       <div class="gift-box">
         <div class="gift-desc">Send credits from your balance to a friend. Or buy a fresh $5 gift. They redeem the code in their account.</div>
@@ -144,7 +142,7 @@ export function initStoreView() {
           <input class="gift-input" id="gift-amount-input" type="number" placeholder="credits to send" min="1000" style="letter-spacing:0;text-transform:none;" />
           <button class="gift-redeem-btn" onclick="window.sendGift()">send from balance</button>
         </div>
-        <button class="gift-buy-btn" onclick="window.buyGift()">buy $5 gift → 500,000 cr</button>
+        <button class="gift-buy-btn" onclick="window.buyGift()">buy $5 gift &rarr; 500,000 cr</button>
         <div class="gift-divider">redeem a code</div>
         <div class="gift-redeem-row">
           <input class="gift-input" id="gift-code-input" placeholder="SPIRAL-XXXX-XXXX" maxlength="16" />
@@ -155,10 +153,48 @@ export function initStoreView() {
 
       <div class="view-section-title" style="margin-top:24px;">perks</div>
       <div class="feature-row" id="ads-off-row">
-        <div class="feature-icon">🏙️</div>
-        <div class="feature-name">hide skyline ads<div class="feature-sub">one-time · stored locally</div></div>
+        <div class="feature-icon">&#127751;</div>
+        <div class="feature-name">hide skyline ads<div class="feature-sub">one-time &middot; stored locally</div></div>
         <div class="feature-cost">50,000 cr</div>
-        <div class="ads-off-building" id="ads-off-btn" onclick="
+        <div class="ads-off-building" id="ads-off-btn" onclick="window.toggleAdsOff()" title="click to toggle">
+          <div class="aob-wins">
+            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
+            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
+            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
+          </div>
+          <div class="aob-label" id="ads-off-label">off</div>
+        </div>
+      </div>
+    </div>`;
+
+  updateStoreView();
+  if (window.updateCreditDisplay) window.updateCreditDisplay();
+  updateAdsOffBtn();
+  setTimeout(updateStoragePlanBtn, 500);
+}
+
+function updateAdsOffBtn() {
+  const btn   = document.getElementById('ads-off-btn');
+  const label = document.getElementById('ads-off-label');
+  if (!btn) return;
+  const off = localStorage.getItem('ss_ads_off') === '1';
+  btn.classList.toggle('active', off);
+  if (label) label.textContent = off ? 'on' : 'off';
+}
+
+export function updateStoreView() {
+  const amountEl = document.getElementById('store-credits');
+  if (!amountEl) return;
+  const subEl = document.getElementById('store-free-msg');
+  if (state.isPaid) {
+    amountEl.textContent = Math.round(state.credits || 0).toLocaleString();
+    if (subEl) subEl.textContent = 'paid account';
+  } else {
+    amountEl.textContent = '0';
+    if (subEl) subEl.textContent = 'free demo — buy credits to unlock real AI';
+  }
+}
+
 // -- STORAGE PLAN ----------------------------------------------------------
 async function updateStoragePlanBtn() {
   const btn = document.getElementById('storage-plan-btn');
@@ -175,10 +211,10 @@ async function updateStoragePlanBtn() {
     const exp  = data?.storage_expires_at;
     if (plan === 'archive' && exp && new Date(exp) > new Date()) {
       btn.textContent = 'active until ' + new Date(exp).toLocaleDateString();
-      btn.style.background = 'rgba(0,246,214,0.08)';
+      btn.classList.add('active');
     } else {
       btn.textContent = 'subscribe $2/mo';
-      btn.style.background = 'transparent';
+      btn.classList.remove('active');
     }
   } catch(e) { btn.textContent = 'subscribe $2/mo'; }
 }
@@ -188,10 +224,10 @@ window.toggleStoragePlan = async function() {
   try {
     let token = state.session?.access_token;
     if (!token) { const {data} = await window._sb.auth.getSession(); token = data?.session?.access_token; }
-    const r = await fetch('https://web-production-4e6f3.up.railway.app/create-order', {
+    const r = await fetch(RAIL + '/create-storage-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ amount: '2', storage_plan: 'archive' })
+      body: JSON.stringify({})
     });
     const d = await r.json();
     if (!r.ok) { alert(d.detail || 'Error'); return; }
@@ -199,127 +235,22 @@ window.toggleStoragePlan = async function() {
   } catch(e) { alert('Payment error. Try again.'); }
 };
 
-window.toggleAdsOff()" title="click to toggle">
-          <div class="aob-wins">
-            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
-            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
-            <div class="aob-row"><div class="aob-w"></div><div class="aob-w"></div><div class="aob-w"></div></div>
-          </div>
-          <div class="aob-label" id="ads-off-label">off</div>
-        </div>
-      </div>
-
-    </div>`;
-  updateStoreView();
-  if (window.updateCreditDisplay) window.updateCreditDisplay();
-  updateAdsOffBtn();
-  setTimeout(updateStoragePlanBtn, 500);
-}
-
-// ── ADS-OFF BUTTON STATE ──────────────────────────────────────
-function updateAdsOffBtn() {
-  const btn   = document.getElementById('ads-off-btn');
-  const label = document.getElementById('ads-off-label');
-  if (!btn) return;
-  const off = localStorage.getItem('ss_ads_off') === '1';
-  btn.classList.toggle('active', off);
-  if (label) label.textContent = off ? 'on' : 'off';
-}
-
-
-export function updateStoreView() {
-  const amountEl = document.getElementById('store-credits');
-  if (!amountEl) return;
-  const subEl    = document.getElementById('store-free-msg');
-  if (state.isPaid) {
-    const cr = Number.isInteger(state.credits)
-      ? state.credits
-      : Math.round(state.credits);
-    amountEl.textContent = Math.round(cr).toLocaleString();
-    if (subEl) subEl.textContent = 'paid account';
-  } else {
-    amountEl.textContent = '0';
-    if (subEl) subEl.textContent = 'free demo — buy credits to unlock real AI';
-  }
-}
-
-// ── STORAGE PLAN ──────────────────────────────────────────────
-async function updateStoragePlanBtn() {
-  const btn = document.getElementById('storage-plan-btn');
-  if (!btn || !window._sb) return;
-  try {
-    const { data: { session } } = await window._sb.auth.getSession();
-    if (!session) { btn.textContent = 'sign in'; return; }
-    const { data } = await window._sb
-      .from('user_usage')
-      .select('storage_plan, storage_expires_at')
-      .eq('user_id', session.user.id)
-      .single();
-    const plan = data?.storage_plan || 'free';
-    const exp  = data?.storage_expires_at;
-    if (plan === 'archive' && exp && new Date(exp) > new Date()) {
-      const d = new Date(exp).toLocaleDateString();
-      btn.textContent = 'active until ' + d;
-      btn.style.borderColor = 'var(--teal)';
-      btn.style.color = 'var(--teal)';
-      btn.style.background = 'rgba(0,246,214,0.08)';
-    } else {
-      btn.textContent = 'subscribe $2/mo';
-      btn.style.borderColor = 'var(--teal)';
-      btn.style.color = 'var(--teal)';
-      btn.style.background = 'transparent';
-    }
-  } catch(e) {
-    btn.textContent = 'subscribe $2/mo';
-  }
-}
-
-window.toggleStoragePlan = async function() {
-  if (!state.user) { alert('Sign in first.'); return; }
-  const btn = document.getElementById('storage-plan-btn');
-  // For now route through PayPal like credit packs but for $2 sub
-  // Future: Stripe recurring billing
-  try {
-    let token = state.session?.access_token;
-    if (!token) { const {data} = await window._sb.auth.getSession(); token = data?.session?.access_token; }
-    const r = await fetch('https://web-production-4e6f3.up.railway.app/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ amount: '2', storage_plan: 'archive' })
-    });
-    const d = await r.json();
-    if (!r.ok) { alert(d.detail || 'Error'); return; }
-    window.location.href = d.approve_url;
-  } catch(e) { alert('Payment error. Try again.'); }
-};
-
-// ── TOGGLE ADS OFF (window-exposed) ──────────────────────────
-// Nimbis anchor: toggleAdsOff
+// -- TOGGLE ADS OFF --------------------------------------------------------
 window.toggleAdsOff = function() {
   const already = localStorage.getItem('ss_ads_off') === '1';
   if (already) {
-    // turn ads back on — free
     localStorage.removeItem('ss_ads_off');
     updateAdsOffBtn();
     return;
   }
-  // charge 50,000 credits
   const COST = 50000;
-  if (!state.isPaid) {
-    alert('You need a paid account to use this perk.');
-    return;
-  }
-  if ((state.credits || 0) < COST) {
-    alert('Not enough credits. Need 50,000 cr.');
-    return;
-  }
-  if (!confirm('Spend 50,000 cr to hide the skyline ads? (stored locally — clears if you clear browser data)')) return;
-  // deduct locally — backend deduction via next chat or usage call
+  if (!state.isPaid) { alert('You need a paid account to use this perk.'); return; }
+  if ((state.credits || 0) < COST) { alert('Not enough credits. Need 50,000 cr.'); return; }
+  if (!confirm('Spend 50,000 cr to hide the skyline ads?')) return;
   state.credits = (state.credits || 0) - COST;
   localStorage.setItem('ss_ads_off', '1');
   updateAdsOffBtn();
   if (window.updateCreditDisplay) window.updateCreditDisplay();
-  // also hide ticker immediately if visible
   const t = document.getElementById('skyline-ticker');
   if (t) t.classList.remove('visible');
 };
