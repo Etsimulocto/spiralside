@@ -129,10 +129,7 @@ export function initStoreView() {
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--purple));"></div>
         <div class="feature-icon">&#10024;</div>
         <div class="feature-name">archive plan<div class="feature-sub">2 GB total &middot; images, files, canon</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:5px;flex-shrink:0;">
-          <div class="feature-cost">$2 / mo</div>
-          <button id="storage-plan-btn" class="storage-subscribe-btn" onclick="window.toggleStoragePlan()">loading...</button>
-        </div>
+        <button id="storage-plan-btn" class="storage-subscribe-btn" onclick="window.toggleStoragePlan()">subscribe $2/mo</button>
       </div>
 
       <div class="view-section-title" style="margin-top:24px;">gift credits</div>
