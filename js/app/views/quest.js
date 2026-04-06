@@ -540,7 +540,7 @@ function renderQuest(el, char, events) {
   // Last day of month = boss tile. Boss determined by month name.
   const MONTH_BOSSES = ['Frost Wraith','Storm Leviathan','Bloom Colossus','Rain Specter',
     'Plague Golem','Sun Devourer','Tide Beast','Harvest Fiend',
-    'Void Stalker','Iron Titan','Frost Drake','Year's End Lich'];
+    'Void Stalker','Iron Titan','Frost Drake','Years End Lich'];
   const monthBoss = MONTH_BOSSES[month];
   const isBossMonth = todayNum === daysInMonth; // boss day = last day
 
@@ -957,7 +957,7 @@ function renderQuest(el, char, events) {
     const lastDay = new Date(now3.getFullYear(), now3.getMonth()+1, 0).getDate();
     const MONTH_BOSSES2 = ['Frost Wraith','Storm Leviathan','Bloom Colossus','Rain Specter',
       'Plague Golem','Sun Devourer','Tide Beast','Harvest Fiend',
-      'Void Stalker','Iron Titan','Frost Drake','Year's End Lich'];
+      'Void Stalker','Iron Titan','Frost Drake','Years End Lich'];
     if (now3.getDate() === lastDay) {
       q.title = MONTH_BOSSES2[now3.getMonth()];
       q.isBoss = true;
@@ -1174,7 +1174,7 @@ const ENEMY_ROSTER = {
 const DEFAULT_ENEMY = { name:'Shadow', lore:'origin unknown', atk:3, hp:20 };
 // Month bosses — injected dynamically by _questFight on last day of month
 const BOSS_ROSTER = {
-  'Frost Wraith':     { name:'Frost Wraith',     lore:'born from January's longest night', atk:7, hp:45 },
+  'Frost Wraith':     { name:'Frost Wraith',     lore:'born from January longest night', atk:7, hp:45 },
   'Storm Leviathan':  { name:'Storm Leviathan',  lore:'older than the calendar itself',     atk:8, hp:50 },
   'Bloom Colossus':   { name:'Bloom Colossus',   lore:'grows stronger with each petal',     atk:6, hp:42 },
   'Rain Specter':     { name:'Rain Specter',      lore:'you have seen it before. in the drain.', atk:6, hp:40 },
@@ -1185,7 +1185,7 @@ const BOSS_ROSTER = {
   'Void Stalker':     { name:'Void Stalker',       lore:'followed you here from September',   atk:8, hp:50 },
   'Iron Titan':       { name:'Iron Titan',          lore:'forged from every missed deadline',  atk:9, hp:55 },
   'Frost Drake':      { name:'Frost Drake',         lore:'descended when the clocks changed',  atk:8, hp:52 },
-  'Year's End Lich': { name:'Year's End Lich',    lore:'remembers everything you didn't do',atk:10,hp:60},
+  'Years End Lich': { name:'Years End Lich',    lore:'remembers everything you did not do',atk:10,hp:60},
 };
 
 function showBattleOverlay(quest, char) {
