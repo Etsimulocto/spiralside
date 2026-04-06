@@ -47,7 +47,7 @@ function injectStoreStyles() {
     .pack-price { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; color: var(--text); }
     .pack-credits { font-size: 0.65rem; color: var(--subtext); margin-top: 3px; }
     .pack-bonus { font-size: 0.6rem; color: var(--teal); margin-top: 2px; }
-    .feature-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; }
+    .feature-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; min-height: 52px; }
     .feature-icon { font-size: 1rem; width: 26px; text-align: center; flex-shrink: 0; }
     .feature-name { flex: 1; font-size: 0.78rem; color: var(--text); }
     .feature-sub { font-size: 0.62rem; color: var(--subtext); margin-top: 1px; }
@@ -129,7 +129,7 @@ export function initStoreView() {
         <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--purple));"></div>
         <div class="feature-icon">&#10024;</div>
         <div class="feature-name">archive plan<div class="feature-sub">2 GB total &middot; images, files, canon</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:5px;flex-shrink:0;">
           <div class="feature-cost">$2 / mo</div>
           <button id="storage-plan-btn" class="storage-subscribe-btn" onclick="window.toggleStoragePlan()">loading...</button>
         </div>
