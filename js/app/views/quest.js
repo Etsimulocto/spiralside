@@ -837,7 +837,7 @@ function renderQuest(el, char, events) {
           ${threatLabel ? '<span style="font-size:0.6rem;color:#ff6b6b;letter-spacing:0.06em">&#9760; '+threatLabel+'</span>' : ''}
         </span>
       </div>
-      ${isBossMonth ? '<div style="font-size:0.62rem;color:#FF4BCB;text-align:center;padding:4px 0;letter-spacing:0.08em">&#9733; boss day: '+monthBoss+' awaits &#9733;</div>' : '<div style="font-size:0.58rem;color:#FF4BCB44;text-align:center;padding:2px 0;letter-spacing:0.06em">'+monthBoss+' stirs at month's end</div>'}
+      ${isBossMonth ? '<div style="font-size:0.62rem;color:#FF4BCB;text-align:center;padding:4px 0;letter-spacing:0.08em">&#9733; boss day: '+monthBoss+' awaits &#9733;</div>' : '<div style="font-size:0.58rem;color:#FF4BCB44;text-align:center;padding:2px 0;letter-spacing:0.06em">'+monthBoss+' stirs at months end</div>'}
       <div class="q-cal-grid">${calDayLabels}${calEmpties}${calDays}</div>
       <div style="display:flex;gap:10px;margin-top:6px;flex-wrap:wrap">
         <span style="font-size:0.48rem;color:var(--subtext);display:flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 20 20"><rect width="20" height="20" fill="#0a1628"/><path d="M2 8 Q5 6 8 8 Q11 10 14 8" fill="none" stroke="#1a3a6a" stroke-width="2"/></svg>unknown</span>
