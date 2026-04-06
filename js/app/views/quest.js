@@ -51,14 +51,14 @@ function injectQuestStyles() {
       padding: 1px 6px; letter-spacing: 0.08em; white-space: nowrap;
     }
     .q-stats-col {
-      flex: 1; padding: 10px 14px; display: flex; flex-direction: column;
-      justify-content: space-between; gap: 4px;
+      flex: 1; padding: 10px 20px 10px 14px; display: flex; flex-direction: column;
+      justify-content: space-between; gap: 4px; min-width: 0;
     }
     .q-stat-row { display: flex; align-items: center; gap: 0; }
     .q-stat-label { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.1em; text-transform: uppercase; width: 28px; flex-shrink: 0; }
     .q-stat-bar-bg { flex: 1; height: 3px; background: var(--muted); border-radius: 2px; overflow: hidden; margin: 0 8px; }
     .q-stat-bar { height: 100%; border-radius: 2px; }
-    .q-stat-val { font-size: 0.65rem; width: 18px; text-align: right; letter-spacing: 0.04em; }
+    .q-stat-val { font-size: 0.65rem; width: 28px; text-align: right; letter-spacing: 0.04em; flex-shrink: 0; }
     .q-stat-atk .q-stat-bar { background: #ff6b6b; } .q-stat-atk .q-stat-val { color: #ff6b6b; }
     .q-stat-def .q-stat-bar { background: #4DA3FF; } .q-stat-def .q-stat-val { color: #4DA3FF; }
     .q-stat-wit .q-stat-bar { background: #7c6af7; } .q-stat-wit .q-stat-val { color: #7c6af7; }
@@ -70,7 +70,7 @@ function injectQuestStyles() {
     .q-hp-label { font-size: 0.6rem; color: var(--subtext); letter-spacing: 0.1em; text-transform: uppercase; width: 28px; flex-shrink: 0; }
     .q-hp-bar-bg { flex: 1; height: 5px; background: var(--muted); border-radius: 2px; overflow: hidden; margin: 0 8px; }
     .q-hp-bar { height: 100%; background: #ff6b6b; border-radius: 2px; transition: width 0.6s ease; }
-    .q-hp-val { font-size: 0.65rem; color: #ff6b6b; width: 46px; text-align: right; letter-spacing: 0.04em; }
+    .q-hp-val { font-size: 0.65rem; color: #ff6b6b; width: 58px; text-align: right; letter-spacing: 0.04em; flex-shrink: 0; }
 
     .q-xp-strip { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 16px; }
     .q-xp-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
