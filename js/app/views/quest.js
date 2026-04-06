@@ -869,14 +869,30 @@ function showBattleOverlay(quest, char) {
   const xps = window.getXPState ? window.getXPState() : null;
   const streak = xps ? (xps.streakDays||0) : 0;
 
-  // HP flavor same as render
-  let yourHP    = Math.min(100, Math.max(10, streak*8+50));
+  // HP — base flavor + health potion bonus
+  const _hpBonusBattle = parseInt(localStorage.getItem('ss_quest_hp_bonus') || '0');
+  let yourHP    = Math.min(100, Math.max(10, streak*8+50+_hpBonusBattle));
   let yourMaxHP = yourHP;
   let enemyHP   = enemyDef.hp + Math.floor(Math.random()*8);
   let enemyMaxHP= enemyHP;
 
-  const yourAtk = char.atk || 10;
-  const yourDef = char.def || 8;
+  // Stats — char already includes battle deltas; add active timed item buffs on top
+  const _invItems = (window.getXPState ? window.getXPState() : null)?.items || [];
+  const _atkBuff = _invItems.filter(i => i.stat === 'atk' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
+  const _defBuff = _invItems.filter(i => i.stat === 'def' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
+  const _witBuff = _invItems.filter(i => i.stat === 'wit' && (!i.expiresAt || Date.now() < i.expiresAt)).reduce((a,i) => a+(i.bonus||0), 0);
+
+  const yourAtk = (char.atk || 10) + _atkBuff;
+  const yourDef = (char.def || 8)  + _defBuff;
+  const yourWit = (char.wit || 12) + _witBuff;
+
+  // Collect active buff labels to log at battle start
+  const _buffLines = [];
+  if (_atkBuff > 0) _buffLines.push('+' + _atkBuff + ' ATK');
+  if (_defBuff > 0) _buffLines.push('+' + _defBuff + ' DEF');
+  if (_witBuff > 0) _buffLines.push('+' + _witBuff + ' WIT');
+  if (_hpBonusBattle > 0) _buffLines.push('+' + _hpBonusBattle + ' HP');
+  if (localStorage.getItem('ss_quest_ward') === '1') _buffLines.push('ward stone ready');
 
   let done = false;
   let won  = false;
@@ -999,15 +1015,19 @@ function showBattleOverlay(quest, char) {
 
     if (enemyHP <= 0) { finish(true); return; }
 
-    // Enemy attack — reduced by def
+    // Enemy attack — reduced by def; WIT gives small dodge chance (~wit/200)
     const defMit  = Math.floor(yourDef/8);
-    const rawDmg  = Math.floor(enemyDef.atk/2) + Math.floor(Math.random()*3);
-    const enemyDmg = Math.max(1, rawDmg - defMit);
-    yourHP = Math.max(0, yourHP - enemyDmg);
-    addLog(enemyDef.name + ' hits for ' + enemyDmg, 'dmg-you');
-    updateBars();
-
-    if (yourHP <= 0) { finish(false); return; }
+    if (Math.random() < (yourWit / 200)) {
+      addLog('you read the attack — dodged!', 'dmg-enemy');
+      updateBars();
+    } else {
+      const rawDmg  = Math.floor(enemyDef.atk/2) + Math.floor(Math.random()*3);
+      const enemyDmg = Math.max(1, rawDmg - defMit);
+      yourHP = Math.max(0, yourHP - enemyDmg);
+      addLog(enemyDef.name + ' hits for ' + enemyDmg, 'dmg-you');
+      updateBars();
+      if (yourHP <= 0) { finish(false); return; }
+    }
 
     turnTimer = setTimeout(runTurn, 900);
   }
@@ -1039,6 +1059,7 @@ function showBattleOverlay(quest, char) {
 
   // Kick off first turn after a short breath
   addLog('the battle begins...', 'system');
+  if (_buffLines.length) addLog('items active: ' + _buffLines.join(', '), 'system');
   turnTimer = setTimeout(runTurn, 600);
 }
 
