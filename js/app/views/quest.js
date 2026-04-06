@@ -163,13 +163,15 @@ function injectQuestStyles() {
     .q-inv-empty { font-size: 0.62rem; color: var(--subtext); opacity: 0.4; padding: 4px 0; }
 
     .q-cal { padding: 8px 12px 12px; }
-    .q-cal-month { font-size: 0.62rem; color: var(--subtext); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
-    .q-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-    .q-cal-dh { font-size: 0.55rem; color: var(--subtext); text-align: center; opacity: 0.4; padding-bottom: 3px; letter-spacing: 0.06em; }
-    .q-cal-d { font-size: 0.7rem; text-align: center; padding: 5px 2px; border-radius: 5px; color: var(--subtext); opacity: 0.3; }
-    .q-cal-d.live { opacity: 0.7; }
-    .q-cal-d.has-ev { color: #FF4BCB; background: rgba(255,75,203,0.1); opacity: 1; }
-    .q-cal-d.today { background: rgba(255,211,61,0.15); color: #FFD93D; border: 1px solid rgba(255,211,61,0.3); font-weight: 700; opacity: 1; }
+    .q-cal-month { font-size: 0.62rem; color: var(--subtext); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; display:flex; align-items:center; justify-content:space-between; }
+    .q-cal-legend { display:flex; gap:8px; }
+    .q-cal-leg { font-size:0.5rem; color:var(--subtext); display:flex; align-items:center; gap:3px; letter-spacing:0.06em; }
+    .q-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+    .q-cal-dh { font-size: 0.48rem; color: var(--subtext); text-align: center; opacity: 0.4; padding-bottom: 3px; letter-spacing: 0.06em; }
+    .q-cal-tile { position:relative; width:100%; aspect-ratio:1/1; border-radius:3px; overflow:hidden; cursor:default; }
+    .q-cal-tile svg { width:100%; height:100%; display:block; }
+    .q-cal-tile .tile-num { position:absolute; bottom:1px; right:2px; font-size:0.42rem; color:rgba(255,255,255,0.5); letter-spacing:0; line-height:1; pointer-events:none; }
+    .q-cal-tile.today .tile-num { color:#FFD93D; font-weight:700; }
 
     .q-add-btn {
       width: calc(100% - 24px); margin: 0 12px 12px; padding: 11px; border-radius: 8px;
@@ -490,17 +492,97 @@ function renderQuest(el, char, events) {
   const witPct = Math.round((char.wit||12)/20*100);
   const lukPct = Math.round((char.luk||9)/20*100);
 
-  // Calendar
+  // DnD Map Calendar
   const now2 = new Date();
   const year=now2.getFullYear(), month=now2.getMonth();
   const firstDay=new Date(year,month,1).getDay();
   const daysInMonth=new Date(year,month+1,0).getDate();
   const monthName=now2.toLocaleDateString('en-US',{month:'long',year:'numeric'}).toLowerCase();
   const todayNum=now2.getDate();
-  const eventDates=new Set(events.filter(e=>{const d=new Date(e.date+'T00:00:00');return d.getMonth()===month&&d.getFullYear()===year;}).map(e=>new Date(e.date+'T00:00:00').getDate()));
-  const calDayLabels=['s','m','t','w','t','f','s'].map(d=>`<div class="q-cal-dh">${d}</div>`).join('');
-  const calEmpties=Array(firstDay).fill('<div class="q-cal-d"></div>').join('');
-  const calDays=Array.from({length:daysInMonth},(_,i)=>{const d=i+1,isToday=d===todayNum,hasEv=eventDates.has(d);return `<div class="q-cal-d${isToday?' today':hasEv?' has-ev':' live'}">${d}</div>`;}).join('');
+  const resolved2=loadResolved();
+
+  // Map each calendar day to a terrain type
+  function getTileType(dayNum) {
+    const dateStr = year+'-'+String(month+1).padStart(2,'0')+'-'+String(dayNum).padStart(2,'0');
+    const dayEvents = events.filter(e => e.date === dateStr);
+    const isToday = dayNum === todayNum;
+    const isPast  = dayNum < todayNum;
+    const isFuture= dayNum > todayNum;
+    if (isToday) return 'campfire';
+    if (isFuture && dayEvents.length) return 'forest';     // event planned
+    if (isFuture) return 'water';                          // unexplored
+    // Past days
+    if (!dayEvents.length) return isPast ? 'grass' : 'water';
+    const anyResolved = dayEvents.some(e => resolved2.includes(e.id));
+    if (anyResolved) return 'castle';                      // completed quest
+    return 'path';                                         // event exists, not done
+  }
+
+  // SVG tile generators — all viewBox 0 0 20 20
+  function tileSVG(type) {
+    switch(type) {
+      case 'water': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#0a1628"/>'
+        + '<path d="M2 8 Q5 6 8 8 Q11 10 14 8 Q17 6 20 8" fill="none" stroke="#1a3a6a" stroke-width="1.2"/>'
+        + '<path d="M0 13 Q4 11 7 13 Q10 15 14 13 Q17 11 20 13" fill="none" stroke="#1a3a6a" stroke-width="1"/>'
+        + '</svg>';
+      case 'grass': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#0d1f0d"/>'
+        + '<rect x="3" y="12" width="2" height="5" rx="1" fill="#1a3d1a"/>'
+        + '<rect x="7" y="10" width="2" height="7" rx="1" fill="#1a3d1a"/>'
+        + '<rect x="12" y="11" width="2" height="6" rx="1" fill="#1a3d1a"/>'
+        + '<rect x="16" y="13" width="2" height="4" rx="1" fill="#1a3d1a"/>'
+        + '</svg>';
+      case 'path': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#1a1208"/>'
+        + '<path d="M10 2 Q8 7 10 10 Q12 13 10 18" fill="none" stroke="#4a3820" stroke-width="3" stroke-linecap="round"/>'
+        + '<circle cx="10" cy="6" r="1" fill="#6a5030"/>'
+        + '<circle cx="10" cy="10" r="1" fill="#6a5030"/>'
+        + '<circle cx="10" cy="14" r="1" fill="#6a5030"/>'
+        + '</svg>';
+      case 'forest': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#0a180a"/>'
+        + '<polygon points="10,2 6,10 14,10" fill="#1a4a1a"/>'
+        + '<polygon points="10,6 5,14 15,14" fill="#225522"/>'
+        + '<rect x="9" y="14" width="2" height="4" fill="#3a2010"/>'
+        + '</svg>';
+      case 'castle': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#0d0d18"/>'
+        + '<rect x="3" y="8" width="14" height="10" fill="#2a2a4a"/>'
+        + '<rect x="3" y="5" width="3" height="5" fill="#2a2a4a"/>'
+        + '<rect x="8" y="5" width="4" height="5" fill="#2a2a4a"/>'
+        + '<rect x="14" y="5" width="3" height="5" fill="#2a2a4a"/>'
+        + '<rect x="4" y="5" width="1" height="2" fill="#0d0d18"/>'
+        + '<rect x="9" y="5" width="2" height="2" fill="#0d0d18"/>'
+        + '<rect x="15" y="5" width="1" height="2" fill="#0d0d18"/>'
+        + '<rect x="8" y="13" width="4" height="5" fill="#1a1a30"/>'
+        + '<rect x="6" y="11" width="3" height="2" fill="#FFD93D33"/>'
+        + '<rect x="11" y="11" width="3" height="2" fill="#FFD93D33"/>'
+        + '</svg>';
+      case 'campfire': return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">'
+        + '<rect width="20" height="20" fill="#100808"/>'
+        + '<ellipse cx="10" cy="16" rx="5" ry="1.5" fill="#3a2010"/>'
+        + '<line x1="7" y1="16" x2="10" y2="11" stroke="#4a3020" stroke-width="1.5" stroke-linecap="round"/>'
+        + '<line x1="13" y1="16" x2="10" y2="11" stroke="#4a3020" stroke-width="1.5" stroke-linecap="round"/>'
+        + '<ellipse cx="10" cy="11" rx="2.5" ry="3.5" fill="#FF6B00"/>'
+        + '<ellipse cx="10" cy="11" rx="1.5" ry="2.5" fill="#FFD93D"/>'
+        + '<ellipse cx="10" cy="12" rx="0.8" ry="1.2" fill="#fff8"/>'
+        + '</svg>';
+      default: return '<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="20" fill="#0a0a0f"/></svg>';
+    }
+  }
+
+  const calDayLabels=['s','m','t','w','t','f','s'].map(d=>'<div class="q-cal-dh">'+d+'</div>').join('');
+  const calEmpties=Array(firstDay).fill('<div class="q-cal-tile"></div>').join('');
+  const calDays=Array.from({length:daysInMonth},(_,i)=>{
+    const d=i+1;
+    const type=getTileType(d);
+    const isToday=d===todayNum;
+    return '<div class="q-cal-tile'+(isToday?' today':'')+'">'
+      + tileSVG(type)
+      + '<span class="tile-num">'+d+'</span>'
+      + '</div>';
+  }).join('');
 
   const portraitHTML = char.portrait_base64
     ? `<img src="${char.portrait_base64}" />`
@@ -671,9 +753,9 @@ function renderQuest(el, char, events) {
       </div>
     </div>
 
-    <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">this month</span><div class="q-rule-line"></div></div>
+    <div class="q-rule"><div class="q-rule-line"></div><span class="q-rule-text">the map</span><div class="q-rule-line"></div></div>
     <div class="q-cal">
-      <div class="q-cal-month">${monthName}</div>
+      <div class="q-cal-month"><span>${monthName}</span><span class="q-cal-legend"><span class="q-cal-leg">&#x1f30a; unknown</span><span class="q-cal-leg">&#x1f332; planned</span><span class="q-cal-leg">&#x1f3f0; done</span><span class="q-cal-leg">&#x1f525; today</span></span></div>
       <div class="q-cal-grid">${calDayLabels}${calEmpties}${calDays}</div>
     </div>
 
