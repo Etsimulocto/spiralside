@@ -147,6 +147,20 @@ export function renderActiveChar(id) {
             song:            char.song,
             portrait_base64: ev.target.result,
           });
+          // Save portrait to OPFS — survives cloud hydration overwrites
+          try {
+            if (window.opfsWrite) {
+              const _res  = await fetch(ev.target.result);
+              const _blob = await _res.blob();
+              await window.opfsWrite('you_card_avatar.png', _blob);
+              console.log('[sheet] portrait saved to OPFS');
+            }
+          } catch(_e) { console.warn('[sheet] OPFS portrait save failed:', _e); }
+          // Also sync to cloud (stripped) so text fields update
+          const { syncSave: _syncSave } = await import('./sync.js');
+          _syncSave('you_card', Object.assign({}, char, {
+            id: 'you', portrait_base64: ev.target.result
+          })).catch(() => {});
           // Feedback
           const hint = document.createElement('div');
           hint.textContent = '✓ portrait saved';
