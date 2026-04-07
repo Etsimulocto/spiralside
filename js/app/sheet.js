@@ -45,8 +45,9 @@ export function buildCharSelector() {
       chip.style.borderColor = 'var(--border)';
       chip.style.background  = 'var(--surface2)';
       // Show portrait thumbnail if available
-      if (print.portrait_base64) {
-        chip.style.backgroundImage    = `url(${print.portrait_base64})`;
+      // Load portrait — from IDB or OPFS fallback
+      const _applyPortrait = (b64) => {
+        chip.style.backgroundImage    = `url(${b64})`;
         chip.style.backgroundSize     = 'cover';
         chip.style.backgroundPosition = 'center top';
         chip.style.color              = '#fff';
@@ -59,6 +60,14 @@ export function buildCharSelector() {
         chip.style.alignItems         = 'flex-end';
         chip.style.padding            = '4px 6px';
         chip.style.fontSize           = '0.6rem';
+      };
+      if (print.portrait_base64) {
+        _applyPortrait(print.portrait_base64);
+      } else if (print._has_portrait_base64 && window.opfsRead) {
+        const _opfsKey = 'prints/' + print.id + '_portrait.png';
+        window.opfsRead(_opfsKey).then(data => {
+          if (data) { print.portrait_base64 = data; _applyPortrait(data); }
+        }).catch(() => {});
       }
       chip.onclick = () => renderPrintCard(print);
       container.insertBefore(chip, addChip);

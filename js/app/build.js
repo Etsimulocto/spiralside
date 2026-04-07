@@ -375,6 +375,15 @@ async function handleSave() {
 
   // Save full soul print to IDB
   await dbSet('prints', { id: printToSave.card_id, ...printToSave });
+  // Save portrait to OPFS keyed by card_id — survives cloud hydration
+  if (printToSave.portrait_base64 && window.opfsWrite) {
+    try {
+      const _res  = await fetch(printToSave.portrait_base64);
+      const _blob = await _res.blob();
+      await window.opfsWrite('prints/' + printToSave.card_id + '_portrait.png', _blob);
+      console.log('[build] portrait saved to OPFS for', printToSave.card_id);
+    } catch(_e) { console.warn('[build] OPFS portrait save failed:', _e); }
+  }
   // Cloud backup — keyed by card_id so each print is its own record
   syncSave('print_' + printToSave.card_id, { id: printToSave.card_id, ...printToSave }).catch(() => {});
   print.card_id = printToSave.card_id;
@@ -469,7 +478,14 @@ async function _loadPrintDataIntoForm(print) {
   s('forge-marks')(ap.marks);
   s('forge-color-theme')(ap.color_theme);
 
-  // Restore portrait if saved
+  // Restore portrait if saved — check OPFS fallback if stripped
+  if (!print.portrait_base64 && (print._has_portrait_base64) && window.opfsRead) {
+    try {
+      const _key = 'prints/' + (print.id || print.card_id) + '_portrait.png';
+      const _data = await window.opfsRead(_key);
+      if (_data) print.portrait_base64 = _data;
+    } catch(_e) {}
+  }
   if (print.portrait_base64) {
     _portraitBase64 = print.portrait_base64;
     const img2 = new Image();
