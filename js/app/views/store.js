@@ -107,8 +107,24 @@ export function initStoreView() {
         <div class="credit-sub" id="store-free-msg">free demo &mdash; buy credits to unlock real AI</div>
       </div>
       <div class="pricing-explainer">
-        <div class="pe-title">how credits work</div>
-        <div class="pe-body">1 cr = $0.0001. You pay API cost + 17% for hosting. No markup beyond that. Credits never expire.</div>
+        <div class="pe-title">how saving works</div>
+        <div class="pe-body" style="display:flex;flex-direction:column;gap:10px;">
+          <div>
+            <span style="color:var(--teal);font-weight:700;">on your device</span> &mdash;
+            everything saves locally first. Generated images, frames, comics, vault files stay on your device in private storage. Fast, private, always works offline.
+          </div>
+          <div>
+            <span style="color:var(--teal);font-weight:700;">free cloud sync</span> &mdash;
+            your You card, character prints, scenes, worlds, quest progress, and style all sync to the cloud as text. Switch devices and your world comes with you. Images stay on device.
+          </div>
+          <div>
+            <span style="color:var(--pink);font-weight:700;">archive plan</span> &mdash;
+            adds cloud backup for images too &mdash; avatars, portraits, scene panels, vault files. 2 GB total. If you lose your device, you lose nothing.
+          </div>
+          <div style="font-size:0.68rem;color:var(--subtext);border-top:1px solid var(--border);padding-top:8px;margin-top:2px;">
+            1 cr = $0.0001 &middot; API cost + 17% for hosting &middot; credits never expire
+          </div>
+        </div>
       </div>
 
       <div class="view-section-title">buy credits</div>
