@@ -323,6 +323,20 @@ async function loadPlanStatus() {
 }
 
 // -- SUBSCRIBE HANDLER ---------------------------------------------------
+// Called from ui.js handlePayPalReturn after successful payment
+window.refreshPlanStatus = async function() {
+  await loadPlanStatus();
+  // Show confirmation toast if plan is now active
+  const meter = document.getElementById('plan-meter');
+  if (meter && meter.style.display !== 'none') {
+    const toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--teal);color:#000;font-family:var(--font-ui);font-size:0.75rem;padding:10px 20px;border-radius:20px;z-index:9999;font-weight:700;letter-spacing:0.06em;box-shadow:0 4px 20px rgba(0,246,214,0.4);';
+    toast.textContent = 'archive plan active';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }
+};
+
 window.subscribePlan = async function(type) {
   if (!state.user) { alert('Sign in first.'); return; }
   const endpoint = type === 'annual'
