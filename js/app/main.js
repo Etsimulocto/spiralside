@@ -310,8 +310,13 @@ async function hydrateDataFromCloud(dbSet, dbGet) {
       const id = rec.data.id || rec.data.card_id;
       if (!id) continue;
       const existing = await dbGet('prints', id);
+      // Never overwrite local portrait with stripped cloud version
+      const cloudStripped = rec.data._has_portrait_base64 || rec.data._images_stripped;
+      const localHasPortrait = existing?.portrait_base64 && existing.portrait_base64.length > 100;
+      if (cloudStripped && localHasPortrait) continue; // keep local
       // Only write if cloud is newer or local has nothing
-      if (!existing || (rec.updated_at && existing.updated_at && rec.updated_at > existing.updated_at) || !existing.updated_at) {
+      const cloudNewer = rec.updated_at && existing?.updated_at && rec.updated_at > existing.updated_at;
+      if (!existing || cloudNewer || !existing.updated_at) {
         await dbSet('prints', { ...rec.data, id });
       }
     }
