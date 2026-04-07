@@ -472,8 +472,15 @@ export async function handlePayPalReturn() {
       if (r.ok) {
         await loadUsage();
         window.history.replaceState({}, document.title, window.location.pathname);
-        openPanel('store');
-        setTimeout(() => alert(`Payment successful! ${data.credits_added} credits added.`), 300);
+        // Refresh plan status if it was a storage purchase
+        if (typeof window.refreshPlanStatus === 'function') await window.refreshPlanStatus();
+        // Switch to store tab
+        if (typeof window.switchView === 'function') window.switchView('store');
+        else openPanel('store');
+        // Only alert if credits were added (not a storage-only purchase)
+        if (data.credits_added > 0) {
+          setTimeout(() => alert('Payment successful! ' + data.credits_added.toLocaleString() + ' credits added.'), 300);
+        }
       }
     } catch {}
   } else if (payment === 'cancelled') {
