@@ -1,6 +1,7 @@
 // ============================================================
-// SPIRALSIDE — STORE VIEW v2.0
+// SPIRALSIDE — STORE VIEW v3.0
 // Credits, packs, feature pricing, storage plans, gifts
+// v3: annual archive plan + expiry meter
 // Nimbis anchor: js/app/views/store.js
 // ============================================================
 import { state } from '../state.js';
@@ -47,11 +48,35 @@ function injectStoreStyles() {
     .pack-price { font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; color: var(--text); }
     .pack-credits { font-size: 0.65rem; color: var(--subtext); margin-top: 3px; }
     .pack-bonus { font-size: 0.6rem; color: var(--teal); margin-top: 2px; }
-    .feature-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; min-height: 52px; }
+    .feature-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 6px; }
     .feature-icon { font-size: 1rem; width: 26px; text-align: center; flex-shrink: 0; }
     .feature-name { flex: 1; font-size: 0.78rem; color: var(--text); }
     .feature-sub { font-size: 0.62rem; color: var(--subtext); margin-top: 1px; }
     .feature-cost { font-size: 0.72rem; color: var(--teal); letter-spacing: 0.04em; white-space: nowrap; }
+    .storage-plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+    .storage-plan-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 12px; position: relative; overflow: hidden; }
+    .storage-plan-card.active { border-color: var(--teal); background: rgba(0,246,214,0.04); }
+    .storage-plan-card.popular-annual { border-color: rgba(255,75,203,0.4); }
+    .spc-tag { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--teal), var(--purple)); }
+    .spc-tag-annual { background: linear-gradient(90deg, var(--pink), var(--purple)); }
+    .spc-name { font-family: var(--font-display); font-size: 0.82rem; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .spc-price { font-size: 1.1rem; font-weight: 800; font-family: var(--font-display); color: var(--teal); }
+    .spc-price-annual { color: var(--pink); }
+    .spc-period { font-size: 0.55rem; color: var(--subtext); letter-spacing: 0.06em; }
+    .spc-storage { font-size: 0.62rem; color: var(--subtext); margin: 6px 0; }
+    .spc-savings { font-size: 0.58rem; color: var(--pink); margin-bottom: 6px; }
+    .spc-btn { width: 100%; padding: 7px; background: transparent; border: 1px solid var(--teal); border-radius: 8px; color: var(--teal); font-family: var(--font-ui); font-size: 0.62rem; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s; }
+    .spc-btn:hover { background: rgba(0,246,214,0.1); }
+    .spc-btn.annual { border-color: var(--pink); color: var(--pink); }
+    .spc-btn.annual:hover { background: rgba(255,75,203,0.1); }
+    .spc-btn.active-plan { background: rgba(0,246,214,0.12); border-color: var(--teal); cursor: default; font-size: 0.58rem; }
+    .plan-meter { margin-top: 10px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+    .plan-meter-title { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--subtext); margin-bottom: 8px; }
+    .plan-meter-bar-wrap { height: 6px; background: var(--muted); border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+    .plan-meter-bar { height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+    .plan-meter-labels { display: flex; justify-content: space-between; }
+    .plan-meter-label { font-size: 0.6rem; color: var(--subtext); }
+    .plan-meter-label.right { color: var(--teal); }
     .gift-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 4px; }
     .gift-desc { font-size: 0.75rem; color: var(--subtext); line-height: 1.6; margin-bottom: 14px; }
     .gift-send-row { display: flex; gap: 8px; margin-bottom: 10px; }
@@ -66,9 +91,6 @@ function injectStoreStyles() {
     .gift-msg { font-size: 0.72rem; margin-top: 10px; min-height: 18px; }
     .gift-msg.ok { color: var(--teal); }
     .gift-msg.err { color: var(--pink); }
-    .storage-subscribe-btn { font-family: var(--font-ui); font-size: 0.6rem; letter-spacing: 0.08em; padding: 4px 12px; border-radius: 20px; cursor: pointer; border: 1px solid var(--teal); color: var(--teal); background: transparent; transition: all 0.2s; white-space: nowrap; }
-    .storage-subscribe-btn:hover { background: rgba(0,246,214,0.1); }
-    .storage-subscribe-btn.active { background: rgba(0,246,214,0.12); border-color: var(--teal); }
   `;
   document.head.appendChild(s);
 }
@@ -82,7 +104,7 @@ export function initStoreView() {
       <div class="credit-hero">
         <div class="credit-amount" id="store-credits">0</div>
         <div class="credit-label">credits remaining</div>
-        <div class="credit-sub" id="store-free-msg">free demo — buy credits to unlock real AI</div>
+        <div class="credit-sub" id="store-free-msg">free demo &mdash; buy credits to unlock real AI</div>
       </div>
       <div class="pricing-explainer">
         <div class="pe-title">how credits work</div>
@@ -120,16 +142,38 @@ export function initStoreView() {
       <div class="feature-row"><div class="feature-icon">&#8756;</div><div class="feature-name">cannonize thread<div class="feature-sub">haiku &middot; 5 free then cost+17%</div></div><div class="feature-cost">~140 cr</div></div>
 
       <div class="view-section-title" style="margin-top:24px;">storage plans</div>
-      <div class="feature-row" style="background:linear-gradient(135deg,rgba(0,246,214,0.05),rgba(123,95,255,0.05));border-color:rgba(0,246,214,0.15);">
-        <div class="feature-icon" style="font-size:0.7rem;font-weight:700;">FREE</div>
-        <div class="feature-name">free storage<div class="feature-sub">canon blocks only &middot; 5 MB</div></div>
+      <div class="feature-row" style="background:linear-gradient(135deg,rgba(0,246,214,0.05),rgba(123,95,255,0.05));border-color:rgba(0,246,214,0.15);margin-bottom:10px;">
+        <div class="feature-icon" style="font-size:0.7rem;font-weight:700;color:var(--subtext);">FREE</div>
+        <div class="feature-name">free storage<div class="feature-sub">canon blocks &amp; text data &middot; 5 MB cloud</div></div>
         <div class="feature-cost" style="color:var(--subtext)">free</div>
       </div>
-      <div class="feature-row" style="position:relative;overflow:hidden;">
-        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--teal),var(--purple));"></div>
-        <div class="feature-icon">&#10024;</div>
-        <div class="feature-name">archive plan<div class="feature-sub">2 GB total &middot; images, files, canon</div></div>
-        <button id="storage-plan-btn" class="storage-subscribe-btn" onclick="window.toggleStoragePlan()">subscribe $2/mo</button>
+      <div class="storage-plan-grid">
+        <div class="storage-plan-card" id="plan-card-monthly">
+          <div class="spc-tag"></div>
+          <div class="spc-name">archive</div>
+          <div><span class="spc-price">$2</span><span class="spc-period"> / mo</span></div>
+          <div class="spc-storage">2 GB &middot; images, files, canon</div>
+          <button class="spc-btn" id="plan-btn-monthly" onclick="window.subscribePlan('monthly')">loading...</button>
+        </div>
+        <div class="storage-plan-card popular-annual" id="plan-card-annual">
+          <div class="spc-tag spc-tag-annual"></div>
+          <div class="spc-name">archive <span style="font-size:0.6rem;color:var(--pink);letter-spacing:0.08em;">ANNUAL</span></div>
+          <div><span class="spc-price spc-price-annual">$19.99</span><span class="spc-period"> / yr</span></div>
+          <div class="spc-storage">2 GB &middot; images, files, canon</div>
+          <div class="spc-savings">save $4 vs monthly</div>
+          <button class="spc-btn annual" id="plan-btn-annual" onclick="window.subscribePlan('annual')">loading...</button>
+        </div>
+      </div>
+
+      <div class="plan-meter" id="plan-meter" style="display:none;">
+        <div class="plan-meter-title">plan active</div>
+        <div class="plan-meter-bar-wrap">
+          <div class="plan-meter-bar" id="plan-meter-bar" style="width:0%;background:var(--teal);"></div>
+        </div>
+        <div class="plan-meter-labels">
+          <span class="plan-meter-label" id="plan-meter-start"></span>
+          <span class="plan-meter-label right" id="plan-meter-end"></span>
+        </div>
       </div>
 
       <div class="view-section-title" style="margin-top:24px;">gift credits</div>
@@ -167,7 +211,7 @@ export function initStoreView() {
   updateStoreView();
   if (window.updateCreditDisplay) window.updateCreditDisplay();
   updateAdsOffBtn();
-  setTimeout(updateStoragePlanBtn, 500);
+  setTimeout(loadPlanStatus, 400);
 }
 
 function updateAdsOffBtn() {
@@ -188,40 +232,90 @@ export function updateStoreView() {
     if (subEl) subEl.textContent = 'paid account';
   } else {
     amountEl.textContent = '0';
-    if (subEl) subEl.textContent = 'free demo — buy credits to unlock real AI';
+    if (subEl) subEl.textContent = 'free demo \u2014 buy credits to unlock real AI';
   }
 }
 
-// -- STORAGE PLAN ----------------------------------------------------------
-async function updateStoragePlanBtn() {
-  const btn = document.getElementById('storage-plan-btn');
-  if (!btn || !window._sb) return;
+// -- PLAN STATUS LOADER ---------------------------------------------------
+async function loadPlanStatus() {
+  const btnM = document.getElementById('plan-btn-monthly');
+  const btnA = document.getElementById('plan-btn-annual');
+  const meter = document.getElementById('plan-meter');
+  if (!btnM || !btnA || !window._sb) return;
+
   try {
     const { data: { session } } = await window._sb.auth.getSession();
-    if (!session) { btn.textContent = 'sign in'; return; }
+    if (!session) {
+      btnM.textContent = 'subscribe $2/mo';
+      btnA.textContent = 'subscribe $19.99/yr';
+      return;
+    }
+
     const { data } = await window._sb
       .from('user_usage')
-      .select('storage_plan, storage_expires_at')
+      .select('storage_plan, storage_expires_at, plan_purchased_at, plan_type')
       .eq('user_id', session.user.id)
       .single();
-    const plan = data?.storage_plan || 'free';
-    const exp  = data?.storage_expires_at;
-    if (plan === 'archive' && exp && new Date(exp) > new Date()) {
-      btn.textContent = 'active until ' + new Date(exp).toLocaleDateString();
-      btn.classList.add('active');
+
+    const plan    = data?.storage_plan || 'free';
+    const exp     = data?.storage_expires_at ? new Date(data.storage_expires_at) : null;
+    const bought  = data?.plan_purchased_at  ? new Date(data.plan_purchased_at)  : null;
+    const type    = data?.plan_type || 'free';
+    const active  = plan === 'archive' && exp && exp > new Date();
+
+    if (active) {
+      const isAnnual = type === 'archive_annual';
+      const daysLeft = Math.max(0, Math.ceil((exp - new Date()) / 86400000));
+      const totalDays = isAnnual ? 365 : 30;
+      const pct = Math.max(4, Math.round((daysLeft / totalDays) * 100));
+      const color = daysLeft < 7 ? 'var(--pink)' : daysLeft < 30 ? '#FFD93D' : 'var(--teal)';
+
+      // Update buttons
+      if (isAnnual) {
+        btnA.textContent = daysLeft + ' days left';
+        btnA.className = 'spc-btn annual active-plan';
+        btnM.textContent = 'subscribe $2/mo';
+        document.getElementById('plan-card-annual').classList.add('active');
+      } else {
+        btnM.textContent = daysLeft + ' days left';
+        btnM.className = 'spc-btn active-plan';
+        btnA.textContent = 'upgrade to annual';
+        document.getElementById('plan-card-monthly').classList.add('active');
+      }
+
+      // Show meter
+      if (meter) {
+        meter.style.display = 'block';
+        const bar = document.getElementById('plan-meter-bar');
+        const startEl = document.getElementById('plan-meter-start');
+        const endEl   = document.getElementById('plan-meter-end');
+        if (bar) { bar.style.width = pct + '%'; bar.style.background = color; }
+        if (startEl && bought) startEl.textContent = bought.toLocaleDateString();
+        if (endEl && exp) endEl.textContent = daysLeft + ' days remaining';
+        document.querySelector('.plan-meter-title').textContent =
+          isAnnual ? 'annual archive plan' : 'monthly archive plan';
+      }
     } else {
-      btn.textContent = 'subscribe $2/mo';
-      btn.classList.remove('active');
+      btnM.textContent = 'subscribe $2/mo';
+      btnA.textContent = 'subscribe $19.99/yr';
+      if (meter) meter.style.display = 'none';
     }
-  } catch(e) { btn.textContent = 'subscribe $2/mo'; }
+  } catch(e) {
+    btnM.textContent = 'subscribe $2/mo';
+    btnA.textContent = 'subscribe $19.99/yr';
+  }
 }
 
-window.toggleStoragePlan = async function() {
+// -- SUBSCRIBE HANDLER ---------------------------------------------------
+window.subscribePlan = async function(type) {
   if (!state.user) { alert('Sign in first.'); return; }
+  const endpoint = type === 'annual'
+    ? RAIL + '/create-annual-storage-order'
+    : RAIL + '/create-storage-order';
   try {
     let token = state.session?.access_token;
     if (!token) { const {data} = await window._sb.auth.getSession(); token = data?.session?.access_token; }
-    const r = await fetch(RAIL + '/create-storage-order', {
+    const r = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({})
@@ -232,14 +326,10 @@ window.toggleStoragePlan = async function() {
   } catch(e) { alert('Payment error. Try again.'); }
 };
 
-// -- TOGGLE ADS OFF --------------------------------------------------------
+// -- TOGGLE ADS OFF ------------------------------------------------------
 window.toggleAdsOff = function() {
   const already = localStorage.getItem('ss_ads_off') === '1';
-  if (already) {
-    localStorage.removeItem('ss_ads_off');
-    updateAdsOffBtn();
-    return;
-  }
+  if (already) { localStorage.removeItem('ss_ads_off'); updateAdsOffBtn(); return; }
   const COST = 50000;
   if (!state.isPaid) { alert('You need a paid account to use this perk.'); return; }
   if ((state.credits || 0) < COST) { alert('Not enough credits. Need 50,000 cr.'); return; }
