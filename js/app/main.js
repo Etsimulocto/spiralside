@@ -227,16 +227,44 @@ async function hydrateDataFromCloud(dbSet, dbGet) {
   try {
     const cloudYou = await syncLoad('you_card');
     if (cloudYou && cloudYou.handle) {
-      // Write into IDB via the already-open connection
-      await dbSet('sheets', { ...cloudYou, id: 'you' });
-      // Also patch CHARACTERS.you directly so UI reflects it immediately
-      const { CHARACTERS: _C } = await import('./state.js');
-      if (_C && _C.you) {
-        Object.assign(_C.you, cloudYou);
-        window._youHandle = cloudYou.handle || window._youHandle;
-        try { renderActiveChar('you'); } catch(_) {}
+      // Only overwrite local if cloud is newer or local is missing/empty
+      const localYou = await dbGet('sheets', 'you');
+      const cloudTs = cloudYou.updated_at || cloudYou.created_at || '';
+      const localTs = localYou?.updated_at || localYou?.created_at || '';
+      // Skip if local has portrait and cloud doesn't (stripped), unless cloud is significantly newer
+      const cloudStripped = cloudYou._images_stripped || cloudYou._has_portrait_base64;
+      const localHasPortrait = localYou?.portrait_base64 && localYou.portrait_base64.length > 100;
+      const cloudIsNewer = cloudTs > localTs;
+      const shouldWrite = !localYou || !localYou.handle ||
+        (cloudIsNewer && !(cloudStripped && localHasPortrait));
+      if (shouldWrite) {
+        // Preserve local portrait if cloud has none
+        const merged = { ...cloudYou, id: 'you' };
+        if (cloudStripped && localHasPortrait) {
+          merged.portrait_base64 = localYou.portrait_base64;
+          delete merged._has_portrait_base64;
+          delete merged._images_stripped;
+        }
+        await dbSet('sheets', merged);
+        const { CHARACTERS: _C } = await import('./state.js');
+        if (_C && _C.you) {
+          Object.assign(_C.you, merged);
+          window._youHandle = merged.handle || window._youHandle;
+          try { renderActiveChar('you'); } catch(_) {}
+        }
+        console.log('[sync] you_card overlaid from cloud (newer)');
+      } else {
+        // Cloud older or stripped — still patch CHARACTERS from local IDB
+        if (localYou) {
+          const { CHARACTERS: _C } = await import('./state.js');
+          if (_C && _C.you) {
+            Object.assign(_C.you, localYou);
+            window._youHandle = localYou.handle || window._youHandle;
+            try { renderActiveChar('you'); } catch(_) {}
+          }
+        }
+        console.log('[sync] you_card kept local (local is newer or has portrait)');
       }
-      console.log('[sync] you_card overlaid from cloud');
     }
   } catch(e) { console.warn('[sync] you_card overlay failed:', e); }
 
