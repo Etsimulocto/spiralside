@@ -418,9 +418,20 @@ async function loadCharacter() {
     const stats = traitsToStats(you.traits);
     const base = JSON.parse(localStorage.getItem('ss_quest_char') || 'null') || {};
     const deltas = loadBattleDeltas();
+    // Try to get portrait — from object or OPFS fallback
+    let portrait = you.portrait_base64 || base.portrait_base64 || null;
+    if (!portrait && (you._has_portrait_base64 || base._has_portrait_base64)) {
+      // Try OPFS — async, so we resolve portrait separately
+      try {
+        if (window.opfsRead) {
+          const data = await window.opfsRead('you_card_avatar.png');
+          if (data) portrait = data;
+        }
+      } catch(_) {}
+    }
     return {
       name:you.handle||base.name||'Wanderer', class:you.vibe||base.class||'adventurer',
-      arc:you.arc||you.vibe||'', portrait_base64:you.portrait_base64||base.portrait_base64||null,
+      arc:you.arc||you.vibe||'', portrait_base64: portrait,
       atk:  Math.round(Math.max(1, Math.min(20, stats.atk  + (deltas.atk||0))) * 10) / 10,
       def:  Math.round(Math.max(1, Math.min(20, stats.def  + (deltas.def||0))) * 10) / 10,
       wit:  Math.round(Math.max(1, Math.min(20, stats.wit  + (deltas.wit||0))) * 10) / 10,
@@ -659,9 +670,13 @@ function renderQuest(el, char, events) {
       + '</div>';
   }).join('');
 
-  const portraitHTML = char.portrait_base64
+  // Portrait: use base64 if available, else Mii SVG
+  // If _has_portrait_base64 flag set and no data, show placeholder with load hint
+  const portraitHTML = char.portrait_base64 && char.portrait_base64.startsWith('data:')
     ? `<img src="${char.portrait_base64}" />`
-    : buildMiiSvg(char);
+    : char.portrait_base64 && char.portrait_base64.length > 100
+      ? `<img src="${char.portrait_base64}" />`
+      : buildMiiSvg(char);
 
   const arcText = char.arc || '';
   const items   = (_xps && _xps.items) || [];

@@ -201,11 +201,19 @@ async function hydrateFromCloud() {
 
   // ── Quest char — seed localStorage if fresh device ───────
   try {
-    if (!localStorage.getItem('ss_quest_char')) {
-      const cloudChar = await syncLoad('quest_char');
-      if (cloudChar) {
+    const cloudChar = await syncLoad('quest_char');
+    if (cloudChar) {
+      const localRaw = localStorage.getItem('ss_quest_char');
+      const localChar = localRaw ? JSON.parse(localRaw) : null;
+      // Only write cloud char if local is missing OR cloud has strictly higher total stats
+      // This prevents cloud (which may be older/stripped) from overwriting battle progress
+      const cloudTotal = (cloudChar.atk||0) + (cloudChar.def||0) + (cloudChar.wit||0) + (cloudChar.luk||0);
+      const localTotal = localChar ? ((localChar.atk||0) + (localChar.def||0) + (localChar.wit||0) + (localChar.luk||0)) : -1;
+      if (!localChar || cloudTotal > localTotal) {
         localStorage.setItem('ss_quest_char', JSON.stringify(cloudChar));
-        console.log('[sync] quest_char hydrated from cloud');
+        console.log('[sync] quest_char hydrated from cloud (stats:', cloudTotal.toFixed(1), ')');
+      } else {
+        console.log('[sync] quest_char kept local (local stats:', localTotal.toFixed(1), '> cloud:', cloudTotal.toFixed(1), ')');
       }
     }
   } catch(e) { console.warn('[sync] quest_char hydration failed:', e); }
