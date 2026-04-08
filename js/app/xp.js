@@ -325,6 +325,8 @@ export async function reloadXPState() {
   _state = await loadXPState();
   _initialized = true;
   return _state;
+}
+
 export function getXPState() {
   return _state ? { ..._state } : defaultXPState();
 }
