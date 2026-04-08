@@ -256,9 +256,14 @@ export function initAccountView() {
     `;
   }
   updateAccountView();
-  // Render save slot
+  // Render save slot — always refresh, not guarded by initialized
+  // iOS: delay slightly so masterLoad has time to populate localStorage
   const _svEl = document.getElementById('acct-save-slot');
   if (_svEl) renderSaveSlot(_svEl);
+  setTimeout(() => {
+    const _svEl2 = document.getElementById('acct-save-slot');
+    if (_svEl2) renderSaveSlot(_svEl2);
+  }, 800);
 }
 
 export function updateAccountView() {
