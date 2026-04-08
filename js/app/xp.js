@@ -19,6 +19,7 @@
 // ============================================================
 
 import { dbGet, dbSet } from './db.js';
+import { masterSave as _masterSave } from './mastersave.js';
 
 // ── LEVEL CURVE ───────────────────────────────────────────────
 // XP required to go FROM this level TO the next.
@@ -311,6 +312,7 @@ export async function awardXP(source, rawAmount = null) {
 
   // Persist after every award
   await saveXPState(_state);
+  _masterSave().catch(() => {}); // sync to master save
 
   return { xpAwarded, leveledUp, newLevel: _state.level, atCap };
 }

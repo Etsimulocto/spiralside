@@ -48,6 +48,7 @@ import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initQuestView }                           from './views/quest.js';
 import { initCutView } from './views/cut.js';
 import { initXP, awardXP, getXPState, awardGold, spendGold, addItem, consumeItem, showLevelUpToast, showXPGain } from './xp.js';
+import { masterSave, masterLoad, downloadSave, uploadSave, getSaveInfo } from './mastersave.js';
 import { initStudioView }                          from './views/studio.js';
 import { initGuide, renderGuide } from './views/guide.js';
 import { initForgeView }           from './views/forge.js';
@@ -133,8 +134,14 @@ window.opfsList      = opfsList;
 window.opfsEstimate  = opfsEstimate;
 window.opfsSupported = opfsSupported;
 window.opfsSize      = opfsSize;
-window.awardXP    = awardXP;
+window.awardXP      = awardXP;
+window.masterSave   = masterSave;
+window.masterLoad   = masterLoad;
+window.downloadSave = downloadSave;
+window.uploadSave   = uploadSave;
+window.getSaveInfo  = getSaveInfo;
 window.getXPState = getXPState;
+window._reloadXPState = async () => { const m = await import('./xp.js'); if (m.reloadXPState) await m.reloadXPState(); };
 window.showXPGain = showXPGain;
 window.awardGold  = awardGold;
 window.spendGold  = spendGold;
@@ -362,6 +369,7 @@ async function onAppReady() {
   await hydrateDataFromCloud(dbSet, dbGet);
   // 5. Init XP engine — loads state, handles day reset, daily login bonus
   await initXP();
+  try { await masterLoad(); } catch(e) { console.warn('[boot] masterLoad failed:', e); }
   // Wire level-up toast + XP gain indicator to XP events
   window.addEventListener('xp:levelup', e => showLevelUpToast(e.detail.level));
 

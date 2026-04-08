@@ -61,7 +61,35 @@ function injectAccountStyles() {
     .acct-buy-btn { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--teal), var(--accent)); border: none; border-radius: 12px; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 0.88rem; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.2s; display: block; }
     .acct-buy-btn:hover { opacity: 0.88; }
 
-    /* ── About section ── */
+    
+    /* ── SAVE SLOT (game-style) ── */
+    .save-section-title { font-size: 0.52rem; letter-spacing: 0.22em; color: var(--subtext); text-transform: uppercase; margin-bottom: 10px; }
+    .save-slot { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; background: var(--surface); font-family: 'DM Mono', monospace; }
+    .save-slot.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; opacity: 0.4; }
+    .save-slot-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .save-slot-label { font-size: 0.5rem; letter-spacing: 0.2em; color: var(--subtext); text-transform: uppercase; }
+    .save-slot-ver { font-size: 0.5rem; color: var(--teal); letter-spacing: 0.1em; border: 1px solid rgba(0,246,214,0.2); border-radius: 4px; padding: 1px 6px; }
+    .save-slot-name { font-size: 1rem; font-family: var(--font-display); font-weight: 700; color: var(--text); margin-bottom: 2px; }
+    .save-slot-sub { font-size: 0.6rem; color: var(--subtext); margin-bottom: 10px; }
+    .save-slot-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; }
+    .sv-stat { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 7px 4px; text-align: center; }
+    .sv-stat-val { font-size: 0.88rem; font-weight: 700; color: var(--text); font-family: var(--font-display); }
+    .sv-stat-lbl { font-size: 0.46rem; letter-spacing: 0.1em; color: var(--subtext); text-transform: uppercase; margin-top: 2px; }
+    .save-slot-time { font-size: 0.54rem; color: var(--subtext); letter-spacing: 0.03em; }
+    .save-slot-empty-text { font-size: 0.7rem; letter-spacing: 0.2em; color: var(--subtext); margin-top: 8px; }
+    .save-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+    .sv-btn { display: flex; align-items: center; justify-content: center; gap: 5px; padding: 10px 6px; border-radius: 8px; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.08em; text-transform: uppercase; transition: all 0.15s; border: 1px solid transparent; }
+    .sv-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .sv-btn-primary { background: linear-gradient(135deg, var(--teal), var(--accent)); color: #0a0a0f; }
+    .sv-btn-primary:hover:not(:disabled) { opacity: 0.85; }
+    .sv-btn-secondary { background: var(--surface); border-color: var(--border); color: var(--subtext); }
+    .sv-btn-secondary:hover:not(:disabled) { border-color: var(--teal); color: var(--text); }
+    .save-status { font-size: 0.62rem; letter-spacing: 0.06em; min-height: 18px; margin-bottom: 6px; text-align: center; }
+    .save-status.ok  { color: var(--teal); }
+    .save-status.err { color: var(--pink, #f76a8a); }
+    .save-tip { font-size: 0.56rem; color: var(--subtext); text-align: center; line-height: 1.5; padding: 4px 0 0; opacity: 0.6; }
+
+    /* __ About section __ */
     .acct-about-block { margin-top: 8px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; }
     .acct-about-tagline { font-size: 0.75rem; color: var(--subtext); line-height: 1.5; margin-bottom: 14px; }
     .acct-about-links { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
@@ -73,6 +101,89 @@ function injectAccountStyles() {
     .acct-version { font-size: 0.6rem; letter-spacing: 0.1em; color: var(--subtext); opacity: 0.4; text-align: center; margin-top: 12px; }
   `;
   document.head.appendChild(s);
+}
+
+
+// ── SAVE SLOT UI ──────────────────────────────────────────────
+function renderSaveSlot(container) {
+  const info = window.getSaveInfo ? window.getSaveInfo() : null;
+  const slot = info ? `
+    <div class="save-slot filled">
+      <div class="save-slot-header">
+        <div class="save-slot-label">SLOT 01</div>
+        <div class="save-slot-ver">v${info.version}</div>
+      </div>
+      <div class="save-slot-name">${info.botName}</div>
+      <div class="save-slot-sub">${info.userEmail}</div>
+      <div class="save-slot-stats">
+        <div class="sv-stat"><div class="sv-stat-val">${info.level}</div><div class="sv-stat-lbl">LVL</div></div>
+        <div class="sv-stat"><div class="sv-stat-val">${info.streak}d</div><div class="sv-stat-lbl">STREAK</div></div>
+        <div class="sv-stat"><div class="sv-stat-val">${info.questCount}</div><div class="sv-stat-lbl">QUESTS</div></div>
+        <div class="sv-stat"><div class="sv-stat-val">${info.gold}g</div><div class="sv-stat-lbl">GOLD</div></div>
+      </div>
+      <div class="save-slot-time">\u23F0 ${info.savedAt} &nbsp;&middot;&nbsp; ${info.savedAtFull}</div>
+    </div>
+  ` : `
+    <div class="save-slot empty">
+      <div class="save-slot-label">SLOT 01</div>
+      <div class="save-slot-empty-text">NO DATA</div>
+    </div>
+  `;
+  container.innerHTML = `
+    <div class="save-section-title">SAVE DATA</div>
+    ${slot}
+    <div class="save-actions">
+      <button class="sv-btn sv-btn-primary" id="sv-save-now">\u{1F4BE} SAVE</button>
+      <button class="sv-btn sv-btn-secondary" id="sv-download">\u2B07 DOWNLOAD</button>
+      <button class="sv-btn sv-btn-secondary" id="sv-restore-btn">\u2B06 RESTORE</button>
+    </div>
+    <div class="save-status" id="sv-status"></div>
+    <input type="file" id="sv-file-input" accept=".json" style="display:none" />
+    <div class="save-tip">files are portable &mdash; download to back up &middot; restore to migrate devices</div>
+  `;
+
+  const status = container.querySelector('#sv-status');
+
+  container.querySelector('#sv-save-now').onclick = async () => {
+    const btn = container.querySelector('#sv-save-now');
+    btn.disabled = true; btn.textContent = '\u23F3 SAVING...'; status.textContent = '';
+    try {
+      if (window.masterSave) await window.masterSave();
+      status.textContent = '\u2714 saved to cloud'; status.className = 'save-status ok';
+      setTimeout(() => renderSaveSlot(container), 700);
+    } catch(e) {
+      status.textContent = '\u2716 save failed \u2014 check connection'; status.className = 'save-status err';
+    }
+    btn.disabled = false; btn.innerHTML = '\u{1F4BE} SAVE';
+  };
+
+  container.querySelector('#sv-download').onclick = async () => {
+    const btn = container.querySelector('#sv-download');
+    btn.disabled = true; btn.textContent = '\u23F3 PACKING...';
+    try {
+      const fname = await window.downloadSave();
+      status.textContent = '\u2714 ' + fname; status.className = 'save-status ok';
+    } catch(e) {
+      status.textContent = '\u2716 download failed'; status.className = 'save-status err';
+    }
+    btn.disabled = false; btn.innerHTML = '\u2B07 DOWNLOAD';
+  };
+
+  container.querySelector('#sv-restore-btn').onclick = () => container.querySelector('#sv-file-input').click();
+  container.querySelector('#sv-file-input').onchange = async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const btn = container.querySelector('#sv-restore-btn');
+    btn.disabled = true; btn.textContent = '\u23F3 LOADING...'; status.textContent = '';
+    try {
+      await window.uploadSave(file);
+      status.textContent = '\u2714 restored! reloading...'; status.className = 'save-status ok';
+      setTimeout(() => window.location.reload(), 1200);
+    } catch(err) {
+      status.textContent = '\u2716 ' + (err.message || 'restore failed'); status.className = 'save-status err';
+    }
+    btn.disabled = false; btn.innerHTML = '\u2B06 RESTORE';
+    e.target.value = '';
+  };
 }
 
 export function initAccountView() {
@@ -96,6 +207,10 @@ export function initAccountView() {
           <div class="acct-credit-amount" id="account-credits">0</div>
           <div class="acct-credit-label">credits remaining</div>
         </div>
+
+        <!-- ── Save slot ── -->
+        <div class="acct-section-title">save game</div>
+        <div id="acct-save-slot"></div>
 
         <!-- ── Account actions ── -->
         <div class="acct-section-title">account</div>
@@ -141,6 +256,9 @@ export function initAccountView() {
     `;
   }
   updateAccountView();
+  // Render save slot
+  const _svEl = document.getElementById('acct-save-slot');
+  if (_svEl) renderSaveSlot(_svEl);
 }
 
 export function updateAccountView() {
