@@ -320,6 +320,11 @@ export async function awardXP(source, rawAmount = null) {
 // ── PUBLIC: GET STATE ─────────────────────────────────────────
 // Read-only snapshot of current XP state.
 // Quest view, UI badges, etc. call this to render progress.
+// Called by mastersave hydrate() after restoring a save file.
+export async function reloadXPState() {
+  _state = await loadXPState();
+  _initialized = true;
+  return _state;
 export function getXPState() {
   return _state ? { ..._state } : defaultXPState();
 }
