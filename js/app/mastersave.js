@@ -100,11 +100,11 @@ async function cloudWrite(save) {
     if (rows?.[0]?.save_version) ver = rows[0].save_version + 1;
   } catch(_) {}
   try {
-    await fetch(SUPA_URL + '/rest/v1/user_save_data', {
+    await fetch(SUPA_URL + '/rest/v1/user_save_data?on_conflict=user_id', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token,
                  'apikey': SUPA_KEY, 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify({ user_id: state.user.id, save_data: save, save_version: ver, updated_at: new Date().toISOString() }),
+      body: JSON.stringify({ user_id: state.user.id, save_data: save, save_version: ver, updated_at: new Date().toISOString(), saved_at: new Date().toISOString() }),
     });
     console.log('[mastersave] cloud write v' + ver);
     return ver;
