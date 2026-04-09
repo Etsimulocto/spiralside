@@ -763,6 +763,12 @@ function renderPrintCard(print) {
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
 
+  // Hide You-only buttons when viewing someone else's print
+  const makeBtn2 = document.getElementById('make-you-card-btn');
+  if (makeBtn2) makeBtn2.style.display = 'none';
+  const imagineBtn2 = document.getElementById('you-imagine-btn');
+  if (imagineBtn2) imagineBtn2.style.display = 'none';
+
   // ── edit + delete buttons — only for user prints ──
   let actionRow = document.getElementById('print-action-row');
   if (!print || !print.id) {
