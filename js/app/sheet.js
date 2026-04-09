@@ -307,6 +307,9 @@ export function renderActiveChar(id) {
     // Hide print card maker when on You card
     const _mpBtn = document.getElementById('make-print-card-btn');
     if (_mpBtn) _mpBtn.style.display = 'none';
+    // Hide print card maker when on You card
+    const _mpBtn = document.getElementById('make-print-card-btn');
+    if (_mpBtn) _mpBtn.style.display = 'none';
     // Show "gen portrait" button for You card
     let imagineBtn = document.getElementById('you-imagine-btn');
     if (!imagineBtn) {
