@@ -383,7 +383,7 @@ async function handleSave() {
   // Save full soul print to IDB
   await dbSet('prints', { id: printToSave.card_id, ...printToSave });
   // Save portrait to OPFS keyed by card_id — survives cloud hydration
-  if (printToSave.portrait_base64 && window.opfsWrite) {
+  if (printToSave.portrait_base64 && typeof printToSave.portrait_base64 === "string" && printToSave.portrait_base64.startsWith("data:") && window.opfsWrite) {
     try {
       const _res  = await fetch(printToSave.portrait_base64);
       const _blob = await _res.blob();
