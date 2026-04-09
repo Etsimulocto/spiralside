@@ -1086,3 +1086,14 @@ function _styleChip(chip, id, active) {
   chip.style.boxShadow   = active ? '0 0 16px ' + c + '44' : 'none';
   chip.style.background  = active ? c + '11' : 'var(--surface2)';
 }
+
+// -- SET PERSONA AND SWITCH TO CHAT
+function _setPersonaAndChat(char) {
+  import("./state.js").then(function(m) {
+    m.state.botName        = char.name        || "companion";
+    m.state.botPersonality = char.personality || char.firstWords || "";
+    m.state.botGreeting    = char.firstWords  || "Hey. I am here.";
+    m.state.botColor       = char.color       || "#00F6D6";
+  });
+  import("./ui.js").then(function(m) { m.switchView("chat"); });
+}
