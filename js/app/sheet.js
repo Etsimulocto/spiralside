@@ -776,12 +776,23 @@ function renderPrintCard(print) {
   btn.style.color      = char.color;
 
   // Show edit/delete action row for user-made prints
-  const _printActionRow = document.getElementById('print-action-row');
+  var _printActionRow = document.getElementById('print-action-row');
   if (_printActionRow) {
     _printActionRow.style.display = 'flex';
-    _printActionRow.innerHTML =
-      '<button onclick="window.editPrint('' + print.id + '')" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">edit in forge</button>' +
-      '<button onclick="window.deletePrint('' + print.id + '','' + (print.identity && print.identity.name ? print.identity.name.replace(/'/g, '') : 'this card') + '')" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">delete</button>';
+    _printActionRow.style.gap = '8px';
+    _printActionRow.style.marginBottom = '8px';
+    _printActionRow.innerHTML = '';
+    var _editBtn = document.createElement('button');
+    _editBtn.textContent = 'edit in forge';
+    _editBtn.style.cssText = 'flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s';
+    _editBtn.onclick = function() { window.editPrint(print.id); };
+    var _delBtn = document.createElement('button');
+    _delBtn.textContent = 'delete';
+    _delBtn.style.cssText = 'flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s';
+    var _printName = (print.identity && print.identity.name) ? print.identity.name : 'this card';
+    _delBtn.onclick = function() { window.deletePrint(print.id, _printName); };
+    _printActionRow.appendChild(_editBtn);
+    _printActionRow.appendChild(_delBtn);
   }
 
   // Hide You-only buttons AND You card meta when viewing a print card
