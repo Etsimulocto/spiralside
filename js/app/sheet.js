@@ -304,6 +304,9 @@ export function renderActiveChar(id) {
     }
     const makeBtn = document.getElementById('make-you-card-btn');
     if (makeBtn) makeBtn.style.display = 'block';
+    // Hide print card maker when on You card
+    const _mpBtn = document.getElementById('make-print-card-btn');
+    if (_mpBtn) _mpBtn.style.display = 'none';
     // Show "gen portrait" button for You card
     let imagineBtn = document.getElementById('you-imagine-btn');
     if (!imagineBtn) {
@@ -763,11 +766,31 @@ function renderPrintCard(print) {
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
 
-  // Hide You-only buttons when viewing someone else's print
-  const makeBtn2 = document.getElementById('make-you-card-btn');
-  if (makeBtn2) makeBtn2.style.display = 'none';
-  const imagineBtn2 = document.getElementById('you-imagine-btn');
-  if (imagineBtn2) imagineBtn2.style.display = 'none';
+  // Hide You-only buttons when viewing a print card
+  const _makeYouBtn = document.getElementById('make-you-card-btn');
+  if (_makeYouBtn) _makeYouBtn.style.display = 'none';
+  const _imagineYouBtn = document.getElementById('you-imagine-btn');
+  if (_imagineYouBtn) _imagineYouBtn.style.display = 'none';
+
+  // Show/create a print-specific card maker button
+  let _makePrintBtn = document.getElementById('make-print-card-btn');
+  if (!_makePrintBtn) {
+    _makePrintBtn = document.createElement('button');
+    _makePrintBtn.id = 'make-print-card-btn';
+    _makePrintBtn.style.cssText = [
+      'width:100%','padding:11px','margin-top:6px',
+      'background:linear-gradient(135deg,var(--teal),var(--purple))',
+      'border:none','border-radius:10px','color:#fff',
+      'font-family:var(--font-display)','font-weight:700',
+      'font-size:0.82rem','cursor:pointer','letter-spacing:0.04em',
+    ].join(';');
+    // Insert after save-summarize-btn
+    const _ssBtn = document.getElementById('save-summarize-btn');
+    if (_ssBtn) _ssBtn.parentNode.insertBefore(_makePrintBtn, _ssBtn.nextSibling);
+  }
+  _makePrintBtn.style.display = 'block';
+  _makePrintBtn.textContent = '✦ make my card';
+  _makePrintBtn.onclick = () => window.makePrintCard(print);
 
   // ── edit + delete buttons — only for user prints ──
   let actionRow = document.getElementById('print-action-row');
