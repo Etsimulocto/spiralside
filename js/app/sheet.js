@@ -790,44 +790,45 @@ function renderPrintCard(print) {
   }
   _makePrintBtn.style.display = 'block';
   _makePrintBtn.textContent = '✦ make my card';
-  _makePrintBtn.onclick = () => window.makePrintCard' in src:
-    print('[--] makePrintCard already in file - no action needed')
-else:
-    fn = """
+  _makePrintBtn.onclick = () =>
+
 // -- MAKE PRINT CARD -----------------------------------------
 window.makePrintCard = async function(print) {
-  const { renderCard, generateCardId, calcRarity } = await import('./card.js');
+  var card = await import('./card.js');
+  var renderCard = card.renderCard;
+  var generateCardId = card.generateCardId;
+  var calcRarity = card.calcRarity;
   if (!print) return;
   if (!print.card_id) print.card_id = generateCardId('companion');
   if (!print.display) print.display = {
     accent_color: (print.metadata && print.metadata.color) || '#00F6D6',
     rarity: calcRarity(print.lifecycle || {}),
   };
-  let artImage = null;
+  var artImage = null;
   if (typeof print.portrait_base64 === 'string' && print.portrait_base64.startsWith('data:')) {
     artImage = print.portrait_base64;
   } else if (window.opfsRead) {
     try {
-      const _key = 'prints/' + (print.id || print.card_id) + '_portrait.png';
-      const _d = await window.opfsRead(_key);
-      if (_d) artImage = _d;
-    } catch(_e) {}
+      var opfsKey = 'prints/' + (print.id || print.card_id) + '_portrait.png';
+      var opfsData = await window.opfsRead(opfsKey);
+      if (opfsData) artImage = opfsData;
+    } catch(e) {}
   }
-  let overlay = document.getElementById('you-card-overlay');
+  var overlay = document.getElementById('you-card-overlay');
   if (overlay) overlay.remove();
   overlay = document.createElement('div');
   overlay.id = 'you-card-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
-  const wrap = document.createElement('div');
+  var wrap = document.createElement('div');
   wrap.id = 'you-card-wrap';
   wrap.style.cssText = 'width:100%;max-width:360px;padding:0 20px';
-  const btns = document.createElement('div');
+  var btns = document.createElement('div');
   btns.style.cssText = 'display:flex;gap:10px';
-  const dlBtn = document.createElement('button');
-  dlBtn.textContent = String.fromCodePoint(8595) + ' download png';
+  var dlBtn = document.createElement('button');
+  dlBtn.textContent = '↓ download png';
   dlBtn.style.cssText = 'padding:11px 20px;background:linear-gradient(135deg,var(--purple),var(--teal));border:none;border-radius:10px;color:#fff;font-family:var(--font-ui);font-size:0.78rem;cursor:pointer;letter-spacing:0.06em';
   dlBtn.onclick = function() { window.downloadYouCard(); };
-  const closeBtn = document.createElement('button');
+  var closeBtn = document.createElement('button');
   closeBtn.textContent = 'close';
   closeBtn.style.cssText = 'padding:11px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.78rem;cursor:pointer';
   closeBtn.onclick = function() { overlay.remove(); };
@@ -838,15 +839,9 @@ window.makePrintCard = async function(print) {
   overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
   wrap.innerHTML = '<div style="color:var(--subtext);font-size:0.75rem;padding:20px;text-align:center">rendering...</div>';
-  const canvas = await renderCard(print, artImage);
+  var canvas = await renderCard(print, artImage);
   canvas.style.cssText = 'width:100%;border-radius:10px;display:block;box-shadow:0 0 40px rgba(0,246,214,0.3)';
   window._youCardCanvas = canvas;
   wrap.innerHTML = '';
   wrap.appendChild(canvas);
 };
-"""
-    open(BASE + '/js/app/sheet.js', 'a', encoding='utf-8').write(fn)
-    print('[OK] makePrintCard appended to sheet.js')
-
-final = open(BASE + '/js/app/sheet.js', encoding='utf-8').read()
-print('[check] makePrintCard present:', 'window.makePrintCard' in final)
