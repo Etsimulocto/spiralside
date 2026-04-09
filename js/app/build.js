@@ -133,6 +133,10 @@ export function initBuild() {
         clearForgeForm();
       }
     } else {
+      // New card — always fully clear portrait state so previous card portrait doesn't bleed
+      _portraitImage  = null;
+      _portraitBase64 = null;
+      _lastCardPrint  = null;
       clearForgeForm();
     }
   };
@@ -141,6 +145,9 @@ export function initBuild() {
   if (state.activePrintId) {
     loadPrintIntoForm();
   } else {
+    _portraitImage  = null;
+    _portraitBase64 = null;
+    _lastCardPrint  = null;
     clearForgeForm();
   }
 
