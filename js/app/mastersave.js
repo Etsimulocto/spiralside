@@ -129,17 +129,51 @@ async function cloudRead() {
 async function hydrate(save) {
   if (!save) return;
   // XP state -> IDB
+  // Only write cloud xp_state if it has MORE total XP than what's in IDB.
+  // This prevents masterLoad from clobbering a freshly-incremented streak
+  // that happened AFTER the last cloud save was written.
   if (save.xp_state) {
     try {
-      await dbSet('config', { key: 'xp_state', value: save.xp_state });
-      // Reload in-memory XP if module is loaded
-      if (window._reloadXPState) await window._reloadXPState();
+      const localXP = await dbGet('config', 'xp_state');
+      const localTotal = localXP?.value?.totalXP || 0;
+      const cloudTotal = save.xp_state.totalXP || 0;
+      const localStreak = localXP?.value?.streakDays || 0;
+      const cloudStreak = save.xp_state.streakDays || 0;
+      // Merge: take whichever has higher totalXP, but always keep the higher streak
+      if (cloudTotal > localTotal) {
+        const merged = { ...save.xp_state, streakDays: Math.max(localStreak, cloudStreak) };
+        await dbSet('config', { key: 'xp_state', value: merged });
+        if (window._reloadXPState) await window._reloadXPState();
+      } else if (cloudStreak > localStreak) {
+        // Cloud has better streak but less XP — just patch the streak
+        const patched = { ...(localXP?.value || {}), streakDays: cloudStreak };
+        await dbSet('config', { key: 'xp_state', value: patched });
+        if (window._reloadXPState) await window._reloadXPState();
+      }
+      // else: local is newer/better — don't touch IDB at all
     } catch(_) {}
   }
   // Quest -> localStorage
   if (Array.isArray(save.quest_events))   localStorage.setItem('ss_quest_events',  JSON.stringify(save.quest_events));
   if (Array.isArray(save.quest_resolved)) localStorage.setItem('ss_quest_resolved', JSON.stringify(save.quest_resolved));
-  if (save.quest_deltas) localStorage.setItem('ss_quest_deltas', JSON.stringify(save.quest_deltas));
+  // quest_deltas — merge cloud + local (take max absolute value per stat)
+  if (save.quest_deltas) {
+    try {
+      const localRaw = localStorage.getItem('ss_quest_deltas');
+      const local = localRaw ? JSON.parse(localRaw) : {};
+      const cloud = save.quest_deltas;
+      const merged = {};
+      const allKeys = new Set([...Object.keys(local), ...Object.keys(cloud)]);
+      allKeys.forEach(k => {
+        const l = local[k] || 0, c = cloud[k] || 0;
+        // Keep whichever has larger absolute value (more battle history)
+        merged[k] = Math.abs(l) >= Math.abs(c) ? l : c;
+      });
+      localStorage.setItem('ss_quest_deltas', JSON.stringify(merged));
+    } catch(_) {
+      localStorage.setItem('ss_quest_deltas', JSON.stringify(save.quest_deltas));
+    }
+  }
   if (save.quest_char)   localStorage.setItem('ss_quest_char',   JSON.stringify(save.quest_char));
   // Style + bot -> localStorage
   const uid = state.user?.id;
