@@ -790,7 +790,8 @@ function renderPrintCard(print) {
   }
   _makePrintBtn.style.display = 'block';
   _makePrintBtn.textContent = '✦ make my card';
-  _makePrintBtn.onclick = () =>
+  _makePrintBtn.onclick = () => window.makePrintCard(print);
+}
 
 // -- MAKE PRINT CARD -----------------------------------------
 window.makePrintCard = async function(print) {
