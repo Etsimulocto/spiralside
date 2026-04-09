@@ -850,38 +850,38 @@ window.makePrintCard = async function(print) {
 
 // -- BUILD YOU CONTEXT ---------------------------------------
 export function buildYouContext() {
-  const you = CHARACTERS.you;
+  var you = CHARACTERS.you;
   if (!you) return '';
-  const parts = [];
-  if (you.handle)   parts.push('The user's name is ' + you.handle + '.');
-  if (you.pronouns) parts.push('Pronouns: ' + you.pronouns + '.');
-  if (you.vibe)     parts.push('Their vibe: ' + you.vibe + '.');
-  if (you.location) parts.push('They're based around: ' + you.location + '.');
-  if (you.arc)      parts.push('What they're going through right now: ' + you.arc);
-  if (you.project)  parts.push('Currently working on: ' + you.project + '.');
-  if (you.song)     parts.push('Theme song right now: ' + you.song + '.');
-  if (you.pets)     parts.push('Pets: ' + you.pets + '.');
-  if (you.food)     parts.push('Fav food/drink: ' + you.food + '.');
-  if (you.comfort)  parts.push('Comfort show/game: ' + you.comfort + '.');
-  if (you.hates)    parts.push('Things they dislike: ' + you.hates + '.');
-  if (you.workTags && you.workTags.length) parts.push('How they work: ' + you.workTags.join(', ') + '.');
-  if (you.hair)       parts.push('Their hair: ' + you.hair + '.');
-  if (you.eyes)       parts.push('Their eyes: ' + you.eyes + '.');
-  if (you.build)      parts.push('Height/build: ' + you.build + '.');
-  if (you.style)      parts.push('Their style: ' + you.style + '.');
-  if (you.marks)      parts.push('Distinguishing features: ' + you.marks + '.');
-  if (you.wearing)    parts.push('Usually wearing: ' + you.wearing + '.');
-  if (you.hobbies)    parts.push('Hobbies: ' + you.hobbies + '.');
-  if (you.obsession)  parts.push('Currently obsessed with: ' + you.obsession + '.');
-  if (you.job)        parts.push('Job/role: ' + you.job + '.');
-  if (you.medium)     parts.push('Creative medium: ' + you.medium + '.');
-  if (you.people)     parts.push('People who matter: ' + you.people + '.');
-  if (you.wins)       parts.push('Recent wins: ' + you.wins + '.');
-  if (you.stuck)      parts.push('Currently stuck on: ' + you.stuck + '.');
-  if (you.influences) parts.push('Influences: ' + you.influences + '.');
+  var parts = [];
+  if (you.handle)   parts.push("The user's name is " + you.handle + ".");
+  if (you.pronouns) parts.push("Pronouns: " + you.pronouns + ".");
+  if (you.vibe)     parts.push("Their vibe: " + you.vibe + ".");
+  if (you.location) parts.push("They are based in: " + you.location + ".");
+  if (you.arc)      parts.push("What they are going through: " + you.arc);
+  if (you.project)  parts.push("Currently working on: " + you.project + ".");
+  if (you.song)     parts.push("Theme song: " + you.song + ".");
+  if (you.pets)     parts.push("Pets: " + you.pets + ".");
+  if (you.food)     parts.push("Fav food/drink: " + you.food + ".");
+  if (you.comfort)  parts.push("Comfort show/game: " + you.comfort + ".");
+  if (you.hates)    parts.push("Things they dislike: " + you.hates + ".");
+  if (you.workTags && you.workTags.length) parts.push("How they work: " + you.workTags.join(', ') + ".");
+  if (you.hair)       parts.push("Their hair: " + you.hair + ".");
+  if (you.eyes)       parts.push("Their eyes: " + you.eyes + ".");
+  if (you.build)      parts.push("Height/build: " + you.build + ".");
+  if (you.style)      parts.push("Their style: " + you.style + ".");
+  if (you.marks)      parts.push("Distinguishing features: " + you.marks + ".");
+  if (you.wearing)    parts.push("Usually wearing: " + you.wearing + ".");
+  if (you.hobbies)    parts.push("Hobbies: " + you.hobbies + ".");
+  if (you.obsession)  parts.push("Currently obsessed with: " + you.obsession + ".");
+  if (you.job)        parts.push("Job/role: " + you.job + ".");
+  if (you.medium)     parts.push("Creative medium: " + you.medium + ".");
+  if (you.people)     parts.push("People who matter: " + you.people + ".");
+  if (you.wins)       parts.push("Recent wins: " + you.wins + ".");
+  if (you.stuck)      parts.push("Currently stuck on: " + you.stuck + ".");
+  if (you.influences) parts.push("Influences: " + you.influences + ".");
   if (you.freetext)   parts.push(you.freetext);
   if (!parts.length) return '';
-  return 'About the person you are talking to:\n' + parts.join(' ') + '\n\n';
+  return "About the person you are talking to:\n" + parts.join(' ') + "\n\n";
 }
 
 // -- GLOBAL: EDIT PRINT --------------------------------------
