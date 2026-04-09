@@ -47,6 +47,8 @@ function clearForgeForm() {
   // Hide card preview
   const cardPreview = document.getElementById('forge-card-preview');
   if (cardPreview) cardPreview.style.display = 'none';
+  // Clear activePrintId — critical: prevents saving new card over an existing one
+  state.activePrintId = null;
   // Clear tone chips
   document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('selected'));
   state.botTone = [];
@@ -230,7 +232,7 @@ function readPrint() {
   const g = id => document.getElementById(id)?.value?.trim() || '';
   return {
     schema_version: 'spiralside_print_v1',
-    card_id: state.activePrintId || `print_${Date.now()}`,
+    card_id: state.activePrintId || ('print_' + Date.now()),
     template_type: 'companion',
     identity: {
       name:          g('bot-name'),
