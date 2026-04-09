@@ -672,7 +672,7 @@ function renderQuest(el, char, events) {
 
   // Portrait: use base64 if available, else Mii SVG
   // If _has_portrait_base64 flag set and no data, show placeholder with load hint
-  const portraitHTML = char.portrait_base64 && char.portrait_base64.startsWith('data:')
+  const portraitHTML = typeof char.portrait_base64 === 'string' && char.portrait_base64.startsWith('data:')
     ? `<img src="${char.portrait_base64}" />`
     : char.portrait_base64 && char.portrait_base64.length > 100
       ? `<img src="${char.portrait_base64}" />`
