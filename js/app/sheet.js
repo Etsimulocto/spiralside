@@ -333,20 +333,18 @@ export function renderActiveChar(id) {
   btn.style.color      = char.color;
   btn.style.boxShadow  = `0 0 20px ${char.color}22`;
 
-  // Hide edit/delete — archetypes are not editable
+  // Hide edit/delete — archetypes (crew + you) are not editable
   const actionRow = document.getElementById('print-action-row');
   if (actionRow) actionRow.style.display = 'none';
-  // Hide You card meta strip for non-user chars
-  if (!char.isUser) {
-    const _czMeta = document.getElementById('you-card-meta');
-    if (_czMeta) _czMeta.style.display = 'none';
-    const _czMakeBtn = document.getElementById('make-you-card-btn');
-    if (_czMakeBtn) _czMakeBtn.style.display = 'none';
-    const _czImagineBtn = document.getElementById('you-imagine-btn');
-    if (_czImagineBtn) _czImagineBtn.style.display = 'none';
-    const _czPrintBtn = document.getElementById('make-print-card-btn');
-    if (_czPrintBtn) _czPrintBtn.style.display = 'none';
-  }
+  // Hide You card meta strip for non-user chars (crew chips)
+  const _czMeta = document.getElementById('you-card-meta');
+  if (_czMeta) _czMeta.style.display = 'none';
+  const _czMakeBtn = document.getElementById('make-you-card-btn');
+  if (_czMakeBtn && !char.isUser) _czMakeBtn.style.display = 'none';
+  const _czImagineBtn = document.getElementById('you-imagine-btn');
+  if (_czImagineBtn && !char.isUser) _czImagineBtn.style.display = 'none';
+  const _czPrintBtn = document.getElementById('make-print-card-btn');
+  if (_czPrintBtn) _czPrintBtn.style.display = 'none';
 }
 
 // ── SAVE + SUMMARIZE ──────────────────────────────────────────
@@ -776,6 +774,15 @@ function renderPrintCard(print) {
   btn.style.background = `linear-gradient(135deg,${char.color}22,${char.color}11)`;
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
+
+  // Show edit/delete action row for user-made prints
+  const _printActionRow = document.getElementById('print-action-row');
+  if (_printActionRow) {
+    _printActionRow.style.display = 'flex';
+    _printActionRow.innerHTML =
+      '<button onclick="window.editPrint('' + print.id + '')" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">edit in forge</button>' +
+      '<button onclick="window.deletePrint('' + print.id + '','' + (print.identity && print.identity.name ? print.identity.name.replace(/'/g, '') : 'this card') + '')" style="flex:1;padding:10px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.72rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s">delete</button>';
+  }
 
   // Hide You-only buttons AND You card meta when viewing a print card
   const _cardMetaEl = document.getElementById('you-card-meta');
