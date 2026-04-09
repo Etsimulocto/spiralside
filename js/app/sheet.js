@@ -336,6 +336,17 @@ export function renderActiveChar(id) {
   // Hide edit/delete — archetypes are not editable
   const actionRow = document.getElementById('print-action-row');
   if (actionRow) actionRow.style.display = 'none';
+  // Hide You card meta strip for non-user chars
+  if (!char.isUser) {
+    const _czMeta = document.getElementById('you-card-meta');
+    if (_czMeta) _czMeta.style.display = 'none';
+    const _czMakeBtn = document.getElementById('make-you-card-btn');
+    if (_czMakeBtn) _czMakeBtn.style.display = 'none';
+    const _czImagineBtn = document.getElementById('you-imagine-btn');
+    if (_czImagineBtn) _czImagineBtn.style.display = 'none';
+    const _czPrintBtn = document.getElementById('make-print-card-btn');
+    if (_czPrintBtn) _czPrintBtn.style.display = 'none';
+  }
 }
 
 // ── SAVE + SUMMARIZE ──────────────────────────────────────────
@@ -766,7 +777,9 @@ function renderPrintCard(print) {
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
 
-  // Hide You-only buttons when viewing a print card
+  // Hide You-only buttons AND You card meta when viewing a print card
+  const _cardMetaEl = document.getElementById('you-card-meta');
+  if (_cardMetaEl) _cardMetaEl.style.display = 'none';
   const _makeYouBtn = document.getElementById('make-you-card-btn');
   if (_makeYouBtn) _makeYouBtn.style.display = 'none';
   const _imagineYouBtn = document.getElementById('you-imagine-btn');
