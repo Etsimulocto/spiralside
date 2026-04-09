@@ -141,16 +141,19 @@ async function hydrate(save) {
       const cloudStreak = save.xp_state.streakDays || 0;
       // Merge: take whichever has higher totalXP, but always keep the higher streak
       if (cloudTotal > localTotal) {
+        // Cloud has more XP — write merged state but keep higher streak
         const merged = { ...save.xp_state, streakDays: Math.max(localStreak, cloudStreak) };
         await dbSet('config', { key: 'xp_state', value: merged });
-        if (window._reloadXPState) await window._reloadXPState();
+        // Don't call _reloadXPState — initXP already ran and set correct day-reset state
+        // Just patch in-memory streak if cloud is higher
+        if (window._patchXPStreak) window._patchXPStreak(Math.max(localStreak, cloudStreak));
       } else if (cloudStreak > localStreak) {
-        // Cloud has better streak but less XP — just patch the streak
+        // Cloud has better streak but local has more XP — patch streak only
         const patched = { ...(localXP?.value || {}), streakDays: cloudStreak };
         await dbSet('config', { key: 'xp_state', value: patched });
-        if (window._reloadXPState) await window._reloadXPState();
+        if (window._patchXPStreak) window._patchXPStreak(cloudStreak);
       }
-      // else: local is newer/better — don't touch IDB at all
+      // else: local is newer/better — don't touch IDB or memory at all
     } catch(_) {}
   }
   // Quest -> localStorage

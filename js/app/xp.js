@@ -327,6 +327,17 @@ export async function reloadXPState() {
   return _state;
 }
 
+// ── PUBLIC: PATCH STREAK ─────────────────────────────────────
+// Called by mastersave when cloud has a higher streak than local.
+// Patches in-memory state and IDB without a full reload.
+export async function patchXPStreak(streak) {
+  if (!_state) return;
+  if (streak <= (_state.streakDays || 0)) return;
+  _state = { ..._state, streakDays: streak };
+  await saveXPState(_state);
+  console.log('[xp] streak patched to', streak);
+}
+
 export function getXPState() {
   return _state ? { ..._state } : defaultXPState();
 }
