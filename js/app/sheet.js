@@ -790,313 +790,63 @@ function renderPrintCard(print) {
   }
   _makePrintBtn.style.display = 'block';
   _makePrintBtn.textContent = '✦ make my card';
-  _makePrintBtn.onclick = () => window.makePrintCard(print);
-
-  // ── edit + delete buttons — only for user prints ──
-  let actionRow = document.getElementById('print-action-row');
-  if (!print || !print.id) {
-    if (actionRow) actionRow.style.display = 'none';
-    return;
-  }
-  if (actionRow) actionRow.style.display = 'flex';
-  if (!actionRow) {
-    actionRow = document.createElement('div');
-    actionRow.id = 'print-action-row';
-    actionRow.style.cssText = 'display:flex;gap:8px;margin-top:8px';
-    btn.parentNode.insertBefore(actionRow, btn);
-  }
-  actionRow.innerHTML = `
-    <button onclick="editPrint('${print.id}')" style="
-      flex:1;padding:11px;background:var(--surface2);
-      border:1px solid var(--border);border-radius:10px;
-      color:var(--subtext);font-family:var(--font-ui);
-      font-size:var(--font-size-base);cursor:pointer;letter-spacing:0.06em;
-      transition:all 0.2s">✏ edit</button>
-    <button onclick="deletePrint('${print.id}','${char.name}')" style="
-      flex:1;padding:11px;background:var(--surface2);
-      border:1px solid var(--border);border-radius:10px;
-      color:var(--subtext);font-family:var(--font-ui);
-      font-size:var(--font-size-base);cursor:pointer;letter-spacing:0.06em;
-      transition:all 0.2s">🗑 delete</button>
-  `;
-}
-
-// ── BUILD YOU CONTEXT ────────────────────────────────────────
-// Serializes the You card into a compact system prompt prefix
-// Called by chat.js to inject into every message's system prompt
-export function buildYouContext() {
-  const you = CHARACTERS.you;
-  if (!you) return '';
-  const parts = [];
-  if (you.handle)   parts.push(`The user's name is ${you.handle}.`);
-  if (you.pronouns) parts.push(`Pronouns: ${you.pronouns}.`);
-  if (you.vibe)     parts.push(`Their vibe: ${you.vibe}.`);
-  if (you.location) parts.push(`They're based around: ${you.location}.`);
-  if (you.arc)      parts.push(`What they're going through right now: ${you.arc}`);
-  if (you.project)  parts.push(`Currently working on: ${you.project}.`);
-  if (you.song)     parts.push(`Theme song right now: ${you.song}.`);
-  if (you.pets)     parts.push(`Pets: ${you.pets}.`);
-  if (you.food)     parts.push(`Fav food/drink: ${you.food}.`);
-  if (you.comfort)  parts.push(`Comfort show/game: ${you.comfort}.`);
-  if (you.hates)    parts.push(`Things they dislike: ${you.hates}.`);
-  if (you.workTags?.length) parts.push(`How they work: ${you.workTags.join(', ')}.`);
-  if (you.hair)       parts.push(`Their hair: ${you.hair}.`);
-  if (you.eyes)       parts.push(`Their eyes: ${you.eyes}.`);
-  if (you.build)      parts.push(`Height/build: ${you.build}.`);
-  if (you.style)      parts.push(`Their style: ${you.style}.`);
-  if (you.marks)      parts.push(`Distinguishing features: ${you.marks}.`);
-  if (you.wearing)    parts.push(`Usually wearing: ${you.wearing}.`);
-  if (you.hobbies)    parts.push(`Hobbies: ${you.hobbies}.`);
-  if (you.obsession)  parts.push(`Currently obsessed with: ${you.obsession}.`);
-  if (you.job)        parts.push(`Job/role: ${you.job}.`);
-  if (you.medium)     parts.push(`Creative medium: ${you.medium}.`);
-  if (you.people)     parts.push(`People who matter: ${you.people}.`);
-  if (you.wins)       parts.push(`Recent wins: ${you.wins}.`);
-  if (you.stuck)      parts.push(`Currently stuck on: ${you.stuck}.`);
-  if (you.influences) parts.push(`Influences: ${you.influences}.`);
-  if (you.freetext)   parts.push(you.freetext);
-  if (!parts.length) return '';
-  return 'About the person you are talking to:\n' + parts.join(' ') + '\n\n';
-}
-
-// ── PRIVATE: SET PERSONA AND SWITCH TO CHAT ──────────────────
-// Sets state.botName/botPersonality/botGreeting/botColor
-// then navigates to chat — same effect as build.js handleSave
-// but triggered from a card tap, no form needed
-function _setPersonaAndChat(char) {
-  import('./ui.js').then(({ switchView }) => {
-    import('./chat.js').then(({ addMessage, getChatMsgs }) => {
-      import('./state.js').then(({ state }) => {
-        import('./db.js').then(({ dbSet }) => {
-        state.botName        = char.name;
-        state.botPersonality = '';
-        state.botGreeting    = char.firstWords || "Hey. I'm here.";
-        state.botColor       = char.color;
-
-        const chatMsgs = getChatMsgs();
-        if (chatMsgs) chatMsgs.innerHTML = '';
-        addMessage(state.botGreeting, 'bot', char.name, char.color);
-        dbSet('config',{key:'bot',name:char.name,personality:'',greeting:state.botGreeting,tone:[],color:char.color});
-          switchView('chat');
-        });
-      });
-    });
-  });
-}
-
-// ── GLOBAL: EDIT PRINT ───────────────────────────────────────
-// Loads print into Forge for editing
-window.editPrint = function(printId) {
-  import('./state.js').then(({ state }) => {
-    state.activePrintId = printId;
-    import('./ui.js').then(({ switchView }) => switchView('forge'));
-  });
-};
-
-// ── GLOBAL: DELETE PRINT ──────────────────────────────────────
-// Confirms then removes print from IDB and rebuilds chip row
-window.deletePrint = function(printId, name) {
-  if (!confirm(`Delete "${name}" from your Codex?
-
-This cannot be undone.`)) return;
-  import('./db.js').then(({ dbDelete }) => {
-    dbDelete('prints', printId).then(() => {
-      buildCharSelector();
-      // show sky by default after delete
-      renderActiveChar('sky');
-    });
-  });
-};
-
-// ── MAKE YOU CARD ─────────────────────────────────────────────
-// Builds a soul print from You card fields and renders it as a card
-window.makeYouCard = async function() {
+  _makePrintBtn.onclick = () => window.makePrintCard' in src:
+    print('[--] makePrintCard already in file - no action needed')
+else:
+    fn = """
+// -- MAKE PRINT CARD -----------------------------------------
+window.makePrintCard = async function(print) {
   const { renderCard, generateCardId, calcRarity } = await import('./card.js');
-  const you = (await import('./state.js')).CHARACTERS.you;
-  if (!you) return;
-
-  // Build a soul print from You card data
-  const print = {
-    card_id:         you.card_id || generateCardId('character'),
-    card_version:    you.card_version || 1,
-    level:           you.level || 1,
-    portrait_base64: you.portrait_base64 || null,
-    identity: {
-      name:          you.handle || 'You',
-      title:         you.trait  || 'the one who showed up',
-      identity_line: you.vibe   || '',
-      vibe:          you.vibe   || '',
-      tone_tags:     you.workTags || [],
-    },
-    stats: {
-      curiosity:   { value: you.traits?.[0]?.val || 50, max: 100 },
-      creativity:  { value: you.traits?.[1]?.val || 50, max: 100 },
-      chaos_level: { value: you.traits?.[2]?.val || 50, max: 100 },
-      trust:       { value: you.traits?.[3]?.val || 50, max: 100 },
-    },
-    metadata: {
-      owner_id:     'you',
-      creator_name: you.handle || 'you',
-      is_archetype: false,
-    },
-    display: {
-      accent_color: '#7B5FFF',
-      rarity:       calcRarity({}),
-    },
-    lifecycle: {},
+  if (!print) return;
+  if (!print.card_id) print.card_id = generateCardId('companion');
+  if (!print.display) print.display = {
+    accent_color: (print.metadata && print.metadata.color) || '#00F6D6',
+    rarity: calcRarity(print.lifecycle || {}),
   };
-
-  // Build overlay
-  let overlay = document.getElementById('you-card-overlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'you-card-overlay';
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
-    overlay.innerHTML = `
-      <div id="you-card-wrap" style="width:100%;max-width:360px;padding:0 20px"></div>
-      <div style="display:flex;gap:10px">
-        <button onclick="downloadYouCard()" style="padding:11px 20px;background:linear-gradient(135deg,var(--purple),var(--teal));border:none;border-radius:10px;color:#fff;font-family:var(--font-ui);font-size:0.78rem;cursor:pointer;letter-spacing:0.06em">↓ download png</button>
-        <button onclick="document.getElementById('you-card-overlay').remove()" style="padding:11px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.78rem;cursor:pointer">close</button>
-      </div>
-    `;
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-    document.body.appendChild(overlay);
+  let artImage = null;
+  if (typeof print.portrait_base64 === 'string' && print.portrait_base64.startsWith('data:')) {
+    artImage = print.portrait_base64;
+  } else if (window.opfsRead) {
+    try {
+      const _key = 'prints/' + (print.id || print.card_id) + '_portrait.png';
+      const _d = await window.opfsRead(_key);
+      if (_d) artImage = _d;
+    } catch(_e) {}
   }
-
-  const wrap = document.getElementById('you-card-wrap');
+  let overlay = document.getElementById('you-card-overlay');
+  if (overlay) overlay.remove();
+  overlay = document.createElement('div');
+  overlay.id = 'you-card-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;';
+  const wrap = document.createElement('div');
+  wrap.id = 'you-card-wrap';
+  wrap.style.cssText = 'width:100%;max-width:360px;padding:0 20px';
+  const btns = document.createElement('div');
+  btns.style.cssText = 'display:flex;gap:10px';
+  const dlBtn = document.createElement('button');
+  dlBtn.textContent = String.fromCodePoint(8595) + ' download png';
+  dlBtn.style.cssText = 'padding:11px 20px;background:linear-gradient(135deg,var(--purple),var(--teal));border:none;border-radius:10px;color:#fff;font-family:var(--font-ui);font-size:0.78rem;cursor:pointer;letter-spacing:0.06em';
+  dlBtn.onclick = function() { window.downloadYouCard(); };
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'close';
+  closeBtn.style.cssText = 'padding:11px 20px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--subtext);font-family:var(--font-ui);font-size:0.78rem;cursor:pointer';
+  closeBtn.onclick = function() { overlay.remove(); };
+  btns.appendChild(dlBtn);
+  btns.appendChild(closeBtn);
+  overlay.appendChild(wrap);
+  overlay.appendChild(btns);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
   wrap.innerHTML = '<div style="color:var(--subtext);font-size:0.75rem;padding:20px;text-align:center">rendering...</div>';
-  overlay.style.display = 'flex';
-
-  const canvas = await renderCard(print, print.portrait_base64 || null);
-  canvas.style.cssText = 'width:100%;border-radius:10px;display:block;box-shadow:0 0 40px rgba(123,95,255,0.3)';
+  const canvas = await renderCard(print, artImage);
+  canvas.style.cssText = 'width:100%;border-radius:10px;display:block;box-shadow:0 0 40px rgba(0,246,214,0.3)';
   window._youCardCanvas = canvas;
   wrap.innerHTML = '';
   wrap.appendChild(canvas);
-
-  // Save You print to IDB so SpiralCut + Codex chips can find it
-  const { dbSet } = await import('./db.js');
-  await dbSet('prints', {
-    id:              'you_card',
-    card_id:         print.card_id,
-    card_version:    print.card_version,
-    level:           print.level,
-    portrait_base64: print.portrait_base64 || null,
-    identity: {
-      name:          you.handle || 'You',
-      title:         you.trait  || 'the one who showed up',
-      identity_line: you.vibe   || '',
-      vibe:          you.vibe   || '',
-      tone_tags:     you.workTags || [],
-    },
-    stats: {
-      curiosity:   { value: you.traits?.[0]?.val || 50, max: 100 },
-      creativity:  { value: you.traits?.[1]?.val || 50, max: 100 },
-      chaos_level: { value: you.traits?.[2]?.val || 50, max: 100 },
-      trust:       { value: you.traits?.[3]?.val || 50, max: 100 },
-    },
-    metadata: {
-      owner_id:     'you',
-      creator_name: you.handle || 'you',
-      is_archetype: false,
-      is_you:       true,
-    },
-    display: { accent_color: '#7B5FFF' },
-    lifecycle: {},
-  });
-  console.log('[you_card] saved to prints IDB');
 };
+"""
+    open(BASE + '/js/app/sheet.js', 'a', encoding='utf-8').write(fn)
+    print('[OK] makePrintCard appended to sheet.js')
 
-window.downloadYouCard = async function() {
-  if (!window._youCardCanvas) return;
-  const you = window.CHARACTERS?.you;
-  const id  = you?.card_id || 'you-card';
-  const a   = document.createElement('a');
-  const _youCardDataUrl = window._youCardCanvas.toDataURL('image/png');
-  // OPFS auto-save — fire and forget, never block the download
-  if (window.opfsWrite) {
-    try { const res = await fetch(_youCardDataUrl); const blob = await res.blob(); await window.opfsWrite('cards/' + id + '.png', blob); } catch(e) {}
-  }
-  a.download = id + '.png';
-  a.href     = _youCardDataUrl;
-  a.click();
-};
-
-// ── IMAGINE YOU CARD ─────────────────────────────────────────
-// Reads You card appearance fields and routes to Imagine tab pre-filled
-window.imagineYouCard = function() {
-  const you = CHARACTERS.you;
-  if (!you) return;
-  if (window.imagineWithContext) {
-    window.imagineWithContext({
-      subject:     you.handle     || 'You',
-      hair:        you.hair       || '',
-      eyes:        you.eyes       || '',
-      clothing:    you.wearing    || you.style || '',
-      marks:       you.marks      || '',
-      species:     'human',
-      vibe:        you.vibe       || '',
-      // build goes into pose as physical description context
-      pose:        you.build      || '',
-      renderStyle: 'character portrait',
-      negativePrompt: 'blurry, low quality, ugly, deformed, bad anatomy',
-    });
-  }
-};
-
-// ── EXPORT CODEX ─────────────────────────────────────────────
-// Downloads all user prints as a single codex.json file
-export async function exportCodex() {
-  const { dbGetAll } = await import('./db.js');
-  const prints = await dbGetAll('prints').catch(() => []);
-  if (!prints.length) { alert('No cards to export!'); return; }
-  const data = {
-    schema_version: 'spiralside_codex_v1',
-    exported_at:    new Date().toISOString(),
-    card_count:     prints.length,
-    prints,
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a    = document.createElement('a');
-  const _codexUrl = URL.createObjectURL(blob);
-  const _codexName = `spiralside-codex-${Date.now()}.json`;
-  // OPFS auto-save
-  if (window.opfsWrite) {
-    try { await window.opfsWrite('cannonized/' + _codexName, blob); } catch(e) {}
-  }
-  a.href     = _codexUrl;
-  a.download = _codexName;
-  a.click();
-}
-
-// ── IMPORT CODEX ─────────────────────────────────────────────
-// Uploads a codex.json and merges prints into IDB
-export async function importCodex(file) {
-  try {
-    const text = await file.text();
-    const data = JSON.parse(text);
-    if (!data.prints?.length) { alert('No cards found in file.'); return; }
-    const { dbSet } = await import('./db.js');
-    let count = 0;
-    for (const print of data.prints) {
-      if (!print.id && print.card_id) print.id = print.card_id;
-      if (!print.id) continue;
-      await dbSet('prints', print);
-      count++;
-    }
-    buildCharSelector();
-    alert(`✓ Imported ${count} card${count !== 1 ? 's' : ''} into your Codex!`);
-  } catch(e) {
-    alert('Import failed — invalid file.');
-    console.error(e);
-  }
-}
-
-// ── PRIVATE: STYLE CHIP ───────────────────────────────────────
-function _styleChip(chip, id, active) {
-  const c = CHARACTERS[id].color;
-  chip.classList.toggle('active', active);
-  chip.style.color       = active ? c        : 'var(--subtext)';
-  chip.style.borderColor = active ? c + '88' : 'var(--border)';
-  chip.style.boxShadow   = active ? `0 0 16px ${c}44` : 'none';
-  chip.style.background  = active ? c + '11' : 'var(--surface2)';
-}
+final = open(BASE + '/js/app/sheet.js', encoding='utf-8').read()
+print('[check] makePrintCard present:', 'window.makePrintCard' in final)
