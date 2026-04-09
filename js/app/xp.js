@@ -312,7 +312,7 @@ export async function awardXP(source, rawAmount = null) {
 
   // Persist after every award
   await saveXPState(_state);
-  _masterSave().catch(() => {}); // sync to master save
+  try { const _ms = _masterSave(); if (_ms && _ms.catch) _ms.catch(() => {}); } catch(_) {}
 
   return { xpAwarded, leveledUp, newLevel: _state.level, atCap };
 }
