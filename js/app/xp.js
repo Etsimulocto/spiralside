@@ -19,7 +19,7 @@
 // ============================================================
 
 import { dbGet, dbSet } from './db.js';
-import { masterSave as _masterSave } from './mastersave.js';
+import { masterSaveDebounced as _masterSave } from './mastersave.js';
 
 // ── LEVEL CURVE ───────────────────────────────────────────────
 // XP required to go FROM this level TO the next.

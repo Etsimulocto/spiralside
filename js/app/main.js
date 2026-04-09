@@ -48,7 +48,7 @@ import { initSpiralCutView }                       from './views/spiralcut.js';
 import { initQuestView }                           from './views/quest.js';
 import { initCutView } from './views/cut.js';
 import { initXP, awardXP, getXPState, patchXPStreak, awardGold, spendGold, addItem, consumeItem, showLevelUpToast, showXPGain } from './xp.js';
-import { masterSave, masterLoad, downloadSave, uploadSave, getSaveInfo } from './mastersave.js';
+import { masterSave, masterSaveDebounced, masterLoad, downloadSave, uploadSave, getSaveInfo } from './mastersave.js';
 import { initStudioView }                          from './views/studio.js';
 import { initGuide, renderGuide } from './views/guide.js';
 import { initForgeView }           from './views/forge.js';
