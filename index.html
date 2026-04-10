@@ -1715,7 +1715,7 @@
         <div class="app-logo">spiralside</div>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.826</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.827</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3257,7 +3257,43 @@ async function czSaveToMemory() {
 let _czActiveFilter = null;
 
 async function czLoadArchive() {
-  czInitSchemaChips();  // re-render chips each time archive loads (handles tab switching)
+  window.czInitSchemaChips = function() {
+  var opts = [
+    { key: 'binding_moment',   label: 'binding moment',  on: true  },
+    { key: 'exact_language',   label: 'exact language',  on: true  },
+    { key: 'key_decisions',    label: 'key decisions',   on: false },
+    { key: 'action_items',     label: 'action items',    on: false },
+    { key: 'laws_established', label: 'laws / rules',    on: true  },
+    { key: 'emotional_tone',   label: 'emotional tone',  on: false },
+    { key: 'open_questions',   label: 'open questions',  on: false },
+    { key: 'context',          label: 'context',         on: false },
+    { key: 'tags',             label: 'tags',            on: true  },
+  ];
+  if (!window._czSchema) {
+    window._czSchema = new Set(opts.filter(function(o){return o.on;}).map(function(o){return o.key;}));
+  }
+  var el = document.getElementById('cz-schema-chips');
+  if (!el) return;
+  el.innerHTML = '';
+  opts.forEach(function(opt) {
+    var on = window._czSchema.has(opt.key);
+    var chip = document.createElement('button');
+    chip.textContent = (on ? '\u2234 ' : '') + opt.label;
+    chip.style.cssText =
+      'font-family:var(--font-ui);font-size:0.65rem;letter-spacing:0.06em;' +
+      'padding:5px 12px;border-radius:20px;cursor:pointer;transition:all 0.15s;' +
+      'border:1px solid ' + (on ? 'var(--teal)' : 'var(--border)') + ';' +
+      'color:' + (on ? 'var(--teal)' : 'var(--subtext)') + ';' +
+      'background:' + (on ? 'rgba(0,246,214,0.08)' : 'transparent') + ';';
+    chip.onclick = function() {
+      if (on) { if (window._czSchema.size <= 1) return; window._czSchema.delete(opt.key); }
+      else    { window._czSchema.add(opt.key); }
+      window.czInitSchemaChips();
+    };
+    el.appendChild(chip);
+  });
+};
+czInitSchemaChips();  // re-render chips each time archive loads (handles tab switching)
   const listEl  = document.getElementById('cz-blocks-list');
   const barEl   = document.getElementById('cz-size-bar');
   const labelEl = document.getElementById('cz-size-label');
