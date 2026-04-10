@@ -97,11 +97,8 @@ export function initImagine() {
   const el = document.getElementById('view-imagine');
   if (!el) return;
   injectImagineStyles();
-  if (!_initialized) {
-    el.innerHTML = _buildHTML();
-    _wireUI();
-    _initialized = true;
-  }
+  el.innerHTML = _buildHTML();
+  _wireUI();
   _syncCostBar();
 }
 
