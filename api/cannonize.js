@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { raw_transcript, session_date, canon_weight, characters, platform } = req.body || {};
+  const { raw_transcript, session_date, canon_weight, characters, platform, schema_fields } = req.body || {};
   if (!raw_transcript) return res.status(400).json({ error: 'raw_transcript required' });
 
   // Get auth token from request header — pass through to Railway
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': authHeader,
       },
-      body: JSON.stringify({ raw_transcript, session_date, canon_weight, characters, platform }),
+      body: JSON.stringify({ raw_transcript, session_date, canon_weight, characters, platform, schema_fields: schema_fields || [] }),
     });
 
     const data = await railResp.json();
