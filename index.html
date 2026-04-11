@@ -350,6 +350,7 @@
       filter: drop-shadow(0 0 12px rgba(0,246,214,0.4));
     }
     .header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .beta-badge { font-size:0.42rem; letter-spacing:0.14em; font-weight:700; color:#0a0a0f; background:var(--teal); border-radius:4px; padding:2px 5px; text-transform:uppercase; font-family:var(--font-ui); vertical-align:middle; margin-left:6px; position:relative; top:-1px; flex-shrink:0; }
     .version-badge {
       font-size: 0.75rem; letter-spacing: 0.08em; color: var(--subtext);
       border: 1px solid var(--border); border-radius: 20px;
@@ -1712,10 +1713,10 @@
     <canvas id="sky-canvas"></canvas>
     <div class="header-glow" id="header-glow"></div>
         <div class="header-logo-row">
-        <div class="app-logo">spiralside</div>
+        <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.845</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.846</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
