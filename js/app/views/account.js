@@ -98,6 +98,10 @@ function injectAccountStyles() {
     .acct-about-contact { font-size: 0.7rem; color: var(--subtext); line-height: 1.6; }
     .acct-about-contact a { color: var(--subtext); text-decoration: none; }
     .acct-about-contact a:hover { color: var(--teal); }
+    .acct-feedback-input { width:100%; background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:11px 13px; color:var(--text); font-family:var(--font-ui); font-size:0.75rem; resize:none; outline:none; line-height:1.5; margin-top:8px; margin-bottom:8px; transition:border-color 0.2s; }
+    .acct-feedback-input:focus { border-color:var(--teal); }
+    .acct-feedback-btn { width:100%; padding:12px; background:transparent; border:1px solid var(--teal); border-radius:10px; color:var(--teal); font-family:var(--font-ui); font-size:0.75rem; cursor:pointer; letter-spacing:0.04em; transition:all 0.2s; }
+    .acct-feedback-btn:hover { background:rgba(0,246,214,0.08); }
     .acct-version { font-size: 0.6rem; letter-spacing: 0.1em; color: var(--subtext); opacity: 0.4; text-align: center; margin-top: 12px; }
   `;
   document.head.appendChild(s);
@@ -248,6 +252,11 @@ export function initAccountView() {
             Questions? <a href="mailto:support@spiralside.com">support@spiralside.com</a><br>
             Legal: <a href="mailto:legal@spiralside.com">legal@spiralside.com</a><br>
             Complaints: <a href="mailto:complaints@spiralside.com">complaints@spiralside.com</a>
+          </div>
+          <div class="acct-feedback-section">
+            <div class="acct-section-title" style="margin-top:16px">send feedback</div>
+            <textarea id="feedback-text" class="acct-feedback-input" placeholder="what's working, what's broken, what's missing..." rows="3"></textarea>
+            <button id="feedback-btn" class="acct-feedback-btn" onclick="window._sendFeedback()">send feedback</button>
           </div>
           <div class="acct-version">spiralside v1.0 · built in tennessee · signal clean</div>
         </div>
