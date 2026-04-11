@@ -125,7 +125,7 @@
     .glow-purple { text-shadow: 0 0 20px #7B5FFF88; }
 
     /* ── SCREENS ────────────────────────────────────────────── */
-    .screen { display: none; flex-direction: column; height: 100dvh; height: 100svh; min-height: 0; overflow: hidden; }
+    .screen { display: none; flex-direction: column; height: 100dvh; height: 100svh; height: var(--app-height, 100dvh); min-height: 0; overflow: hidden; }
     .screen.active { display: flex; }
 
     /* ── COMIC INTRO ────────────────────────────────────────── */
@@ -1716,7 +1716,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.849</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.850</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3596,6 +3596,27 @@ async function czDeleteBlock(id, btn) {
 
   })();
   // ── END SKYLINE TICKER ─────────────────────────────────────
+  // ── iOS HEIGHT FIX ───────────────────────────────────
+  // iOS Safari reports wrong 100vh — use window.innerHeight instead
+  function _setAppHeight() {
+    var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    document.documentElement.style.setProperty('--app-height', h + 'px');
+  }
+  _setAppHeight();
+  window.addEventListener('resize', _setAppHeight);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', function() {
+      _setAppHeight();
+      // When keyboard opens, keep chat input visible
+      var active = document.activeElement;
+      if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
+        setTimeout(function() {
+          active.scrollIntoView({ behavior: 'instant', block: 'center' });
+        }, 50);
+      }
+    });
+  }
+
   // ── iOS KEYBOARD FIX ─────────────────────────────────
   // When keyboard opens on iOS, scroll active input into view
   // and prevent the layout from jumping/scrolling behind keyboard
