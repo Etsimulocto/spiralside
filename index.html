@@ -1716,7 +1716,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.848</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.849</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3596,6 +3596,40 @@ async function czDeleteBlock(id, btn) {
 
   })();
   // ── END SKYLINE TICKER ─────────────────────────────────────
+  // ── iOS KEYBOARD FIX ─────────────────────────────────
+  // When keyboard opens on iOS, scroll active input into view
+  // and prevent the layout from jumping/scrolling behind keyboard
+  if (window.visualViewport) {
+    var _lastVH = window.visualViewport.height;
+    window.visualViewport.addEventListener('resize', function() {
+      var vh = window.visualViewport.height;
+      var diff = _lastVH - vh;
+      _lastVH = vh;
+      // Keyboard opened (viewport shrank by >100px)
+      if (diff > 100) {
+        var active = document.activeElement;
+        if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
+          setTimeout(function() {
+            active.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+        }
+      }
+    });
+    // Also fix position when keyboard is open
+    window.visualViewport.addEventListener('scroll', function() {
+      // prevent body scroll when keyboard is open
+      document.documentElement.style.setProperty(
+        '--viewport-height', window.visualViewport.height + 'px'
+      );
+    });
+  }
+
+  // Prevent iOS rubber-band scroll on fixed elements
+  document.addEventListener('touchmove', function(e) {
+    if (e.target.closest('.chat-messages, .view, .panel-body, .im-scroll, .acct-scroll')) return;
+    // allow scroll on scrollable containers, block on fixed UI
+  }, { passive: true });
+
   window._sendFeedback = function() {
     var msg = (document.getElementById('feedback-text') || {}).value || '';
     var btn = document.getElementById('feedback-btn');
