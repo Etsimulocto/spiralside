@@ -423,6 +423,256 @@ function _buildHTML() {
         <div class="ix-preview-text" id="ix-preview-text"></div>
       </div>
 
+      <!-- COMPOSITION & FRAMING -->
+      <div class="ix-section-label">composition & framing</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">framing</div>
+          <div class="ix-chips" id="ix-chips-framing">
+            <div class="ix-chip" data-val="centered">centered</div>
+            <div class="ix-chip" data-val="dynamic diagonal">dynamic diagonal</div>
+            <div class="ix-chip" data-val="asymmetrical">asymmetrical</div>
+            <div class="ix-chip" data-val="rule of thirds">rule of thirds</div>
+            <div class="ix-chip" data-val="layered depth">layered depth</div>
+            <div class="ix-chip" data-val="comic panel layout">comic panel layout</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">shot type</div>
+          <div class="ix-chips" id="ix-chips-shot">
+            <div class="ix-chip" data-val="extreme close-up">extreme close-up</div>
+            <div class="ix-chip" data-val="close-up">close-up</div>
+            <div class="ix-chip" data-val="bust">bust</div>
+            <div class="ix-chip" data-val="waist-up">waist-up</div>
+            <div class="ix-chip" data-val="full body">full body</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">focus</div>
+          <div class="ix-chips" id="ix-chips-focus">
+            <div class="ix-chip" data-val="character focus">character focus</div>
+            <div class="ix-chip" data-val="environment focus">environment focus</div>
+            <div class="ix-chip" data-val="split focus">split focus</div>
+            <div class="ix-chip" data-val="foreground blur">foreground blur</div>
+            <div class="ix-chip" data-val="depth of field">depth of field</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LINE & RENDER STYLE -->
+      <div class="ix-section-label">line & render style</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">line style</div>
+          <div class="ix-chips" id="ix-chips-linestyle">
+            <div class="ix-chip" data-val="clean anime">clean anime</div>
+            <div class="ix-chip" data-val="rough sketch">rough sketch</div>
+            <div class="ix-chip" data-val="inked comic">inked comic</div>
+            <div class="ix-chip" data-val="zine / print grain">zine / print grain</div>
+            <div class="ix-chip" data-val="painterly">painterly</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">line weight</div>
+          <div class="ix-chips" id="ix-chips-lineweight">
+            <div class="ix-chip" data-val="thin">thin</div>
+            <div class="ix-chip" data-val="medium">medium</div>
+            <div class="ix-chip" data-val="thick">thick</div>
+            <div class="ix-chip" data-val="varied / expressive">varied / expressive</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">texture</div>
+          <div class="ix-chips" id="ix-chips-texture">
+            <div class="ix-chip" data-val="smooth">smooth</div>
+            <div class="ix-chip" data-val="grainy">grainy</div>
+            <div class="ix-chip" data-val="halftone">halftone</div>
+            <div class="ix-chip" data-val="paper / print">paper / print</div>
+            <div class="ix-chip" data-val="glitch noise">glitch noise</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMOTION & EXPRESSION -->
+      <div class="ix-section-label">emotion & expression</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">emotional state</div>
+          <div class="ix-chips" id="ix-chips-emotion">
+            <div class="ix-chip" data-val="calm">calm</div>
+            <div class="ix-chip" data-val="curious">curious</div>
+            <div class="ix-chip" data-val="excited">excited</div>
+            <div class="ix-chip" data-val="chaotic">chaotic</div>
+            <div class="ix-chip" data-val="focused">focused</div>
+            <div class="ix-chip" data-val="overwhelmed">overwhelmed</div>
+            <div class="ix-chip" data-val="confident">confident</div>
+            <div class="ix-chip" data-val="glitched">glitched</div>
+            <div class="ix-chip" data-val="ascended">ascended</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">intensity</div>
+          <div class="ix-chips" id="ix-chips-intensity">
+            <div class="ix-chip" data-val="subtle">subtle</div>
+            <div class="ix-chip" data-val="medium">medium</div>
+            <div class="ix-chip" data-val="high">high</div>
+            <div class="ix-chip" data-val="extreme">extreme</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POWER & ENERGY -->
+      <div class="ix-section-label">power & energy</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">power level</div>
+          <div class="ix-chips" id="ix-chips-power">
+            <div class="ix-chip" data-val="idle">idle</div>
+            <div class="ix-chip" data-val="active">active</div>
+            <div class="ix-chip" data-val="charged">charged</div>
+            <div class="ix-chip" data-val="overload">overload</div>
+            <div class="ix-chip" data-val="god mode">god mode</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">energy behavior</div>
+          <div class="ix-chips" id="ix-chips-energy">
+            <div class="ix-chip" data-val="stable">stable</div>
+            <div class="ix-chip" data-val="flowing">flowing</div>
+            <div class="ix-chip" data-val="pulsing">pulsing</div>
+            <div class="ix-chip" data-val="erupting">erupting</div>
+            <div class="ix-chip" data-val="fracturing">fracturing</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FX TYPE -->
+      <div class="ix-section-label">fx type <span class="ix-multi-badge">multi</span></div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-chips ix-chips-multi" id="ix-chips-fx">
+            <div class="ix-chip" data-val="spiral energy">spiral energy</div>
+            <div class="ix-chip" data-val="glitch distortion">glitch distortion</div>
+            <div class="ix-chip" data-val="holographic UI">holographic UI</div>
+            <div class="ix-chip" data-val="particle dust">particle dust</div>
+            <div class="ix-chip" data-val="fractals">fractals</div>
+            <div class="ix-chip" data-val="data streams">data streams</div>
+            <div class="ix-chip" data-val="mirror shards">mirror shards</div>
+            <div class="ix-chip" data-val="light trails">light trails</div>
+            <div class="ix-chip" data-val="aura glow">aura glow</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTENT -->
+      <div class="ix-section-label">intent / output type</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-chips" id="ix-chips-intent">
+            <div class="ix-chip" data-val="character portrait">character portrait</div>
+            <div class="ix-chip" data-val="comic panel">comic panel</div>
+            <div class="ix-chip" data-val="splash art">splash art</div>
+            <div class="ix-chip" data-val="UI concept">UI concept</div>
+            <div class="ix-chip" data-val="lore illustration">lore illustration</div>
+            <div class="ix-chip" data-val="animation frame">animation frame</div>
+            <div class="ix-chip" data-val="trading card">trading card</div>
+            <div class="ix-chip" data-val="poster">poster</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STYLE CONTROL -->
+      <div class="ix-section-label">style control</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">style strength</div>
+          <div class="ix-chips" id="ix-chips-stylestrength">
+            <div class="ix-chip" data-val="subtle">subtle</div>
+            <div class="ix-chip" data-val="balanced">balanced</div>
+            <div class="ix-chip" data-val="strong">strong</div>
+            <div class="ix-chip" data-val="extreme">extreme</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">stylization mode</div>
+          <div class="ix-chips" id="ix-chips-stylizemode">
+            <div class="ix-chip" data-val="realistic">realistic</div>
+            <div class="ix-chip" data-val="anime">anime</div>
+            <div class="ix-chip" data-val="bloomcore">bloomcore</div>
+            <div class="ix-chip" data-val="comic">comic</div>
+            <div class="ix-chip" data-val="experimental">experimental</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DETAIL CONTROL -->
+      <div class="ix-section-label">detail control</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">detail level</div>
+          <div class="ix-chips" id="ix-chips-detail">
+            <div class="ix-chip" data-val="minimal">minimal</div>
+            <div class="ix-chip" data-val="balanced">balanced</div>
+            <div class="ix-chip" data-val="dense">dense</div>
+            <div class="ix-chip" data-val="overloaded">overloaded</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">noise / chaos</div>
+          <div class="ix-chips" id="ix-chips-noise">
+            <div class="ix-chip" data-val="clean">clean</div>
+            <div class="ix-chip" data-val="light noise">light noise</div>
+            <div class="ix-chip" data-val="glitchy">glitchy</div>
+            <div class="ix-chip" data-val="chaotic">chaotic</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHARACTER CONSISTENCY -->
+      <div class="ix-section-label">character consistency</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">preserve <span class="ix-multi-badge">multi</span></div>
+          <div class="ix-chips ix-chips-multi" id="ix-chips-preserve">
+            <div class="ix-chip" data-val="hair">hair</div>
+            <div class="ix-chip" data-val="color palette">color palette</div>
+            <div class="ix-chip" data-val="outfit">outfit</div>
+            <div class="ix-chip" data-val="face structure">face structure</div>
+            <div class="ix-chip" data-val="signature features">signature features</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">lock identity</div>
+          <div class="ix-chips" id="ix-chips-lockchar">
+            <div class="ix-chip" data-val="on">on</div>
+            <div class="ix-chip" data-val="off">off</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAMERA MOTION -->
+      <div class="ix-section-label">camera motion / feel</div>
+      <div class="ix-field-group">
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">motion feel</div>
+          <div class="ix-chips" id="ix-chips-motion">
+            <div class="ix-chip" data-val="static">static</div>
+            <div class="ix-chip" data-val="slight motion">slight motion</div>
+            <div class="ix-chip" data-val="dynamic">dynamic</div>
+            <div class="ix-chip" data-val="cinematic action">cinematic action</div>
+          </div>
+        </div>
+        <div class="ix-field-row">
+          <div class="ix-field-sublabel">perspective distortion</div>
+          <div class="ix-chips" id="ix-chips-persp">
+            <div class="ix-chip" data-val="none">none</div>
+            <div class="ix-chip" data-val="subtle">subtle</div>
+            <div class="ix-chip" data-val="strong">strong</div>
+            <div class="ix-chip" data-val="fisheye / stylized">fisheye / stylized</div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /ix-extended -->
 
     <!-- ── GENERATE ── -->
@@ -634,6 +884,13 @@ export function injectImagineStyles() {
 
     /* ── EXTENDED PANEL ── */
     .ix-extended { display:none; flex-direction:column; gap:12px; }
+    .ix-section-label { font-size:0.58rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); font-family:var(--font-ui); font-weight:600; margin-top:4px; display:flex; align-items:center; gap:8px; }
+    .ix-section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+    .ix-multi-badge { font-size:0.5rem; letter-spacing:0.06em; color:var(--purple); background:rgba(124,106,247,0.15); border-radius:4px; padding:1px 5px; text-transform:uppercase; font-weight:700; }
+    .ix-field-group { display:flex; flex-direction:column; gap:8px; padding:2px 0 4px; }
+    .ix-field-row { display:flex; flex-direction:column; gap:5px; }
+    .ix-field-sublabel { font-size:0.56rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--subtext); font-family:var(--font-ui); }
+    .ix-chips-multi .ix-chip.active { border-color:var(--purple); color:var(--purple); background:rgba(124,106,247,0.1); }
     .ix-extended.open { display:flex; }
     .ix-group-label { font-size:0.58rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); opacity:0.7; padding-top:4px; }
 
