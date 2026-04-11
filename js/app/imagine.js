@@ -144,6 +144,31 @@ function _buildFinalPrompt() {
   const mood      = chip('ix-chips-mood');
   const lighting  = chip('ix-chips-lighting');
   const camera    = chip('ix-chips-camera');
+  // NEW field module chips
+  const framing      = chip('ix-chips-framing');
+  const shotType     = chip('ix-chips-shot');
+  const focus        = chip('ix-chips-focus');
+  const lineStyle    = chip('ix-chips-linestyle');
+  const lineWeight   = chip('ix-chips-lineweight');
+  const texture      = chip('ix-chips-texture');
+  const emotion      = chip('ix-chips-emotion');
+  const intensity    = chip('ix-chips-intensity');
+  const powerLevel   = chip('ix-chips-power');
+  const energyBehav  = chip('ix-chips-energy');
+  const intent       = chip('ix-chips-intent');
+  const styleStr     = chip('ix-chips-stylestrength');
+  const stylizeMode  = chip('ix-chips-stylizemode');
+  const detailLevel  = chip('ix-chips-detail');
+  const noiseChaos   = chip('ix-chips-noise');
+  const lockChar     = chip('ix-chips-lockchar');
+  const motionFeel   = chip('ix-chips-motion');
+  const perspDistort = chip('ix-chips-persp');
+  function chips(gid) {
+    return Array.from(document.querySelectorAll('#' + gid + ' .ix-chip.active'))
+      .map(function(c) { return c.dataset.val || c.textContent.trim(); }).filter(Boolean);
+  }
+  const fxTypes  = chips('ix-chips-fx');
+  const preserve = chips('ix-chips-preserve');
 
   const segs = [];
 
@@ -177,6 +202,27 @@ function _buildFinalPrompt() {
   if (lighting) segs.push(lighting);
   if (camera)   segs.push(camera);
 
+  // NEW field modules
+  if (intent)          segs.push(intent);
+  if (framing)         segs.push(framing + ' composition');
+  if (shotType)        segs.push(shotType);
+  if (focus)           segs.push(focus);
+  if (lineStyle)       segs.push(lineStyle + ' line style');
+  if (lineWeight)      segs.push(lineWeight + ' lines');
+  if (texture)         segs.push(texture + ' texture');
+  if (emotion)         segs.push(emotion + ' expression');
+  if (intensity)       segs.push(intensity + ' intensity');
+  if (powerLevel)      segs.push(powerLevel + ' power');
+  if (energyBehav)     segs.push(energyBehav + ' energy');
+  if (fxTypes.length)  segs.push(fxTypes.join(', '));
+  if (styleStr)        segs.push(styleStr + ' stylization');
+  if (stylizeMode)     segs.push(stylizeMode + ' style');
+  if (detailLevel)     segs.push(detailLevel + ' detail');
+  if (noiseChaos)      segs.push(noiseChaos);
+  if (preserve.length) segs.push('consistent ' + preserve.join(', '));
+  if (lockChar === 'on') segs.push('consistent character identity');
+  if (motionFeel)      segs.push(motionFeel);
+  if (perspDistort && perspDistort !== 'none') segs.push(perspDistort + ' perspective');
   // Quality tail
   segs.push('detailed, high quality, sharp focus');
 
