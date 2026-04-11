@@ -1716,7 +1716,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.850</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.851</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3598,6 +3598,11 @@ async function czDeleteBlock(id, btn) {
   // ── END SKYLINE TICKER ─────────────────────────────────────
   // ── iOS HEIGHT FIX ───────────────────────────────────
   // iOS Safari reports wrong 100vh — use window.innerHeight instead
+  // pinned height -- never shrinks on keyboard open
+  var _appH = window.innerHeight;
+  document.documentElement.style.setProperty("--app-height", _appH + "px");
+  window.addEventListener("resize", function() { if(window.innerHeight>_appH){_appH=window.innerHeight;document.documentElement.style.setProperty("--app-height",_appH+"px");} });
+  if(window.visualViewport){window.visualViewport.addEventListener("resize",function(){var a=document.activeElement;if(a&&(a.tagName==="TEXTAREA"||a.tagName==="INPUT")){setTimeout(function(){a.scrollIntoView({behavior:"smooth",block:"nearest"});},100);}});}
   function _setAppHeight() {
     var h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
     document.documentElement.style.setProperty('--app-height', h + 'px');
