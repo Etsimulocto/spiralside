@@ -793,6 +793,74 @@ function _wireUI() {
   });
 
   document.getElementById('im-go')?.addEventListener('click', _generate);
+
+  // ── MASTER VIBE SLOT ──────────────────────────────────
+  window._captureVibe = function() {
+    var vibe = { name: '', chips: {}, fields: {} };
+    document.querySelectorAll('.ix-chips[id]').forEach(function(grp) {
+      var active = Array.from(grp.querySelectorAll('.ix-chip.active'))
+        .map(function(c) { return c.dataset.val || c.textContent.trim(); });
+      if (active.length) vibe.chips[grp.id] = active;
+    });
+    ['ix-hair','ix-eyes','ix-clothing','ix-marks','ix-species','ix-vibe',
+     'ix-pose','ix-scene','ix-world','ix-biome','ix-visual-desc','ix-background',
+     'ix-render-style','ix-color-theme'].forEach(function(fid) {
+      var el = document.getElementById(fid);
+      if (el && el.value.trim()) vibe.fields[fid] = el.value.trim();
+    });
+    vibe.name = Object.keys(vibe.chips).slice(0,2)
+      .map(function(k) { return (vibe.chips[k] || [])[0] || ''; })
+      .filter(Boolean).join(' / ') || 'custom vibe';
+    return vibe;
+  };
+
+  window._applyImageVibe = function(vibe) {
+    if (!vibe) return;
+    document.querySelectorAll('.ix-chips .ix-chip').forEach(function(c) { c.classList.remove('active'); });
+    Object.keys(vibe.chips || {}).forEach(function(gid) {
+      var vals = vibe.chips[gid];
+      var grp = document.getElementById(gid);
+      if (!grp) return;
+      grp.querySelectorAll('.ix-chip').forEach(function(chip) {
+        var v = chip.dataset.val || chip.textContent.trim();
+        if (vals.indexOf(v) !== -1) chip.classList.add('active');
+      });
+    });
+    Object.keys(vibe.fields || {}).forEach(function(fid) {
+      var el = document.getElementById(fid);
+      if (el) el.value = vibe.fields[fid];
+    });
+    _updatePreview();
+    _updateVibeUI(vibe.name);
+  };
+
+  window._saveImageVibe = function() {
+    var vibe = window._captureVibe();
+    localStorage.setItem('ss_image_vibe', JSON.stringify(vibe));
+    if (window.masterSave) window.masterSave();
+    _updateVibeUI(vibe.name);
+    var btn = document.querySelector('.ix-vibe-save');
+    if (btn) { btn.textContent = 'saved!'; setTimeout(function() { btn.textContent = 'save vibe'; }, 1500); }
+  };
+
+  window._loadImageVibe = function() {
+    try {
+      var vibe = JSON.parse(localStorage.getItem('ss_image_vibe') || 'null');
+      if (vibe) window._applyImageVibe(vibe);
+    } catch(_) {}
+  };
+
+  function _updateVibeUI(name) {
+    var label = document.getElementById('ix-vibe-name');
+    var loadBtn = document.getElementById('ix-vibe-load-btn');
+    if (label) label.textContent = name ? 'master vibe: ' + name : 'no master vibe saved';
+    if (loadBtn) loadBtn.style.display = name ? 'inline-flex' : 'none';
+  }
+
+  try {
+    var _saved = JSON.parse(localStorage.getItem('ss_image_vibe') || 'null');
+    if (_saved) _updateVibeUI(_saved.name);
+  } catch(_) {}
 }
 
 // ── GENERATE ──────────────────────────────────────────────────
