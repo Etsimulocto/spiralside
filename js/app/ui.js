@@ -306,6 +306,7 @@ export function switchView(id) {
     spiral:    () => window.initSpiralView  && window.initSpiralView(),
     bloomslice: () => window.initBloomsliceView && window.initBloomsliceView(),
     bloomengine: () => window.initBloomEngineView && window.initBloomEngineView(),
+    cannonized: () => { if (typeof czLoadArchive === 'function') czLoadArchive(); },
   };
   if (viewInits[id]) viewInits[id]();
   // Fire onOpen hook so modules can refresh state on revisit
