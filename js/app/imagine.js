@@ -12,6 +12,9 @@ import { sb }   from './auth.js';
 const MODELS = [
   { id:'schnell',   label:'flux schnell',        sub:'fastest · draft quality · HuggingFace', cost:500,  color:'var(--teal)',   icon:'⚡' },
   { id:'lightning', label:'sdxl lightning',       sub:'fast · crisp · HuggingFace',            cost:1000, color:'var(--purple)', icon:'⚡⚡' },
+  { id:'dev',    label:'flux dev',             sub:'high quality · FLUX · HuggingFace',          cost:1500, color:'var(--purple)', icon:'✶✶' },
+  { id:'kolors', label:'kolors',               sub:'anime · vibrant · Kwai-Kolors',             cost:1500, color:'var(--pink)',   icon:'🌸' },
+  { id:'sd35',   label:'stable diffusion 3.5', sub:'photorealistic · versatile · Stability AI', cost:2000, color:'#FFD93D',       icon:'🔥' },
   { id:'dalle3',    label:'dall·e 3',             sub:'highest quality · OpenAI',              cost:3000, color:'#FFD93D',      icon:'🌟' },
 ];
 
