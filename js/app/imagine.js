@@ -461,6 +461,15 @@ function _buildHTML() {
         </div>
       </div>
 
+      <!-- MASTER VIBE SLOT -->
+      <div class="ix-vibe-bar" id="ix-vibe-bar">
+        <div class="ix-vibe-label" id="ix-vibe-name">no master vibe saved</div>
+        <div class="ix-vibe-actions">
+          <button class="ix-vibe-btn ix-vibe-save" onclick="window._saveImageVibe()">save vibe</button>
+          <button class="ix-vibe-btn ix-vibe-load" id="ix-vibe-load-btn" onclick="window._loadImageVibe()" style="display:none">load vibe</button>
+        </div>
+      </div>
+
       <!-- PROMPT PREVIEW -->
       <div class="ix-preview-wrap" id="ix-preview-wrap" style="display:none">
         <div class="im-label">assembled prompt preview</div>
