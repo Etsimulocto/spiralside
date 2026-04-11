@@ -1716,7 +1716,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.846</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.847</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3596,6 +3596,19 @@ async function czDeleteBlock(id, btn) {
 
   })();
   // ── END SKYLINE TICKER ─────────────────────────────────────
+  window._sendFeedback = function() {
+    var msg = (document.getElementById('feedback-text') || {}).value || '';
+    var btn = document.getElementById('feedback-btn');
+    if (!msg.trim()) {
+      if (btn) { btn.textContent = 'write something first!'; setTimeout(function() { btn.textContent = 'send feedback'; }, 1500); }
+      return;
+    }
+    var subject = encodeURIComponent('Spiralside Beta Feedback');
+    var body = encodeURIComponent(msg);
+    window.open('mailto:support@spiralside.com?subject=' + subject + '&body=' + body);
+    if (btn) { btn.textContent = 'thanks! email opened'; setTimeout(function() { btn.textContent = 'send feedback'; }, 2500); }
+    document.getElementById('feedback-text').value = '';
+  };
 </script>
 
 
