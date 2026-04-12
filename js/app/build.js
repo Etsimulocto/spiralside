@@ -417,10 +417,8 @@ async function handleSave() {
     // Feedback
     const btn2 = document.getElementById('save-bot-btn');
     if (btn2) { btn2.textContent = 'saved'; setTimeout(() => { btn2.textContent = 'save your card'; }, 1800); }
-    state.activePrintId = null;
-    hideYouSection();
-    // Switch back to the You card view
-    if (window.switchView) window.switchView('sheet');
+    // Refresh codex chip row so You card shows new data
+    import('./sheet.js').then(({ buildCharSelector }) => buildCharSelector()).catch(() => {});
     console.log('[forge] you_card saved back to sheets IDB');
     return;
   }
