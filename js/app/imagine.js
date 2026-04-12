@@ -1014,6 +1014,14 @@ export function injectImagineStyles() {
     .ix-nfield-row { display:flex; flex-direction:column; gap:6px; }
     .ix-field-sublabel { font-size:0.56rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--subtext); font-family:var(--font-ui); }
     .ix-chips-multi .ix-chip.active { border-color:var(--purple); color:var(--purple); background:rgba(124,106,247,0.1); }
+    .ix-vibe-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; background:rgba(0,246,214,0.06); border:1px solid rgba(0,246,214,0.2); border-radius:10px; margin-bottom:2px; }
+    .ix-vibe-label { font-size:0.62rem; color:var(--teal); font-family:var(--font-ui); letter-spacing:0.08em; flex:1; }
+    .ix-vibe-actions { display:flex; gap:6px; flex-shrink:0; }
+    .ix-vibe-btn { padding:5px 12px; border-radius:20px; border:1px solid; font-family:var(--font-ui); font-size:0.62rem; cursor:pointer; letter-spacing:0.06em; transition:all 0.15s; background:transparent; }
+    .ix-vibe-save { border-color:var(--teal); color:var(--teal); }
+    .ix-vibe-save:hover { background:rgba(0,246,214,0.1); }
+    .ix-vibe-load { border-color:var(--purple); color:var(--purple); display:inline-flex; align-items:center; }
+    .ix-vibe-load:hover { background:rgba(124,106,247,0.1); }
     .ix-extended.open { display:flex; }
     .ix-group-label { font-size:0.58rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--teal); opacity:0.7; padding-top:4px; }
 
