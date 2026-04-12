@@ -164,6 +164,11 @@ export function initBuild() {
     });
   });
 
+  // Wire "about you" chips (yc chips — separate from tone chips)
+  document.querySelectorAll('[data-yc]').forEach(chip => {
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+  });
+
   // Wire stat add button
   const addStatBtn = document.getElementById('forge-add-stat');
   if (addStatBtn) addStatBtn.addEventListener('click', addStatRow);
@@ -369,6 +374,57 @@ async function handleDownloadCard() {
 async function handleSave() {
   const print = readPrint();
 
+  // ── YOU CARD SAVE PATH ──
+  if (state.activePrintId === 'you_card') {
+    const { dbGet: _g, dbSet: _s } = await import('./db.js');
+    const existing = await _g('sheets', 'you').catch(() => ({})) || {};
+    // Collect how-you-work chips
+    const howYouWork = [];
+    document.querySelectorAll('[data-yc].selected').forEach(c => howYouWork.push(c.dataset.yc));
+    const g = id => document.getElementById(id)?.value?.trim() || '';
+    const updated = Object.assign({}, existing, {
+      id:             'you',
+      name:           print.identity.name || existing.name,
+      first_words:    print.identity.first_words || existing.first_words,
+      personality:    print.identity.personality || existing.personality,
+      hair:           g('yc-hair'),
+      build:          g('yc-build'),
+      marks:          g('yc-marks'),
+      life_now:       g('yc-life-now'),
+      current_arc:    g('yc-current-arc'),
+      working_on:     g('yc-working-on'),
+      theme_song:     g('yc-theme-song'),
+      pets:           g('yc-pets'),
+      fav_food:       g('yc-fav-food'),
+      comfort_show:   g('yc-comfort-show'),
+      hates:          g('yc-hates'),
+      hobbies:        g('yc-hobbies'),
+      obsession:      g('yc-obsession'),
+      job:            g('yc-job'),
+      creative_medium:g('yc-creative-medium'),
+      who_matters:    g('yc-who-matters'),
+      wins:           g('yc-wins'),
+      stuck_on:       g('yc-stuck-on'),
+      influences:     g('yc-influences'),
+      tell_sky:       g('yc-tell-sky'),
+      how_you_work:   howYouWork,
+      updated_at:     new Date().toISOString(),
+    });
+    if (_portraitBase64) updated.portrait_base64 = _portraitBase64;
+    await _s('sheets', updated);
+    // Cloud backup
+    if (window.syncSave) window.syncSave('you_card', Object.assign({}, updated, { id: 'you' })).catch(() => {});
+    // Feedback
+    const btn2 = document.getElementById('save-bot-btn');
+    if (btn2) { btn2.textContent = 'saved'; setTimeout(() => { btn2.textContent = 'save your card'; }, 1800); }
+    state.activePrintId = null;
+    hideYouSection();
+    // Switch back to the You card view
+    if (window.switchView) window.switchView('sheet');
+    console.log('[forge] you_card saved back to sheets IDB');
+    return;
+  }
+
   // Keep state in sync for chat persona
   state.botName        = print.identity.name        || 'companion';
   state.botPersonality = print.identity.personality || '';
@@ -525,6 +581,114 @@ async function _loadPrintDataIntoForm(print) {
     });
   }
 }
+
+// ── YOU CARD SECTION VISIBILITY ──────────────────────────────
+function showYouSection() {
+  const sec = document.getElementById('forge-section-aboutyou');
+  if (sec) sec.style.display = '';
+  // Also expand it open
+  const body = document.getElementById('forge-body-aboutyou');
+  const icon = document.getElementById('forge-icon-aboutyou');
+  if (body) body.style.display = 'block';
+  if (icon) icon.textContent = '▾';
+  // Update save button label
+  const saveBtn = document.getElementById('save-bot-btn');
+  if (saveBtn) saveBtn.textContent = 'save your card';
+}
+function hideYouSection() {
+  const sec = document.getElementById('forge-section-aboutyou');
+  if (sec) sec.style.display = 'none';
+  const saveBtn = document.getElementById('save-bot-btn');
+  if (saveBtn) saveBtn.textContent = 'save companion';
+}
+window.showYouSection = showYouSection;
+window.hideYouSection = hideYouSection;
+
+// ── LOAD YOU CARD INTO FORGE ──────────────────────────────────
+// Called when editing you_card — reads from sheets IDB store
+export async function loadYouCardIntoForge() {
+  const { dbGet: _dbGet } = await import('./db.js');
+  // you_card lives in sheets store as id: 'you'
+  const char = await _dbGet('sheets', 'you').catch(() => null);
+  if (!char) return;
+
+  state.activePrintId = 'you_card';
+
+  // Map shared identity fields into forge
+  const s = id => { const el = document.getElementById(id); return (val) => { if (el) el.value = val || ''; }; };
+  const id = char.identity || {};
+  s('bot-name')(char.name || id.name || '');
+  s('bot-greeting')(id.first_words || char.first_words || '');
+  s('bot-personality')(id.personality || char.personality || '');
+  s('forge-title')(id.title || char.role || '');
+  s('forge-identity-line')(id.identity_line || '');
+  s('forge-vibe')(id.vibe || '');
+  s('forge-pronouns')(id.pronouns || '');
+  s('forge-species')(id.species || '');
+  s('forge-age')(id.age || '');
+  s('forge-alignment')(id.alignment || '');
+  s('forge-origin')(id.origin || '');
+  s('forge-occupation')(id.occupation || char.job || '');
+
+  // Portrait
+  const portrait = char.portrait_base64 || char.avatar_base64 || null;
+  if (!portrait && window.opfsRead) {
+    try {
+      const d = await window.opfsRead('you_card_avatar.png');
+      if (d) {
+        _portraitBase64 = d;
+        const pv = document.getElementById('forge-portrait-preview');
+        const ph = document.getElementById('forge-portrait-hint');
+        const pw = document.getElementById('forge-portrait-wrap');
+        if (pv) { pv.src = d; pv.style.display = 'block'; }
+        if (ph) ph.style.display = 'none';
+        if (pw) pw.style.borderColor = 'var(--teal)';
+      }
+    } catch(_) {}
+  } else if (portrait) {
+    _portraitBase64 = portrait;
+    const pv = document.getElementById('forge-portrait-preview');
+    const ph = document.getElementById('forge-portrait-hint');
+    const pw = document.getElementById('forge-portrait-wrap');
+    if (pv) { pv.src = portrait; pv.style.display = 'block'; }
+    if (ph) ph.style.display = 'none';
+    if (pw) pw.style.borderColor = 'var(--teal)';
+  }
+
+  // Map you-specific fields into about-you section
+  const yc = id => { const el = document.getElementById(id); return (val) => { if (el) el.value = val || ''; }; };
+  yc('yc-hair')(char.hair || '');
+  yc('yc-build')(char.build || char.height_build || '');
+  yc('yc-marks')(char.marks || '');
+  yc('yc-life-now')(char.life_now || char.life_right_now || '');
+  yc('yc-current-arc')(char.current_arc || '');
+  yc('yc-working-on')(char.working_on || '');
+  yc('yc-theme-song')(char.theme_song || '');
+  yc('yc-pets')(char.pets || char.pet_names || '');
+  yc('yc-fav-food')(char.fav_food || '');
+  yc('yc-comfort-show')(char.comfort_show || '');
+  yc('yc-hates')(char.hates || '');
+  yc('yc-hobbies')(char.hobbies || '');
+  yc('yc-obsession')(char.obsession || char.current_obsession || '');
+  yc('yc-job')(char.job || '');
+  yc('yc-creative-medium')(char.creative_medium || '');
+  yc('yc-who-matters')(char.who_matters || '');
+  yc('yc-wins')(char.wins || char.wins_lately || '');
+  yc('yc-stuck-on')(char.stuck_on || '');
+  yc('yc-influences')(char.influences || '');
+  yc('yc-tell-sky')(char.tell_sky || '');
+
+  // Restore how-you-work chips
+  const howYouWork = char.how_you_work || [];
+  document.querySelectorAll('[data-yc]').forEach(c => {
+    c.classList.toggle('selected', howYouWork.includes(c.dataset.yc));
+  });
+
+  // Show the about-you section
+  showYouSection();
+  console.log('[forge] you_card loaded into forge');
+}
+window.loadYouCardIntoForge = loadYouCardIntoForge;
 
 async function loadPrintIntoForm() {
   // Try loading from legacy config first

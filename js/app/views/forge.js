@@ -57,6 +57,88 @@ export function initForgeView() {
       </div>
     </div>
 
+    <!-- ABOUT YOU (only shown when editing you_card) -->
+    <div class="forge-section" id="forge-section-aboutyou" style="display:none">
+      <div class="forge-section-header" onclick="toggleForgeSection('aboutyou')">
+        <span class="forge-section-icon" id="forge-icon-aboutyou">&#x25BE;</span>
+        <span class="forge-section-title">about you</span>
+      </div>
+      <div class="forge-section-body" id="forge-body-aboutyou">
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">hair</label>
+            <input class="forge-input" id="yc-hair" placeholder="samurai cut..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">height / build</label>
+            <input class="forge-input" id="yc-build" placeholder="5'9 skinny..." /></div>
+        </div>
+        <div class="forge-field"><label class="forge-label">marks / features</label>
+          <input class="forge-input" id="yc-marks" placeholder="distinctive stuff..." /></div>
+        <div class="forge-field"><label class="forge-label">life right now</label>
+          <textarea class="forge-input" id="yc-life-now" rows="2" placeholder="what are you actually going through right now..."></textarea></div>
+        <div class="forge-field"><label class="forge-label">current arc</label>
+          <textarea class="forge-input" id="yc-current-arc" rows="2" placeholder="the chapter you're in..."></textarea></div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">working on</label>
+            <input class="forge-input" id="yc-working-on" placeholder="Spiralside.com..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">theme song right now</label>
+            <input class="forge-input" id="yc-theme-song" placeholder="i wrote the sky..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">pet name(s) / species</label>
+            <input class="forge-input" id="yc-pets" placeholder="Bellota..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">fav food / drink</label>
+            <input class="forge-input" id="yc-fav-food" placeholder="Ramen!" /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">comfort show / game</label>
+            <input class="forge-input" id="yc-comfort-show" placeholder="Stargate SG1..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">hates / dealbreakers</label>
+            <input class="forge-input" id="yc-hates" placeholder="none..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">hobbies</label>
+            <input class="forge-input" id="yc-hobbies" placeholder="making things..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">current obsession</label>
+            <input class="forge-input" id="yc-obsession" placeholder="spiralside.com..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">job / role</label>
+            <input class="forge-input" id="yc-job" placeholder="architect..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">creative medium</label>
+            <input class="forge-input" id="yc-creative-medium" placeholder="all..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">who matters</label>
+            <input class="forge-input" id="yc-who-matters" placeholder="Bellota..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">wins lately</label>
+            <input class="forge-input" id="yc-wins" placeholder="clean builds..." /></div>
+        </div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">stuck on</label>
+            <input class="forge-input" id="yc-stuck-on" placeholder="spriialside.com..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">influences</label>
+            <input class="forge-input" id="yc-influences" placeholder="all..." /></div>
+        </div>
+        <div class="forge-field"><label class="forge-label">how you work</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="yc-how-chips">
+            <button class="tone-chip" data-yc="night owl">night owl</button>
+            <button class="tone-chip" data-yc="morning person">morning person</button>
+            <button class="tone-chip" data-yc="hyperfocus">hyperfocus</button>
+            <button class="tone-chip" data-yc="needs breaks">needs breaks</button>
+            <button class="tone-chip" data-yc="visual thinker">visual thinker</button>
+            <button class="tone-chip" data-yc="list maker">list maker</button>
+            <button class="tone-chip" data-yc="voice processor">voice processor</button>
+            <button class="tone-chip" data-yc="chaotic good">chaotic good</button>
+            <button class="tone-chip" data-yc="overthinker">overthinker</button>
+            <button class="tone-chip" data-yc="ADHD">ADHD</button>
+            <button class="tone-chip" data-yc="introvert">introvert</button>
+            <button class="tone-chip" data-yc="extrovert">extrovert</button>
+          </div>
+        </div>
+        <div class="forge-field"><label class="forge-label">tell Sky anything</label>
+          <textarea class="forge-input" id="yc-tell-sky" rows="3" placeholder="stuff Sky should just know..."></textarea></div>
+      </div>
+    </div>
+
     <!-- APPEARANCE -->
     <div class="forge-section">
       <div class="forge-section-header" onclick="toggleForgeSection('appearance')">

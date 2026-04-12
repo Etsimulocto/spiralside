@@ -820,7 +820,20 @@ function renderPrintCard(print) {
     if (_ssBtn) _ssBtn.parentNode.insertBefore(_makePrintBtn, _ssBtn.nextSibling);
   }
   _makePrintBtn.style.display = 'block';
-  _makePrintBtn.textContent = '✦ make my card';
+  _makePrintBtn.textContent = '\u2736 make my card';
+
+  // ── EDIT IN FORGE BUTTON (you card only) ──
+  const _ycEditBtn = document.createElement('button');
+  _ycEditBtn.textContent = 'edit in forge';
+  _ycEditBtn.style.cssText = 'width:100%;margin-top:8px;padding:11px;background:var(--surface2);border:1px solid var(--teal);border-radius:10px;color:var(--teal);font-family:var(--font-ui);font-size:0.78rem;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s';
+  _ycEditBtn.addEventListener('click', async () => {
+    const { initForgeView } = await import('./views/forge.js');
+    initForgeView();
+    if (window.loadYouCardIntoForge) await window.loadYouCardIntoForge();
+    if (window.switchView) window.switchView('forge');
+  });
+  // Insert after make my card button
+  _makePrintBtn.parentNode.insertBefore(_ycEditBtn, _makePrintBtn.nextSibling);
   _makePrintBtn.onclick = () => window.makePrintCard(print);
 }
 
