@@ -670,6 +670,12 @@ export async function loadYouCardIntoForge() {
   // shared identity into forge fields
   s('bot-name')(char.handle || char.name || '');
   s('forge-vibe')(char.vibe || '');
+  // also populate appearance section so portrait gen uses your data
+  s('forge-hair')(char.hair || '');
+  s('forge-eyes')(char.eyes || '');
+  s('forge-style')(char.style || '');
+  s('forge-marks')(char.marks || '');
+  s('forge-appearance')(char.wearing || '');
   // you-specific fields — canonical names from sheet.js
   yc('yc-hair')(char.hair || '');
   yc('yc-eyes')(char.eyes || '');
