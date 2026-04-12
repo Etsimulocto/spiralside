@@ -324,6 +324,29 @@ export function renderActiveChar(id) {
       if (makeBtn) makeBtn.parentNode.insertBefore(imagineBtn, makeBtn.nextSibling);
     }
     imagineBtn.style.display = 'block';
+
+    // ── EDIT IN FORGE BUTTON (You card only) ──
+    let _ycForgeBtn = document.getElementById('yc-edit-forge-btn');
+    if (!_ycForgeBtn) {
+      _ycForgeBtn = document.createElement('button');
+      _ycForgeBtn.id = 'yc-edit-forge-btn';
+      _ycForgeBtn.textContent = 'edit in forge';
+      _ycForgeBtn.style.cssText = [
+        'width:100%','padding:11px','margin-top:6px',
+        'background:var(--surface2)','border:1px solid var(--teal)',
+        'border-radius:10px','color:var(--teal)',
+        'font-family:var(--font-ui)','font-size:0.78rem',
+        'cursor:pointer','letter-spacing:0.06em','transition:all 0.2s',
+      ].join(';');
+      _ycForgeBtn.addEventListener('click', async () => {
+        const { initForgeView } = await import('./views/forge.js');
+        initForgeView();
+        if (window.loadYouCardIntoForge) await window.loadYouCardIntoForge();
+        if (window.switchView) window.switchView('forge');
+      });
+      imagineBtn.parentNode.insertBefore(_ycForgeBtn, imagineBtn.nextSibling);
+    }
+    _ycForgeBtn.style.display = 'block';
   }
 
   // Save+summarize button color
