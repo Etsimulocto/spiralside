@@ -67,11 +67,21 @@ export function initForgeView() {
         <div class="forge-row">
           <div class="forge-field forge-half"><label class="forge-label">hair</label>
             <input class="forge-input" id="yc-hair" placeholder="samurai cut..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">eyes</label>
+            <input class="forge-input" id="yc-eyes" placeholder="gold..." /></div>
+        </div>
+        <div class="forge-row">
           <div class="forge-field forge-half"><label class="forge-label">height / build</label>
             <input class="forge-input" id="yc-build" placeholder="5'9 skinny..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">style / aesthetic</label>
+            <input class="forge-input" id="yc-style" placeholder="simple, techwear..." /></div>
         </div>
-        <div class="forge-field"><label class="forge-label">marks / features</label>
-          <input class="forge-input" id="yc-marks" placeholder="distinctive stuff..." /></div>
+        <div class="forge-row">
+          <div class="forge-field forge-half"><label class="forge-label">marks / features</label>
+            <input class="forge-input" id="yc-marks" placeholder="distinctive stuff..." /></div>
+          <div class="forge-field forge-half"><label class="forge-label">usually wearing</label>
+            <input class="forge-input" id="yc-wearing" placeholder="silver beanie, grey hoodie..." /></div>
+        </div>
         <div class="forge-field"><label class="forge-label">life right now</label>
           <textarea class="forge-input" id="yc-life-now" rows="2" placeholder="what are you actually going through right now..."></textarea></div>
         <div class="forge-field"><label class="forge-label">current arc</label>

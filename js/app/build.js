@@ -394,14 +394,19 @@ async function handleSave() {
       hair:        g('yc-hair'),
       build:       g('yc-build'),
       marks:       g('yc-marks'),
-      life_now:    g('yc-life-now'),
       arc:         g('yc-current-arc'),
-      working_on:  g('yc-working-on'),
+      project:     g('yc-working-on'),
       song:        g('yc-theme-song'),
       pets:        g('yc-pets'),
-      fav_food:    g('yc-fav-food'),
-      comfort_show:g('yc-comfort-show'),
+      food:        g('yc-fav-food'),
+      comfort:     g('yc-comfort-show'),
       hates:       g('yc-hates'),
+      hair:        g('yc-hair'),
+      eyes:        g('yc-eyes'),
+      build:       g('yc-build'),
+      style:       g('yc-style'),
+      marks:       g('yc-marks'),
+      wearing:     g('yc-wearing'),
       hobbies:     g('yc-hobbies'),
       obsession:   g('yc-obsession'),
       job:         g('yc-job'),
@@ -410,8 +415,8 @@ async function handleSave() {
       wins:        g('yc-wins'),
       stuck:       g('yc-stuck-on'),
       influences:  g('yc-influences'),
-      tell_sky:    g('yc-tell-sky'),
-      chips:       howYouWork,
+      freetext:    g('yc-tell-sky'),
+      workTags:    howYouWork,
       updated_at:  new Date().toISOString(),
     });
     if (_portraitBase64) updated.portrait_base64 = _portraitBase64;
@@ -664,15 +669,17 @@ export async function loadYouCardIntoForge() {
   s('forge-vibe')(char.vibe || '');
   // you-specific fields — canonical names from sheet.js
   yc('yc-hair')(char.hair || '');
+  yc('yc-eyes')(char.eyes || '');
   yc('yc-build')(char.build || '');
+  yc('yc-style')(char.style || '');
   yc('yc-marks')(char.marks || '');
-  yc('yc-life-now')(char.life_now || '');
+  yc('yc-wearing')(char.wearing || '');
   yc('yc-current-arc')(char.arc || '');
-  yc('yc-working-on')(char.working_on || '');
+  yc('yc-working-on')(char.project || '');
   yc('yc-theme-song')(char.song || '');
   yc('yc-pets')(char.pets || '');
-  yc('yc-fav-food')(char.fav_food || '');
-  yc('yc-comfort-show')(char.comfort_show || '');
+  yc('yc-fav-food')(char.food || '');
+  yc('yc-comfort-show')(char.comfort || '');
   yc('yc-hates')(char.hates || '');
   yc('yc-hobbies')(char.hobbies || '');
   yc('yc-obsession')(char.obsession || '');
@@ -682,10 +689,10 @@ export async function loadYouCardIntoForge() {
   yc('yc-wins')(char.wins || '');
   yc('yc-stuck-on')(char.stuck || '');
   yc('yc-influences')(char.influences || '');
-  yc('yc-tell-sky')(char.tell_sky || char.sky_note || '');
+  yc('yc-tell-sky')(char.freetext || char.tell_sky || '');
 
-  // Restore how-you-work chips — canonical name is char.chips[]
-  const howYouWork = char.chips || char.how_you_work || [];
+  // Restore how-you-work chips — canonical name is char.workTags[]
+  const howYouWork = char.workTags || char.chips || [];
   document.querySelectorAll('[data-yc]').forEach(c => {
     c.classList.toggle('selected', howYouWork.includes(c.dataset.yc));
   });
