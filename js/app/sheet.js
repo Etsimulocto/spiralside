@@ -798,9 +798,9 @@ function renderPrintCard(print) {
   btn.style.border     = `1px solid ${char.color}66`;
   btn.style.color      = char.color;
 
-  // Show edit/delete action row for user-made prints
+  // Show edit/delete action row for user-made prints only — not crew archetypes
   var _printActionRow = document.getElementById('print-action-row');
-  if (_printActionRow) {
+  if (_printActionRow && _isCustomBot) {
     _printActionRow.style.display = 'flex';
     _printActionRow.style.gap = '8px';
     _printActionRow.style.marginBottom = '8px';
