@@ -174,6 +174,21 @@ async function collectState() {
       }
       return slots;
     })(),
+    font_size:      localStorage.getItem('ss_fontsize') || null,
+    particles:      (function() {
+      try { return JSON.parse(localStorage.getItem('ss_particles') || 'null'); } catch(_) { return null; }
+    })(),
+    quest_hp_bonus: localStorage.getItem('ss_quest_hp_bonus') || null,
+    quest_ward:     localStorage.getItem('ss_quest_ward') || null,
+    ads_off:        localStorage.getItem('ss_ads_off') || null,
+    split_order:    (function() {
+      var o = {};
+      ['left','right','main'].forEach(function(p) {
+        var v = localStorage.getItem('ss_split_order_' + p);
+        if (v) try { o[p] = JSON.parse(v); } catch(_) {}
+      });
+      return Object.keys(o).length ? o : null;
+    })(),
   };
 }
 
@@ -283,6 +298,31 @@ async function hydrate(save) {
     try {
       save.style_slots.forEach(function(slot, i) {
         if (slot) localStorage.setItem('ss_slot_' + i, JSON.stringify(slot));
+      });
+    } catch(_) {}
+  }
+  if (save.font_size) {
+    try {
+      localStorage.setItem('ss_fontsize', save.font_size);
+      if (window.applyFontSize) window.applyFontSize(parseFloat(save.font_size));
+    } catch(_) {}
+  }
+  if (save.particles) {
+    try { localStorage.setItem('ss_particles', JSON.stringify(save.particles)); } catch(_) {}
+  }
+  if (save.quest_hp_bonus) {
+    try { localStorage.setItem('ss_quest_hp_bonus', save.quest_hp_bonus); } catch(_) {}
+  }
+  if (save.quest_ward) {
+    try { localStorage.setItem('ss_quest_ward', save.quest_ward); } catch(_) {}
+  }
+  if (save.ads_off) {
+    try { localStorage.setItem('ss_ads_off', save.ads_off); } catch(_) {}
+  }
+  if (save.split_order) {
+    try {
+      Object.keys(save.split_order).forEach(function(p) {
+        localStorage.setItem('ss_split_order_' + p, JSON.stringify(save.split_order[p]));
       });
     } catch(_) {}
   }
