@@ -126,6 +126,11 @@ export function initBuild() {
   // Register onForgeOpen — called every time forge tab is opened
   window.onForgeOpen = async () => {
     if (state.activePrintId) {
+      // you_card lives in sheets store — bypass normal print lookup
+      if (state.activePrintId === 'you_card') {
+        if (window.loadYouCardIntoForge) await window.loadYouCardIntoForge();
+        return;
+      }
       // Load the specific print from IDB by ID
       const { dbGet } = await import('./db.js');
       const print = await dbGet('prints', state.activePrintId);
