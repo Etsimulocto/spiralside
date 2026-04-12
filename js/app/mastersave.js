@@ -160,6 +160,20 @@ async function collectState() {
     style_prefs:    style_prefs,
     bot_config:     bot_config,
     tab_order:      tab_order,
+    image_vibe:     (function() {
+      try { return JSON.parse(localStorage.getItem('ss_image_vibe') || 'null'); } catch(_) { return null; }
+    })(),
+    style_state:    (function() {
+      try { return JSON.parse(localStorage.getItem('ss_style') || 'null'); } catch(_) { return null; }
+    })(),
+    style_slots:    (function() {
+      var slots = [];
+      for (var i = 0; i < 4; i++) {
+        try { slots.push(JSON.parse(localStorage.getItem('ss_slot_' + i) || 'null')); }
+        catch(_) { slots.push(null); }
+      }
+      return slots;
+    })(),
   };
 }
 
@@ -256,6 +270,22 @@ async function hydrate(save) {
   const uid = state.user ? state.user.id : null;
   if (uid && save.style_prefs) localStorage.setItem('ss_style_' + uid, JSON.stringify(save.style_prefs));
   if (uid && save.bot_config)  localStorage.setItem('ss_bot_'   + uid, JSON.stringify(save.bot_config));
+  if (save.image_vibe) {
+    try {
+      localStorage.setItem('ss_image_vibe', JSON.stringify(save.image_vibe));
+      if (window._applyImageVibe) window._applyImageVibe(save.image_vibe);
+    } catch(_) {}
+  }
+  if (save.style_state) {
+    try { localStorage.setItem('ss_style', JSON.stringify(save.style_state)); } catch(_) {}
+  }
+  if (save.style_slots && Array.isArray(save.style_slots)) {
+    try {
+      save.style_slots.forEach(function(slot, i) {
+        if (slot) localStorage.setItem('ss_slot_' + i, JSON.stringify(slot));
+      });
+    } catch(_) {}
+  }
 
   if (save.tab_order) {
     try { await dbSet('config', { key: 'tab_order', value: save.tab_order }); } catch(_) {}
