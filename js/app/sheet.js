@@ -357,6 +357,9 @@ export function renderActiveChar(id) {
   btn.style.boxShadow  = `0 0 20px ${char.color}22`;
 
   // Hide edit/delete — archetypes (crew + you) are not editable
+  // Also hide yc-edit-forge-btn when not on You card
+  const _ycBtn = document.getElementById('yc-edit-forge-btn');
+  if (_ycBtn) _ycBtn.style.display = char.isUser ? 'block' : 'none';
   const actionRow = document.getElementById('print-action-row');
   if (actionRow) actionRow.style.display = 'none';
   // Hide You card meta strip for non-user chars (crew chips)
