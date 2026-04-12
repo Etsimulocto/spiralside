@@ -346,7 +346,7 @@ export function renderActiveChar(id) {
       });
       imagineBtn.parentNode.insertBefore(_ycForgeBtn, imagineBtn.nextSibling);
     }
-    _ycForgeBtn.style.display = 'block';
+    _ycForgeBtn.style.display = char.isUser ? 'block' : 'none';
   }
 
   // Save+summarize button color

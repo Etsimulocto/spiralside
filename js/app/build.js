@@ -126,7 +126,11 @@ window.handlePortraitUpload = function(input) {
 // ── INIT ──────────────────────────────────────────────────────
 export function initBuild() {
   // Register onForgeOpen — called every time forge tab is opened
+  let _forgeOpenBusy = false;
   window.onForgeOpen = async () => {
+    if (_forgeOpenBusy) return;
+    _forgeOpenBusy = true;
+    setTimeout(() => { _forgeOpenBusy = false; }, 800);
     if (state.activePrintId) {
       // you_card lives in sheets store — bypass normal print lookup
       if (state.activePrintId === 'you_card') {
