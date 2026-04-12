@@ -339,9 +339,11 @@ export function renderActiveChar(id) {
         'cursor:pointer','letter-spacing:0.06em','transition:all 0.2s',
       ].join(';');
       _ycForgeBtn.addEventListener('click', async () => {
+        // Set activePrintId first — onForgeOpen will handle the load
+        const { state } = await import('./state.js');
+        state.activePrintId = 'you_card';
         const { initForgeView } = await import('./views/forge.js');
         initForgeView();
-        if (window.loadYouCardIntoForge) await window.loadYouCardIntoForge();
         if (window.switchView) window.switchView('forge');
       });
       imagineBtn.parentNode.insertBefore(_ycForgeBtn, imagineBtn.nextSibling);
