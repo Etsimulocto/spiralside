@@ -818,73 +818,92 @@ function autofillPatchbay(outputText, token) {
 function parseGPIOFromText(text) {
   const pins = {};
 
-  // Wire color by signal type
+  // GPIO number -> physical pin (full map)
+  const G2P = {2:3,3:5,4:7,5:29,6:31,7:26,8:24,9:21,10:19,11:23,12:32,13:33,
+               14:8,15:22,16:36,17:11,18:12,19:35,20:38,21:40,22:15,23:16,
+               24:18,25:22,26:37,27:13};
+
   function colorFor(label) {
-    const l = label.toLowerCase();
-    if (/vcc|3\.3v|3v3|5v|power|positive|pos/.test(l)) return '#e03030';
-    if (/gnd|ground|negative|neg/.test(l))              return '#222222';
-    if (/sda|i2c.*data/.test(l))                          return '#2060d0';
-    if (/scl|i2c.*clock/.test(l))                         return '#f07820';
-    if (/mosi|miso|sclk|spi/.test(l))                     return '#8040c0';
-    if (/gpio|data|signal|out|trig|echo/.test(l))         return '#28a040';
-    return '#f0c020';
+    const l = (label||'').toLowerCase();
+    if (/vcc|3\.3v|3v3|5v|power|positive/.test(l)) return '#e03030';
+    if (/gnd|ground|negative/.test(l))              return '#222222';
+    if (/sda/.test(l))                              return '#2060d0';
+    if (/scl/.test(l))                              return '#f07820';
+    if (/mosi|miso|sclk|spi/.test(l))              return '#8040c0';
+    return '#28a040';
   }
 
   function addPin(pinNum, label, topin, note) {
-    if (pinNum < 1 || pinNum > 40) return;
-    if (!pins[pinNum]) {
-      pins[pinNum] = { pin: pinNum, label: label.trim(), topin: topin.trim(), note: note.trim(), color: colorFor(label + ' ' + topin) };
-    }
+    const n = parseInt(pinNum);
+    if (!n || n < 1 || n > 40) return;
+    if (!pins[n]) pins[n] = {
+      pin: n,
+      label: (label||'').trim().slice(0,40),
+      topin: (topin||'').trim().slice(0,30),
+      note:  (note||'').trim().slice(0,40),
+      color: colorFor((label||'')+(topin||''))
+    };
   }
 
   const lines = text.split('\n');
+  lines.forEach(function(raw) {
+    const l = raw.trim();
 
-  lines.forEach(function(line) {
-    const l = line.trim();
+    // "GPIO 17 = Physical pin 11" or "GPIO 17 is on Pin 11"
+    let m = l.match(/GPIO\s*(\d+)\s*(?:=|is on|->|:)\s*(?:Physical\s*)?[Pp]in\s*(\d+)/i);
+    if (m) { addPin(m[2], 'GPIO '+m[1], 'GPIO '+m[1], ''); return; }
 
-    // Pattern: "GPIO 17 is on Pin 11" or "GPIO17 → Pin 11"
-    let m = l.match(/GPIO\s*(\d+)\s*(?:is on|on|→|->|=)\s*Pin\s*(\d+)/i);
+    // "GPIO 17 (Physical Pin 11)" or "GPIO17 (Pin 11)"
+    m = l.match(/GPIO\s*(\d+)\s*\((?:Physical\s*)?[Pp]in\s*(\d+)\)/i);
+    if (m) { addPin(m[2], 'GPIO '+m[1], 'GPIO '+m[1], ''); return; }
+
+    // "Pin 11 (GPIO 17)" or "Pin 6 (GND)" or "Pin 1 (3.3V)"
+    m = l.match(/[Pp]in\s*(\d+)\s*\(([^)]+)\)/);
     if (m) {
-      addPin(parseInt(m[2]), 'GPIO ' + m[1], 'GPIO ' + m[1], '');
+      const sig = m[2].trim();
+      const note = /gnd|ground/i.test(sig) ? 'ground' : /3\.3v|5v|vcc/i.test(sig) ? 'power' : '';
+      addPin(m[1], sig, sig, note);
+      return;
     }
 
-    // Pattern: "Pin 11 (GPIO 17)" or "Pin 6 (GND)"
-    m = l.match(/Pin\s*(\d+)\s*\(([^)]+)\)/i);
+    // "LED positive leg -> GPIO 17" or "connect to GPIO 17"
+    m = l.match(/(?:->|to|:)\s*GPIO\s*(\d+)/i);
     if (m) {
-      const pinNum = parseInt(m[1]);
-      const sig    = m[2].trim();
-      const isGnd  = /gnd|ground/i.test(sig);
-      const isPwr  = /3\.3v|3v3|5v|vcc|power/i.test(sig);
-      addPin(pinNum, sig, sig, isGnd ? 'ground' : isPwr ? 'power' : '');
+      const gpioNum = parseInt(m[1]);
+      const physPin = G2P[gpioNum];
+      const label = l.replace(/(?:->|to|:)\s*GPIO\s*\d+.*/i,'').replace(/^\d+\.\s*/,'').trim().slice(0,40) || 'GPIO '+gpioNum;
+      if (physPin) addPin(physPin, label, 'GPIO '+gpioNum, '');
+      return;
     }
 
-    // Pattern: "LED positive leg → resistor → GPIO 17 on your Pi"
-    m = l.match(/([\w\s]+)\s*(?:→|->|connect.*to|wire.*to)\s*GPIO\s*(\d+)/i);
+    // Any mention of a GPIO number — fallback
+    m = l.match(/GPIO\s*(\d+)/i);
     if (m) {
-      const label = m[1].replace(/connect|wire|attach/gi,'').trim();
-      // GPIO number to physical pin lookup (common ones)
-      const gpioToPin = {4:7,17:11,18:12,27:13,22:15,23:16,24:18,10:19,9:21,25:22,11:23,8:24,7:26,5:29,6:31,12:32,13:33,19:35,16:36,26:37,20:38,21:40};
-      const gpioNum = parseInt(m[2]);
-      const physPin = gpioToPin[gpioNum];
-      if (physPin) addPin(physPin, label, 'GPIO ' + gpioNum, '');
+      const gpioNum = parseInt(m[1]);
+      const physPin = G2P[gpioNum];
+      if (physPin) {
+        const label = l.replace(/GPIO\s*\d+/gi,'').replace(/[^a-zA-Z0-9 ]/g,' ').trim().slice(0,40) || 'GPIO '+gpioNum;
+        addPin(physPin, label||'GPIO '+gpioNum, 'GPIO '+gpioNum, '');
+      }
+      return;
     }
 
-    // Pattern: "GND → Pin 6" or "Ground → Pin 9"
-    m = l.match(/(?:GND|Ground)\s*(?:→|->|to|on)\s*Pin\s*(\d+)/i);
-    if (m) addPin(parseInt(m[1]), 'GND', 'GND', 'ground');
+    // "GND = Physical pin 6" / "Ground on Pin 6"
+    m = l.match(/(?:GND|Ground)\s*(?:=|->|on|to|:)\s*(?:Physical\s*)?[Pp]in\s*(\d+)/i);
+    if (m) { addPin(m[1], 'GND', 'GND', 'ground'); return; }
 
-    // Pattern: "3.3V → Pin 1" or "VCC → Pin 1"
-    m = l.match(/(?:3\.3V|3V3|VCC|5V)\s*(?:→|->|to|on)\s*Pin\s*(\d+)/i);
-    if (m) addPin(parseInt(m[1]), m[0].split(/\s/)[0], 'power', 'power rail');
+    // "3.3V = Physical pin 1" / "5V on Pin 2"
+    m = l.match(/(3\.3[Vv]|3V3|5[Vv]|VCC)\s*(?:=|->|on|to|:)\s*(?:Physical\s*)?[Pp]in\s*(\d+)/i);
+    if (m) { addPin(m[2], m[1], 'power', 'power'); return; }
+
+    // GND on multiple pins: "GND = Physical pin 6, 9, 14..."  — take first
+    m = l.match(/(?:GND|Ground)\s*(?:=|is|:)\s*(?:Physical\s*)?[Pp]in\s*(\d+)/i);
+    if (m) { addPin(m[1], 'GND', 'GND', 'ground'); }
   });
 
-  // Also scan for wiring table patterns like: "3.3V | Pin 1 | VCC"
-  lines.forEach(function(line) {
-    const m = line.match(/(\w[\w\s\.]+)\s*\|\s*Pin\s*(\d+)\s*\|\s*([\w\s\.]+)/i);
-    if (m) addPin(parseInt(m[2]), m[1].trim(), m[3].trim(), '');
-  });
-
-  return Object.values(pins);
+  const result = Object.values(pins);
+  console.log('[pi] GPIO auto-fill: found', result.length, 'pins', result.map(function(p){return 'pin'+p.pin+'='+p.label;}));
+  return result;
 }
 
 // ── SAVE PROJECT AS JSON ──────────────────────────────────
