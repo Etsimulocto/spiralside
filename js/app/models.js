@@ -11,17 +11,30 @@ export function toggleInputMenu(anchorEl){
   if(!panel)return;
   // toggle state
   panelOpen=!panelOpen;
-  panel.classList.toggle('open',panelOpen);
-  // mark whichever + button triggered this as active
   const btn1=document.getElementById('plus-btn');
   const btn2=document.getElementById('pi-plus-btn');
-  if(btn1)btn1.classList.toggle('active',panelOpen);
-  if(btn2)btn2.classList.toggle('active',panelOpen);
-  // wire/unwire outside-click dismiss
   if(panelOpen){
-    // use capture so we catch it before anything else closes it
+    // Move panel to body so it escapes any clipping ancestor
+    if(panel.parentElement!==document.body) document.body.appendChild(panel);
+    // Position fixed above whichever button triggered this
+    const triggerBtn=anchorEl||btn1;
+    if(triggerBtn){
+      const r=triggerBtn.getBoundingClientRect();
+      panel.style.position='fixed';
+      panel.style.left=Math.max(8,r.left)+'px';
+      panel.style.bottom=(window.innerHeight-r.top+8)+'px';
+      panel.style.top='auto';
+      panel.style.right='auto';
+      panel.style.width=Math.min(340,window.innerWidth-16)+'px';
+    }
+    panel.classList.add('open');
+    if(btn1)btn1.classList.add('active');
+    if(btn2)btn2.classList.add('active');
     setTimeout(()=>document.addEventListener('click',_outside,{capture:true}),50);
   }else{
+    panel.classList.remove('open');
+    if(btn1)btn1.classList.remove('active');
+    if(btn2)btn2.classList.remove('active');
     document.removeEventListener('click',_outside,{capture:true});
   }
 }
