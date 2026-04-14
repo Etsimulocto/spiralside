@@ -766,9 +766,10 @@ function setRunMsg(msg, color) {
 // ── AUTO-FILL PATCHBAY FROM AI OUTPUT ───────────────────────
 // Parses output text locally — no API call, no credits spent
 function autofillPatchbay(outputText) {
-  // Parse PIN MAP directly from the raw text returned by /pi endpoint
-  // Format: "PIN 11 | LED anode via resistor | GPIO 17"
-  const lines = (outputText || '').split('\n');
+  // Read from rendered DOM — innerText is clean, no markdown
+  const outEl = document.getElementById('pi-output');
+  const cleanText = outEl ? (outEl.innerText || outEl.textContent || '') : (outputText || '');
+  const lines = cleanText.split('\n');
 
   // GPIO -> physical pin map
   const G2P = {2:3,3:5,4:7,5:29,6:31,7:26,8:24,9:21,10:19,11:23,12:32,13:33,
