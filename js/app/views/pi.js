@@ -533,9 +533,8 @@ async function generate() {
     lastBuild = parseCard(prompt, data.result);
     renderCardPreview(lastBuild);
     if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
-    // Auto-fill GPIO patchbay from AI output
-    alert('BEFORE AUTOFILL: result=' + typeof data.result + ' len=' + (data.result||'').length);
-    autofillPatchbay(data.result);
+    // store result for autofill after finally
+    window._lastPiResult = data.result;
 
   } catch(e) {
     showErr('Connection error. Try again.');
@@ -543,6 +542,11 @@ async function generate() {
     isRunning = false;
     genBtn.disabled = false;
     genBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M50 5 C50 5 55 40 70 50 C55 60 50 95 50 95 C50 95 45 60 30 50 C45 40 50 5 50 5Z" fill="currentColor"/></svg>';
+    // Auto-fill patchbay after render completes
+    if (window._lastPiResult) {
+      autofillPatchbay(window._lastPiResult);
+      window._lastPiResult = null;
+    }
   }
 }
 
@@ -766,9 +770,7 @@ function setRunMsg(msg, color) {
 // ── AUTO-FILL PATCHBAY FROM AI OUTPUT ───────────────────────
 // Parses output text locally — no API call, no credits spent
 function autofillPatchbay(outputText) {
-  alert('autofillPatchbay entered. len=' + (outputText||'').length);
   const pins = parseGPIOFromText(outputText || '');
-  alert('parsed ' + pins.length + ' pins: ' + JSON.stringify(pins.slice(0,3)));
   if (!pins.length) return;
   if (!pbOpen) {
     pbOpen = true;
@@ -790,7 +792,7 @@ function autofillPatchbay(outputText) {
     if (ce && p.color) { ce.value = p.color; if (cb) { cb.style.background = p.color; cb.classList.add('pb-color-box-set'); } }
     filled++;
   });
-  alert('filled ' + filled + ' rows');
+  if (filled > 0) setRunMsg('GPIO chart filled — ' + filled + ' pins', '#00F6D6');
 }
 
 

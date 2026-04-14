@@ -28,7 +28,7 @@ async function _getDB() {
 export async function initDB() {
   if (db) return db;  // already open — skip re-init
   _dbReady = new Promise((res, rej) => {
-    const req = indexedDB.open('spiralside', 7); // v7 adds frames store
+    const req = indexedDB.open('spiralside', 8); // v8 adds builds store
 
     req.onupgradeneeded = e => {
       const d = e.target.result;
@@ -42,6 +42,7 @@ export async function initDB() {
       if (!d.objectStoreNames.contains('scenes')) d.createObjectStore('scenes', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('worlds')) d.createObjectStore('worlds', { keyPath: 'id' });
       if (!d.objectStoreNames.contains('frames')) d.createObjectStore('frames', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('builds')) d.createObjectStore('builds', { keyPath: 'key' });
     };
 
     req.onsuccess = e => { db = e.target.result; res(db); };
