@@ -6,12 +6,31 @@ export const MODELS={haiku:{label:'Haiku',cost_in:0.80,cost_out:4.00},'4o':{labe
 const MARGIN=1.17,AVG_IN=500,AVG_OUT=200;
 function estimateCost(k){const m=MODELS[k];if(!m)return '';return ((m.cost_in*AVG_IN+m.cost_out*AVG_OUT)/1000000*MARGIN/0.00001).toFixed(0);}
 export function selectModel(m){selectedModel=m;window.selectedModel=m;_renderRows();_updateIndicator();}
-export function toggleInputMenu(){panelOpen=!panelOpen;
-  const panel=document.getElementById('options-panel');const btn=document.getElementById('plus-btn');
-  if(!panel)return;panel.classList.toggle('open',panelOpen);if(btn)btn.classList.toggle('active',panelOpen);
+export function toggleInputMenu(anchorEl){panelOpen=!panelOpen;
+  const panel=document.getElementById('options-panel');
+  // resolve the trigger button — caller can pass element directly (e.g. pi-plus-btn)
+  const btn=anchorEl||document.getElementById('plus-btn');
+  if(!panel)return;
+  // position panel near the anchor button
+  if(panelOpen&&btn){
+    const r=btn.getBoundingClientRect();
+    panel.style.position='fixed';
+    panel.style.bottom=(window.innerHeight-r.top+6)+'px';
+    panel.style.left=r.left+'px';
+  }
+  panel.classList.toggle('open',panelOpen);if(btn)btn.classList.toggle('active',panelOpen);
   if(panelOpen)setTimeout(()=>document.addEventListener('click',_outside),10);else document.removeEventListener('click',_outside);}
-function _outside(e){const panel=document.getElementById('options-panel');const btn=document.getElementById('plus-btn');
-  if(panel&&btn&&!panel.contains(e.target)&&e.target!==btn){panelOpen=false;panel.classList.remove('open');btn.classList.remove('active');document.removeEventListener('click',_outside);}}
+function _outside(e){const panel=document.getElementById('options-panel');
+  // check both possible plus buttons (chat and pi tabs)
+  const btn1=document.getElementById('plus-btn');
+  const btn2=document.getElementById('pi-plus-btn');
+  const clickedBtn=(btn1&&(e.target===btn1||btn1.contains(e.target)))||(btn2&&(e.target===btn2||btn2.contains(e.target)));
+  if(panel&&!panel.contains(e.target)&&!clickedBtn){
+    panelOpen=false;panel.classList.remove('open');
+    if(btn1)btn1.classList.remove('active');
+    if(btn2)btn2.classList.remove('active');
+    document.removeEventListener('click',_outside);
+  }}
 export function togglePanelSection(id){const body=document.getElementById('psec-'+id);const chev=document.getElementById('pchev-'+id);if(!body)return;const open=body.classList.toggle('open');if(chev)chev.textContent=open?'▲':'▼';}
 export function updateInputMenu(){_renderRows();_updateIndicator();}
 function _renderRows(){Object.keys(MODELS).forEach(k=>{const row=document.getElementById('mrow-'+k);const chk=document.getElementById('mcheck-'+k);if(row)row.classList.toggle('active',k===selectedModel);if(chk)chk.classList.toggle('on',k===selectedModel);const cost=document.getElementById('mcost-'+k);if(cost)cost.textContent='-'+estimateCost(k)+' cr';});}
