@@ -811,7 +811,13 @@ function autofillPatchbay(outputText, token) {
     filled++;
   });
 
-  if (filled > 0) setRunMsg('GPIO chart auto-filled (' + filled + ' pins)', '#00F6D6');
+  if (filled > 0) {
+    setRunMsg('GPIO chart auto-filled (' + filled + ' pins)', '#00F6D6');
+  } else {
+    // Debug: show first 3 lines of text that were parsed
+    const sample = outputText.split('\n').filter(function(l){return l.trim().length>10;}).slice(0,5).join(' | ');
+    setRunMsg('GPIO: 0 pins found. Text sample: ' + sample.slice(0,120), '#FFD93D');
+  }
 }
 
 // ── LOCAL GPIO TEXT PARSER ────────────────────────────────
@@ -902,7 +908,6 @@ function parseGPIOFromText(text) {
   });
 
   const result = Object.values(pins);
-  console.log('[pi] GPIO auto-fill: found', result.length, 'pins', result.map(function(p){return 'pin'+p.pin+'='+p.label;}));
   return result;
 }
 
