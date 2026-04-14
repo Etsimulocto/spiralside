@@ -763,88 +763,128 @@ function setRunMsg(msg, color) {
 // ── PATCHBAY — reads live input values, no stored state ──
 // Collects all filled-in rows and returns a prompt context string
 // ── AUTO-FILL PATCHBAY FROM AI OUTPUT ───────────────────────
-async function autofillPatchbay(outputText, token) {
-  // Clear existing patchbay values first
+// Parses output text locally — no API call, no credits spent
+function autofillPatchbay(outputText, token) {
+  const pins = parseGPIOFromText(outputText);
+  if (!pins.length) return;
+
+  // Clear patchbay first
   document.querySelectorAll('.pb-row').forEach(function(row) {
-    const labelIn  = row.querySelector('.pb-in-label');
-    const topinIn  = row.querySelector('.pb-in-topin');
-    const noteIn   = row.querySelector('.pb-in-note');
-    const colorEl  = row.querySelector('.pb-color-native');
-    const colorBox = row.querySelector('.pb-color-box');
-    if (labelIn)  labelIn.value  = '';
-    if (topinIn)  topinIn.value  = '';
-    if (noteIn)   noteIn.value   = '';
-    if (colorEl)  colorEl.value  = '#888888';
-    if (colorBox) { colorBox.style.background = ''; colorBox.classList.remove('pb-color-box-set'); }
+    const li = row.querySelector('.pb-in-label');
+    const ti = row.querySelector('.pb-in-topin');
+    const ni = row.querySelector('.pb-in-note');
+    const ce = row.querySelector('.pb-color-native');
+    const cb = row.querySelector('.pb-color-box');
+    if (li) li.value = '';
+    if (ti) ti.value = '';
+    if (ni) ni.value = '';
+    if (ce) ce.value = '#888888';
+    if (cb) { cb.style.background = ''; cb.classList.remove('pb-color-box-set'); }
   });
 
-  try {
-    // Ask Haiku to extract GPIO assignments from the output
-    const sysPrompt = `You are a GPIO wiring extractor. Given Raspberry Pi project instructions, extract all pin connections.
-Return ONLY a JSON array, no markdown, no explanation. Each item:
-{"pin": <Pi pin NUMBER 1-40>, "label": "<what is connected>", "topin": "<component pin or signal name>", "note": "<brief note>", "color": "<hex wire color>"}
+  // Open patchbay if closed
+  if (!pbOpen) {
+    pbOpen = true;
+    const body = document.getElementById('pi-pb-body');
+    const tog  = document.getElementById('pi-pb-toggle');
+    if (body) body.style.display = 'block';
+    if (tog)  tog.textContent = 'hide';
+  }
 
-Wire color guide: red=#e03030 (power/VCC), black=#222222 (GND), green=#28a040 (data/GPIO), yellow=#f0c020 (signal), blue=#2060d0 (I2C/SDA), orange=#f07820 (I2C/SCL), purple=#8040c0 (SPI), white=#eeeeee (other)
-Only include pins that are actually used. Pin numbers are the physical Pi header pin numbers (1-40).`;
+  // Fill rows
+  let filled = 0;
+  pins.forEach(function(p) {
+    const rowEl = document.querySelector('.pb-row[data-pin="' + p.pin + '"]');
+    if (!rowEl) return;
+    const li = rowEl.querySelector('.pb-in-label');
+    const ti = rowEl.querySelector('.pb-in-topin');
+    const ni = rowEl.querySelector('.pb-in-note');
+    const ce = rowEl.querySelector('.pb-color-native');
+    const cb = rowEl.querySelector('.pb-color-box');
+    if (li && p.label) li.value = p.label;
+    if (ti && p.topin) ti.value = p.topin;
+    if (ni && p.note)  ni.value = p.note;
+    if (ce && p.color) {
+      ce.value = p.color;
+      if (cb) { cb.style.background = p.color; cb.classList.add('pb-color-box-set'); }
+    }
+    filled++;
+  });
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': '',  // handled by Railway proxy below
-      },
-    });
-    // Use Railway /pi-gpio endpoint instead
-    const gpioResp = await fetch('https://web-production-4e6f3.up.railway.app/pi-gpio', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ output: outputText }),
-    });
+  if (filled > 0) setRunMsg('GPIO chart auto-filled (' + filled + ' pins)', '#00F6D6');
+}
 
-    if (!gpioResp.ok) return;
-    const gpioData = await gpioResp.json();
-    const pins = gpioData.pins || [];
+// ── LOCAL GPIO TEXT PARSER ────────────────────────────────
+function parseGPIOFromText(text) {
+  const pins = {};
 
-    if (!pins.length) return;
+  // Wire color by signal type
+  function colorFor(label) {
+    const l = label.toLowerCase();
+    if (/vcc|3\.3v|3v3|5v|power|positive|pos/.test(l)) return '#e03030';
+    if (/gnd|ground|negative|neg/.test(l))              return '#222222';
+    if (/sda|i2c.*data/.test(l))                          return '#2060d0';
+    if (/scl|i2c.*clock/.test(l))                         return '#f07820';
+    if (/mosi|miso|sclk|spi/.test(l))                     return '#8040c0';
+    if (/gpio|data|signal|out|trig|echo/.test(l))         return '#28a040';
+    return '#f0c020';
+  }
 
-    // Open patchbay if closed
-    if (!pbOpen) {
-      pbOpen = true;
-      const body = document.getElementById('pi-pb-body');
-      const tog  = document.getElementById('pi-pb-toggle');
-      if (body) body.style.display = 'block';
-      if (tog)  tog.textContent = 'hide';
+  function addPin(pinNum, label, topin, note) {
+    if (pinNum < 1 || pinNum > 40) return;
+    if (!pins[pinNum]) {
+      pins[pinNum] = { pin: pinNum, label: label.trim(), topin: topin.trim(), note: note.trim(), color: colorFor(label + ' ' + topin) };
+    }
+  }
+
+  const lines = text.split('\n');
+
+  lines.forEach(function(line) {
+    const l = line.trim();
+
+    // Pattern: "GPIO 17 is on Pin 11" or "GPIO17 → Pin 11"
+    let m = l.match(/GPIO\s*(\d+)\s*(?:is on|on|→|->|=)\s*Pin\s*(\d+)/i);
+    if (m) {
+      addPin(parseInt(m[2]), 'GPIO ' + m[1], 'GPIO ' + m[1], '');
     }
 
-    // Fill patchbay rows
-    let filled = 0;
-    pins.forEach(function(p) {
-      const rowEl = document.querySelector('.pb-row[data-pin="' + p.pin + '"]');
-      if (!rowEl) return;
-      const labelIn  = rowEl.querySelector('.pb-in-label');
-      const topinIn  = rowEl.querySelector('.pb-in-topin');
-      const noteIn   = rowEl.querySelector('.pb-in-note');
-      const colorEl  = rowEl.querySelector('.pb-color-native');
-      const colorBox = rowEl.querySelector('.pb-color-box');
-      if (labelIn  && p.label) labelIn.value  = p.label;
-      if (topinIn  && p.topin) topinIn.value  = p.topin;
-      if (noteIn   && p.note)  noteIn.value   = p.note;
-      if (colorEl  && p.color) {
-        colorEl.value = p.color;
-        if (colorBox) {
-          colorBox.style.background = p.color;
-          colorBox.classList.add('pb-color-box-set');
-        }
-      }
-      filled++;
-    });
+    // Pattern: "Pin 11 (GPIO 17)" or "Pin 6 (GND)"
+    m = l.match(/Pin\s*(\d+)\s*\(([^)]+)\)/i);
+    if (m) {
+      const pinNum = parseInt(m[1]);
+      const sig    = m[2].trim();
+      const isGnd  = /gnd|ground/i.test(sig);
+      const isPwr  = /3\.3v|3v3|5v|vcc|power/i.test(sig);
+      addPin(pinNum, sig, sig, isGnd ? 'ground' : isPwr ? 'power' : '');
+    }
 
-    if (filled > 0) setRunMsg('GPIO patchbay auto-filled (' + filled + ' pins)', '#00F6D6');
+    // Pattern: "LED positive leg → resistor → GPIO 17 on your Pi"
+    m = l.match(/([\w\s]+)\s*(?:→|->|connect.*to|wire.*to)\s*GPIO\s*(\d+)/i);
+    if (m) {
+      const label = m[1].replace(/connect|wire|attach/gi,'').trim();
+      // GPIO number to physical pin lookup (common ones)
+      const gpioToPin = {4:7,17:11,18:12,27:13,22:15,23:16,24:18,10:19,9:21,25:22,11:23,8:24,7:26,5:29,6:31,12:32,13:33,19:35,16:36,26:37,20:38,21:40};
+      const gpioNum = parseInt(m[2]);
+      const physPin = gpioToPin[gpioNum];
+      if (physPin) addPin(physPin, label, 'GPIO ' + gpioNum, '');
+    }
 
-  } catch(e) {
-    // Silent fail — patchbay auto-fill is best-effort
-    console.warn('[pi] autofillPatchbay error:', e);
-  }
+    // Pattern: "GND → Pin 6" or "Ground → Pin 9"
+    m = l.match(/(?:GND|Ground)\s*(?:→|->|to|on)\s*Pin\s*(\d+)/i);
+    if (m) addPin(parseInt(m[1]), 'GND', 'GND', 'ground');
+
+    // Pattern: "3.3V → Pin 1" or "VCC → Pin 1"
+    m = l.match(/(?:3\.3V|3V3|VCC|5V)\s*(?:→|->|to|on)\s*Pin\s*(\d+)/i);
+    if (m) addPin(parseInt(m[1]), m[0].split(/\s/)[0], 'power', 'power rail');
+  });
+
+  // Also scan for wiring table patterns like: "3.3V | Pin 1 | VCC"
+  lines.forEach(function(line) {
+    const m = line.match(/(\w[\w\s\.]+)\s*\|\s*Pin\s*(\d+)\s*\|\s*([\w\s\.]+)/i);
+    if (m) addPin(parseInt(m[2]), m[1].trim(), m[3].trim(), '');
+  });
+
+  return Object.values(pins);
 }
 
 // ── SAVE PROJECT AS JSON ──────────────────────────────────
