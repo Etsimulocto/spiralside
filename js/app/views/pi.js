@@ -710,7 +710,7 @@ async function renderCardPreview(build) {
   }
 }
 
-async async function saveCard() {
+async function saveCard() {
   if (!lastBuild) { setRunMsg('Generate a project first!','#FFD93D'); return; }
   try {
     await dbSet('builds', { key: lastBuild.id, data: lastBuild });
