@@ -533,6 +533,8 @@ async function generate() {
     lastBuild = parseCard(prompt, data.result);
     renderCardPreview(lastBuild);
     if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
+    // Auto-fill GPIO patchbay from AI output
+    autofillPatchbay(data.result, token);
 
   } catch(e) {
     showErr('Connection error. Try again.');
@@ -760,6 +762,91 @@ function setRunMsg(msg, color) {
 
 // ── PATCHBAY — reads live input values, no stored state ──
 // Collects all filled-in rows and returns a prompt context string
+// ── AUTO-FILL PATCHBAY FROM AI OUTPUT ───────────────────────
+async function autofillPatchbay(outputText, token) {
+  // Clear existing patchbay values first
+  document.querySelectorAll('.pb-row').forEach(function(row) {
+    const labelIn  = row.querySelector('.pb-in-label');
+    const topinIn  = row.querySelector('.pb-in-topin');
+    const noteIn   = row.querySelector('.pb-in-note');
+    const colorEl  = row.querySelector('.pb-color-native');
+    const colorBox = row.querySelector('.pb-color-box');
+    if (labelIn)  labelIn.value  = '';
+    if (topinIn)  topinIn.value  = '';
+    if (noteIn)   noteIn.value   = '';
+    if (colorEl)  colorEl.value  = '#888888';
+    if (colorBox) { colorBox.style.background = ''; colorBox.classList.remove('pb-color-box-set'); }
+  });
+
+  try {
+    // Ask Haiku to extract GPIO assignments from the output
+    const sysPrompt = `You are a GPIO wiring extractor. Given Raspberry Pi project instructions, extract all pin connections.
+Return ONLY a JSON array, no markdown, no explanation. Each item:
+{"pin": <Pi pin NUMBER 1-40>, "label": "<what is connected>", "topin": "<component pin or signal name>", "note": "<brief note>", "color": "<hex wire color>"}
+
+Wire color guide: red=#e03030 (power/VCC), black=#222222 (GND), green=#28a040 (data/GPIO), yellow=#f0c020 (signal), blue=#2060d0 (I2C/SDA), orange=#f07820 (I2C/SCL), purple=#8040c0 (SPI), white=#eeeeee (other)
+Only include pins that are actually used. Pin numbers are the physical Pi header pin numbers (1-40).`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': '',  // handled by Railway proxy below
+      },
+    });
+    // Use Railway /pi-gpio endpoint instead
+    const gpioResp = await fetch('https://web-production-4e6f3.up.railway.app/pi-gpio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ output: outputText }),
+    });
+
+    if (!gpioResp.ok) return;
+    const gpioData = await gpioResp.json();
+    const pins = gpioData.pins || [];
+
+    if (!pins.length) return;
+
+    // Open patchbay if closed
+    if (!pbOpen) {
+      pbOpen = true;
+      const body = document.getElementById('pi-pb-body');
+      const tog  = document.getElementById('pi-pb-toggle');
+      if (body) body.style.display = 'block';
+      if (tog)  tog.textContent = 'hide';
+    }
+
+    // Fill patchbay rows
+    let filled = 0;
+    pins.forEach(function(p) {
+      const rowEl = document.querySelector('.pb-row[data-pin="' + p.pin + '"]');
+      if (!rowEl) return;
+      const labelIn  = rowEl.querySelector('.pb-in-label');
+      const topinIn  = rowEl.querySelector('.pb-in-topin');
+      const noteIn   = rowEl.querySelector('.pb-in-note');
+      const colorEl  = rowEl.querySelector('.pb-color-native');
+      const colorBox = rowEl.querySelector('.pb-color-box');
+      if (labelIn  && p.label) labelIn.value  = p.label;
+      if (topinIn  && p.topin) topinIn.value  = p.topin;
+      if (noteIn   && p.note)  noteIn.value   = p.note;
+      if (colorEl  && p.color) {
+        colorEl.value = p.color;
+        if (colorBox) {
+          colorBox.style.background = p.color;
+          colorBox.classList.add('pb-color-box-set');
+        }
+      }
+      filled++;
+    });
+
+    if (filled > 0) setRunMsg('GPIO patchbay auto-filled (' + filled + ' pins)', '#00F6D6');
+
+  } catch(e) {
+    // Silent fail — patchbay auto-fill is best-effort
+    console.warn('[pi] autofillPatchbay error:', e);
+  }
+}
+
 // ── SAVE PROJECT AS JSON ──────────────────────────────────
 function saveProjectJSON() {
   if (!lastBuild && !lastCode) {
