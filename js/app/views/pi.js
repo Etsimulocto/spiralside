@@ -811,25 +811,9 @@ function autofillPatchbay(outputText, token) {
     filled++;
   });
 
-  // Show result banner in the output area
-  const outEl2 = document.getElementById('pi-output');
-  if (outEl2) {
-    const banner = document.createElement('div');
-    banner.style.cssText = 'margin:8px 0;padding:8px 12px;border-radius:6px;font-size:0.72rem;font-family:var(--font-ui);';
-    if (filled > 0) {
-      banner.style.background = 'rgba(0,246,214,0.12)';
-      banner.style.color = '#00F6D6';
-      banner.style.border = '1px solid rgba(0,246,214,0.3)';
-      banner.textContent = 'GPIO chart auto-filled — ' + filled + ' pins mapped';
-    } else {
-      banner.style.background = 'rgba(255,211,61,0.1)';
-      banner.style.color = '#FFD93D';
-      banner.style.border = '1px solid rgba(255,211,61,0.3)';
-      const sample = outputText.split('\n').filter(function(l){return l.trim().length>5;}).slice(0,3).join(' /// ');
-      banner.textContent = 'GPIO: 0 pins detected. Parsed: ' + sample.slice(0,100);
-    }
-    outEl2.appendChild(banner);
-  }
+    // Debug alert
+  const sample3 = outputText.split('\n').filter(function(l){return l.trim().length>5;}).slice(0,8).join('\n');
+  alert('GPIO parser result:\nfilled=' + filled + '\n\nFirst 8 lines parsed:\n' + sample3);
 }
 
 // ── LOCAL GPIO TEXT PARSER ────────────────────────────────
