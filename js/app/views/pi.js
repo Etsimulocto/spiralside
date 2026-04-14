@@ -827,6 +827,18 @@ function parseGPIOFromText(text) {
   }
 
   const lines = text.split('\n');
+  // First pass: look for PIN MAP table (guaranteed format from system prompt)
+  lines.forEach(function(raw) {
+    const m = raw.trim().match(/^PIN\s+(\d+)\s*\|\s*([^|]+)\|\s*(.+)$/i);
+    if (m) {
+      const pinNum = parseInt(m[1]);
+      const label  = m[2].trim();
+      const topin  = m[3].trim();
+      addPin(pinNum, label, topin, '');
+    }
+  });
+
+  // Second pass: fallback patterns for older format
   lines.forEach(function(raw) {
     const l = raw.trim();
 
@@ -881,6 +893,8 @@ function parseGPIOFromText(text) {
     m = l.match(/(?:GND|Ground)\s*(?:=|is|:)\s*(?:Physical\s*)?[Pp]in\s*(\d+)/i);
     if (m) { addPin(m[1], 'GND', 'GND', 'ground'); }
   });
+
+  });  // end second pass
 
   const result = Object.values(pins);
   return result;
