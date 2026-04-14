@@ -894,8 +894,6 @@ function parseGPIOFromText(text) {
     if (m) { addPin(m[1], 'GND', 'GND', 'ground'); }
   });
 
-  });  // end second pass
-
   const result = Object.values(pins);
   return result;
 }
