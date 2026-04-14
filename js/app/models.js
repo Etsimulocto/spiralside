@@ -6,28 +6,51 @@ export const MODELS={haiku:{label:'Haiku',cost_in:0.80,cost_out:4.00},'4o':{labe
 const MARGIN=1.17,AVG_IN=500,AVG_OUT=200;
 function estimateCost(k){const m=MODELS[k];if(!m)return '';return ((m.cost_in*AVG_IN+m.cost_out*AVG_OUT)/1000000*MARGIN/0.00001).toFixed(0);}
 export function selectModel(m){selectedModel=m;window.selectedModel=m;_renderRows();_updateIndicator();}
-export function toggleInputMenu(anchorEl){panelOpen=!panelOpen;
+export function toggleInputMenu(anchorEl){
   const panel=document.getElementById('options-panel');
-  // resolve the trigger button — caller can pass element directly (e.g. pi-plus-btn)
-  const btn=anchorEl||document.getElementById('plus-btn');
   if(!panel)return;
-  panel.classList.toggle('open',panelOpen);if(btn)btn.classList.toggle('active',panelOpen);
-  if(panelOpen)setTimeout(()=>document.addEventListener('click',_outside),10);else document.removeEventListener('click',_outside);}
-function _outside(e){const panel=document.getElementById('options-panel');
-  // check both possible plus buttons (chat and pi tabs)
+  // toggle state
+  panelOpen=!panelOpen;
+  panel.classList.toggle('open',panelOpen);
+  // mark whichever + button triggered this as active
   const btn1=document.getElementById('plus-btn');
   const btn2=document.getElementById('pi-plus-btn');
-  const clickedBtn=(btn1&&(e.target===btn1||btn1.contains(e.target)))||(btn2&&(e.target===btn2||btn2.contains(e.target)));
-  if(panel&&!panel.contains(e.target)&&!clickedBtn){
-    panelOpen=false;panel.classList.remove('open');
-    if(btn1)btn1.classList.remove('active');
-    if(btn2)btn2.classList.remove('active');
-    document.removeEventListener('click',_outside);
-  }}
+  if(btn1)btn1.classList.toggle('active',panelOpen);
+  if(btn2)btn2.classList.toggle('active',panelOpen);
+  // wire/unwire outside-click dismiss
+  if(panelOpen){
+    // use capture so we catch it before anything else closes it
+    setTimeout(()=>document.addEventListener('click',_outside,{capture:true}),50);
+  }else{
+    document.removeEventListener('click',_outside,{capture:true});
+  }
+}
+function _outside(e){
+  const panel=document.getElementById('options-panel');
+  const btn1=document.getElementById('plus-btn');
+  const btn2=document.getElementById('pi-plus-btn');
+  // if click was inside the panel or on either + button, do nothing
+  if(panel&&panel.contains(e.target))return;
+  if(btn1&&btn1.contains(e.target))return;
+  if(btn2&&btn2.contains(e.target))return;
+  // close
+  panelOpen=false;
+  if(panel)panel.classList.remove('open');
+  if(btn1)btn1.classList.remove('active');
+  if(btn2)btn2.classList.remove('active');
+  document.removeEventListener('click',_outside,{capture:true});
+}
 export function togglePanelSection(id){const body=document.getElementById('psec-'+id);const chev=document.getElementById('pchev-'+id);if(!body)return;const open=body.classList.toggle('open');if(chev)chev.textContent=open?'▲':'▼';}
 export function updateInputMenu(){_renderRows();_updateIndicator();}
 function _renderRows(){Object.keys(MODELS).forEach(k=>{const row=document.getElementById('mrow-'+k);const chk=document.getElementById('mcheck-'+k);if(row)row.classList.toggle('active',k===selectedModel);if(chk)chk.classList.toggle('on',k===selectedModel);const cost=document.getElementById('mcost-'+k);if(cost)cost.textContent='-'+estimateCost(k)+' cr';});}
-function _updateIndicator(){const el=document.getElementById('model-indicator-label');if(!el)return;const m=MODELS[selectedModel];el.textContent=m?m.label.toLowerCase()+' · ~'+estimateCost(selectedModel)+' cr':'';}
+function _updateIndicator(){
+  // update chat tab indicator
+  const el=document.getElementById('model-indicator-label');
+  if(el){const m=MODELS[selectedModel];el.textContent=m?m.label.toLowerCase()+' · ~'+estimateCost(selectedModel)+' cr':'';}
+  // update pi tab indicator
+  const piEl=document.getElementById('pi-model-label');
+  if(piEl){const m=MODELS[selectedModel];piEl.textContent=m?m.label.toLowerCase():selectedModel;}
+}
 function _updateMic(){const btn=document.getElementById('mic-btn');if(!btn)return;btn.classList.toggle('recording',isRecording);btn.title=isRecording?'stop recording':'speak';}function _initSTT(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition);}export function toggleMic(){if(!sttEnabled)return;const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){console.warn('[stt] SpeechRecognition not supported in this browser');return;}if(isRecording&&recognition){try{recognition.stop();}catch(e){}isRecording=false;_updateMic();return;}try{recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';recognition.onresult=e=>{const t=e.results[0][0].transcript;const inp=document.getElementById('msg-input');if(inp){inp.value=t;inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,100)+'px';if(typeof window._sendMessage==='function'){setTimeout(window._sendMessage,120);}}};recognition.onend=()=>{isRecording=false;_updateMic();};recognition.onerror=e=>{console.warn('[stt] error:',e.error);isRecording=false;_updateMic();if(e.error==='network'){const inp=document.getElementById('msg-input');if(inp)inp.placeholder='mic blocked — try Chrome or allow spiralside.com in Edge privacy settings';setTimeout(()=>{if(inp)inp.placeholder='say something...';},4000);}};recognition.start();isRecording=true;}catch(err){console.warn('[stt] start threw:',err);isRecording=false;}_updateMic();}let _audioCtx=null;function _getAudioCtx(){if(!_audioCtx)_audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(_audioCtx.state==='suspended')_audioCtx.resume();return _audioCtx;}export async function speakReply(text){if(!ttsEnabled)return;const botName=(state?.botName||'sky').toLowerCase();const characterVoices=['sky','cold','monday','grit'];if(characterVoices.includes(botName)){try{const token=state?.session?.access_token;if(!token)throw new Error('no token');const r=await fetch('https://web-production-4e6f3.up.railway.app/tts',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({text,character:botName})});if(!r.ok)throw new Error('tts fetch failed: '+r.status);const d=await r.json();const bytes=atob(d.audio);const buf=new Uint8Array(bytes.length);for(let i=0;i<bytes.length;i++)buf[i]=bytes.charCodeAt(i);const ctx=_getAudioCtx();await ctx.resume();const audioBuf=await ctx.decodeAudioData(buf.buffer.slice(0));const source=ctx.createBufferSource();source.buffer=audioBuf;source.connect(ctx.destination);source.start(0);return;}catch(e){console.warn('[tts] ElevenLabs failed, falling back:',e);}}if(!('speechSynthesis'in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=0.95;u.pitch=1.0;window.speechSynthesis.speak(u);}export function toggleSTT(){sttEnabled=!sttEnabled;const tog=document.getElementById('tog-stt');const mic=document.getElementById('mic-btn');if(tog)tog.classList.toggle('on',sttEnabled);if(mic)mic.style.display=sttEnabled?'flex':'none';}
 export function toggleTTS(){ttsEnabled=!ttsEnabled;const tog=document.getElementById('tog-tts');if(tog)tog.classList.toggle('on',ttsEnabled);}
 export function initModels(){_initSTT();_renderRows();_updateIndicator();}
