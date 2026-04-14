@@ -13,14 +13,8 @@ export function toggleInputMenu(anchorEl){
   const btn1=document.getElementById('plus-btn');
   const btn2=document.getElementById('pi-plus-btn');
   if(panelOpen){
-    // position fixed above whichever button triggered this
-    const triggerBtn=anchorEl||btn1;
-    if(triggerBtn){
-      const r=triggerBtn.getBoundingClientRect();
-      panel.style.left=Math.max(8,r.left)+'px';
-      panel.style.bottom=(window.innerHeight-r.top+8)+'px';
-      panel.style.width=Math.min(340,window.innerWidth-16)+'px';
-    }
+    // Ensure panel is positioned relative to its container
+    // For Pi tab: panel lives in pi-console which has position:relative set via JS
     panel.classList.add('open');
     if(btn1)btn1.classList.add('active');
     if(btn2)btn2.classList.add('active');
@@ -32,6 +26,7 @@ export function toggleInputMenu(anchorEl){
     document.removeEventListener('click',_outside,{capture:true});
   }
 }
+
 function _outside(e){
   const panel=document.getElementById('options-panel');
   const btn1=document.getElementById('plus-btn');

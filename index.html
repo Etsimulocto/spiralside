@@ -668,7 +668,7 @@
     .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
 
     /* ── INPUT POPUP MENU ─────────────────────────────────────── */
-    .options-panel { position:fixed; bottom:80px; left:8px; right:auto; background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; max-height:0; opacity:0; pointer-events:none; transition:max-height 0.3s ease,opacity 0.2s; z-index:50; }
+    .options-panel { position:absolute; bottom:calc(100% + 8px); left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; max-height:0; opacity:0; pointer-events:none; transition:max-height 0.3s ease,opacity 0.2s; z-index:50; }
     .options-panel.open { max-height:520px; opacity:1; pointer-events:all; }
     .panel-sec-header { display:flex; align-items:center; justify-content:space-between; padding:9px 14px; cursor:pointer; font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--subtext); border-bottom:1px solid var(--border); user-select:none; }
     .panel-sec-header:hover { background:rgba(255,255,255,0.02); }
@@ -1716,7 +1716,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.879</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.880</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -1850,6 +1850,62 @@
     <!-- INPUT POPUP MENU -->
     <input type="file" id="file-input-chat" style="display:none" accept="image/*,.txt,.md,.pdf" />
     <div class="chat-input-area" style="position:relative;">
+    <!-- INPUT POPUP MENU -->
+    <div id="options-panel" class="options-panel">
+        <div class="panel-sec-header" onclick="togglePanelSection('models')">
+          models <span id="pchev-models">▲</span>
+        </div>
+        <div class="panel-sec-body open" id="psec-models">
+          <div class="mrow" id="mrow-haiku" onclick="selectModel('haiku')">
+            <div class="mrow-icon" style="background:rgba(0,246,214,0.1);color:#00F6D6;">⚡</div>
+            <div style="flex:1"><div class="mrow-name">Haiku</div><div class="mrow-desc">fast · haiku-4-5</div></div>
+            <div class="mrow-cost" id="mcost-haiku">-0.0009 cr</div>
+            <div class="mrow-check" id="mcheck-haiku"></div>
+          </div>
+          <div class="mrow active" id="mrow-4o" onclick="selectModel('4o')">
+            <div class="mrow-icon" style="background:rgba(124,106,247,0.1);color:#7c6af7;">◎</div>
+            <div style="flex:1"><div class="mrow-name">Sky / 4o</div><div class="mrow-desc">character · gpt-4o-mini</div></div>
+            <div class="mrow-cost" id="mcost-4o">-0.0001 cr</div>
+            <div class="mrow-check on" id="mcheck-4o"></div>
+          </div>
+          <div class="mrow" id="mrow-sonnet" onclick="selectModel('sonnet')">
+            <div class="mrow-icon" style="background:rgba(247,106,138,0.1);color:#f76a8a;">✦</div>
+            <div style="flex:1"><div class="mrow-name">Sonnet</div><div class="mrow-desc">smart · sonnet-4-5</div></div>
+            <div class="mrow-cost" id="mcost-sonnet">-0.0053 cr</div>
+            <div class="mrow-check" id="mcheck-sonnet"></div>
+          </div>
+        </div>
+        <div class="panel-sec-header" onclick="togglePanelSection('tools')">
+          tools <span id="pchev-tools">▼</span>
+        </div>
+        <div class="panel-sec-body" id="psec-tools">
+          <div class="tool-row">
+            <div class="tool-row-icon" onclick="document.getElementById('file-input-chat').click();toggleInputMenu()">📎</div>
+            <div><div class="tool-row-label">attach file</div><div class="tool-row-sub">txt, md, pdf, image</div></div>
+          </div>
+          <div class="tool-row">
+            <div class="tool-row-icon" onclick="switchView('imagine');toggleInputMenu()">🎨</div>
+            <div><div class="tool-row-label">imagine</div><div class="tool-row-sub">generate image · 5 cr</div></div>
+          </div>
+          <div class="tool-row">
+            <div class="tool-row-icon" onclick="switchView('spiralcut');toggleInputMenu()">✂️</div>
+            <div><div class="tool-row-label">cut / edit image</div><div class="tool-row-sub">flux kontext · 3 cr</div></div>
+          </div>
+        </div>
+        <div class="panel-sec-header" onclick="togglePanelSection('voice')">
+          voice <span id="pchev-voice">▼</span>
+        </div>
+        <div class="panel-sec-body" id="psec-voice">
+          <div class="stog-row">
+            <div><div class="stog-label">speech to text</div><div class="stog-sub">mic button · browser STT</div></div>
+            <div class="s-toggle on" id="tog-stt" onclick="toggleSTT()"></div>
+          </div>
+          <div class="stog-row">
+            <div><div class="stog-label">text to speech</div><div class="stog-sub">sky voice · elevenlabs · ~2 cr</div></div>
+            <div class="s-toggle" id="tog-tts" onclick="toggleTTS()"></div>
+          </div>
+        </div>
+      </div>
       <div id="options-panel" class="options-panel">
         <div class="panel-sec-header" onclick="togglePanelSection('models')">
           models <span id="pchev-models">▲</span>
@@ -3670,62 +3726,5 @@ async function czDeleteBlock(id, btn) {
     document.getElementById('feedback-text').value = '';
   };
 </script>
-
-
-<div id="options-panel" class="options-panel">
-        <div class="panel-sec-header" onclick="togglePanelSection('models')">
-          models <span id="pchev-models">▲</span>
-        </div>
-        <div class="panel-sec-body open" id="psec-models">
-          <div class="mrow" id="mrow-haiku" onclick="selectModel('haiku')">
-            <div class="mrow-icon" style="background:rgba(0,246,214,0.1);color:#00F6D6;">⚡</div>
-            <div style="flex:1"><div class="mrow-name">Haiku</div><div class="mrow-desc">fast · haiku-4-5</div></div>
-            <div class="mrow-cost" id="mcost-haiku">-0.0009 cr</div>
-            <div class="mrow-check" id="mcheck-haiku"></div>
-          </div>
-          <div class="mrow active" id="mrow-4o" onclick="selectModel('4o')">
-            <div class="mrow-icon" style="background:rgba(124,106,247,0.1);color:#7c6af7;">◎</div>
-            <div style="flex:1"><div class="mrow-name">Sky / 4o</div><div class="mrow-desc">character · gpt-4o-mini</div></div>
-            <div class="mrow-cost" id="mcost-4o">-0.0001 cr</div>
-            <div class="mrow-check on" id="mcheck-4o"></div>
-          </div>
-          <div class="mrow" id="mrow-sonnet" onclick="selectModel('sonnet')">
-            <div class="mrow-icon" style="background:rgba(247,106,138,0.1);color:#f76a8a;">✦</div>
-            <div style="flex:1"><div class="mrow-name">Sonnet</div><div class="mrow-desc">smart · sonnet-4-5</div></div>
-            <div class="mrow-cost" id="mcost-sonnet">-0.0053 cr</div>
-            <div class="mrow-check" id="mcheck-sonnet"></div>
-          </div>
-        </div>
-        <div class="panel-sec-header" onclick="togglePanelSection('tools')">
-          tools <span id="pchev-tools">▼</span>
-        </div>
-        <div class="panel-sec-body" id="psec-tools">
-          <div class="tool-row">
-            <div class="tool-row-icon" onclick="document.getElementById('file-input-chat').click();toggleInputMenu()">📎</div>
-            <div><div class="tool-row-label">attach file</div><div class="tool-row-sub">txt, md, pdf, image</div></div>
-          </div>
-          <div class="tool-row">
-            <div class="tool-row-icon" onclick="switchView('imagine');toggleInputMenu()">🎨</div>
-            <div><div class="tool-row-label">imagine</div><div class="tool-row-sub">generate image · 5 cr</div></div>
-          </div>
-          <div class="tool-row">
-            <div class="tool-row-icon" onclick="switchView('spiralcut');toggleInputMenu()">✂️</div>
-            <div><div class="tool-row-label">cut / edit image</div><div class="tool-row-sub">flux kontext · 3 cr</div></div>
-          </div>
-        </div>
-        <div class="panel-sec-header" onclick="togglePanelSection('voice')">
-          voice <span id="pchev-voice">▼</span>
-        </div>
-        <div class="panel-sec-body" id="psec-voice">
-          <div class="stog-row">
-            <div><div class="stog-label">speech to text</div><div class="stog-sub">mic button · browser STT</div></div>
-            <div class="s-toggle on" id="tog-stt" onclick="toggleSTT()"></div>
-          </div>
-          <div class="stog-row">
-            <div><div class="stog-label">text to speech</div><div class="stog-sub">sky voice · elevenlabs · ~2 cr</div></div>
-            <div class="s-toggle" id="tog-tts" onclick="toggleTTS()"></div>
-          </div>
-        </div>
-      </div>
 </body>
 </html>

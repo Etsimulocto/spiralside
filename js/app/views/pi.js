@@ -478,6 +478,13 @@ function wireEvents(wrap) {
     e.target.value = '';
   });
 
+  // Move options-panel into pi-console so position:absolute works from Pi tab
+  const optPanel = document.getElementById('options-panel');
+  const piConsole = document.getElementById('pi-console');
+  if (optPanel && piConsole && optPanel.parentElement !== piConsole) {
+    piConsole.appendChild(optPanel);
+  }
+
   document.getElementById('pi-pb-toggle').addEventListener('click', function() {
     pbOpen = !pbOpen;
     document.getElementById('pi-pb-body').style.display = pbOpen ? 'block' : 'none';
@@ -956,7 +963,7 @@ function injectPiStyles() {
     '.pi-pane-label{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--subtext);padding:4px 0 6px;font-family:var(--font-ui);}',
     '#pi-card-preview{padding:4px 0;overflow:hidden;}',
     '#pi-card-preview canvas{width:100% !important;max-width:200px;border-radius:8px;display:block;margin:0 auto;}',
-    '#pi-console{flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);overflow:visible;}',
+    '#pi-console{position:relative;flex-shrink:0;border-top:1px solid var(--border);background:var(--surface);overflow:visible;}',
     '#pi-model-indicator{display:flex;align-items:center;gap:6px;padding:6px 14px 0;font-size:0.6rem;color:var(--subtext);font-family:var(--font-ui);}',
     '#pi-model-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;}',
     '#pi-input-row{position:relative;display:flex;align-items:flex-end;gap:8px;padding:8px 10px 10px;width:100%;}',
