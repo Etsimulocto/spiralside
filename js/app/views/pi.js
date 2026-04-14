@@ -534,7 +534,8 @@ async function generate() {
     renderCardPreview(lastBuild);
     if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
     // Auto-fill GPIO patchbay from AI output
-    setTimeout(function() { autofillPatchbay(data.result, token); }, 500);
+    alert('BEFORE AUTOFILL: result=' + typeof data.result + ' len=' + (data.result||'').length);
+    autofillPatchbay(data.result);
 
   } catch(e) {
     showErr('Connection error. Try again.');
@@ -764,26 +765,11 @@ function setRunMsg(msg, color) {
 // Collects all filled-in rows and returns a prompt context string
 // ── AUTO-FILL PATCHBAY FROM AI OUTPUT ───────────────────────
 // Parses output text locally — no API call, no credits spent
-function autofillPatchbay(outputText, token) {
-  alert('autofillPatchbay called. text length=' + (outputText||'').length + ' first50=' + (outputText||'').slice(0,50));
-  const pins = parseGPIOFromText(outputText);
+function autofillPatchbay(outputText) {
+  alert('autofillPatchbay entered. len=' + (outputText||'').length);
+  const pins = parseGPIOFromText(outputText || '');
+  alert('parsed ' + pins.length + ' pins: ' + JSON.stringify(pins.slice(0,3)));
   if (!pins.length) return;
-
-  // Clear patchbay first
-  document.querySelectorAll('.pb-row').forEach(function(row) {
-    const li = row.querySelector('.pb-in-label');
-    const ti = row.querySelector('.pb-in-topin');
-    const ni = row.querySelector('.pb-in-note');
-    const ce = row.querySelector('.pb-color-native');
-    const cb = row.querySelector('.pb-color-box');
-    if (li) li.value = '';
-    if (ti) ti.value = '';
-    if (ni) ni.value = '';
-    if (ce) ce.value = '#888888';
-    if (cb) { cb.style.background = ''; cb.classList.remove('pb-color-box-set'); }
-  });
-
-  // Open patchbay if closed
   if (!pbOpen) {
     pbOpen = true;
     const body = document.getElementById('pi-pb-body');
@@ -791,33 +777,23 @@ function autofillPatchbay(outputText, token) {
     if (body) body.style.display = 'block';
     if (tog)  tog.textContent = 'hide';
   }
-
-  // Fill rows
   let filled = 0;
   pins.forEach(function(p) {
     const rowEl = document.querySelector('.pb-row[data-pin="' + p.pin + '"]');
     if (!rowEl) return;
     const li = rowEl.querySelector('.pb-in-label');
     const ti = rowEl.querySelector('.pb-in-topin');
-    const ni = rowEl.querySelector('.pb-in-note');
     const ce = rowEl.querySelector('.pb-color-native');
     const cb = rowEl.querySelector('.pb-color-box');
-    if (li && p.label) li.value = p.label;
-    if (ti && p.topin) ti.value = p.topin;
-    if (ni && p.note)  ni.value = p.note;
-    if (ce && p.color) {
-      ce.value = p.color;
-      if (cb) { cb.style.background = p.color; cb.classList.add('pb-color-box-set'); }
-    }
+    if (li) li.value = p.label || '';
+    if (ti) ti.value = p.topin || '';
+    if (ce && p.color) { ce.value = p.color; if (cb) { cb.style.background = p.color; cb.classList.add('pb-color-box-set'); } }
     filled++;
   });
-
-    // Debug alert
-  const sample3 = outputText.split('\n').filter(function(l){return l.trim().length>5;}).slice(0,8).join('\n');
-  alert('GPIO parser result:\nfilled=' + filled + '\n\nFirst 8 lines parsed:\n' + sample3);
+  alert('filled ' + filled + ' rows');
 }
 
-// ── LOCAL GPIO TEXT PARSER ────────────────────────────────
+
 function parseGPIOFromText(text) {
   const pins = {};
 
