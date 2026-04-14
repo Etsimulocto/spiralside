@@ -9,22 +9,16 @@ export function selectModel(m){selectedModel=m;window.selectedModel=m;_renderRow
 export function toggleInputMenu(anchorEl){
   const panel=document.getElementById('options-panel');
   if(!panel)return;
-  // toggle state
   panelOpen=!panelOpen;
   const btn1=document.getElementById('plus-btn');
   const btn2=document.getElementById('pi-plus-btn');
   if(panelOpen){
-    // Move panel to body so it escapes any clipping ancestor
-    if(panel.parentElement!==document.body) document.body.appendChild(panel);
-    // Position fixed above whichever button triggered this
+    // position fixed above whichever button triggered this
     const triggerBtn=anchorEl||btn1;
     if(triggerBtn){
       const r=triggerBtn.getBoundingClientRect();
-      panel.style.position='fixed';
       panel.style.left=Math.max(8,r.left)+'px';
       panel.style.bottom=(window.innerHeight-r.top+8)+'px';
-      panel.style.top='auto';
-      panel.style.right='auto';
       panel.style.width=Math.min(340,window.innerWidth-16)+'px';
     }
     panel.classList.add('open');
