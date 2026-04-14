@@ -403,13 +403,6 @@ function renderDOM(wrap) {
   const inputRow = document.createElement('div');
   inputRow.id = 'pi-input-row';
 
-  const plusBtn = document.createElement('button');
-  plusBtn.id = 'pi-plus-btn';
-  plusBtn.title = 'models + options';
-  plusBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-  plusBtn.onclick = function(e) { e.stopPropagation(); toggleInputMenu(e.currentTarget); };
-  inputRow.appendChild(plusBtn);
-
   const ta = document.createElement('textarea');
   ta.id = 'pi-prompt';
   ta.rows = 1;
@@ -477,13 +470,6 @@ function wireEvents(wrap) {
     reader.readAsText(file);
     e.target.value = '';
   });
-
-  // Move options-panel into pi-console so position:absolute works from Pi tab
-  const optPanel = document.getElementById('options-panel');
-  const piConsole = document.getElementById('pi-console');
-  if (optPanel && piConsole && optPanel.parentElement !== piConsole) {
-    piConsole.appendChild(optPanel);
-  }
 
   document.getElementById('pi-pb-toggle').addEventListener('click', function() {
     pbOpen = !pbOpen;
