@@ -155,6 +155,11 @@ function renderDOM(wrap) {
   copyBtn.textContent = 'copy output';
   actions.appendChild(copyBtn);
 
+  const mapBtn = document.createElement('button');
+  mapBtn.id = 'pi-map-btn';
+  mapBtn.textContent = 'map pins';
+  actions.appendChild(mapBtn);
+
   const dlBtn = document.createElement('button');
   dlBtn.id = 'pi-dl-btn';
   dlBtn.textContent = 'save PNG';
@@ -443,6 +448,9 @@ function wireEvents(wrap) {
   document.getElementById('pi-gen-btn').addEventListener('click', generate);
   refreshBckList();
   document.getElementById('pi-copy-btn').addEventListener('click', copyOutput);
+  document.getElementById('pi-map-btn').addEventListener('click', function() {
+    autofillPatchbay('');  // empty string = read from DOM
+  });
   document.getElementById('pi-run-btn').addEventListener('click', runPiston);
   document.getElementById('pi-save-btn').addEventListener('click', saveCard);
   document.getElementById('pi-dl-btn').addEventListener('click', downloadCard);
@@ -534,7 +542,7 @@ async function generate() {
     lastBuild = parseCard(prompt, piResultText);
     try { renderCardPreview(lastBuild); } catch(ce) { console.warn('[pi] card preview err:', ce); }
     if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
-    autofillPatchbay(piResultText);
+    // GPIO mapping available via 'map pins' button
 
   } catch(e) {
     showErr('Connection error. Try again.');
@@ -766,10 +774,17 @@ function setRunMsg(msg, color) {
 // ── AUTO-FILL PATCHBAY FROM AI OUTPUT ───────────────────────
 // Parses output text locally — no API call, no credits spent
 function autofillPatchbay(outputText) {
-  // Read from rendered DOM — innerText is clean, no markdown
+  // Always read from rendered DOM — innerText is clean, no markdown
   const outEl = document.getElementById('pi-output');
-  const cleanText = outEl ? (outEl.innerText || outEl.textContent || '') : (outputText || '');
-  const lines = cleanText.split('\n');
+  const cleanText = (outEl ? (outEl.innerText || outEl.textContent || '') : '') || outputText || '';
+  if (!cleanText.includes('PIN MAP')) {
+    setRunMsg('No PIN MAP found in output yet', '#FFD93D');
+    return;
+  }
+  // Only parse lines after PIN MAP header
+  const allLines = cleanText.split('\n');
+  const pmIdx = allLines.findIndex(function(l) { return l.trim() === 'PIN MAP'; });
+  const lines = pmIdx >= 0 ? allLines.slice(pmIdx + 1) : allLines;
 
   // GPIO -> physical pin map
   const G2P = {2:3,3:5,4:7,5:29,6:31,7:26,8:24,9:21,10:19,11:23,12:32,13:33,
