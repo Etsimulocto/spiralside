@@ -11,13 +11,6 @@ export function toggleInputMenu(anchorEl){panelOpen=!panelOpen;
   // resolve the trigger button — caller can pass element directly (e.g. pi-plus-btn)
   const btn=anchorEl||document.getElementById('plus-btn');
   if(!panel)return;
-  // position panel near the anchor button
-  if(panelOpen&&btn){
-    const r=btn.getBoundingClientRect();
-    panel.style.position='fixed';
-    panel.style.bottom=(window.innerHeight-r.top+6)+'px';
-    panel.style.left=r.left+'px';
-  }
   panel.classList.toggle('open',panelOpen);if(btn)btn.classList.toggle('active',panelOpen);
   if(panelOpen)setTimeout(()=>document.addEventListener('click',_outside),10);else document.removeEventListener('click',_outside);}
 function _outside(e){const panel=document.getElementById('options-panel');
