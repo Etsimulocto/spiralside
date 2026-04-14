@@ -160,6 +160,23 @@ function renderDOM(wrap) {
   dlBtn.textContent = 'save PNG';
   actions.appendChild(dlBtn);
 
+  const saveJsonBtn = document.createElement('button');
+  saveJsonBtn.id = 'pi-save-json-btn';
+  saveJsonBtn.textContent = 'save project JSON';
+  actions.appendChild(saveJsonBtn);
+
+  const loadJsonBtn = document.createElement('button');
+  loadJsonBtn.id = 'pi-load-json-btn';
+  loadJsonBtn.textContent = 'load project JSON';
+  actions.appendChild(loadJsonBtn);
+
+  const loadJsonInput = document.createElement('input');
+  loadJsonInput.id = 'pi-load-json-input';
+  loadJsonInput.type = 'file';
+  loadJsonInput.accept = '.json';
+  loadJsonInput.style.display = 'none';
+  actions.appendChild(loadJsonInput);
+
   colLeft.appendChild(actions);
 
   const bckLabel = document.createElement('div');
@@ -390,7 +407,7 @@ function renderDOM(wrap) {
   plusBtn.id = 'pi-plus-btn';
   plusBtn.title = 'models + options';
   plusBtn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
-  plusBtn.onclick = function(e) { e.stopPropagation(); toggleInputMenu(); };
+  plusBtn.onclick = function(e) { e.stopPropagation(); toggleInputMenu(e.currentTarget); };
   inputRow.appendChild(plusBtn);
 
   const ta = document.createElement('textarea');
@@ -438,6 +455,29 @@ function wireEvents(wrap) {
   document.getElementById('pi-dl-btn').addEventListener('click', downloadCard);
 
   // patchbay toggle — show/hide body
+  // Save project as JSON file
+  document.getElementById('pi-save-json-btn').addEventListener('click', saveProjectJSON);
+
+  // Load project from JSON file
+  document.getElementById('pi-load-json-btn').addEventListener('click', function() {
+    document.getElementById('pi-load-json-input').click();
+  });
+  document.getElementById('pi-load-json-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        const proj = JSON.parse(ev.target.result);
+        loadProjectJSON(proj);
+      } catch(err) {
+        setRunMsg('Invalid JSON file', '#FF4BCB');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
   document.getElementById('pi-pb-toggle').addEventListener('click', function() {
     pbOpen = !pbOpen;
     document.getElementById('pi-pb-body').style.display = pbOpen ? 'block' : 'none';
@@ -481,10 +521,16 @@ async function generate() {
     const ctx = pbContextString();
     const fullPrompt = ctx ? prompt + '\n\n[WIRING CONTEXT]\n' + ctx : prompt;
 
+    // Read selected model and update indicator
+    const model = selectedModel || 'sky-4o';
+    const mInfo = MODELS[model];
+    const labelEl = document.getElementById('pi-model-label');
+    if (labelEl && mInfo) labelEl.textContent = mInfo.label.toLowerCase();
+
     const resp = await fetch('https://web-production-4e6f3.up.railway.app/pi', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ prompt: fullPrompt }),
+      body: JSON.stringify({ prompt: fullPrompt, model: model }),
     });
     const data = await resp.json();
     if (!resp.ok) { showErr(data.detail || 'Something went wrong.'); return; }
@@ -664,7 +710,7 @@ async function renderCardPreview(build) {
   }
 }
 
-async function saveCard() {
+async async function saveCard() {
   if (!lastBuild) { setRunMsg('Generate a project first!','#FFD93D'); return; }
   try {
     await dbSet('builds', { key: lastBuild.id, data: lastBuild });
@@ -721,6 +767,130 @@ function setRunMsg(msg, color) {
 
 // ── PATCHBAY — reads live input values, no stored state ──
 // Collects all filled-in rows and returns a prompt context string
+// ── SAVE PROJECT AS JSON ──────────────────────────────────
+function saveProjectJSON() {
+  if (!lastBuild && !lastCode) {
+    setRunMsg('Generate a project first!', '#FFD93D');
+    return;
+  }
+
+  // Collect patchbay state
+  const pbRows = [];
+  document.querySelectorAll('.pb-row').forEach(function(row) {
+    const pinNum  = row.dataset.pin;
+    const pin     = PB_PINS.find(function(p) { return p.num === parseInt(pinNum); });
+    const label   = (row.querySelector('.pb-in-label')  || {}).value || '';
+    const topin   = (row.querySelector('.pb-in-topin')  || {}).value || '';
+    const colorEl = row.querySelector('.pb-color-native');
+    const color   = colorEl ? colorEl.value : '';
+    const note    = (row.querySelector('.pb-in-note')   || {}).value || '';
+    if (label || topin || note || color) {
+      pbRows.push({ pin: pinNum, name: pin ? pin.name : '', label, topin, color, note });
+    }
+  });
+
+  const proj = {
+    version:     '1.0',
+    created:     new Date().toISOString(),
+    id:          lastBuild ? lastBuild.id : ('BCK-' + Date.now()),
+    title:       lastBuild ? (lastBuild.title || 'Untitled Project') : 'Untitled Project',
+    description: lastBuild ? (lastBuild.description || '') : '',
+    difficulty:  lastBuild ? (lastBuild.difficulty || 'Beginner') : 'Beginner',
+    components:  lastBuild ? (lastBuild.components || []) : [],
+    wiring:      lastBuild ? (lastBuild.wiring || []) : [],
+    code:        lastCode || '',
+    gpio:        pbRows,
+    notes:       '',
+  };
+
+  const blob = new Blob([JSON.stringify(proj, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = (proj.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'pi_project') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  setRunMsg('Project saved as JSON', '#00F6D6');
+}
+
+// ── LOAD PROJECT FROM JSON ─────────────────────────────────
+function loadProjectJSON(proj) {
+  // Restore output
+  const outEl = document.getElementById('pi-output');
+  if (outEl && proj.code) {
+    outEl.innerHTML = '';
+    // Show code block
+    const pre = document.createElement('pre');
+    pre.className = 'pi-code';
+    const code = document.createElement('code');
+    code.textContent = proj.code;
+    pre.appendChild(code);
+
+    // Show title
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'pi-section-title';
+    titleDiv.textContent = 'PROJECT: ' + (proj.title || 'Loaded Project');
+    outEl.appendChild(titleDiv);
+
+    if (proj.components && proj.components.length) {
+      const compDiv = document.createElement('div');
+      compDiv.className = 'pi-section-title';
+      compDiv.textContent = 'WHAT YOU NEED';
+      outEl.appendChild(compDiv);
+      proj.components.forEach(function(c) {
+        const d = document.createElement('div');
+        d.className = 'pi-p';
+        d.textContent = '· ' + c;
+        outEl.appendChild(d);
+      });
+    }
+
+    outEl.appendChild(pre);
+    lastCode = proj.code;
+  }
+
+  // Restore GPIO patchbay
+  if (proj.gpio && proj.gpio.length) {
+    // Open the patchbay if closed
+    if (!pbOpen) {
+      pbOpen = true;
+      const body = document.getElementById('pi-pb-body');
+      const tog  = document.getElementById('pi-pb-toggle');
+      if (body) body.style.display = 'block';
+      if (tog)  tog.textContent = 'hide';
+    }
+    proj.gpio.forEach(function(row) {
+      const rowEl = document.querySelector('.pb-row[data-pin="' + row.pin + '"]');
+      if (!rowEl) return;
+      const labelIn  = rowEl.querySelector('.pb-in-label');
+      const topinIn  = rowEl.querySelector('.pb-in-topin');
+      const noteIn   = rowEl.querySelector('.pb-in-note');
+      const colorEl  = rowEl.querySelector('.pb-color-native');
+      const colorBox = rowEl.querySelector('.pb-color-box');
+      if (labelIn  && row.label) labelIn.value  = row.label;
+      if (topinIn  && row.topin) topinIn.value  = row.topin;
+      if (noteIn   && row.note)  noteIn.value   = row.note;
+      if (colorEl  && row.color) {
+        colorEl.value = row.color;
+        if (colorBox) {
+          colorBox.style.background = row.color;
+          colorBox.classList.add('pb-color-box-set');
+        }
+      }
+    });
+  }
+
+  // Restore build card
+  if (proj.title || proj.id) {
+    lastBuild = proj;
+    renderCardPreview(proj);
+  }
+
+  setRunMsg('Project loaded: ' + (proj.title || proj.id), '#00F6D6');
+}
+
 function pbContextString() {
   const rows = document.querySelectorAll('.pb-row');
   const lines = [];
