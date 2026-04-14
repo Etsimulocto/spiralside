@@ -531,10 +531,10 @@ async function generate() {
     renderOutput(outEl, data.result);
     lastCode  = extractCode(data.result);
     lastBuild = parseCard(prompt, data.result);
-    renderCardPreview(lastBuild);
-    if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
-    // store result for autofill after finally
+    // store BEFORE anything else that might throw
     window._lastPiResult = data.result;
+    try { renderCardPreview(lastBuild); } catch(ce) { console.warn('[pi] card preview err:', ce); }
+    if (data.usage && window.updateCreditDisplay) window.updateCreditDisplay(data.usage);
 
   } catch(e) {
     showErr('Connection error. Try again.');
