@@ -765,6 +765,7 @@ function setRunMsg(msg, color) {
 // ── AUTO-FILL PATCHBAY FROM AI OUTPUT ───────────────────────
 // Parses output text locally — no API call, no credits spent
 function autofillPatchbay(outputText, token) {
+  alert('autofillPatchbay called. text length=' + (outputText||'').length + ' first50=' + (outputText||'').slice(0,50));
   const pins = parseGPIOFromText(outputText);
   if (!pins.length) return;
 
