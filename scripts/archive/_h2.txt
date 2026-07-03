@@ -1,0 +1,15 @@
+
+## PATCH WORKFLOW — ALWAYS USE THIS
+NEVER heredoc over 50 lines — Git Bash 4096 char limit truncates silently
+NEVER use r-triple-quote inside heredocs — same truncation
+NEVER byte-offset slice HTML — offsets shift after every edit
+ALWAYS write long scripts to disk first then run them:
+  python - << PYEOF
+  open("_s.py","w").write("lines here no raw strings")
+  PYEOF
+  python _s.py && rm _s.py
+ALWAYS str.replace() with exact literal text
+ALWAYS print(repr(src[idx:idx+200])) before any HTML replace
+HTML replace: write _old.txt and _new.txt separately, then apply
+GIT: git add . && git commit -m msg && git push origin main --force
+BACKEND: git add . && git commit -m msg && git push (no force)
