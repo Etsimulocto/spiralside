@@ -477,6 +477,78 @@ function _peekIDBConfig(key) {
 
 // Boot: user book REPLACES Sky intro if one exists
 // Flow: peek IDB → if book found play it then auth, else normal initComic then auth
+// -- MINIMAL SPLASH -------------------------------------------
+// Replaces Sky's default comic intro at boot: wordmark + version
+// + one open button. Rides as an overlay INSIDE #screen-comic so
+// the comic DOM stays intact for playCustomComic (books) later.
+function _showSplash(onDone) {
+  const screen = document.getElementById('screen-comic');
+  // no comic screen in DOM - just continue booting
+  if (!screen) { onDone(); return; }
+
+  // make sure the comic screen itself is visible (it hosts us)
+  screen.classList.remove('fade-out');
+  screen.style.display = '';
+
+  // read the live version from the header badge (bumped by the push hook)
+  const ver = document.getElementById('version-badge')?.textContent || '';
+
+  // splash overlay - sits on top of the comic elements without touching them
+  const s = document.createElement('div');
+  s.id = 'splash-screen';
+  s.innerHTML = `
+    <style>
+      #splash-screen {
+        position: absolute; inset: 0; z-index: 50;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center; gap: 14px;
+        background: radial-gradient(ellipse at 50% 45%, #101022 0%, var(--bg, #08080d) 70%);
+        transition: opacity 0.4s ease;
+      }
+      #splash-screen.out { opacity: 0; pointer-events: none; }
+      #splash-wordmark {
+        font-family: var(--font-display, 'Syne', sans-serif);
+        font-size: 2.4rem; font-weight: 800; letter-spacing: 0.04em;
+        background: linear-gradient(90deg, var(--teal, #00F6D6), var(--purple, #7B5FFF));
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+        text-shadow: 0 0 40px rgba(0, 246, 214, 0.25);
+      }
+      #splash-version {
+        font-family: var(--font-ui, 'DM Mono', monospace);
+        font-size: 0.7rem; letter-spacing: 0.15em;
+        color: var(--subtext, #7373B3);
+      }
+      #splash-open {
+        margin-top: 18px; padding: 12px 54px;
+        font-family: var(--font-ui, 'DM Mono', monospace);
+        font-size: 0.85rem; letter-spacing: 0.2em; text-transform: lowercase;
+        color: var(--teal, #00F6D6); background: transparent; cursor: pointer;
+        border: 1px solid var(--teal, #00F6D6); border-radius: 24px;
+        box-shadow: 0 0 20px rgba(0, 246, 214, 0.15);
+        transition: all 0.2s;
+      }
+      #splash-open:hover {
+        background: rgba(0, 246, 214, 0.08);
+        box-shadow: 0 0 30px rgba(0, 246, 214, 0.35);
+      }
+    </style>
+    <div id="splash-wordmark">spiralside</div>
+    <div id="splash-version">${ver}</div>
+    <button id="splash-open">open</button>
+  `;
+  screen.appendChild(s);
+
+  // one click - fade splash, hide comic screen, continue to auth/app
+  document.getElementById('splash-open').onclick = () => {
+    s.classList.add('out');
+    setTimeout(() => {
+      s.remove();                       // clean up the overlay
+      screen.style.display = 'none';    // hand the viewport to auth/app
+      onDone();                         // -> checkAuthAndShow(onAppReady)
+    }, 400);
+  };
+}
+
 const _authCallback = () => checkAuthAndShow(onAppReady);
 
 (async () => {
@@ -488,7 +560,7 @@ const _authCallback = () => checkAuthAndShow(onAppReady);
     // Only replace Sky intro if user has explicitly set an intro book
     // Without an explicit introId, always show Sky's intro
     if (!introId) {
-      if (!playedUserBook) initComic(_authCallback);
+      if (!playedUserBook) _showSplash(_authCallback);
       return;
     }
 
@@ -573,7 +645,7 @@ const _authCallback = () => checkAuthAndShow(onAppReady);
 
   // no user book — run Sky's intro normally
   if (!playedUserBook) {
-    initComic(_authCallback);
+    _showSplash(_authCallback);
   }
 })();
 
