@@ -42,7 +42,16 @@
       --yellow:   #FFD93D;
       --blue:     #4DA3FF;
       --text:     #F0F0FF;
-      --subtext:  #6060A0;
+      --subtext:  #7373B3;          /* was #6060A0 — bumped for legibility on dark bg */
+      --sidebar-w: 220px;           /* desktop sidebar nav width (>=900px shell) */
+      --radius-sm: 8px;             /* token refresh — shared corner radii */
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --space-1: 4px;               /* token refresh — spacing scale for Phase C */
+      --space-2: 8px;
+      --space-3: 14px;
+      --space-4: 20px;
+      --glow-teal: 0 0 30px rgba(0,246,214,0.25);  /* reusable neon glow */
       --font-ui:  'DM Mono', monospace;
       --font-display: 'Syne', sans-serif;
       --font-size-base: 13px;
@@ -304,10 +313,65 @@
     }
 
     /* ── APP SHELL ──────────────────────────────────────────── */
+    /* Mobile-first: phone column, flex stack (unchanged) */
     #screen-app { max-width: min(480px, 100vw); margin: 0 auto; position: relative; overflow-x: hidden; display:flex; flex-direction:column; flex:1; min-height:0; }
     @media (min-width: 600px)  { #screen-app { max-width: min(600px, 100vw); } }
-    @media (min-width: 900px)  { #screen-app { max-width: min(740px, 100vw); } }
-    @media (min-width: 1200px) { #screen-app { max-width: min(900px, 100vw); } }
+
+    /* ── DESKTOP SHELL (>=900px) ─────────────────────────────
+       The single #tab-bar is repositioned as a left sidebar via
+       CSS grid — no HTML duplication, switchView() untouched.
+       Areas:  sidebar | header
+               sidebar | ticker
+               sidebar | main (all .view share this cell)      */
+    @media (min-width: 900px) {
+      #screen-app {
+        max-width: min(1100px, 100vw);
+        display: grid;                                   /* overrides mobile flex */
+        grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+        grid-template-rows: auto auto minmax(0, 1fr);
+        grid-template-areas:
+          "sidebar header"
+          "sidebar ticker"
+          "sidebar main";
+        border-left: 1px solid var(--border);            /* frame the shell in the gutters */
+        border-right: 1px solid var(--border);
+      }
+      #app-header         { grid-area: header; }
+      #skyline-ticker     { grid-area: ticker; }
+      #screen-app > .view { grid-area: main; min-width: 0; }  /* all views stack in one cell; .view.active owns display */
+      #fab-container      { grid-area: main; }           /* hidden anyway, but keep it placed */
+
+      /* tab strip -> vertical sidebar nav */
+      #tab-bar {
+        grid-area: sidebar;
+        flex-direction: column;                          /* still flex, now a column */
+        align-items: stretch;
+        overflow-y: auto;                                /* scrolls if 20+ tabs overflow */
+        overflow-x: hidden;
+        border-bottom: none;
+        border-right: 1px solid var(--border);
+        padding: 14px 10px calc(14px + var(--safe-bot));
+        gap: 2px;
+        scrollbar-width: thin;
+      }
+      .tab-btn {
+        text-align: left;                                /* row items, not centered pills */
+        padding: 9px 12px;
+        font-size: 0.74rem;
+        border-bottom: none;                             /* kill mobile underline indicator */
+        border-left: 2px solid transparent;              /* left rail indicator instead */
+        border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        margin-bottom: 0;
+      }
+      .tab-btn:hover  { background: rgba(255,255,255,0.03); }
+      .tab-btn.active {
+        border-bottom-color: transparent;                /* neutralize base .active underline */
+        border-left-color: var(--teal);
+        background: rgba(0,246,214,0.07);
+      }
+    }
+    @media (min-width: 1200px) { #screen-app { max-width: min(1280px, 100vw); } }
+    @media (min-width: 1600px) { #screen-app { max-width: min(1440px, 100vw); } }
 
     /* ── HEADER ─────────────────────────────────────────────── */
     .header-logo-row {
@@ -1716,7 +1780,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.901</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.902</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
