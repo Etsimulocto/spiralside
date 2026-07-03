@@ -1715,6 +1715,13 @@
     #tab-split.split-active { opacity:1; color:var(--teal); border-color:var(--teal); }
     @media(max-width:1023px){ #tab-split { display:none; } }
     .split-panel { flex:1; min-width:0; display:flex; flex-direction:column; overflow:hidden; }
+    /* draggable divider between the split panels */
+    #split-divider {
+      width: 6px; flex-shrink: 0; cursor: col-resize;
+      background: var(--border); touch-action: none;
+      transition: background 0.15s;
+    }
+    #split-divider:hover, #split-divider.dragging { background: var(--teal); }
     .split-tabbar { display:flex; align-items:center; gap:2px; padding:0 6px; height:28px; background:var(--surface); border-bottom:1px solid var(--border); overflow-x:auto; scrollbar-width:none; flex-shrink:0; }
     .split-tabbar::-webkit-scrollbar { display:none; }
     .split-tab { font-size:0.58rem; color:var(--subtext); padding:3px 7px; border-radius:4px; cursor:pointer; border:1px solid transparent; background:none; font-family:var(--font-ui); white-space:nowrap; }
@@ -1855,7 +1862,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge">v0.8.913</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.914</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -2809,8 +2816,58 @@
 
 <div id="split-root" style="display:none;width:100%;height:100vh;flex-direction:row;overflow:hidden;position:fixed;top:0;left:0;z-index:10;background:var(--bg)">
   <div id="split-panel-a" class="split-panel"></div>
-  <div id="split-panel-b" class="split-panel" style="border-left:1px solid var(--border)"></div>
+  <div id="split-divider" title="drag to resize · double-click to reset"></div>
+  <div id="split-panel-b" class="split-panel"></div>
 </div>
+<script>
+  // -- SPLIT DIVIDER DRAG -------------------------------------
+  (function() {
+    const bar  = document.getElementById('split-divider');
+    const a    = document.getElementById('split-panel-a');
+    const root = document.getElementById('split-root');
+    if (!bar || !a || !root) return;
+
+    // restore last saved ratio (panel A width as % of the window)
+    const saved = parseFloat(localStorage.getItem('ss_split_ratio'));
+    if (saved >= 20 && saved <= 80) a.style.flex = '0 0 ' + saved + '%';
+
+    let dragging = false;
+
+    // compute clamped % from a pointer position
+    function pct(e) {
+      const rect = root.getBoundingClientRect();
+      const p = ((e.clientX - rect.left) / rect.width) * 100;
+      return Math.max(20, Math.min(80, p));
+    }
+
+    bar.addEventListener('pointerdown', e => {
+      dragging = true;
+      bar.classList.add('dragging');
+      bar.setPointerCapture(e.pointerId);   // keeps events on the bar, even over iframes
+      e.preventDefault();
+    });
+
+    bar.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      a.style.flex = '0 0 ' + pct(e) + '%'; // A takes the drag, B autofills the rest
+    });
+
+    bar.addEventListener('pointerup', e => {
+      if (!dragging) return;
+      dragging = false;
+      bar.classList.remove('dragging');
+      try { localStorage.setItem('ss_split_ratio', pct(e).toFixed(1)); } catch(err) {}
+      window.dispatchEvent(new Event('resize'));  // let canvases/views recalc
+    });
+
+    // double-click: back to 50/50
+    bar.addEventListener('dblclick', () => {
+      a.style.flex = '1';
+      try { localStorage.removeItem('ss_split_ratio'); } catch(err) {}
+      window.dispatchEvent(new Event('resize'));
+    });
+  })();
+</script>
 
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- SLIDE PANEL (Store + Account)                             -->
