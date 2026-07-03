@@ -113,7 +113,7 @@ export function toggleFAB() {
 // ── SPLIT MODE ────────────────────────────────────────────────
 let _splitOn = false;
 const _sv = { a: 'chat', b: 'pi' };
-const _TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide','cannonized','spiral','frames','bloomslice','bloomengine'];
+const _TABS = ['chat','pi','imagine','forge','code','quest','codex','library','music','vault','studio','cut','style','store','account','guide','cannonized','spiral','frames','bloomslice','bloomengine','bloomstudio'];
 
 export function toggleSplitMode() {
   _splitOn = !_splitOn;
@@ -138,7 +138,7 @@ window.toggleSplitMode = toggleSplitMode;
 
 // ── SPLIT TAB ORDER ──────────────────────────────────────────
 // Single scrollable row — all tabs, draggable, persisted per panel
-const _SPLIT_ALL = ['chat','pi','codex','forge','imagine','frames','cut','studio','quest','spiral','cannonized','library','music','code','bloomslice','bloomengine','vault','guide','style','store','account'];
+const _SPLIT_ALL = ['chat','pi','codex','forge','imagine','frames','cut','studio','quest','spiral','cannonized','library','music','code','bloomslice','bloomengine','bloomstudio','vault','guide','style','store','account'];
 
 function _saveSplitOrder(panel) {
   const bar = document.getElementById('split-bar-' + panel);
@@ -267,6 +267,7 @@ function _loadPanel(panel, id) {
     pi:()=>window.initPiView&&window.initPiView(),
     bloomslice: () => window.initBloomsliceView && window.initBloomsliceView(),
       bloomengine: () => window.initBloomEngineView && window.initBloomEngineView(),
+      bloomstudio: () => window.initBloomstudioView && window.initBloomstudioView(),
     codex:()=>window.initCodexView&&window.initCodexView(),
     spiral:()=>window.initSpiralView&&window.initSpiralView(),
     frames:()=>window.initFramesView&&window.initFramesView(),
@@ -306,6 +307,7 @@ export function switchView(id) {
     spiral:    () => window.initSpiralView  && window.initSpiralView(),
     bloomslice: () => window.initBloomsliceView && window.initBloomsliceView(),
     bloomengine: () => window.initBloomEngineView && window.initBloomEngineView(),
+    bloomstudio: () => window.initBloomstudioView && window.initBloomstudioView(),
     cannonized: () => { if (typeof czLoadArchive === 'function') czLoadArchive(); },
   };
   if (viewInits[id]) viewInits[id]();
