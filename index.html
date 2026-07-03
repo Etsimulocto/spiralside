@@ -331,7 +331,7 @@
         grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
         grid-template-rows: auto auto minmax(0, 1fr);
         grid-template-areas:
-          "sidebar header"
+          "header  header"
           "sidebar ticker"
           "sidebar main";
       }
@@ -371,27 +371,29 @@
     }
     /* 1200px / 1600px caps removed — desktop shell is fullscreen */
 
-    /* ── SIDEBAR COLLAPSE TOGGLE (desktop only) ─────────────── */
+    /* ── HEADER UTILITY BAR (desktop only) ─────────────────── */
     @media (min-width: 900px) {
-      /* the round toggle button - fixed so it survives collapse */
-      #sidebar-toggle {
-        position: fixed; top: 12px; left: 10px; z-index: 60;
-        width: 30px; height: 30px; border-radius: 50%;
-        border: 1px solid var(--border); background: var(--surface2);
-        color: var(--subtext); cursor: pointer; font-size: 0.9rem;
-        display: flex; align-items: center; justify-content: center;
+      /* button cluster on the header's left edge */
+      #header-utils {
+        display: flex; gap: 8px; align-items: center;
+        margin-right: 12px; position: relative; z-index: 5;
+      }
+      #header-utils button {
+        display: flex; align-items: center; gap: 6px;
+        height: 28px; padding: 0 12px; border-radius: 14px;
+        border: 1px solid var(--border); background: rgba(15,15,24,0.6);
+        color: var(--subtext); cursor: pointer;
+        font-family: var(--font-ui); font-size: 0.68rem; letter-spacing: 0.08em;
         transition: all 0.2s;
       }
-      #sidebar-toggle:hover { color: var(--teal); border-color: var(--teal); }
-      /* clear space for the toggle above the first tab */
-      #tab-bar { padding-top: 52px; }
+      #header-utils button:hover { color: var(--teal); border-color: var(--teal); }
+      /* neutralize the split button's old tab-bar positioning */
+      #header-utils #tab-split { margin-left: 0; opacity: 1; }
       /* collapsed state: sidebar column shrinks to nothing */
       #screen-app.sidebar-collapsed { grid-template-columns: 0 minmax(0, 1fr); }
       #screen-app.sidebar-collapsed #tab-bar { display: none; }
-      /* split button: pin to sidebar bottom as a labeled utility row */
-      #tab-split { margin-left: 0; margin-top: auto; opacity: 0.7; }
     }
-    @media (max-width: 899px) { #sidebar-toggle { display: none; } }
+    @media (max-width: 899px) { #header-utils { display: none; } }
 
     /* ── PHASE C: CHAT DESKTOP (>=900px) ─────────────────────
        Fullscreen shell stretched chat wall-to-wall; this pulls
@@ -1817,30 +1819,28 @@
 <!-- APP                                                       -->
 <!-- ══════════════════════════════════════════════════════════ -->
 <div class="screen" id="screen-app">
-  <!-- sidebar collapse toggle - desktop only, position:fixed so it
-       stays reachable when the sidebar is hidden -->
-  <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹</button>
   <script>
-    // toggle the sidebar, remember the choice, flip the arrow + tooltip
+    // sidebar show/hide - button lives in #header-utils in the header
     window._toggleSidebar = function() {
       const app = document.getElementById('screen-app');
       const btn = document.getElementById('sidebar-toggle');
       const collapsed = app.classList.toggle('sidebar-collapsed');
       try { localStorage.setItem('ss_sidebar_collapsed', collapsed ? '1' : ''); } catch(e) {}
-      btn.textContent = collapsed ? '›' : '‹';
-      btn.title = collapsed ? 'show sidebar' : 'hide sidebar';
+      if (btn) {
+        btn.textContent = collapsed ? '› tabs' : '‹ tabs';
+        btn.title = collapsed ? 'show sidebar' : 'hide sidebar';
+      }
     };
-    // restore saved state on load (before first paint of the app screen)
-    (function() {
+    // restore saved state once the header (and its button) exist
+    document.addEventListener('DOMContentLoaded', () => {
       try {
         if (localStorage.getItem('ss_sidebar_collapsed') === '1') {
           document.getElementById('screen-app').classList.add('sidebar-collapsed');
           const btn = document.getElementById('sidebar-toggle');
-          btn.textContent = '›';
-          btn.title = 'show sidebar';
+          if (btn) { btn.textContent = '› tabs'; btn.title = 'show sidebar'; }
         }
       } catch(e) {}
-    })();
+    });
   </script>
 
   <!-- HEADER -->
@@ -1851,7 +1851,11 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.912</div>        <div class="header-right">
+        <div id="header-utils">
+          <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
+          <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
+        </div>
+        <div class="version-badge" id="version-badge">v0.8.913</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -1964,7 +1968,6 @@
     <button class="tab-btn" id="tab-bloomslice" onclick="switchView('bloomslice')">🪵 bloomslice</button>
     <button class="tab-btn" id="tab-bloomengine" onclick="switchView('bloomengine')">&#8756; bloom engine</button>
     <button class="tab-btn" id="tab-bloomstudio" onclick="switchView('bloomstudio')">&#128377; game maker</button>
-    <button id="tab-split" class="tab-btn" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split screen</button>
 
   </div>
 
