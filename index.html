@@ -325,7 +325,8 @@
                sidebar | main (all .view share this cell)      */
     @media (min-width: 900px) {
       #screen-app {
-        max-width: min(1100px, 100vw);
+        max-width: none;                                 /* fullscreen: span the whole viewport */
+        width: 100%;
         display: grid;                                   /* overrides mobile flex */
         grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
         grid-template-rows: auto auto minmax(0, 1fr);
@@ -333,8 +334,6 @@
           "sidebar header"
           "sidebar ticker"
           "sidebar main";
-        border-left: 1px solid var(--border);            /* frame the shell in the gutters */
-        border-right: 1px solid var(--border);
       }
       #app-header         { grid-area: header; }
       #skyline-ticker     { grid-area: ticker; }
@@ -370,8 +369,7 @@
         background: rgba(0,246,214,0.07);
       }
     }
-    @media (min-width: 1200px) { #screen-app { max-width: min(1280px, 100vw); } }
-    @media (min-width: 1600px) { #screen-app { max-width: min(1440px, 100vw); } }
+    /* 1200px / 1600px caps removed — desktop shell is fullscreen */
 
     /* ── HEADER ─────────────────────────────────────────────── */
     .header-logo-row {
@@ -1780,7 +1778,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.902</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.903</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
