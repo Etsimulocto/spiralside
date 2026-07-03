@@ -54,6 +54,8 @@ const GUIDES = {
     // ── F ──
     { id: 'tut_forge',      title: 'Forge',            desc: 'Build your own companion. Name them, shape their personality, give them a vibe.',             icon: '⚙',  character: 'grit',   action: 'overlay', overlay: 'forge',      is_new: false },
     { id: 'tut_frames',     title: 'Frames',           desc: 'SVG/PNG frame maker. Comic FX — halftone, scanlines, speed lines, ripped edges, more.',       icon: '🖼',  character: 'cold',   action: 'overlay', overlay: 'frames',     is_new: true  },
+    // ── G ──
+    { id: 'tut_gamemaker',  title: 'Game Maker',       desc: 'BloomStudio — a full game engine in a tab. Tile maps, pixel sprites, enemies, dialogue, logic, Run mode.', icon: '🕹', character: 'grit',   action: 'overlay', overlay: 'gamemaker',  is_new: true  },
     // ── I ──
     { id: 'tut_imagine',    title: 'Imagine',          desc: 'Generate images from text. Anchor to a card for consistent style across every scene.',        icon: '🎨', character: 'sky',    action: 'overlay', overlay: 'imagine',    is_new: false },
     // ── L ──
@@ -72,6 +74,11 @@ const GUIDES = {
     { id: 'tut_vault',      title: 'Vault',            desc: 'Drop files here. Your companion reads them and remembers.',                                   icon: '🗂',  character: 'cold',   action: 'overlay', overlay: 'vault',      is_new: false },
   ],
   updates: [
+    { id: 'upd_gamemaker',  title: 'Game Maker Tab',   desc: 'BloomStudio ships. Full game engine: maps, sprites, enemies, dialogue, logic, Run mode. Autosaves as you build.', icon: '🕹', character: 'grit',   action: 'none', is_new: true  },
+    { id: 'upd_desktop',    title: 'Desktop Redesign', desc: 'Sidebar navigation, fullscreen layout, full-width header. Collapse the sidebar with the tabs button up top.',      icon: '🖥', character: 'cold',   action: 'none', is_new: true  },
+    { id: 'upd_split2',     title: 'Split Screen 2.0', desc: 'Split lives in the header now. Drag the divider to resize panes, double-click to reset. Your ratio saves.',        icon: '⧉',  character: 'monday', action: 'none', is_new: true  },
+    { id: 'upd_whatsnew',   title: 'Whats New Panel',  desc: 'Click the version number in the header for release notes and tips. A teal dot means something new landed.',        icon: '📰', character: 'sky',    action: 'none', is_new: true  },
+    { id: 'upd_splash',     title: 'New Startup',      desc: 'Clean splash — logo, version, open. Sky\'s comic retired from boot; your custom intro books still play.',       icon: '🌀', character: 'sky',    action: 'none', is_new: true  },
     { id: 'upd_frames',     title: 'Frames Tab',       desc: 'New comic frame maker. Halftone, scanlines, speed lines, ripped edges, 6 corner styles, per-side offsets.', icon: '🖼',  character: 'cold',   action: 'none', is_new: true  },
     { id: 'upd_cut',        title: 'SpiralCut',        desc: 'New storyboard editor. 3-row timeline, cast bin, gen-image pipeline routes straight to Imagine.',           icon: '✂',  character: 'monday', action: 'none', is_new: true  },
     { id: 'upd_quest',      title: 'Quest',            desc: 'New idle RPG. Gold economy, Wandering Merchant (7 items, 3 rotating daily), loot modal, idle resolve.',     icon: '⚔',  character: 'grit',   action: 'none', is_new: true  },
@@ -83,6 +90,8 @@ const GUIDES = {
     { id: 'upd_tabdrag',    title: 'Tab Reorder',      desc: 'Drag tabs to reorder them. Order saves to IDB and persists across sessions.',                               icon: '↔',  character: 'cold',   action: 'none', is_new: true  },
   ],
   tips: [
+    { id: 'tip_sidebar',    title: 'Hide the Sidebar',       desc: 'The tabs button in the header collapses the sidebar — full width for game maker or split screen.', icon: '‹',  character: 'cold',   action: 'none', is_new: false },
+    { id: 'tip_splitdrag',  title: 'Resize the Split',       desc: 'In split screen, grab the divider and drag. Chat left, game maker right, sized exactly how you like.',  icon: '↔',  character: 'monday', action: 'none', is_new: false },
     { id: 'tip_youcard',    title: 'Fill Your You Card',     desc: 'The more you fill it in, the more Sky actually knows who she\'s talking to.',               icon: '👤', character: 'sky',   action: 'none', is_new: false },
     { id: 'tip_compare',    title: 'Compare Models',         desc: 'Same prompt, different models. Sky/4o is character-accurate. Haiku is fast. Sonnet thinks.', icon: '⚖', character: 'cold',  action: 'none', is_new: false },
     { id: 'tip_cards',      title: 'Save as Card',           desc: 'Characters, scenes, worlds — cards travel. Email one to a friend. That\'s a crossover.',     icon: '📦', character: 'grit',  action: 'none', is_new: false },
@@ -113,6 +122,7 @@ const OVERLAYS = {
     { target: 'tab-forge',    title: 'This is Forge',           text: 'Build your own companion. Give them a name. A voice. A vibe.',                   char: 'grit',   pos: 'bottom' },
     { target: 'tab-imagine',  title: 'This is Imagine',         text: 'Generate images. Anchor to a card for style consistency.',                       char: 'sky',    pos: 'bottom' },
     { target: 'tab-quest',    title: 'This is Quest',           text: 'Idle RPG lives here. Earn Gold. Spend it on unlocks across the whole app.',      char: 'grit',   pos: 'bottom' },
+    { target: 'tab-bloomstudio', title: 'This is Game Maker',  text: 'Build actual games. Maps, sprites, enemies. Hit RUN and play what you made.',    char: 'grit',   pos: 'bottom' },
     { target: null,           title: "That's enough for now.",  text: 'Explore. Break things. Come back here when you\'re lost.',                       char: 'monday', pos: 'center' },
   ],
   account: [
@@ -153,6 +163,11 @@ const OVERLAYS = {
     { target: 'tab-frames',  title: 'Frames Tab',       text: 'Make comic frames. Pick a corner style, add FX, export as SVG or PNG.',                   char: 'cold', pos: 'bottom' },
     { target: null,          title: 'Comic FX',         text: 'Halftone, scanlines, speed lines, ripped edge, panel badge, skew — all layerable.',       char: 'cold', pos: 'center' },
     { target: null,          title: 'Into Library',     text: 'Save a frame here, pull it into Library to build a full book panel.',                     char: 'grit', pos: 'center' },
+  ],
+  gamemaker: [
+    { target: 'tab-bloomstudio', title: 'Game Maker',  text: 'A whole game studio in a tab. Paint tile maps, draw pixel sprites, place enemies, write dialogue.', char: 'grit',   pos: 'bottom' },
+    { target: null,              title: 'It Autosaves', text: 'Your project saves locally as you build. Export as .bloom.json from the Export tool when you want it out.', char: 'cold',   pos: 'center' },
+    { target: null,              title: 'Run Mode',     text: 'Hit RUN and play it right there. Coins, keys, chests, locked doors, slimes that chase you.',        char: 'monday', pos: 'center' },
   ],
   imagine: [
     { target: 'tab-imagine', title: 'Imagine Tab',      text: 'Type a prompt. Generate an image. Anchor to a card for consistency.',                     char: 'sky',  pos: 'bottom' },
