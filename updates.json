@@ -1,0 +1,18 @@
+{
+  "entries": [
+    {
+      "version": "v0.9.0",
+      "date": "2026-07-03",
+      "title": "Makeover Day",
+      "notes": [
+        "Desktop redesign: sidebar navigation, fullscreen layout",
+        "New tab: game maker - build games right inside Spiralside",
+        "Split screen: drag the divider to resize, double-click to reset",
+        "Header buttons: hide/show tabs, split screen",
+        "New minimal startup screen - straight into the app",
+        "Chat: comfortable reading width on big monitors",
+        "Tip: drag tabs in the sidebar to reorder them - it saves"
+      ]
+    }
+  ]
+}
