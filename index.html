@@ -371,6 +371,32 @@
     }
     /* 1200px / 1600px caps removed — desktop shell is fullscreen */
 
+    /* ── PHASE C: CHAT DESKTOP (>=900px) ─────────────────────
+       Fullscreen shell stretched chat wall-to-wall; this pulls
+       messages + input into a centered reading column while the
+       scrollbar stays at the view edge. Mobile untouched.      */
+    @media (min-width: 900px) {
+      /* center the message stream in an 860px column via side padding -
+         #chat-messages stays full width so its scrollbar hugs the edge */
+      #chat-messages {
+        padding-left:  max(24px, calc((100% - 860px) / 2));
+        padding-right: max(24px, calc((100% - 860px) / 2));
+      }
+      /* input bar rides the same column */
+      .chat-input-area {
+        padding-left:  max(16px, calc((100% - 860px) / 2));
+        padding-right: max(16px, calc((100% - 860px) / 2));
+      }
+      /* options popup (models / tools / voice) aligns to the input
+         column instead of spanning the whole view width */
+      .chat-input-area .options-panel {
+        left:  max(16px, calc((100% - 860px) / 2));
+        right: max(16px, calc((100% - 860px) / 2));
+      }
+      /* readable bubbles: honor the style-panel setting, cap at 680px */
+      .msg-content { max-width: min(680px, var(--bubble-max-width, 92%)); }
+    }
+
     /* ── HEADER ─────────────────────────────────────────────── */
     .header-logo-row {
       display: flex; justify-content: center; align-items: center;
@@ -1778,7 +1804,7 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
-        <div class="version-badge" id="version-badge">v0.8.904</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge">v0.8.905</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
