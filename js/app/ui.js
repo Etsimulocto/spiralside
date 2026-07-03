@@ -138,18 +138,18 @@ window.toggleSplitMode = toggleSplitMode;
 
 // ── SPLIT TAB ORDER ──────────────────────────────────────────
 // Single scrollable row — all tabs, draggable, persisted per panel
-const _SPLIT_ALL = ['chat','pi','codex','forge','imagine','frames','cut','studio','quest','spiral','cannonized','library','music','code','bloomslice','bloomengine','bloomstudio','vault','guide','style','store','account'];
+const _SPLIT_ALL = ['chat','pi','bloomstudio','codex','forge','imagine','frames','cut','studio','quest','spiral','cannonized','library','music','code','bloomslice','bloomengine','vault','guide','style','store','account'];
 
 function _saveSplitOrder(panel) {
   const bar = document.getElementById('split-bar-' + panel);
   if (!bar) return;
   const order = [...bar.querySelectorAll('.split-tab[data-view]')].map(b => b.dataset.view);
-  try { localStorage.setItem('ss_split_order_' + panel, JSON.stringify(order)); } catch(e) {}
+  try { localStorage.setItem('ss_split_order_v2_' + panel, JSON.stringify(order)); } catch(e) {}
 }
 
 function _loadSplitOrder(panel, defaults) {
   try {
-    const saved = localStorage.getItem('ss_split_order_' + panel);
+    const saved = localStorage.getItem('ss_split_order_v2_' + panel);
     if (saved) {
       const arr = JSON.parse(saved);
       // Accept saved order only if it has exactly the same set of IDs
