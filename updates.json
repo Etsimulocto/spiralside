@@ -1,6 +1,15 @@
 {
   "entries": [
     {
+      "version": "v0.9.1",
+      "date": "2026-07-04",
+      "title": "Game Maker Engine 2.1.0",
+      "notes": [
+        "Game maker updated: BloomDesktop engine 2.0.3 to 2.1.0",
+        "Engine version now tracked internally for cleaner updates"
+      ]
+    },
+    {
       "version": "v0.9.0",
       "date": "2026-07-03",
       "title": "Makeover Day",
