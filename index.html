@@ -1732,6 +1732,16 @@
   .split-view-host .view { overflow-y:auto; }
   </style>
 <link rel="icon" type="image/png" href="https://huggingface.co/spaces/quarterbitgames/spiralside/resolve/main/assets/spiral-logo.png">
+<style id="gm-full-css">
+  /* letterbox insurance: over-zoom area paints dark, not white */
+  html { background: #08080d; }
+  /* game maker fullscreen: hide hero header + ticker, grid rows collapse */
+  body.gm-full #app-header { display: none; }
+  body.gm-full #skyline-ticker { display: none; }
+  /* clamp: game maker view can never push page wider than screen */
+  #view-bloomstudio { max-width: 100vw; overflow: hidden; }
+  #view-bloomstudio iframe { width: 100%; max-width: 100%; }
+</style>
 </head>
 <body>
 <script>
@@ -1949,7 +1959,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.8.922</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.8.923</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -4009,6 +4019,15 @@ async function czDeleteBlock(id, btn) {
     if (btn) { btn.textContent = 'thanks! email opened'; setTimeout(function() { btn.textContent = 'send feedback'; }, 2500); }
     document.getElementById('feedback-text').value = '';
   };
+</script>
+<script id="gm-full-js">
+  // delegated listener - survives re-renders, no switchView dependency
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('.tab-btn');       // only care about tab clicks
+    if (!b) return;                              // not a tab - ignore
+    // gm-full on body only while game maker tab is active
+    document.body.classList.toggle('gm-full', b.id === 'tab-bloomstudio');
+  });
 </script>
 </body>
 </html>
