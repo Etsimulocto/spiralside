@@ -18,7 +18,8 @@ import { initColorSketches, recolorSketch } from './colorSketches.js';
 import { initSky } from './sky.js';
 import { sb, checkAuthAndShow, listenAuthChanges,
          handleLogin, handleSignup, handleSignout,
-         switchAuthTab, togglePw }                 from './auth.js';
+         switchAuthTab, togglePw,
+         showForgot, backToLogin, handleForgotPassword, handleNewPassword }                 from './auth.js';
 import { initDB, dbGet, dbGetAll, dbSet }          from './db.js';
 import { initChat, addMessage }                    from './chat.js';
 import { buildCharSelector, renderActiveChar,
@@ -68,6 +69,10 @@ window._sb               = sb;
 window.togglePw          = togglePw;
 window.handleLogin       = handleLogin;
 window.handleSignup      = handleSignup;
+window.showForgot           = showForgot;
+window.backToLogin          = backToLogin;
+window.handleForgotPassword = handleForgotPassword;
+window.handleNewPassword    = handleNewPassword;
 window._exportSoulPrint = exportSoulPrintPDF;
 window.CHARACTERS       = CHARACTERS;
 window._exportJSON      = exportUserData;

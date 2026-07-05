@@ -24,6 +24,8 @@ export const sb = createClient(
   }
 );
 
+let _recovering = window.location.hash.includes('type=recovery');
+
 // ── SCREEN ROUTING ────────────────────────────────────────────
 export function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -64,7 +66,9 @@ export function checkAuthAndShow(onAppReady) {
 // SIGNED_IN fires after handleLogin() succeeds — route to app
 export function listenAuthChanges() {
   sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') { _recovering = true; showScreen('auth'); showRecovery(); return; }
     if (event === 'SIGNED_IN' && session?.user) {
+      if (_recovering) { showScreen('auth'); showRecovery(); return; }
       state.user    = session.user;
       state.session = session;
       showScreen('app');
@@ -165,4 +169,40 @@ export async function getToken() {
     }
   } catch (_) {}
   return null;
+}
+
+// ── FORGOT / RESET PASSWORD ──────────────────────────────────
+export function showForgot() {
+  document.getElementById('login-form').style.display  = 'none';
+  document.getElementById('forgot-form').style.display = 'block';
+  document.getElementById('auth-error').textContent = '';
+}
+export function backToLogin() {
+  document.getElementById('forgot-form').style.display   = 'none';
+  document.getElementById('recovery-form').style.display = 'none';
+  document.getElementById('login-form').style.display    = 'block';
+  document.getElementById('auth-error').textContent = '';
+}
+export function showRecovery() {
+  ['login-form','signup-form','forgot-form'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  document.getElementById('recovery-form').style.display = 'block';
+}
+export async function handleForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { setAuthError('Enter your email first.'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+  if (error) setAuthError(error.message);
+  else setAuthError('Reset link sent - check your email!', true);
+}
+export async function handleNewPassword() {
+  const pass = document.getElementById('recovery-password').value;
+  if (!pass || pass.length < 6) { setAuthError('Password must be at least 6 characters.'); return; }
+  const { error } = await sb.auth.updateUser({ password: pass });
+  if (error) { setAuthError(error.message); return; }
+  _recovering = false;
+  setAuthError('Password updated! Loading...', true);
+  window.location.hash = '';
+  setTimeout(() => window.location.reload(), 800);
 }

@@ -1744,6 +1744,31 @@
         </div>
       </div>
       <button class="auth-btn" onclick="handleLogin()">sign in</button>
+      <div id="auth-forgot-link" onclick="showForgot()"
+           style="margin-top:10px;text-align:center;font-size:0.68rem;color:var(--subtext);cursor:pointer">
+        forgot password?</div>
+    </div>
+    <!-- FORGOT PASSWORD -->
+    <div id="forgot-form" style="display:none">
+      <div class="auth-field">
+        <label>email</label>
+        <input type="email" id="forgot-email" placeholder="you@example.com" />
+      </div>
+      <button class="auth-btn" onclick="handleForgotPassword()">send reset link</button>
+      <div onclick="backToLogin()"
+           style="margin-top:10px;text-align:center;font-size:0.68rem;color:var(--subtext);cursor:pointer">
+        back to sign in</div>
+    </div>
+    <!-- SET NEW PASSWORD (arrives via email link) -->
+    <div id="recovery-form" style="display:none">
+      <div class="auth-field">
+        <label>new password</label>
+        <div class="pw-wrap">
+          <input type="password" id="recovery-password" placeholder="new password" />
+          <button class="pw-toggle" type="button" onclick="togglePw('recovery-password',this)">show</button>
+        </div>
+      </div>
+      <button class="auth-btn" onclick="handleNewPassword()">set new password</button>
     </div>
     <!-- SIGNUP -->
     <div id="signup-form" style="display:none">
@@ -1896,7 +1921,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.8.936</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.8.937</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
