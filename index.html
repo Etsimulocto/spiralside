@@ -138,96 +138,6 @@
     .screen { display: none; flex-direction: column; height: 100dvh; height: 100svh; min-height: 0; overflow: hidden; }
     .screen.active { display: flex; }
 
-    /* ── COMIC INTRO ────────────────────────────────────────── */
-    #screen-comic {
-      position: fixed; inset: 0; z-index: 9999;
-      background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-ui);
-      transition: opacity 0.5s ease;
-    }
-    #screen-comic.fade-out { opacity: 0; pointer-events: none; }
-    #comic-panel {
-      position: relative; width: 100%; max-width: 480px; height: 100dvh;
-      overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end;
-    }
-    #comic-bg {
-      position: absolute; inset: 0;
-      background-size: cover; background-position: center;
-    }
-    #comic-bg.fade   { animation: comicFade 0.5s ease forwards; }
-    #comic-bg.crash  { animation: comicCrash 0.35s cubic-bezier(0.22,1,0.36,1) forwards; }
-    #comic-bg.glitch { animation: comicGlitch 0.4s steps(2) forwards; }
-    @keyframes comicFade  { from{opacity:0} to{opacity:1} }
-    @keyframes comicCrash { from{transform:scale(1.3) rotate(-3deg);opacity:0} to{transform:scale(1) rotate(0);opacity:1} }
-    @keyframes comicGlitch {
-      0%  {filter:hue-rotate(0deg)   brightness(1);  transform:translate(0,0)}
-      25% {filter:hue-rotate(90deg)  brightness(2);  transform:translate(-4px,2px)}
-      50% {filter:hue-rotate(180deg) brightness(0.5);transform:translate(4px,-2px)}
-      75% {filter:hue-rotate(270deg) brightness(1.5);transform:translate(-2px,4px)}
-      100%{filter:hue-rotate(0deg)   brightness(1);  transform:translate(0,0)}
-    }
-    #comic-scanlines {
-      position: absolute; inset: 0; pointer-events: none; z-index: 2;
-      background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,246,214,0.025) 2px,rgba(0,246,214,0.025) 4px);
-    }
-    #comic-crack {
-      position: absolute; inset: 0; pointer-events: none; z-index: 3;
-      opacity: 0; transition: opacity 0.4s;
-      background: linear-gradient(135deg,transparent 40%,rgba(0,246,214,0.2) 50%,transparent 60%),
-                  linear-gradient(225deg,transparent 40%,rgba(255,75,203,0.15) 50%,transparent 60%);
-    }
-    #comic-crack.show { opacity: 1; }
-    #comic-vignette {
-      position: absolute; inset: 0; pointer-events: none; z-index: 4;
-      box-shadow: inset 0 0 80px rgba(0,0,0,0.8);
-    }
-    #comic-counter {
-      position: absolute; top: 24px; right: 20px; z-index: 20;
-      display: flex; gap: 6px; align-items: center;
-    }
-    .comic-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: rgba(243,247,255,0.18); transition: all 0.3s;
-    }
-    .comic-dot.active { background: var(--teal); transform: scale(1.5); }
-    .comic-dot.done   { background: rgba(0,246,214,0.35); }
-    #comic-skip {
-      position: absolute; top: 20px; left: 20px; z-index: 20;
-      background: rgba(16,16,20,0.75); border: 1px solid rgba(243,247,255,0.18);
-      border-radius: 20px; padding: 6px 14px; color: rgba(243,247,255,0.45);
-      font-size: 0.6rem; letter-spacing: 0.1em;
-      opacity: 0; pointer-events: none; transition: all 0.3s;
-    }
-    #comic-skip.visible { opacity: 1; pointer-events: all; }
-    #comic-tap {
-      position: absolute; bottom: 120px; right: 20px; z-index: 20;
-      font-size: 0.58rem; letter-spacing: 0.1em;
-      color: rgba(243,247,255,0.3); animation: tapPulse 2.2s infinite;
-    }
-    @keyframes tapPulse { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
-    #comic-dialogue {
-      position: relative; z-index: 10;
-      margin: 0 16px 32px;
-      background: rgba(8,8,13,0.95);
-      border: 2px solid var(--teal);
-      border-radius: 4px 16px 16px 16px;
-      padding: 14px 16px;
-      box-shadow: 0 0 30px rgba(0,246,214,0.2), inset 0 0 20px rgba(0,0,0,0.5);
-      min-height: 80px;
-      clip-path: polygon(0 12px,12px 0,100% 0,100% 100%,0 100%);
-    }
-    #comic-speaker {
-      font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase;
-      font-weight: 700; margin-bottom: 6px; min-height: 14px; color: var(--teal);
-    }
-    #comic-speaker.sky      { color: var(--teal); }
-    #comic-speaker.monday   { color: var(--pink); }
-    #comic-speaker.cold     { color: var(--blue); }
-    #comic-speaker.grit     { color: var(--yellow); }
-    #comic-speaker.narrator { color: var(--text); font-style: italic; letter-spacing: 0.06em; }
-    #comic-text { font-size: 0.88rem; line-height: var(--line-height,1.65); color: var(--text); min-height: 42px; }
-
     /* ── AUTH SCREEN ────────────────────────────────────────── */
     #screen-auth {
       align-items: center; justify-content: center;
@@ -1806,23 +1716,7 @@
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- COMIC INTRO                                               -->
 <!-- ══════════════════════════════════════════════════════════ -->
-<canvas id="particles-canvas"></canvas><div id="bg-overlay" style="position:fixed;inset:0;background:var(--bg);opacity:var(--bg-overlay-opacity,0);pointer-events:none;z-index:0;transition:opacity 0.3s"></div><div id="screen-comic">
-  <div id="comic-panel">
-    <div id="comic-bg"></div>
-    <div id="comic-scanlines"></div>
-    <div id="comic-crack"></div>
-    <div id="comic-vignette"></div>
-    <div id="comic-counter"></div>
-    <button id="comic-skip">skip intro</button>
-    <div id="comic-tap">tap to continue</div>
-    <div id="comic-dialogue">
-      <div id="comic-speaker"></div>
-      <div id="comic-text"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════ -->
+<canvas id="particles-canvas"></canvas><div id="bg-overlay" style="position:fixed;inset:0;background:var(--bg);opacity:var(--bg-overlay-opacity,0);pointer-events:none;z-index:0;transition:opacity 0.3s"></div><!-- ══════════════════════════════════════════════════════════ -->
 <!-- AUTH SCREEN                                               -->
 <!-- ══════════════════════════════════════════════════════════ -->
 <div class="screen" id="screen-auth">
@@ -2002,7 +1896,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.8.935</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.8.936</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -4108,44 +4002,6 @@ async function czDeleteBlock(id, btn) {
     lbl.addEventListener('click', function () { setState(false); });
   })();
 </script>
-<script id="comic-rescue-js">
-  (function () {
-    var KEY = 'spiralside.intro.seen';
-    var comic = document.getElementById('screen-comic');
-    if (!comic) return;
 
-    // dismiss: fade, remove from flow, remember
-    function dismiss() {
-      comic.classList.add('fade-out');
-      setTimeout(function () { comic.style.display = 'none'; }, 550);
-      try { localStorage.setItem(KEY, '1'); } catch (e) {}
-    }
-
-    // any click on the comic dismisses it (skip button included)
-    comic.addEventListener('click', dismiss, true);
-
-    // Escape key rescue
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && comic.style.display !== 'none') dismiss();
-    });
-
-    // returning user: skip instantly
-    var seen = '0';
-    try { seen = localStorage.getItem(KEY) || '0'; } catch (e) {}
-    if (seen === '1') comic.style.display = 'none';
-
-    // existing Supabase session: skip instantly (Cat's case)
-    try {
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && k.indexOf('sb-') === 0 && k.indexOf('-auth-token') !== -1) {
-          comic.style.display = 'none';
-          try { localStorage.setItem(KEY, '1'); } catch (e) {}
-          break;
-        }
-      }
-    } catch (e) {}
-  })();
-</script>
 </body>
 </html>
