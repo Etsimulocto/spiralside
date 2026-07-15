@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "version": "v0.9.2",
+      "date": "2026-07-15",
+      "title": "Engine 2.2.0 + Account Sprint",
+      "notes": [
+        "Game maker: engine 2.1.0 to 2.2.0, 30+ builds of fixes and features",
+        "Game maker: BloomQuest sample project baked in so there is something to play with",
+        "Forgot your password? Reset link now works, straight from the sign in screen",
+        "Fixed: intro screen could block sign in on some browsers. Gone.",
+        "Sidebar collapses now, more room for the work",
+        "Mobile: layout and keyboard fixes throughout",
+        "Skyline ticker on the home screen"
+      ]
+    },
+    {
       "version": "v0.9.1",
       "date": "2026-07-04",
       "title": "Game Maker Engine 2.1.0",
