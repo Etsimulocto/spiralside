@@ -348,6 +348,19 @@ async function hydrateDataFromCloud(dbSet, dbGet) {
 }
 
 async function onAppReady() {
+  // Ask the browser to mark our storage as persistent (non-evictable).
+  // Without this, localStorage is best-effort and can be silently evicted:
+  // no event, no console warning, data just gone. Everything cloud-backed
+  // rehydrates on sign in and hides the damage. Bloom saves do not.
+  // Fire and forget: if denied or unsupported, boot continues unchanged.
+  try {
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist()
+        .then(function(granted) { console.log('[storage] persistent:', granted); })
+        .catch(function() {});
+    }
+  } catch(_) {}
+
   // Hydrate from cloud before anything else renders
   await hydrateFromCloud();
   initSky(); // living sky — Nimbis
