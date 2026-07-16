@@ -7,8 +7,84 @@
 // Nimbis anchor: js/app/views/bloomstudio.js
 // ============================================================
 
+// sb = Supabase client, state = app state (state.user.id is the owner)
+import { sb } from '../auth.js';
+import { state } from '../state.js';
+
 // remembers whether the iframe already exists (init runs on every tab open)
 let _loaded = false;
+
+// ── CLOUD SYNC HOOKS ──────────────────────────────────────────
+// BloomStudio 2.2.1 added a cloudHook(name) resolver that looks for
+// window[name] then window.parent[name]. We define both here on the
+// parent. The engine picks them up on its own schedule.
+//
+// Table: bloom_projects (user_id pk, project_json, engine_version, updated_at)
+// Deliberately NOT routed through mastersave.js - its stripImages() walk
+// would gut base64 sprite data into _has_imageData:true and hand back a
+// project that looks like it loaded but is hollow.
+function _wireCloudHooks() {
+  // Only wire once.
+  if (window.bloomstudioCloudSave) return;
+
+  // ── SAVE ───────────────────────────────────────────────────
+  // Engine debounces internally (_cloudT) and hands us projectData().
+  // Returning true makes it log "Cloud sync on" once. Never throw:
+  // the engine wraps us in Promise.resolve().catch(), but a rejection
+  // would silently disable the "cloud on" confirmation forever.
+  window.bloomstudioCloudSave = async function (data) {
+    try {
+      const uid = state.user && state.user.id;
+      if (!uid || !data) return false;
+      const { error } = await sb.from('bloom_projects').upsert({
+        user_id:        uid,
+        project_json:   data,
+        engine_version: (data && data.engine) || null,
+        updated_at:     new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+      if (error) {
+        console.warn('[bloom] cloud save failed:', error.message);
+        return false;
+      }
+      return true;
+    } catch (e) {
+      console.warn('[bloom] cloud save threw:', e);
+      return false;
+    }
+  };
+
+  // ── LOAD ───────────────────────────────────────────────────
+  // The engine only calls this when it found NO local save, so this
+  // can never clobber good local work. Return null on anything
+  // unusable and the engine falls back to its own storage-reset notice.
+  window.bloomstudioCloudLoad = async function () {
+    try {
+      const uid = state.user && state.user.id;
+      if (!uid) return null;
+      const { data, error } = await sb
+        .from('bloom_projects')
+        .select('project_json')
+        .eq('user_id', uid)
+        .maybeSingle();
+      if (error) {
+        console.warn('[bloom] cloud load failed:', error.message);
+        return null;
+      }
+      const proj = data && data.project_json;
+      // Guard: never hand back an empty or non-object record. A thin
+      // record is worse than none - the engine would apply it and the
+      // user would watch their project load as nothing.
+      if (!proj || typeof proj !== 'object' || !Object.keys(proj).length) return null;
+      console.log('[bloom] project restored from cloud');
+      return proj;
+    } catch (e) {
+      console.warn('[bloom] cloud load threw:', e);
+      return null;
+    }
+  };
+
+  console.log('[bloom] cloud hooks wired');
+}
 
 export function initBloomstudio() {
   // only build the iframe once - later opens are no-ops
@@ -17,6 +93,11 @@ export function initBloomstudio() {
   const view = document.getElementById('view-bloomstudio');
   if (!view) return;
   _loaded = true;
+
+  // Define the cloud hooks before the frame exists. The engine resolves
+  // them at call time, so ordering is not critical, but this keeps the
+  // hooks guaranteed present for the very first boot.
+  _wireCloudHooks();
 
   // inject the tiny bit of CSS this view needs
   // NOTE: never set display on #view-bloomstudio - .view/.view.active own display
