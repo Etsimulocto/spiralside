@@ -32,17 +32,33 @@ function _wireCloudHooks() {
   // Returning true makes it log "Cloud sync on" once. Never throw:
   // the engine wraps us in Promise.resolve().catch(), but a rejection
   // would silently disable the "cloud on" confirmation forever.
-  window.bloomstudioCloudSave = async function (data) {
+  window.bloomstudioCloudSave = async function (data, slot, engineVersion) {
     try {
       const uid = state.user && state.user.id;
       if (!uid || !data) return false;
+      // Slot 0 is the autosave. Engine 2.2.1 and earlier called this with
+      // one argument, so an absent or invalid slot MUST mean 0 - that is
+      // what keeps build 70 working if it is ever loaded against this code.
+      const s = (Number.isInteger(slot) && slot >= 0 && slot <= 10) ? slot : 0;
       const { error } = await sb.from('bloom_projects').upsert({
         user_id:        uid,
+        slot:           s,
         project_json:   data,
-        engine_version: (data && data.engine) || null,
+        // The engine now passes its ENGINE constant. The old data.engine
+        // probe was always null - the project JSON has no engine key,
+        // which is why every row on record read as backfilled.
+        engine_version: engineVersion || (data && data.engine) || null,
         updated_at:     new Date().toISOString(),
-      }, { onConflict: 'user_id' });
+      }, { onConflict: 'user_id,slot' });
       if (error) {
+        // Free tier cap. Raised by the BEFORE INSERT trigger on
+        // bloom_projects. The LOCAL save already succeeded before we were
+        // called, so this is a nudge, never a lost save. Token is stable
+        // and matched by the engine to raise the upgrade modal.
+        if (error.message && error.message.indexOf('bloom_slot_cap') !== -1) {
+          console.log('[bloom] slot cap reached - local save is fine, cloud backup needs the unlock');
+          return 'bloom_slot_cap';
+        }
         console.warn('[bloom] cloud save failed:', error.message);
         return false;
       }
@@ -57,14 +73,18 @@ function _wireCloudHooks() {
   // The engine only calls this when it found NO local save, so this
   // can never clobber good local work. Return null on anything
   // unusable and the engine falls back to its own storage-reset notice.
-  window.bloomstudioCloudLoad = async function () {
+  window.bloomstudioCloudLoad = async function (slot) {
     try {
       const uid = state.user && state.user.id;
       if (!uid) return null;
+      // Same defaulting rule as save: absent or invalid slot means the
+      // autosave. Keeps a one-argument caller working unchanged.
+      const s = (Number.isInteger(slot) && slot >= 0 && slot <= 10) ? slot : 0;
       const { data, error } = await sb
         .from('bloom_projects')
         .select('project_json')
         .eq('user_id', uid)
+        .eq('slot', s)
         .maybeSingle();
       if (error) {
         console.warn('[bloom] cloud load failed:', error.message);
