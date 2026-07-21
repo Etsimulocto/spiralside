@@ -1,6 +1,28 @@
 {
   "entries": [
     {
+      "version": "v0.9.16",
+      "date": "2026-07-21",
+      "title": "Cloud Saves + a Bigger Editor",
+      "notes": [
+        "Never lose a project: all 10 save slots now back up to the cloud, not just the one you are in - a browser wipe can no longer take your work",
+        "Import a project straight from the Project card, right next to Export",
+        "Game maker engine 2.2.0 to 2.3.0 across dozens of builds",
+        "Push blocks and push-stops now work in top-down rooms, and blocks ride conveyor belts in every mode",
+        "New Block Reset switch: step on it in play and every push block snaps home, so puzzle rooms are replayable",
+        "Per-sprite animation speed (half to 3x) on the new x-chip in the FRAMES row",
+        "Heroes auto-generate 5 pose variants - walk, side, jump, hurt, morph - and switch between them in play",
+        "Room background randomizer: hue, vivid, light and grain sliders plus 5 patterns, saved per room",
+        "Gates and switches now come in 4 color channels for layered lock puzzles",
+        "Paintable fog-of-war that reveals permanently as the player explores",
+        "Ramp tiles the hero slides along, two decor layers, and decor on FPS walls, floors and ceilings",
+        "World map view with drag-to-arrange rooms, per-room music and SFX, scene transitions and story pages",
+        "Timers with HUD chips and logic actions, a song and SFX bank, and an FX rack (echo, distortion, phaser)",
+        "Paint custom skins on any entity, custom weapon sprites, and a co-op sidekick pet on a second gamepad",
+        "Account data locked down tighter behind the scenes"
+      ]
+    },
+    {
       "version": "v0.9.2",
       "date": "2026-07-15",
       "title": "Engine 2.2.0 + Account Sprint",
