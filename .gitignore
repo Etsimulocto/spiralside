@@ -4,3 +4,4 @@ _patch_run.py
 patch_*.py
 do_*.py
 write_*.py
+FETCH_HEAD
