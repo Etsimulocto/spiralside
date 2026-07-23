@@ -66,6 +66,11 @@ window.recolorSketch = recolorSketch;
 // Only expose what's called from inline HTML.
 window.switchAuthTab     = switchAuthTab;
 window._sb               = sb;
+// The BloomStudio engine reads window.state.session / .user.id for its
+// entitlement check. Without this it sees no session, assumes standalone,
+// and runs fully unlocked - every tier cap silently inert. This is the
+// on switch for the whole paid/free split.
+window.state               = state;
 window.togglePw          = togglePw;
 window.handleLogin       = handleLogin;
 window.handleSignup      = handleSignup;
@@ -417,6 +422,21 @@ async function onAppReady() {
 
   // 8. Handle any PayPal return redirect
   handlePayPalReturn();
+
+  // ?tab=<viewid> deep links. Runs after handlePayPalReturn so a payment
+  // return still wins and lands on the store. Guarded on switchView so a
+  // bad/unknown tab name is a no-op rather than an error.
+  try {
+    const _qs = new URLSearchParams(window.location.search);
+    const _tab = _qs.get('tab');
+    if (_tab && !_qs.get('payment') && typeof window.switchView === 'function') {
+      setTimeout(() => {
+        try { window.switchView(_tab); } catch (e) {}
+        // Drop the param so a refresh does not keep forcing the tab.
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }, 300);
+    }
+  } catch (e) { /* deep links are a convenience, never fatal */ }
   initMusic();  // start background music
 }
 

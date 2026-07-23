@@ -208,6 +208,13 @@ export function initStoreView() {
         <div class="gift-msg" id="gift-msg"></div>
       </div>
 
+      <div class="view-section-title" style="margin-top:24px;">game maker</div>
+      <div class="feature-row" id="bloom-unlock-row" style="background:linear-gradient(135deg,rgba(0,246,214,0.05),rgba(123,95,255,0.05));border-color:rgba(0,246,214,0.15);">
+        <div class="feature-icon">&#127918;</div>
+        <div class="feature-name">bloomstudio full version<div class="feature-sub">one-time &middot; 100 rooms &middot; 10 cloud slots</div></div>
+        <div class="feature-cost">300,000 cr</div>
+        <button class="gift-redeem-btn" id="bloom-unlock-btn" onclick="window.unlockBloomstudio()">unlock</button>
+      </div>
       <div class="view-section-title" style="margin-top:24px;">perks</div>
       <div class="feature-row" id="ads-off-row">
         <div class="feature-icon">&#127751;</div>
@@ -227,7 +234,78 @@ export function initStoreView() {
   updateStoreView();
   if (window.updateCreditDisplay) window.updateCreditDisplay();
   updateAdsOffBtn();
+  updateBloomUnlockBtn();
   setTimeout(loadPlanStatus, 400);
+}
+
+// -- BLOOMSTUDIO UNLOCK ---------------------------------------------------
+// One atomic RPC does everything: balance check, deduct, set
+// bloomstudio_paid, write the ledger row. The client cannot do any of that
+// directly - user_usage is read-only to the browser by design.
+window.unlockBloomstudio = async function() {
+  if (!state.user) { alert('Sign in first.'); return; }
+  const btn = document.getElementById('bloom-unlock-btn');
+  const old = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  try {
+    const { data, error } = await window._sb.rpc('bloomstudio_unlock');
+    if (error) { alert('Unlock failed. Try again.'); return; }
+    if (!data || !data.ok) {
+      if (data && data.error === 'insufficient') {
+        alert('Not enough credits.\n\nNeed ' + Number(data.need).toLocaleString() +
+              ' cr, you have ' + Number(data.have).toLocaleString() +
+              ' cr.\n\nBuy credits above, then come back.');
+      } else if (data && data.error === 'not_signed_in') {
+        alert('Sign in first.');
+      } else {
+        alert('Unlock failed. Try again.');
+      }
+      return;
+    }
+    // Keep the in-memory balance honest with what the server just did.
+    if (typeof data.credits === 'number') state.credits = data.credits;
+    if (window.updateCreditDisplay) window.updateCreditDisplay();
+    // Tell a live BloomStudio frame to re-read its entitlement, so the caps
+    // drop without a reload. Design exposes this hook; absent = harmless.
+    if (typeof window.bloomstudioRefreshPaid === 'function') {
+      try { window.bloomstudioRefreshPaid(); } catch (e) {}
+    }
+    alert(data.already
+      ? 'Already unlocked - no credits spent.'
+      : 'BloomStudio unlocked. 100 rooms and 10 cloud slots are yours.');
+  } catch (e) {
+    alert('Unlock failed. Try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = old || 'unlock'; }
+    updateBloomUnlockBtn();
+  }
+};
+
+// Reads its own row (allowed - "Users can read own usage" policy) and
+// flips the button to an owned state. Self-contained on purpose so it
+// cannot interfere with loadPlanStatus.
+async function updateBloomUnlockBtn() {
+  const btn = document.getElementById('bloom-unlock-btn');
+  const row = document.getElementById('bloom-unlock-row');
+  if (!btn || !window._sb) return;
+  try {
+    const { data: { session } } = await window._sb.auth.getSession();
+    if (!session) { btn.textContent = 'sign in'; btn.disabled = true; return; }
+    const { data } = await window._sb
+      .from('user_usage')
+      .select('bloomstudio_paid')
+      .eq('user_id', session.user.id)
+      .single();
+    if (data && data.bloomstudio_paid) {
+      btn.textContent = 'owned';
+      btn.disabled = true;
+      if (row) row.style.opacity = '0.65';
+    } else {
+      btn.textContent = 'unlock';
+      btn.disabled = false;
+      if (row) row.style.opacity = '';
+    }
+  } catch (e) { /* leave the button as-is on any failure */ }
 }
 
 function updateAdsOffBtn() {
