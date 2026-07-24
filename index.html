@@ -267,7 +267,10 @@
       .tab-btn {
         text-align: left;                                /* row items, not centered pills */
         padding: 9px 12px;
-        font-size: 0.74rem;
+        /* wired to the TYPOGRAPHY subtext slider - was a hardcoded rem, so
+           the left rail ignored every font control in the app and stayed
+           unreadable on tablets. Fallback keeps existing users unchanged. */
+        font-size: var(--subtext-size, 0.74rem);
         border-bottom: none;                             /* kill mobile underline indicator */
         border-left: 2px solid transparent;              /* left rail indicator instead */
         border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -680,7 +683,7 @@
       border-bottom: 2px solid transparent;
       color: var(--subtext);
       font-family: var(--font-ui);
-      font-size: 0.68rem;
+      font-size: var(--subtext-size, 0.68rem);
       letter-spacing: 0.08em;
       cursor: pointer;
       transition: all 0.2s;
@@ -1921,7 +1924,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.29</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.30</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -2403,7 +2406,7 @@
           <label class="forge-label">text size</label>
           <div class="slider-row" style="gap:12px;align-items:center">
             <span style="font-size:0.7rem;color:var(--subtext)">A</span>
-            <input type="range" min="16" max="28" value="16" id="font-size-slider"
+            <input type="range" min="16" max="38" value="16" id="font-size-slider"
               style="flex:1;accent-color:var(--teal)"
               oninput="previewFontSize(this.value)" />
             <span style="font-size:1.2rem;color:var(--subtext)">A</span>
@@ -2424,7 +2427,7 @@
           <label class="forge-label">subtext / label size</label>
           <div class="slider-row" style="gap:12px;align-items:center">
             <span style="font-size:0.6rem;color:var(--subtext)">A</span>
-            <input type="range" min="14" max="24" value="14" id="subtext-size-slider"
+            <input type="range" min="14" max="38" value="14" id="subtext-size-slider"
               style="flex:1;accent-color:var(--teal)"
               oninput="previewSubtextSize(this.value)" />
             <span style="font-size:1rem;color:var(--subtext)">A</span>
