@@ -309,6 +309,23 @@
     }
     @media (max-width: 899px) { #header-utils { display: none; } }
 
+    /* ── GAME MAKER header launch ── */
+    #gm-launch {
+      display:flex; align-items:center; gap:6px;
+      height:28px; padding:0 12px; border-radius:14px;
+      border:1px solid var(--border); background:rgba(15,15,24,0.6);
+      color:var(--subtext); cursor:pointer;
+      font-family:var(--font-ui); font-size:0.68rem; letter-spacing:0.08em;
+      transition:all 0.2s; margin-right:8px; position:relative; z-index:5; flex-shrink:0;
+    }
+    #gm-launch:hover { color:var(--teal); border-color:var(--teal); }
+    /* stays visible on mobile (unlike #header-utils) — icon only to save width */
+    @media (max-width:899px){
+      #gm-launch .gm-launch-label { display:none; }
+      #gm-launch { padding:0 9px; }
+    }
+
+
     /* ── PHASE C: CHAT DESKTOP (>=900px) ─────────────────────
        Fullscreen shell stretched chat wall-to-wall; this pulls
        messages + input into a centered reading column while the
@@ -1920,11 +1937,12 @@
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>
       <div class="header-controls-row">
+        <button id="gm-launch" onclick="switchView('bloomstudio')" title="open the game maker">&#128377; <span class="gm-launch-label">game maker</span></button>
         <div id="header-utils">
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.46</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.48</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
