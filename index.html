@@ -1942,7 +1942,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.55</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.56</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3989,19 +3989,207 @@ async function czDeleteBlock(id, btn) {
     // allow scroll on scrollable containers, block on fixed UI
   }, { passive: true });
 
+  // Supabase endpoint + public anon key. Safe to embed: the
+  // feedback table's RLS grants INSERT only, never SELECT.
+  var SUPA_URL = 'https://qfawusrelwthxabfbglg.supabase.co';
+  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E';
+
   window._sendFeedback = function() {
-    var msg = (document.getElementById('feedback-text') || {}).value || '';
+    // ── ELEMENT LOOKUPS ──────────────────────────────────
+    var ta  = document.getElementById('feedback-text');
     var btn = document.getElementById('feedback-btn');
-    if (!msg.trim()) {
-      if (btn) { btn.textContent = 'write something first!'; setTimeout(function() { btn.textContent = 'send feedback'; }, 1500); }
+    var msg = (ta && ta.value ? ta.value : '').trim();
+
+    // ── EMPTY GUARD ──────────────────────────────────────
+    // Nudge, but never touch what they typed.
+    if (!msg) {
+      if (btn) {
+        btn.textContent = 'write something first!';
+        setTimeout(function() { btn.textContent = 'send feedback'; }, 1500);
+      }
       return;
     }
-    var subject = encodeURIComponent('Spiralside Beta Feedback');
-    var body = encodeURIComponent(msg);
-    window.open('mailto:support@spiralside.com?subject=' + subject + '&body=' + body);
-    if (btn) { btn.textContent = 'thanks! email opened'; setTimeout(function() { btn.textContent = 'send feedback'; }, 2500); }
-    document.getElementById('feedback-text').value = '';
+
+    // ── STATUS LINE ──────────────────────────────────────
+    // The account markup has no status element, so create one on
+    // demand and park it directly after the button. Keeps this
+    // patch confined to index.html.
+    var status = document.getElementById('feedback-status');
+    if (!status && btn && btn.parentNode) {
+      status = document.createElement('div');
+      status.id = 'feedback-status';
+      status.style.cssText = 'font-size:0.7rem;line-height:1.5;margin-top:8px;' +
+        'text-align:center;min-height:1em;transition:opacity 0.4s;';
+      btn.parentNode.insertBefore(status, btn.nextSibling);
+    }
+    function setStatus(text, isError) {
+      if (!status) return;
+      status.style.opacity = '1';
+      status.style.color = isError ? '#ff6b6b' : 'var(--teal)';
+      status.textContent = text;
+    }
+
+    // ── SESSION LOOKUP ───────────────────────────────────
+    // Prefer the app's own state object. Fall back to reading the
+    // Supabase session straight out of localStorage, which is where
+    // supabase-js parks it. Signed-out users still get through with
+    // nulls — feedback is never gated behind auth.
+    var userId = null, userEmail = null, token = null;
+    try {
+      if (window.state && window.state.user) {
+        userId    = window.state.user.id    || null;
+        userEmail = window.state.user.email || null;
+      }
+      if (window.state && window.state.session) {
+        token = window.state.session.access_token || null;
+      }
+    } catch (e) { /* state not exposed — fall through */ }
+    if (!userId) {
+      try {
+        for (var i = 0; i < localStorage.length; i++) {
+          var k = localStorage.key(i);
+          if (k && k.indexOf('sb-') === 0 && k.indexOf('-auth-token') > -1) {
+            var sess = JSON.parse(localStorage.getItem(k));
+            if (sess && sess.user) {
+              userId    = sess.user.id    || userId;
+              userEmail = sess.user.email || userEmail;
+              token     = sess.access_token || token;
+            }
+            break;
+          }
+        }
+      } catch (e) { /* unparseable or absent — stay null */ }
+    }
+
+    // ── CONTEXT COLLECTION ───────────────────────────────
+    // The part that turns "it broke" into a fixable report.
+    // Every lookup is individually guarded.
+    var ctx = {};
+    try {
+      var act = document.querySelector('.view.active');
+      ctx.tab = act ? act.id.replace('view-', '') : null;
+    } catch (e) { ctx.tab = null; }
+    try {
+      // Version badge — try the known selectors, else null.
+      var vEl = document.querySelector('.acct-version') ||
+                document.getElementById('version-badge') ||
+                document.querySelector('[class*="version"]');
+      ctx.app_version = vEl ? vEl.textContent.trim().slice(0, 60) : null;
+    } catch (e) { ctx.app_version = null; }
+    try { ctx.signed_in = !!userId; }                                  catch (e) {}
+    try { ctx.paid      = !!(window.state && window.state.isPaid); }   catch (e) {}
+    try { ctx.credits   = (window.state && window.state.credits) || null; } catch (e) {}
+    try { ctx.bot_name  = (window.state && window.state.botName) || null; } catch (e) {}
+    try { ctx.screen    = window.innerWidth + 'x' + window.innerHeight; }   catch (e) {}
+    try { ctx.dpr       = window.devicePixelRatio || 1; }              catch (e) {}
+    try { ctx.touch     = ('ontouchstart' in window); }                catch (e) {}
+    try { ctx.online    = navigator.onLine; }                          catch (e) {}
+    try { ctx.lang      = navigator.language || null; }                catch (e) {}
+    try { ctx.tz        = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+    // Recent JS errors captured by the ring buffer installed below.
+    try { ctx.errors    = (window._errRing || []).slice(-10); }        catch (e) {}
+
+    // ── BUILD THE ROW ────────────────────────────────────
+    // Column names must match public.feedback exactly. Anything
+    // unknown at top level makes PostgREST 404 the whole insert,
+    // so everything extra lives inside the context jsonb.
+    var row = {
+      message:        msg.slice(0, 2000),
+      email:          userEmail,
+      user_id:        userId,
+      source:         'spiralside',
+      engine_version: null,
+      context:        ctx,
+      user_agent:     navigator.userAgent.slice(0, 500)
+    };
+
+    // ── SEND ─────────────────────────────────────────────
+    if (btn) { btn.disabled = true; btn.textContent = 'sending...'; }
+
+    fetch(SUPA_URL + '/rest/v1/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'apikey':        SUPA_KEY,
+        // Use the user's token when signed in so user_id is trusted
+        // server-side; fall back to the anon key when signed out.
+        'Authorization': 'Bearer ' + (token || SUPA_KEY),
+        'Prefer':        'return=minimal'
+      },
+      body: JSON.stringify(row)
+    })
+    .then(function(resp) {
+      if (btn) btn.disabled = false;
+
+      // ── FAILURE ──────────────────────────────────────
+      // Keep their text. Never claim success. This is the exact
+      // bug being fixed: the old code cleared and lied.
+      if (!resp.ok) {
+        console.warn('[feedback] POST failed:', resp.status);
+        if (btn) btn.textContent = 'send feedback';
+        setStatus('didn\'t send - check connection and try again', true);
+        return;
+      }
+
+      // ── SUCCESS ──────────────────────────────────────
+      if (ta) ta.value = '';
+      setStatus('thanks - logged.', false);
+      setTimeout(function() { if (status) status.style.opacity = '0'; }, 4000);
+
+      // 30s cooldown with a live countdown, to absorb double-clicks
+      // and frustrated repeat sends.
+      var left = 30;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'sent - wait ' + left + 's';
+        var tick = setInterval(function() {
+          left--;
+          if (left <= 0) {
+            clearInterval(tick);
+            btn.disabled = false;
+            btn.textContent = 'send feedback';
+          } else {
+            btn.textContent = 'sent - wait ' + left + 's';
+          }
+        }, 1000);
+      }
+    })
+    .catch(function(err) {
+      // Network-level failure. Same rule: keep the text.
+      console.warn('[feedback] network error:', err);
+      if (btn) { btn.disabled = false; btn.textContent = 'send feedback'; }
+      setStatus('didn\'t send - check connection and try again', true);
+    });
   };
+
+  // ── ERROR RING BUFFER ──────────────────────────────────
+  // Keeps the last 20 JS errors in memory so they can ride along
+  // with a feedback report. Purely additive: does not swallow
+  // errors, does not replace existing handlers.
+  (function() {
+    window._errRing = window._errRing || [];
+    function push(entry) {
+      try {
+        window._errRing.push(entry);
+        if (window._errRing.length > 20) window._errRing.shift();
+      } catch (e) { /* never let logging break the app */ }
+    }
+    window.addEventListener('error', function(e) {
+      push({
+        t:   new Date().toISOString(),
+        msg: String(e.message || '').slice(0, 200),
+        src: String(e.filename || '').slice(-80),
+        ln:  e.lineno || null
+      });
+    });
+    window.addEventListener('unhandledrejection', function(e) {
+      push({
+        t:   new Date().toISOString(),
+        msg: 'unhandled rejection: ' +
+             String((e.reason && e.reason.message) || e.reason || '').slice(0, 200)
+      });
+    });
+  })();
 </script>
 <script id="gm-full-js">
   // delegated listener - survives re-renders, no switchView dependency
