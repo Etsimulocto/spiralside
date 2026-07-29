@@ -24,42 +24,6 @@ export const sb = createClient(
   }
 );
 
-
-// ── EXPOSE SHELL GLOBALS FOR THE BLOOMSTUDIO IFRAME ───────────
-// BloomStudio runs in an iframe and resolves its pricing tier by looking
-// UP at this page for `window.sb` and `window.state`. Finding both means
-// "a Spiralside shell is hosting me" -> it reads
-// user_usage.bloomstudio_paid and gates accordingly. Finding neither
-// means "no shell, I'm on some random web host" -> free demo tier,
-// 1 slot / 3 rooms / 50 sprites, for EVERY user including paid ones.
-//
-// Spiralside is an ES-module app, so `sb` and `state` are module-scoped
-// and never reach window on their own. These two assignments are the
-// entire contract. Do not remove them.
-//
-// Deliberately NOT setting window.bloomstudioTier here: that override
-// short-circuits the database read, which would mean maintaining tier
-// logic in two places. The DB stays the single source of truth.
-window.sb = sb;
-window.state = state;
-
-// Nudge the iframe to re-read the tier once auth resolves. Without this
-// a user who signs in mid-session keeps whatever tier was resolved at
-// iframe boot until they reload. The engine also retries on its own with
-// backoff and re-checks on window focus, so this is belt-and-braces.
-// Located by src rather than a view id so it survives tab renames.
-export function refreshBloomTier() {
-  try {
-    const f = document.querySelector('iframe[src*="bloomstudio"]');
-    if (f && f.contentWindow && f.contentWindow.bloomstudioRefreshPaid) {
-      f.contentWindow.bloomstudioRefreshPaid();
-    }
-  } catch (e) {
-    // Cross-origin or iframe not mounted yet. Harmless -- the engine's
-    // own retry and focus handlers will pick it up.
-  }
-}
-window.refreshBloomTier = refreshBloomTier;
 let _recovering = window.location.hash.includes('type=recovery');
 
 // ── SCREEN ROUTING ────────────────────────────────────────────
@@ -87,7 +51,6 @@ export function checkAuthAndShow(onAppReady) {
     if (session?.user) {
       state.user    = session.user;
       state.session = session;
-      try { window.refreshBloomTier && window.refreshBloomTier(); } catch (e) {}
       showScreen('app');
       checkWaiver().then(() => {
         onAppReady();
@@ -108,7 +71,6 @@ export function listenAuthChanges() {
       if (_recovering) { showScreen('auth'); showRecovery(); return; }
       state.user    = session.user;
       state.session = session;
-      try { window.refreshBloomTier && window.refreshBloomTier(); } catch (e) {}
       showScreen('app');
       // Call onAppReady if it hasn't been called yet
       if (window._onAppReady) {
@@ -122,7 +84,6 @@ export function listenAuthChanges() {
       // Keep state in sync on background refresh
       state.user    = session.user;
       state.session = session;
-      try { window.refreshBloomTier && window.refreshBloomTier(); } catch (e) {}
     } else if (event === 'SIGNED_OUT') {
       state.user    = null;
       state.session = null;
