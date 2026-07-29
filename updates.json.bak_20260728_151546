@@ -1,26 +1,6 @@
 {
   "entries": [
     {
-      "version": "v0.9.17",
-      "date": "2026-07-28",
-      "title": "Weapons That Look and Sound Like Weapons",
-      "notes": [
-        "Game maker engine 2.3.0 to 2.9.1 across dozens of builds",
-        "Every weapon now has four sprite slots - the weapon in hand, the swing or muzzle flash, the bullet, and the impact puff - drawn in the Sprite tool and assigned per weapon",
-        "Damage and knockback sliders on every weapon card, saved with the project - knockback shoves foes back and stuns them, and bosses stand firm",
-        "Each of those four weapon parts gets its own sound: the equip click, the shot, the bullet, the hit",
-        "SFX Designer can build gunshots now - 16 presets from pistol to plasma to explosion, plus noise mix, drive, sub boom, attack, tone, and up to 8 repeats for bursts",
-        "The SFX bank doubled from 16 slots to 32",
-        "Dialogue windows are fully yours: a live preview at real game size while you edit, and a new Panel tab for fill, tiled patterns, frame, corner rounding, width, padding, placement, glow and opacity",
-        "Speaker name and text each keep their own font, color, size, outline, glow and alignment",
-        "Bomb walls, boulders, conveyors, doors and kill tiles can span several cells now - one key opens a whole wide door, one bomb clears a whole slab",
-        "Fixed: Inspector arrows and minimise buttons no longer overlap nearby controls",
-        "Fixed: Align now actually moves the speaker name and text in the dialogue box",
-        "Fixed: panel patterns render instead of silently failing",
-        "Fixed: a weapon sound pointing at an erased bank slot falls back instead of going silent"
-      ]
-    },
-    {
       "version": "v0.9.16",
       "date": "2026-07-21",
       "title": "Cloud Saves + a Bigger Editor",
