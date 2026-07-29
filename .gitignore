@@ -6,3 +6,4 @@ do_*.py
 write_*.py
 FETCH_HEAD
 updates.json.bak_*
+_patches/*.bak_*
