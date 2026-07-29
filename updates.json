@@ -3,7 +3,7 @@
     {
       "version": "v0.9.17",
       "date": "2026-07-28",
-      "title": "Weapons That Look and Sound Like Weapons",
+      "title": "Weapons, Bosses, Endings and Collision You Can Author",
       "notes": [
         "Game maker engine 2.3.0 to 2.9.1 across dozens of builds",
         "Every weapon now has four sprite slots - the weapon in hand, the swing or muzzle flash, the bullet, and the impact puff - drawn in the Sprite tool and assigned per weapon",
@@ -17,7 +17,24 @@
         "Fixed: Inspector arrows and minimise buttons no longer overlap nearby controls",
         "Fixed: Align now actually moves the speaker name and text in the dialogue box",
         "Fixed: panel patterns render instead of silently failing",
-        "Fixed: a weapon sound pointing at an erased bank slot falls back instead of going silent"
+        "Fixed: a weapon sound pointing at an erased bank slot falls back instead of going silent",
+        "Bosses can talk: write an INTRO line, a line for each phase change, and an OUTRO for the killing blow, all with the same editor and styling as any other dialogue",
+        "Leave a boss line empty and that beat stays silent, so nothing in an existing game changes",
+        "Build your own ending: Map > WORLD > SCENE now makes full ending pages with title, text and images, and the Win action picks which ending plays",
+        "Bosses appear in the ACTORS roster with their own preview card and stat readout, alongside player, pet, enemies and NPCs",
+        "Inspector move and minimise buttons now work on nested sections like QUICK ENEMY, MOVEMENT and BRAIN, not just top-level ones",
+        "Touch control pads got a look pass",
+        "Hero collision shape is yours now: pick auto, box, round or slim per sprite under Sprite > HIT MASK",
+        "Fixed: the hero no longer sticks when walking up slopes - ramps now give a proper step-up, and walking downhill glues you to the surface instead of hopping",
+        "Every tile can override its own collision - auto, none, solid or one-way - under Tiles > COLLISION",
+        "One-way ledges: jump up through them, land on top, walk out sideways from underneath",
+        "Stamped sprites can block or not block, or act as one-way ledges, under Sprite > STAMP BLOCKS - build jump-through platforms out of art without spending a terrain slot",
+        "Moving platforms can be solid slabs or jump-through, set per slab under Map > Platform",
+        "Import an image straight into a sprite frame or a tile - it scales, quantizes and adds new colours to your palette automatically",
+        "Duplicate a sprite in one click, and nudge sprite or tile art in any direction with wrap-around, so tiles line up seamlessly",
+        "Tile variants: up to 4 art versions per tile, scattered consistently across a room so ground stops looking like wallpaper",
+        "Send feedback straight from inside the app - it goes to the team, no email client needed, and your text is never lost if the send fails",
+        "Quest system and dialogue styling from earlier builds are now fully in"
       ]
     },
     {
