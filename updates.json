@@ -1,6 +1,18 @@
 {
   "entries": [
     {
+      "version": "v0.9.18",
+      "date": "2026-07-29",
+      "title": "Jump Pads and a Tier Gate Fix",
+      "notes": [
+        "Game maker engine 2.9.1 to 2.9.6",
+        "New: jump pads. Drop one in a side-scrolling room and it launches the hero at the angle, power and hang time you set - straight up, or off at an angle across a gap",
+        "Fonts now ship with Spiralside itself instead of loading from Google, so the game maker looks right on a slow connection",
+        "Exported games carry their own fonts too - still one HTML file, nothing to fetch",
+        "Fixed: paid users were being shown free demo limits. If you bought the game maker and could not add a fourth room, that was this. Your rooms were never touched."
+      ]
+    },
+    {
       "version": "v0.9.17",
       "date": "2026-07-28",
       "title": "Weapons, Bosses, Endings and Collision You Can Author",
