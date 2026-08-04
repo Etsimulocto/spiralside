@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  BLOOM3D  ·  PIPE TEST HARNESS  ·  v0.1
+  ----------------------------------------------------------------------------
+  PURPOSE:
+    Prove the multiplayer transport (the "pipe") in isolation, with ZERO
+    connection to BloomStudio. If two browsers can find each other by a code
+    and sync a moving dot in real time, the hard part of Movement 3 is solved.
+
+  WHAT IT PROVES:
+    1. Two browsers, anywhere, connect via a shared session CODE.
+    2. Live message passing (each dot's position streams to the other side).
+    3. Presence (who is in the room, ready state).
+    4. Real round-trip latency (the US<->UK number that decides everything).
+    5. The ?join=CODE link flow (guest auto-joins from a URL param).
+
+  HOW TO TEST:
+    - EASY (one machine): open this file twice (two tabs/windows).
+      In tab 1 click HOST, copy the code. In tab 2 paste it + JOIN.
+      Both connect out to Supabase over the internet, so it works even locally.
+    - REAL (two devices): deploy this file to a URL (e.g. drop it in the
+      spiralside repo), open it on your Android, HOST, send Cat the ?join link,
+      she opens it on her iPhone. Watch the latency readout. THAT is the test.
+
+  BACKEND:
+    None of your own. Supabase Realtime (a hosted relay you already pay for)
+    is the entire pipe. No FastAPI route, no Railway, nothing to deploy server
+    side. supabase-js is loaded from unpkg (jsdelivr is blocked by Edge
+    tracking prevention — learned that the hard way, so we don't use it).
+  ============================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>BLOOM3D · Pipe Test</title>
+<style>
+  /* ---- Bloomcore palette, kept minimal so this stays a pure test tool ---- */
+  :root{
+    --bg:#090b17; --panel:#0d1019; --line:#1b1f36; --line2:#2b3150;
+    --pink:#d85cff; --blue:#78a9ff; --green:#59e391; --yellow:#f8d66d;
+    --text:#e7e2f5; --muted:#7a7f9c; --dim:#3f4460;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:ui-monospace, "JetBrains Mono", monospace; overflow:hidden; }
+  #wrap{ display:flex; flex-direction:column; height:100%; }
+
+  /* ---- top bar: role + code + status ---- */
+  #bar{ display:flex; align-items:center; gap:10px; padding:10px 12px;
+    background:var(--panel); border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .brand{ font-size:13px; letter-spacing:2px; }
+  .brand b{ color:var(--pink); }
+  .btn{ font:inherit; font-size:11px; letter-spacing:1px; cursor:pointer;
+    background:transparent; color:var(--muted); border:1px solid var(--line2);
+    padding:7px 12px; border-radius:5px; }
+  .btn:hover{ border-color:var(--pink); color:var(--text); }
+  .btn.primary{ border-color:var(--pink); color:var(--pink); }
+  .btn.go{ border-color:var(--green); color:var(--green); }
+  input.code{ font:inherit; font-size:12px; letter-spacing:2px; text-transform:uppercase;
+    background:#151a30; color:var(--blue); border:1px solid var(--line2);
+    padding:7px 10px; border-radius:5px; width:130px; }
+  .pill{ font-size:10px; padding:4px 9px; border-radius:20px; border:1px solid var(--line2); color:var(--muted); }
+  .pill.on{ border-color:var(--green); color:var(--green); }
+  .pill.warn{ border-color:var(--yellow); color:var(--yellow); }
+  .spacer{ flex:1; }
+  .codebox{ display:flex; align-items:center; gap:6px; }
+  .codebox b{ color:var(--yellow); letter-spacing:3px; font-size:13px; }
+
+  /* ---- main: play area + side log ---- */
+  #main{ flex:1; display:flex; min-height:0; }
+  #stage{ flex:1; position:relative; overflow:hidden; touch-action:none;
+    background:
+      linear-gradient(transparent 23px, rgba(91,42,125,.10) 24px) 0 0/24px 24px,
+      linear-gradient(90deg, transparent 23px, rgba(91,42,125,.10) 24px) 0 0/24px 24px,
+      radial-gradient(circle at 50% 45%, #12162b, #090b17 80%); }
+  .hint{ position:absolute; top:10px; left:12px; font-size:10px; color:var(--dim); letter-spacing:1px; }
+  .dot{ position:absolute; width:34px; height:34px; margin:-17px 0 0 -17px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center; font-size:9px; color:#0b0e1a;
+    font-weight:bold; transition:transform .04s linear; will-change:left,top; }
+  .dot.me{ background:var(--pink); box-shadow:0 0 18px rgba(216,92,255,.6); }
+  .dot.them{ background:var(--yellow); box-shadow:0 0 18px rgba(248,214,109,.5); }
+
+  #side{ width:230px; border-left:1px solid var(--line); background:var(--panel);
+    display:flex; flex-direction:column; }
+  .sec{ padding:9px 11px; border-bottom:1px solid var(--line); }
+  .sec h4{ margin:0 0 7px; font-size:8px; letter-spacing:2px; color:var(--muted); font-weight:400; }
+  .row{ display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-bottom:4px; }
+  .row b{ color:var(--text); }
+  .peer{ display:flex; align-items:center; gap:7px; font-size:10px; margin-bottom:5px; }
+  .swatch{ width:12px; height:12px; border-radius:3px; }
+  #log{ flex:1; overflow-y:auto; padding:9px 11px; font-size:9px; line-height:1.7; color:var(--muted); }
+  #log .t{ color:var(--dim); }
+  #log .ev{ color:var(--blue); }
+  @media (max-width:640px){ #side{ width:150px; } }
+</style>
+</head>
+<body>
+<div id="wrap">
+
+  <!-- ================= TOP BAR ================= -->
+  <div id="bar">
+    <span class="brand"><b>BLOOM</b>3D · pipe test</span>
+
+    <!-- role controls: pick HOST (mint a code) or JOIN (enter a code) -->
+    <button id="hostBtn" class="btn primary">HOST</button>
+    <input id="codeInput" class="code" placeholder="CODE" maxlength="12" />
+    <button id="joinBtn" class="btn go">JOIN</button>
+
+    <!-- once connected, show the code + a copy-link button -->
+    <span id="codebox" class="codebox" style="display:none;">
+      <span class="pill">CODE</span><b id="codeShow">—</b>
+      <button id="copyBtn" class="btn">COPY LINK</button>
+    </span>
+
+    <span class="spacer"></span>
+    <span id="status" class="pill warn">OFFLINE</span>
+    <span id="pingPill" class="pill">— ms</span>
+  </div>
+
+  <!-- ================= MAIN ================= -->
+  <div id="main">
+    <div id="stage">
+      <div class="hint">move: drag / mouse / WASD · your dot is pink, theirs is yellow</div>
+      <!-- dots injected here -->
+    </div>
+
+    <div id="side">
+      <div class="sec">
+        <h4>ROOM</h4>
+        <div class="row"><span>role</span><b id="roleVal">—</b></div>
+        <div class="row"><span>you</span><b id="meVal">—</b></div>
+        <div class="row"><span>latency</span><b id="pingVal">—</b></div>
+        <div class="row"><span>msgs / s</span><b id="rateVal">0</b></div>
+      </div>
+      <div class="sec">
+        <h4>PRESENCE</h4>
+        <div id="peers"><div class="row"><span>nobody yet</span></div></div>
+      </div>
+      <div class="sec" style="flex:1; display:flex; flex-direction:column; padding:0;">
+        <h4 style="padding:9px 11px 0;">LOG</h4>
+        <div id="log"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- supabase-js from unpkg (NOT jsdelivr — blocked by Edge tracking prevention) -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script>
+/* ===========================================================================
+   CONFIG  ·  public, client-safe values (anon key is designed to be exposed)
+   =========================================================================== */
+const SUPABASE_URL  = "https://qfawusrelwthxabfbglg.supabase.co";
+const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E";
+
+/* The client is created in boot() below, AFTER the page's load event fires, so
+   the unpkg script is guaranteed to have finished. Declared here as `let` so
+   every function can see it; stays null until boot() assigns it. */
+let db = null;
+
+/* ===========================================================================
+   STATE
+   =========================================================================== */
+let channel   = null;                       // the Realtime channel (one per room)
+let role      = null;                        // "host" | "guest"
+let myId      = Math.random().toString(36).slice(2, 8);   // unique id for this tab
+let myName    = "player-" + myId.slice(0,3);              // friendly label
+let me        = { x: 0.5, y: 0.5 };          // my dot position, stored 0..1 (resolution-independent)
+let them      = { x: 0.5, y: 0.5, seen:false };           // the other dot
+let lastSendT = 0;                           // throttle clock for position sends
+let msgCount  = 0;                           // messages sent this second (rate readout)
+
+/* ===========================================================================
+   DOM SHORTCUTS
+   =========================================================================== */
+const $ = (id) => document.getElementById(id);
+const stage = $("stage");
+
+/* build the two dot elements once */
+const meDot = document.createElement("div");
+meDot.className = "dot me"; meDot.textContent = "P1"; stage.appendChild(meDot);
+const themDot = document.createElement("div");
+themDot.className = "dot them"; themDot.textContent = "P2";
+themDot.style.display = "none"; stage.appendChild(themDot);
+
+/* ===========================================================================
+   LOGGING  ·  tiny on-screen console so you can see events on a phone
+   =========================================================================== */
+function log(ev, msg){
+  const t = new Date().toLocaleTimeString();
+  const line = document.createElement("div");
+  line.innerHTML = `<span class="t">${t}</span> <span class="ev">${ev}</span> ${msg||""}`;
+  $("log").prepend(line);
+}
+
+/* ===========================================================================
+   CODE + LINK HELPERS
+   =========================================================================== */
+/* Mint a session code. NOTE: for a real product this needs more entropy —
+   the code IS the only thing gating who can join. This is test-grade. */
+function mintCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no confusable 0/O/1/I
+  let c = "BLM-";
+  for (let i=0;i<5;i++) c += chars[Math.floor(Math.random()*chars.length)];
+  return c;
+}
+/* Build the shareable ?join= link for the current page. */
+function joinLink(code){
+  const u = new URL(location.href);
+  u.searchParams.set("join", code);
+  return u.toString();
+}
+
+/* ===========================================================================
+   CONNECT  ·  the whole pipe lives in this function
+   =========================================================================== */
+function connect(code, asRole){
+  role = asRole;
+  $("roleVal").textContent = role;
+  $("meVal").textContent   = myName;
+
+  /* A channel named after the code = the room. Both sides use the SAME name. */
+  channel = db.channel("room-" + code, {
+    config: {
+      broadcast: { self: false },   // don't receive our own messages
+      presence:  { key: myId }      // identify ourselves in presence
+    }
+  });
+
+  /* ---- incoming POSITION updates from the other player ---- */
+  channel.on("broadcast", { event: "pos" }, ({ payload }) => {
+    if (payload.id === myId) return;          // ignore echoes of ourselves
+    them.x = payload.x; them.y = payload.y; them.seen = true;
+    themDot.style.display = "flex";
+  });
+
+  /* ---- PING: someone asks "are you there?", we echo a PONG back ---- */
+  channel.on("broadcast", { event: "ping" }, ({ payload }) => {
+    if (payload.id === myId) return;
+    channel.send({ type:"broadcast", event:"pong", payload:{ toId: payload.id, t0: payload.t0 } });
+  });
+  /* ---- PONG: our earlier ping came back -> compute round-trip time ---- */
+  channel.on("broadcast", { event: "pong" }, ({ payload }) => {
+    if (payload.toId !== myId) return;
+    const rtt = Math.round(performance.now() - payload.t0);
+    $("pingVal").textContent  = rtt + " ms";
+    $("pingPill").textContent = rtt + " ms";
+    $("pingPill").className    = "pill on";
+  });
+
+  /* ---- PRESENCE: who is in the room right now ---- */
+  channel.on("presence", { event: "sync" }, () => {
+    const state = channel.presenceState();          // { key: [ {meta} ] }
+    const peers = Object.values(state).flat();
+    const box = $("peers"); box.innerHTML = "";
+    peers.forEach(p => {
+      const mine = p.id === myId;
+      const row = document.createElement("div");
+      row.className = "peer";
+      row.innerHTML = `<span class="swatch" style="background:${mine?'var(--pink)':'var(--yellow)'}"></span>
+                       ${p.name}${mine?' · you':''}`;
+      box.appendChild(row);
+    });
+    if (!peers.length) box.innerHTML = '<div class="row"><span>nobody yet</span></div>';
+  });
+  channel.on("presence", { event: "join" },  ({ key }) => log("JOIN", key));
+  channel.on("presence", { event: "leave" }, ({ key }) => { log("LEAVE", key); them.seen=false; themDot.style.display="none"; });
+
+  /* ---- subscribe, then announce ourselves via presence.track ---- */
+  channel.subscribe(async (status) => {
+    if (status === "SUBSCRIBED"){
+      $("status").textContent = "CONNECTED";
+      $("status").className   = "pill on";
+      await channel.track({ id: myId, name: myName, role });   // enter presence
+      log("READY", "connected to " + code);
+    } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT"){
+      $("status").textContent = "ERROR";
+      $("status").className   = "pill warn";
+      log("ERR", status + " — check connection / code");
+    }
+  });
+
+  /* show code + copy-link, hide the role controls */
+  $("codeShow").textContent = code;
+  $("codebox").style.display = "flex";
+  $("hostBtn").style.display = $("joinBtn").style.display = $("codeInput").style.display = "none";
+}
+
+/* ===========================================================================
+   OUTGOING POSITION  ·  throttled to ~20/sec (well under Realtime limits)
+   =========================================================================== */
+function sendPos(){
+  if (!channel) return;
+  const now = performance.now();
+  if (now - lastSendT < 50) return;            // 50ms => 20 messages/sec
+  lastSendT = now;
+  channel.send({ type:"broadcast", event:"pos", payload:{ id:myId, x:me.x, y:me.y } });
+  msgCount++;
+}
+
+/* ping the other side every 2s to keep the latency readout fresh */
+setInterval(() => {
+  if (channel) channel.send({ type:"broadcast", event:"ping", payload:{ id:myId, t0:performance.now() } });
+}, 2000);
+
+/* update the "msgs / s" readout once per second */
+setInterval(() => { $("rateVal").textContent = msgCount; msgCount = 0; }, 1000);
+
+/* ===========================================================================
+   INPUT  ·  drag/mouse/touch moves your dot; WASD also works
+   =========================================================================== */
+function setMeFromClient(clientX, clientY){
+  const r = stage.getBoundingClientRect();
+  me.x = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+  me.y = Math.min(1, Math.max(0, (clientY - r.top)  / r.height));
+  sendPos();
+}
+let dragging = false;
+stage.addEventListener("pointerdown", (e) => { dragging = true; setMeFromClient(e.clientX, e.clientY); });
+stage.addEventListener("pointermove", (e) => { if (dragging) setMeFromClient(e.clientX, e.clientY); });
+window.addEventListener("pointerup",  () => { dragging = false; });
+/* WASD nudge (nice on desktop) */
+window.addEventListener("keydown", (e) => {
+  const step = 0.03;
+  if (e.key==="w"||e.key==="ArrowUp")    me.y -= step;
+  if (e.key==="s"||e.key==="ArrowDown")  me.y += step;
+  if (e.key==="a"||e.key==="ArrowLeft")  me.x -= step;
+  if (e.key==="d"||e.key==="ArrowRight") me.x += step;
+  me.x = Math.min(1,Math.max(0,me.x)); me.y = Math.min(1,Math.max(0,me.y));
+  sendPos();
+});
+
+/* ===========================================================================
+   RENDER LOOP  ·  draw both dots every frame (positions are 0..1 -> pixels)
+   =========================================================================== */
+function render(){
+  const r = stage.getBoundingClientRect();
+  meDot.style.left = (me.x * r.width) + "px";
+  meDot.style.top  = (me.y * r.height) + "px";
+  if (them.seen){
+    themDot.style.left = (them.x * r.width) + "px";
+    themDot.style.top  = (them.y * r.height) + "px";
+  }
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+/* ===========================================================================
+   WIRE UP THE BUTTONS
+   =========================================================================== */
+$("hostBtn").addEventListener("click", () => {
+  const code = mintCode();
+  log("HOST", "session " + code);
+  connect(code, "host");
+});
+$("joinBtn").addEventListener("click", () => {
+  const code = $("codeInput").value.trim().toUpperCase();
+  if (!code){ log("ERR","enter a code first"); return; }
+  log("JOIN", "trying " + code);
+  connect(code, "guest");
+});
+$("copyBtn").addEventListener("click", async () => {
+  const link = joinLink($("codeShow").textContent);
+  try { await navigator.clipboard.writeText(link); log("COPY","link copied"); }
+  catch { prompt("Copy this link:", link); }   // clipboard blocked -> fallback
+});
+
+/* ===========================================================================
+   BOOT  ·  runs only AFTER the whole page (incl. the unpkg script) has loaded.
+   This is the fix for the "createClient of undefined" race: we never touch the
+   library until we KNOW it's here.
+   =========================================================================== */
+function boot(){
+  /* guard: if the CDN didn't load, say so plainly instead of a cryptic crash */
+  if (!window.supabase || typeof window.supabase.createClient !== "function"){
+    $("status").textContent = "LIB FAILED";
+    $("status").className    = "pill warn";
+    log("ERR", "supabase-js failed to load — reload the page (network hiccup)");
+    return;
+  }
+  /* create the client now that the library is definitely present.
+     persistSession/autoRefreshToken OFF = never touch browser storage. We have
+     no login here (Realtime broadcast just needs the anon key), and this kills
+     the "Tracking Prevention blocked access to storage" warnings in Edge and
+     avoids any dependency on storage that gets blocked in cross-origin frames. */
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+  log("BOOT", "realtime ready");
+
+  /* AUTO-JOIN: if opened with ?join=CODE, jump straight in as guest.
+     This is the real "click the emailed link" flow, previewed. */
+  const code = new URL(location.href).searchParams.get("join");
+  if (code){
+    log("LINK", "auto-joining " + code.toUpperCase());
+    connect(code.toUpperCase(), "guest");
+  }
+}
+/* if the page is already loaded, boot now; otherwise wait for the load event */
+if (document.readyState === "complete") boot();
+else window.addEventListener("load", boot);
+
+/* ===========================================================================
+   iOS NOTE (leave for later, but be aware):
+   Safari suspends this websocket when the tab backgrounds or the phone locks.
+   When that happens the dot freezes and presence goes stale. Production needs
+   a reconnect-on-visibilitychange handler. Intentionally omitted here so the
+   test stays minimal — but if Cat's dot freezes when she switches apps, THIS
+   is why, not a bug in the pipe.
+   =========================================================================== */
+</script>
+</body>
+</html>
