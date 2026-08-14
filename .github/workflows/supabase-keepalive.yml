@@ -1,22 +1,23 @@
 # .github/workflows/supabase-keepalive.yml
-# Supabase free-tier keep-alive for the Spiralside project.
-# Free projects auto-pause after 7 days with no DATABASE activity. A git push
-# or Vercel deploy does NOT count -- only real Postgres queries do. This pings
-# the DB on a schedule so the inactivity timer never hits zero.
+# Supabase free-tier keep-alive. Free projects auto-pause after 7 days with no
+# DATABASE activity (git push / Vercel deploy do NOT count). This POSTs to the
+# public.keepalive() RPC on a schedule so the inactivity timer never hits zero.
 name: supabase-keepalive
 on:
   schedule:
-    - cron: '0 6 * * 1,4'          # 06:00 UTC every Mon + Thu (~3.5-day max gap, safe under 7)
+    - cron: '0 6 * * 1,4'          # 06:00 UTC every Mon + Thu (~3.5-day gap, safe under 7)
   workflow_dispatch:               # manual "Run workflow" button too
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Supabase REST API
+      - name: Ping Supabase keepalive RPC
         run: |
-          # anon key is public-safe (already in the frontend, RLS-guarded).
-          # Even if RLS returns [], PostgREST still runs a real query = activity.
+          # anon key is public-safe; keepalive() is granted to anon and returns now().
+          # A POST runs a real query in Postgres = activity, and returns 200.
           curl --fail --silent --show-error \
-            "https://qfawusrelwthxabfbglg.supabase.co/rest/v1/handoff_docs?select=key&limit=1" \
-            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E"
+            -X POST "https://qfawusrelwthxabfbglg.supabase.co/rest/v1/rpc/keepalive" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E" \
+            -H "Content-Type: application/json" \
+            -d '{}'
           echo "Keep-alive ping sent -- timer reset."
