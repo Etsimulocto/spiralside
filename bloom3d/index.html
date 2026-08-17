@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>
+/* SHIPPED-BUILD GUARD - added at deploy time, not part of the engine.
+   dc-runtime re-fetches this page and rebuilds itself from its own
+   source whenever window.__resources is missing. That is an authoring
+   hot-reload path: it fails harmlessly on file:// and SUCCEEDS on a
+   real server, which is why this only broke once deployed.
+   An empty object satisfies the check. Every lookup returns undefined,
+   so the runtime falls back to real URLs exactly as before. */
+window.__resources = {};
+</script>
+<script>
 // GENERATED from dc-runtime/src/*.ts — do not edit. Rebuild with `cd dc-runtime && bun run build`.
 "use strict";
 (() => {
