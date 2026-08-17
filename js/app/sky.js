@@ -187,6 +187,16 @@ function resize() {
 // ── DRAW FRAME ────────────────────────────────────────────────
 function frame() {
   if (!_cvs || !_ctx) return;
+  // Header is hidden in engine views (gm-full). rAF is per-document,
+  // so display:none does NOT stop this loop - it would keep building
+  // gradients and drawing particles onto an invisible canvas while
+  // BLOOM3D needs the GPU. Idle at ~4fps instead, so it resumes
+  // instantly when the header comes back.
+  if (document.body.classList.contains('gm-full')) {
+    _raf = null;
+    setTimeout(() => { if (!_raf) _raf = requestAnimationFrame(frame); }, 250);
+    return;
+  }
   const w = _cvs.width, h = _cvs.height;
   if (!w || !h || w < 2) { _raf = requestAnimationFrame(frame); return; }
 
