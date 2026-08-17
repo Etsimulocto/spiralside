@@ -4,16 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script>
-/* SHIPPED-BUILD GUARD - added at deploy time, not part of the engine.
-   dc-runtime re-fetches this page and rebuilds itself from its own
-   source whenever window.__resources is missing. That is an authoring
-   hot-reload path: it fails harmlessly on file:// and SUCCEEDS on a
-   real server, which is why this only broke once deployed.
-   An empty object satisfies the check. Every lookup returns undefined,
-   so the runtime falls back to real URLs exactly as before. */
-window.__resources = {};
-</script>
-<script>
 // GENERATED from dc-runtime/src/*.ts — do not edit. Rebuild with `cd dc-runtime && bun run build`.
 "use strict";
 (() => {
@@ -171,13 +161,7 @@ window.__resources = {};
     runtime.markFetched(rootName);
     runtime.setRootName(rootName);
     runtime.adoptParsed(rootName, parsed);
-    if (!window.__resources) {
-      fetch(location.href).then((res) => res.ok ? res.text() : "").then((t) => {
-        const raw = t ? parseDcText(t) : null;
-        if (raw?.template) runtime.updateHtml(rootName, raw.template);
-      }).catch(() => {
-      });
-    }
+    /* ship build: authoring hot-reload removed */
     const dc = doc.querySelector("x-dc");
     const hostEl = doc.createElement("div");
     hostEl.id = "dc-root";
@@ -1397,13 +1381,7 @@ window.__resources = {};
       const bg = appTheme === "dark" ? CANVAS_BG_DARK : CANVAS_BG_LIGHT;
       canvasStyleEl.textContent = `html,body{background:${bg}}#dc-root>.sc-host{position:relative}`;
     }
-    function postDesignMode(mode) {
-      if (window.parent === window) return;
-      try {
-        window.parent.postMessage({ type: "__dc_design_mode", mode }, "*");
-      } catch {
-      }
-    }
+    function postDesignMode(mode) {}   /* ship build: design-mode post removed */
     function setDesignDocMode(mode) {
       if (mode === designDocMode) return;
       designDocMode = mode;
@@ -1420,19 +1398,7 @@ window.__resources = {};
         canvasStyleEl = null;
       }
     }
-    window.addEventListener("message", (e) => {
-      const type = e.data && e.data.type;
-      if (type === "__dc_theme") {
-        const t = e.data.theme;
-        if (t === "light" || t === "dark") {
-          appTheme = t;
-          applyCanvasBg();
-        }
-        return;
-      }
-      if (!designDocMode || type !== "__dc_probe") return;
-      postDesignMode(designDocMode);
-    });
+    /* ship build: parent message listener removed */
     function compile(node) {
       const raw = [...node.children];
       const helmetClosed = node.nextSibling != null || node.parentNode?.nextSibling != null;
@@ -1867,22 +1833,7 @@ window.__resources = {};
     const baseCss = document.createElement("style");
     baseCss.textContent = BASE_CSS;
     document.head.prepend(baseCss);
-    const notifyHost = () => {
-      if (window.parent === window) return;
-      const r = runtime.registry.entries[rootName];
-      try {
-        window.parent.postMessage(
-          {
-            type: "__dc_booted",
-            rootName,
-            propsMeta: r && r.propsMeta || null,
-            preview: r && r.preview || null
-          },
-          "*"
-        );
-      } catch {
-      }
-    };
+    const notifyHost = () => {};   /* ship build: host handshake removed */
     const streams = createStreamTracker();
     const api = {
       __dcUpdate: (name, kind, content, streaming, viewportKey) => {
@@ -14791,9 +14742,9 @@ class Component extends DCLogic {
     const keyStyle = { flex: 1, minWidth: 0, color: "#5b6079", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
     const out = [];
     groups.sort((a, b) => a.title.localeCompare(b.title)).forEach((g) => {
-      out.push({ k: g.title, v: "", row: head, keyStyle: { color: "#8f5cd0", letterSpacing: "2px" }, style: { display: "none" } });
+      out.push({ k: g.title, v: "\u00a0", row: head, keyStyle: { color: "#8f5cd0", letterSpacing: "2px" }, style: { display: "none" } });
       Object.keys(g.rows).sort((a, b) => a.localeCompare(b)).forEach((k) => {
-        out.push({ k, v: g.rows[k].v, row, keyStyle, style: g.rows[k].style });
+        out.push({ k, v: g.rows[k].v === "" || g.rows[k].v == null ? "\u00a0" : g.rows[k].v, row, keyStyle, style: g.rows[k].style });
       });
     });
     return out;
