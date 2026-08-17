@@ -1942,7 +1942,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.70</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.71</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -4199,7 +4199,7 @@ async function czDeleteBlock(id, btn) {
     var b = e.target.closest('.tab-btn');       // only care about tab clicks
     if (!b) return;                              // not a tab - ignore
     // gm-full on body only while game maker tab is active
-    document.body.classList.toggle('gm-full', b.id === 'tab-bloomstudio');
+    document.body.classList.toggle('gm-full', (b.id === 'tab-bloomstudio' || b.id === 'tab-bloom3d'));
   });
 </script>
 <script id="sb-collapse-js">
