@@ -3,6 +3,7 @@ import { initParticles } from "./particles.js";
 import { initBloomslice } from "./bloomslice.js";
 import { initBloomEngine } from "./views/bloomengine.js";
 import { initBloomstudio } from "./views/bloomstudio.js";
+import { initBloom3D } from "./views/bloom3d.js";
 import { initSpiral }      from './views/spiral.js';
 // SPIRALSIDE — MAIN v1.0
 // Boot sequence — imports all modules, wires globals, starts app
@@ -117,6 +118,7 @@ window.initGuideView      = initGuide;
 window.initBloomsliceView = initBloomslice;
 window.initBloomEngineView = initBloomEngine;
 window.initBloomstudioView = initBloomstudio;
+window.initBloom3DView = initBloom3D;
 window.initSpiralView     = initSpiral;
 window.initForgeView      = initForgeView;
 window.destroyMusicView  = destroyMusicView;
