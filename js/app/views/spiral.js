@@ -274,6 +274,16 @@ function _spiralWire(st, math) {
   }
 
   function loop() {
+    // Engine views hide the rest of the app (gm-full). rAF is
+    // per-document, so a hidden view's loop keeps stealing main
+    // thread from BLOOM3D. The frozen flag skips the draw but
+    // still reschedules, so it does not help here. Idle instead,
+    // and resume on its own when the header returns.
+    if (document.body.classList.contains('gm-full')) {
+      st.animId = null;
+      setTimeout(() => { if (!st.animId) st.animId = requestAnimationFrame(loop); }, 250);
+      return;
+    }
     if(!st.frozen) _spiralDraw(st, math);
     st.animId = requestAnimationFrame(loop);
   }
