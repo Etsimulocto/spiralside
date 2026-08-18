@@ -2792,14 +2792,16 @@
                   <div style="{{ bumpBtn }}" onClick="{{ onBumpMajor }}" title="Big release">+ MAJOR</div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:5px;padding-top:9px;border-top:1px solid #1b1f36">
-                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">UNLOCK CODE</span>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-                    <input name="bloom-unlock-code" autocomplete="off" value="{{ unlockCode }}" onchange="{{ onUnlockCode }}" placeholder="enter a code" style="flex:1 1 160px;min-width:0;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;outline:none">
-                    <div style="{{ unlockBtn }}" onClick="{{ onUnlockApply }}" title="Unlock every piece pack on this browser">REDEEM</div>
-                    <sc-if value="{{ unlockOn }}" hint-placeholder-val="{{ false }}">
-                      <div style="{{ unlockClearBtn }}" onClick="{{ onUnlockClear }}" title="Put the packs back behind the paywall">LOCK AGAIN</div>
-                    </sc-if>
-                  </div>
+                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">{{ unlockTitle }}</span>
+                  <sc-if value="{{ unlockCodeOn }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                      <input name="bloom-unlock-code" autocomplete="off" value="{{ unlockCode }}" onchange="{{ onUnlockCode }}" placeholder="enter a code" style="flex:1 1 160px;min-width:0;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;outline:none">
+                      <div style="{{ unlockBtn }}" onClick="{{ onUnlockApply }}" title="Unlock every piece pack on this browser">REDEEM</div>
+                      <sc-if value="{{ unlockOn }}" hint-placeholder-val="{{ false }}">
+                        <div style="{{ unlockClearBtn }}" onClick="{{ onUnlockClear }}" title="Put the packs back behind the paywall">LOCK AGAIN</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
                   <div style="{{ unlockNoteStyle }}">{{ unlockNote }}</div>
                 </div>
               </div>
@@ -2825,14 +2827,16 @@
                   <div style="{{ bumpBtn }}" onClick="{{ onBumpMajor }}" title="Big release">+ MAJOR</div>
                 </div>
                 <div style="display:flex;flex-direction:column;gap:5px;padding-top:9px;border-top:1px solid #1b1f36">
-                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">UNLOCK CODE</span>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-                    <input name="bloom-unlock-code" autocomplete="off" value="{{ unlockCode }}" onchange="{{ onUnlockCode }}" placeholder="enter a code" style="flex:1 1 160px;min-width:0;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;outline:none">
-                    <div style="{{ unlockBtn }}" onClick="{{ onUnlockApply }}" title="Unlock every piece pack on this browser">REDEEM</div>
-                    <sc-if value="{{ unlockOn }}" hint-placeholder-val="{{ false }}">
-                      <div style="{{ unlockClearBtn }}" onClick="{{ onUnlockClear }}" title="Put the packs back behind the paywall">LOCK AGAIN</div>
-                    </sc-if>
-                  </div>
+                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">{{ unlockTitle }}</span>
+                  <sc-if value="{{ unlockCodeOn }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                      <input name="bloom-unlock-code" autocomplete="off" value="{{ unlockCode }}" onchange="{{ onUnlockCode }}" placeholder="enter a code" style="flex:1 1 160px;min-width:0;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;outline:none">
+                      <div style="{{ unlockBtn }}" onClick="{{ onUnlockApply }}" title="Unlock every piece pack on this browser">REDEEM</div>
+                      <sc-if value="{{ unlockOn }}" hint-placeholder-val="{{ false }}">
+                        <div style="{{ unlockClearBtn }}" onClick="{{ onUnlockClear }}" title="Put the packs back behind the paywall">LOCK AGAIN</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
                   <div style="{{ unlockNoteStyle }}">{{ unlockNote }}</div>
                 </div>
               </div>
@@ -8417,7 +8421,7 @@ const MANUAL = [
     ["PROJECT", "Game name, author and version. Exporting bumps the patch so every build is unique."],
     ["SAVE / LOAD", "Write the project out as a file and read one back in."],
     ["BACKUP", "The last auto-save, restorable in one tap when it exists."],
-    ["UNLOCK", "Redeem a pack code. Unlocks are stored per browser, alongside PROJECT's copy of the same field."],
+    ["UNLOCK", "Redeem a pack code, or see the packs a Spiralside account already grants. Stored per browser only \u2014 never in the project file, so a shared project cannot carry someone else's unlock."],
   ]],
   ["Face", "Eyes, mouths, glasses and marks. The viewport becomes a paint page: features layer over a hand-drawn paint layer, and every feature carries its own six sliders. A target picker aims the tool at the hero, an NPC, an enemy or a boss.", [
     ["EYES", "Eye decals plus the six sliders — SIZE, ROTATE, MOVE X, MOVE Y, OPACITY, GLOW."],
@@ -8485,7 +8489,7 @@ const MANUAL = [
   ["Project", "Game identity and metadata, as a full page in the viewport.", [
     ["PROFILE", "Username, display name and tagline. The username is the name the board prints — a–z, 0–9 and underscore, up to 22 characters."],
     ["GAME", "Game name, author and version, with + MINOR and + MAJOR bumps."],
-    ["UNLOCK CODE", "Redeem a pack code to unlock every piece and decal pack on this browser."],
+    ["UNLOCK CODE", "Redeem a pack code to unlock every piece and decal pack on this browser. Opened inside Spiralside, the account grants its packs directly and this panel just shows what it owns \u2014 there is no code to type."],
   ]],
   ["Run", "Live test and play. You spawn into your room when the hub is set to spawn there, the HUD comes up, and STOP drops you back into the tool and room you left from.", [
     ["MOUSE", "Standard third-person controls: hold left click to keep using the right hand at the weapon's fire rate, hold right or middle to look around, and the wheel zooms — rolling all the way in drops you into EYES. Looking and firing work at the same time."],
@@ -10577,7 +10581,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.1";
+  ENGINE = "bloom3d/0.3.2";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -11733,6 +11737,7 @@ class Component extends DCLogic {
     // Editor prefs, read once at boot and never allowed to throw here
     const ring = this.ringLoad();
     if (ring.length) this.setState({ pickRing: ring });
+    this.unlockListen();
 
     if (window.THREE) this.initGL();
     else window.addEventListener("three-ready", () => this.initGL(), { once: true });
@@ -12120,6 +12125,8 @@ class Component extends DCLogic {
     }
   }
   componentWillUnmount() {
+    if (this._unlockMsg) window.removeEventListener("message", this._unlockMsg);
+    clearTimeout(this._unlockTid);
     clearTimeout(this.hostTid);
     clearInterval(this.hostClock);
     window.removeEventListener("resize", this.onWinResize);
@@ -14936,30 +14943,133 @@ class Component extends DCLogic {
     return { part: t.part, apply: (name) => { t.part.shape = name; this.editRebuild(); } };
   }
 
-  // Tester unlock. Lives in localStorage, not the project file, so a shared
-  // .bloom3d.json never carries someone else's unlock with it.
-  unlockOn() {
-    if (this._unlock == null) {
-      try { this._unlock = localStorage.getItem("bloom3d.unlock") === "1"; }
-      catch (e) { this._unlock = false; }
+  // Pack unlocks. Lives in localStorage, never in the project file, so a shared
+  // .bloom3d.json cannot carry someone else's entitlement with it.
+  //
+  //   { v, source, packs, at, ref }
+  //   source  "entitlement" a host account granted it · "code" redeemed · "tester"
+  //           comped · "unknown" a pre-0.3.2 flag we migrated and cannot attribute
+  //   packs   pack names, or ["*"] for everything. A list from the first version so
+  //           selling packs separately later is a store change, not a second migration.
+  //   ref     order id, or the code that was typed, or null. Never shown in the UI.
+  UNLOCK_KEY = "bloom3d.unlock";
+  UNLOCK_ALL = "*";
+
+  // undefined = not read yet · null = read, nothing owned.
+  unlockRec() {
+    if (this._unlock === undefined) {
+      this._unlock = null;
+      let raw = null;
+      try { raw = localStorage.getItem(this.UNLOCK_KEY); } catch (e) {}
+      if (raw === "1") {
+        // 0.3.1 and earlier stored a bare flag. Which code or purchase it came from
+        // is unrecoverable, so it migrates as "unknown" — every write after this is clean.
+        this._unlock = this.unlockWrite("unknown", [this.UNLOCK_ALL], null);
+      } else if (raw && raw !== "0") {
+        try {
+          const r = JSON.parse(raw);
+          if (r && r.v === 1 && Array.isArray(r.packs) && r.packs.length) this._unlock = r;
+        } catch (e) {}
+      }
     }
     return this._unlock;
   }
 
-  setUnlock(on) {
-    this._unlock = on;
-    try { localStorage.setItem("bloom3d.unlock", on ? "1" : "0"); } catch (e) {}
+  unlockWrite(source, packs, ref) {
+    const rec = { v: 1, source, packs: packs.slice(), at: Date.now(), ref: ref || null };
+    try { localStorage.setItem(this.UNLOCK_KEY, JSON.stringify(rec)); } catch (e) {}
+    return rec;
+  }
+
+  unlockOn() { return !!this.unlockRec(); }
+
+  // Every gate goes through here, so the packs list is load-bearing today even
+  // though the store only ever grants ["*"].
+  unlockHas(pack) {
+    if (!pack || pack === "FREE") return true;
+    const rec = this.unlockRec();
+    if (!rec) return false;
+    return rec.packs.indexOf(this.UNLOCK_ALL) >= 0 || rec.packs.indexOf(pack) >= 0;
+  }
+
+  // Writing the record replaces the memo, so an entitlement that lands after the
+  // first render still wins — there is no boot race to lose.
+  setUnlock(on, source, packs, ref) {
+    this._unlock = on ? this.unlockWrite(source || "code", packs || [this.UNLOCK_ALL], ref) : null;
+    if (!on) { try { localStorage.removeItem(this.UNLOCK_KEY); } catch (e) {} }
     this.forceUpdate();
   }
 
+  // Entitlement handshake. Spiralside owns the account that paid, so it hands the
+  // engine a named grant and the buyer never sees a code field. No message arriving
+  // is the ordinary case: the standalone and itch builds have no host above them.
+  UNLOCK_HOSTS = ["https://spiralside.com", "https://www.spiralside.com"];
+
+  unlockListen() {
+    if (window.parent === window) return;
+    this._unlockMsg = (e) => {
+      if (this.UNLOCK_HOSTS.indexOf(e.origin) < 0) return;   // exact origin, never a prefix, never *
+      const d = e.data;
+      if (!d || (d.type !== "bloom3d:entitlement" && d.type !== "bloom3d:none")) return;
+      this._unlockAck = true;   // the host is listening — stop announcing
+      if (d.type === "bloom3d:none") return;
+      const packs = Array.isArray(d.packs) ? d.packs.filter((p) => typeof p === "string" && p) : [];
+      const rec = this.unlockRec();
+      if (!packs.length) {
+        // An explicit empty grant is a revoke (refund, seat moved). Only ever clears
+        // a grant the host itself made — a redeemed code is the user's, not ours.
+        if (rec && rec.source === "entitlement") {
+          this.setUnlock(false);
+          this.push("Packs locked — your Spiralside account no longer grants them", "warn");
+        }
+        return;
+      }
+      if (rec && rec.source === "entitlement" && rec.packs.join("\u0000") === packs.join("\u0000")) return;
+      this.setUnlock(true, "entitlement", packs, typeof d.ref === "string" ? d.ref : null);
+      this.push("Packs unlocked by your Spiralside account", "good");
+    };
+    window.addEventListener("message", this._unlockMsg);
+    // Announced to each allowed origin in turn, and repeated until the host answers.
+    // One post at mount is not a contract: a host that wires its listener up on its own
+    // load can attach after we mount and miss it, and the buyer would fall through to a
+    // code field they must never see. The listener also takes an unprompted grant at any
+    // time, so posting on the host's own load without waiting for ready is fine — and is
+    // the more reliable side to build. "bloom3d:none" is the ack for a visitor who owns
+    // nothing, and stops the announce just as a grant does.
+    let tries = 0;
+    const announce = () => {
+      if (this._unlockAck) return;
+      this.UNLOCK_HOSTS.forEach((o) => {
+        try { window.parent.postMessage({ type: "bloom3d:ready", v: 1 }, o); } catch (e) {}
+      });
+      if (++tries < 4) this._unlockTid = setTimeout(announce, tries * 400);
+    };
+    announce();
+  }
+
   unlockVals() {
-    const on = this.unlockOn();
+    const rec = this.unlockRec();
+    const on = !!rec;
+    const granted = on && rec.source === "entitlement";
+    // Counts and names come off the grant, never off the whole library: a partial
+    // grant must not claim packs the gate is still locking.
+    const all = on && rec.packs.indexOf(this.UNLOCK_ALL) >= 0;
+    const nP = all ? PIECE_LIB.length : PIECE_LIB.filter((p) => this.unlockHas(p.pack)).length;
+    const nD = all ? DECAL_LIB.length : DECAL_LIB.filter((d) => this.unlockHas(d.pack)).length;
+    const packNames = all ? "every pack" : on ? rec.packs.slice().sort().join(", ") : "";
+    const haveNote = all
+      ? "all " + nP + " pieces and " + nD + " decals"
+      : nP + " of " + PIECE_LIB.length + " pieces and " + nD + " of " + DECAL_LIB.length + " decals";
     const btn = (color, bg) => ({
       padding: "6px 12px", cursor: "pointer", fontFamily: "'Silkscreen', monospace",
       fontSize: 8, letterSpacing: "1px", color, background: bg, border: "1px solid " + color,
     });
     return {
       unlockOn: on,
+      // The code field is for the builds that have no account behind them. A buyer
+      // who came through the store never sees it.
+      unlockCodeOn: !granted,
+      unlockTitle: granted ? "PACKS" : "UNLOCK CODE",
       unlockCode: this.state.unlockCode || "",
       onUnlockCode: (e) => this.setState({ unlockCode: e.target.value, unlockMsg: null }),
       unlockBtn: btn("#59e391", "rgba(89,227,145,.1)"),
@@ -14967,7 +15077,7 @@ class Component extends DCLogic {
       onUnlockApply: () => {
         const code = (this.state.unlockCode || "").trim().toUpperCase();
         if (UNLOCK_CODES.indexOf(code) >= 0) {
-          this.setUnlock(true);
+          this.setUnlock(true, code === "TESTER" ? "tester" : "code", [this.UNLOCK_ALL], code);
           this.setState({ unlockMsg: "ok" });
           this.push("Every piece and decal pack unlocked", "good");
         } else {
@@ -14982,9 +15092,11 @@ class Component extends DCLogic {
       },
       unlockNote: this.state.unlockMsg === "bad"
         ? "That code is not on the list."
-        : on
-          ? "All " + PIECE_LIB.length + " pieces and " + DECAL_LIB.length + " decals unlocked on this browser. Stays until you clear it."
-          : "Testers can redeem a code to unlock every piece and decal pack. Saved per browser, never in the project file.",
+        : granted
+          ? "Your Spiralside account carries " + packNames + " · " + haveNote + ". Nothing to redeem."
+          : on
+            ? "Unlocked on this browser: " + packNames + " · " + haveNote + ". Stays until you clear it."
+            : "Testers can redeem a code to unlock every piece and decal pack. Saved per browser, never in the project file.",
       unlockNoteStyle: {
         fontSize: 9, lineHeight: 1.7,
         color: this.state.unlockMsg === "bad" ? "#ff6f91" : on ? "#59e391" : "#5b6079",
@@ -15002,8 +15114,7 @@ class Component extends DCLogic {
     const paint = tgt.part.color || "#d85cff";
     this._palPreview = real ? { shape: shown, color: paint } : null;
 
-    const unlocked = this.unlockOn();
-    const lockedFor = (p) => p.locked && !unlocked;
+    const lockedFor = (p) => p.locked && !this.unlockHas(p.pack);
     const accentFor = (p) => (p.free ? "#59e391" : lockedFor(p) ? "#6b6f8a" : "#d85cff");
     const list = PIECE_LIB.filter((p) => pack === "ALL" || p.pack === pack);
     const owned = PIECE_LIB.filter((p) => !lockedFor(p)).length;
@@ -16384,9 +16495,7 @@ class Component extends DCLogic {
   // The pill row is the free grammar, same as the six primitives in the SHAPE row:
   // four per feature, plus whatever this face is already wearing, plus + MORE.
   faceOwned(key) {
-    return this.unlockOn()
-      ? DECAL_LIB.filter((d) => d.key === key).map((d) => d.name)
-      : FACE_FREE[key].slice();
+    return DECAL_LIB.filter((d) => d.key === key && this.unlockHas(d.pack)).map((d) => d.name);
   }
 
   faceOpts(key) {
@@ -16449,8 +16558,7 @@ class Component extends DCLogic {
     const key = this.state.dclKey || "eyes";
     const pack = this.state.dclPack || "ALL";
     const cur = this.faceRec()[key];
-    const unlocked = this.unlockOn();
-    const lockedFor = (d) => d.locked && !unlocked;
+    const lockedFor = (d) => d.locked && !this.unlockHas(d.pack);
     const accentFor = (d) => (d.free ? "#59e391" : lockedFor(d) ? "#6b6f8a" : "#d85cff");
     const list = DECAL_LIB.filter((d) => d.key === key && (pack === "ALL" || d.pack === pack));
     const shown = this.state.dclHover || cur;
@@ -17617,8 +17725,17 @@ class Component extends DCLogic {
     const t = texOn ? this.userTexById(p && p.tex) : null;
     const faces = t ? ["top", "side", "bottom"].map((f) => this.texMineFace(t, f)) : null;
     const sig = faces ? faces.map((f) => (f.px || "-") + (f.al || "-")).join("~") : "-";
-    const key = (t ? (t.id + "|" + this.texMineN(t) + "|" + sig + "|" + (p && p.color) + "|" + (this.texGen || 0)) : "flat|" + (p && p.color)) + "|g" + idle;
-    // per-frame guard: nothing re-bakes unless the texture, its alpha or the colour moved
+    // SHAPE is part of the key. It was not, and that made textured non-box parts vanish:
+    // a BOX with per-face art gets a SIX-material array, and when the shape changed to ORB
+    // (or any other single-group geometry) every input to the old key stayed identical, so
+    // this returned early and left the array in place. three.js draws an Array material
+    // strictly through geometry.groups, and a sphere has none — so it rendered nothing at
+    // all. Toggling TEXTURES only "fixed" it because that bumps texGen, which changed the
+    // key and let the repair below finally run.
+    const shape = String((p && p.shape) || "BOX").toUpperCase();
+    const key = (t ? (t.id + "|" + this.texMineN(t) + "|" + sig + "|" + (p && p.color) + "|" + (this.texGen || 0)) : "flat|" + (p && p.color)) + "|g" + idle + "|" + shape;
+    // per-frame guard: nothing re-bakes unless the texture, its alpha, the colour or the
+    // shape moved
     const holder = mesh || target;
     if (holder.__texKey === key) return;
     holder.__texKey = key;
@@ -17634,9 +17751,12 @@ class Component extends DCLogic {
       else { mat.color.set(p.color); mat.emissive.set(p.color); mat.emissiveIntensity = idle; }
     };
     // Box groups run +X, -X, +Y (top), -Y (bottom), +Z, -Z — the same order tiles use.
-    // only a BOX carries the six geometry groups per-face art needs; other shapes take SIDE
-    const shape = String((p && p.shape) || "BOX").toUpperCase();
-    const wantSplit = !!(mesh && t && this.texMineHasFaces(t) && shape === "BOX");
+    // only a BOX carries the six geometry groups per-face art needs; other shapes take SIDE.
+    // Computed AFTER the guard: texMineHasFaces reads three whole faces.
+    // The geometry check is part of the condition: splitting onto a group-less geometry
+    // produces an Array material three.js cannot draw at all.
+    const geoGroups = mesh && mesh.geometry && mesh.geometry.groups;
+    const wantSplit = !!(mesh && t && shape === "BOX" && geoGroups && geoGroups.length > 1 && this.texMineHasFaces(t));
     if (wantSplit) {
       const mk = (f) => {
         const m = (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material).clone();
