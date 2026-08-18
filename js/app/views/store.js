@@ -215,6 +215,12 @@ export function initStoreView() {
         <div class="feature-cost">300,000 cr</div>
         <button class="gift-redeem-btn" id="bloom-unlock-btn" onclick="window.unlockBloomstudio()">unlock</button>
       </div>
+      <div class="feature-row" id="bloom3d-unlock-row" style="background:linear-gradient(135deg,rgba(0,246,214,0.05),rgba(123,95,255,0.05));border-color:rgba(0,246,214,0.15);margin-top:6px;">
+        <div class="feature-icon">&#9670;</div>
+        <div class="feature-name">bloom3d all parts<div class="feature-sub">one-time &middot; every pack, plus everything added later</div></div>
+        <div class="feature-cost">300,000 cr</div>
+        <button class="gift-redeem-btn" id="bloom3d-unlock-btn" onclick="window.unlockBloom3D()">unlock</button>
+      </div>
       <div class="view-section-title" style="margin-top:24px;">perks</div>
       <div class="feature-row" id="ads-off-row">
         <div class="feature-icon">&#127751;</div>
@@ -235,6 +241,7 @@ export function initStoreView() {
   if (window.updateCreditDisplay) window.updateCreditDisplay();
   updateAdsOffBtn();
   updateBloomUnlockBtn();
+  updateBloom3DUnlockBtn();
   setTimeout(loadPlanStatus, 400);
 }
 
@@ -297,6 +304,71 @@ async function updateBloomUnlockBtn() {
       .eq('user_id', session.user.id)
       .single();
     if (data && data.bloomstudio_paid) {
+      btn.textContent = 'owned';
+      btn.disabled = true;
+      if (row) row.style.opacity = '0.65';
+    } else {
+      btn.textContent = 'unlock';
+      btn.disabled = false;
+      if (row) row.style.opacity = '';
+    }
+  } catch (e) { /* leave the button as-is on any failure */ }
+}
+
+// -- BLOOM3D UNLOCK -------------------------------------------------------
+// Same shape as unlockBloomstudio: one atomic RPC checks the balance,
+// deducts, flips bloom3d_paid and writes the ledger row. The RPC returns
+// the ledger row id, which becomes the grant's ref inside the engine.
+window.unlockBloom3D = async function() {
+  if (!state.user) { alert('Sign in first.'); return; }
+  const btn = document.getElementById('bloom3d-unlock-btn');
+  const old = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+  try {
+    const { data, error } = await window._sb.rpc('bloom3d_unlock');
+    if (error) { alert('Unlock failed. Try again.'); return; }
+    if (!data || !data.ok) {
+      if (data && data.error === 'insufficient') {
+        alert('Not enough credits.\n\nNeed ' + Number(data.need).toLocaleString() +
+              ' cr, you have ' + Number(data.have).toLocaleString() +
+              ' cr.\n\nBuy credits above, then come back.');
+      } else if (data && data.error === 'not_signed_in') {
+        alert('Sign in first.');
+      } else {
+        alert('Unlock failed. Try again.');
+      }
+      return;
+    }
+    if (typeof data.credits === 'number') state.credits = data.credits;
+    if (window.updateCreditDisplay) window.updateCreditDisplay();
+    // Park the fresh grant on state, then push it to a live frame so an
+    // open picker ungreys in place. No reload needed.
+    state.bloom3dPaid = true;
+    state.bloom3dRef  = data.ref || '';
+    if (typeof window.bloom3dRefreshEntitlement === 'function') {
+      try { window.bloom3dRefreshEntitlement(); } catch (e) {}
+    }
+    alert(data.already
+      ? 'Already unlocked - no credits spent.'
+      : 'BLOOM3D parts unlocked. Every pack is yours.');
+  } catch (e) {
+    alert('Unlock failed. Try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = old || 'unlock'; }
+    updateBloom3DUnlockBtn();
+  }
+};
+
+// Reads the caller's own entitlement and flips the button to owned.
+async function updateBloom3DUnlockBtn() {
+  const btn = document.getElementById('bloom3d-unlock-btn');
+  const row = document.getElementById('bloom3d-unlock-row');
+  if (!btn || !window._sb) return;
+  try {
+    const { data: { session } } = await window._sb.auth.getSession();
+    if (!session) { btn.textContent = 'sign in'; btn.disabled = true; return; }
+    const { data } = await window._sb.rpc('bloom3d_entitlement');
+    if (data && data.paid) {
       btn.textContent = 'owned';
       btn.disabled = true;
       if (row) row.style.opacity = '0.65';
