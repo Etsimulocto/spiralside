@@ -1,6 +1,17 @@
 {
   "entries": [
     {
+      "version": "v0.9.73",
+      "date": "2026-08-18",
+      "title": "BLOOM3D and a New Color Picker",
+      "notes": [
+        "BLOOM3D is live as its own tab - build in 3D right in the browser, nothing to install",
+        "New color picker across the whole 3D editor - mix a color once and reuse it anywhere",
+        "Your recent colors are saved and follow you between projects",
+        "Textures rebuilt around one palette instead of scattered swatch grids"
+      ]
+    },
+    {
       "version": "v0.9.18",
       "date": "2026-07-29",
       "title": "Jump Pads and a Tier Gate Fix",
