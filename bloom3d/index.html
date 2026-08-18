@@ -161,7 +161,6 @@
     runtime.markFetched(rootName);
     runtime.setRootName(rootName);
     runtime.adoptParsed(rootName, parsed);
-    /* ship build: authoring hot-reload removed */
     const dc = doc.querySelector("x-dc");
     const hostEl = doc.createElement("div");
     hostEl.id = "dc-root";
@@ -1147,7 +1146,7 @@
   var BABEL_URL = "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js";
   var BABEL_SRI = "sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y";
   function cdnScriptFor(url, sri) {
-    const res = window.__resources;
+    const res = void 0;
     const v = res ? res[url] : void 0;
     return typeof v === "string" && v ? { src: v } : { src: url, integrity: sri };
   }
@@ -1381,7 +1380,7 @@
       const bg = appTheme === "dark" ? CANVAS_BG_DARK : CANVAS_BG_LIGHT;
       canvasStyleEl.textContent = `html,body{background:${bg}}#dc-root>.sc-host{position:relative}`;
     }
-    function postDesignMode(mode) {}   /* ship build: design-mode post removed */
+    function postDesignMode() {}
     function setDesignDocMode(mode) {
       if (mode === designDocMode) return;
       designDocMode = mode;
@@ -1398,7 +1397,6 @@
         canvasStyleEl = null;
       }
     }
-    /* ship build: parent message listener removed */
     function compile(node) {
       const raw = [...node.children];
       const helmetClosed = node.nextSibling != null || node.parentNode?.nextSibling != null;
@@ -1434,7 +1432,7 @@
             if (tag === "LINK") {
               const rel = (child.getAttribute("rel") || "").toLowerCase().split(/\s+/);
               const href = (child.getAttribute("href") || "").trim();
-              const res = window.__resources;
+              const res = void 0;
               const pre = res && rel.includes("stylesheet") && !rel.includes("alternate") ? res[href] : void 0;
               const blob = typeof pre === "string" && pre ? bundledBlob(pre) : null;
               if (blob) {
@@ -1626,7 +1624,7 @@
       if (r.fetched) return;
       r.fetched = true;
       const url = COMPONENT_DIR + "/" + encodeURIComponent(name) + ".dc.html";
-      const res = window.__resources;
+      const res = void 0;
       const pre = res ? res[url] : void 0;
       const target = typeof pre === "string" && pre ? pre : url;
       const blob = bundledBlob(target);
@@ -1833,7 +1831,7 @@
     const baseCss = document.createElement("style");
     baseCss.textContent = BASE_CSS;
     document.head.prepend(baseCss);
-    const notifyHost = () => {};   /* ship build: host handshake removed */
+    const notifyHost = () => {};
     const streams = createStreamTracker();
     const api = {
       __dcUpdate: (name, kind, content, streaming, viewportKey) => {
@@ -1958,23 +1956,77 @@
     <div style="flex:1;position:relative;min-width:0;display:flex;flex-direction:column;background:radial-gradient(circle at 50% 38%,#12162b,#090b17 78%)">
 
       <sc-if value="{{ vpBarOn }}" hint-placeholder-val="{{ true }}">
-      <div style="height:30px;flex:0 0 30px;min-width:0;overflow:hidden;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid #1b1f36;background:rgba(13,16,25,.7);white-space:nowrap">
-        <span style="flex:0 1 auto;min-width:46px;overflow:hidden;text-overflow:ellipsis;font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:1px;color:#e7e2f5">{{ vbLabel }}</span>
+      <div style="height:30px;flex:0 0 30px;min-width:0;overflow:hidden;display:flex;align-items:center;gap:6px;padding:0 7px;border-bottom:1px solid #1b1f36;background:rgba(13,16,25,.7);white-space:nowrap">
+        <span style="flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:1px;color:#e7e2f5">{{ vbLabel }}</span>
         <span style="{{ vbInfoStyle }}">{{ vbInfo }}</span>
-        <div style="flex:1"></div>
-        <div style="display:flex;gap:5px;flex:0 0 auto;min-width:max-content">
+        <div style="display:flex;gap:4px;flex:0 0 auto;margin-left:auto">
           <sc-for list="{{ overlayChips }}" as="c" hint-placeholder-count="0">
             <div style="{{ c.style }}" onClick="{{ c.onClick }}" title="{{ c.tip }}">{{ c.name }}</div>
           </sc-for>
           <sc-if value="{{ zen }}" hint-placeholder-val="{{ false }}">
             <div style="{{ zenExitStyle }}" onClick="{{ onFullscreen }}" title="Bring the panels back · Esc">⤡ EXIT ZEN</div>
           </sc-if>
+          <div style="width:1px;height:14px;background:#2b3150;flex:0 0 auto"></div>
+          <div style="{{ vbRefreshStyle }}" onClick="{{ onVbRefresh }}" title="{{ vbRefreshTip }}">↻</div>
         </div>
       </div>
       </sc-if>
 
       <div style="flex:1;display:flex;min-height:0">
         <div style="flex:1;position:relative;min-height:0;min-width:0;overflow:hidden" ref="{{ mountRef }}">
+        <sc-if value="{{ pickOn }}" hint-placeholder-val="{{ false }}">
+          <div style="{{ pickScrim }}" onClick="{{ onPickScrim }}">
+            <div style="{{ pickPanel }}" ref="{{ pickPanelRef }}" onClick="{{ onPickStop }}" onContextMenu="{{ onPickCtx }}">
+              <div style="{{ pickHead }}" onPointerDown="{{ onPickHeadDown }}" onPointerMove="{{ onPickHeadMove }}" onPointerUp="{{ onPickHeadUp }}" onPointerCancel="{{ onPickHeadUp }}" title="Drag to move — stays put until reload">
+                <span style="width:7px;height:7px;flex:0 0 7px;background:#d85cff;box-shadow:0 0 8px #d85cff"></span>
+                <span style="font-family:'Silkscreen',monospace;font-size:9px;letter-spacing:3px;color:#d85cff;text-shadow:0 0 12px rgba(216,92,255,.45)">COLOUR</span>
+                <span style="flex:1"></span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:#4a4f6a">ESC REVERTS</span>
+              </div>
+              <div style="{{ pickBody }}">
+                <div style="{{ pickSv }}" onPointerDown="{{ onPickSvDown }}" onPointerMove="{{ onPickSvMove }}" onPointerUp="{{ onPickPadUp }}" onPointerCancel="{{ onPickPadUp }}">
+                  <div style="{{ pickSvDot }}"></div>
+                </div>
+                <div style="{{ pickHue }}" onPointerDown="{{ onPickHueDown }}" onPointerMove="{{ onPickHueMove }}" onPointerUp="{{ onPickPadUp }}" onPointerCancel="{{ onPickPadUp }}">
+                  <div style="{{ pickHueDot }}"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="{{ pickWas }}" onClick="{{ onPickWas }}" title="{{ pickWasTitle }}"></div>
+                  <div style="{{ pickNow }}" title="Live on the model"></div>
+                  <input name="bloom-pick-hex" autocomplete="off" spellcheck="false" value="{{ pickField }}" onChange="{{ onPickHex }}" style="{{ pickInput }}" title="Type or paste #RRGGBB">
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
+                  <span style="flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-family:'Silkscreen',monospace;font-size:8px;letter-spacing:2px;color:#5b6079">BASE</span>
+                  <span style="flex:1 1 0;min-width:0"></span>
+                  <span style="flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:8px;color:#3f4460">FIXED · SHARED</span>
+                </div>
+                <div style="{{ pickRingGrid }}">
+                  <sc-for list="{{ pickBase }}" as="cp" hint-placeholder-count="15">
+                    <div style="{{ cp.style }}" onClick="{{ cp.onClick }}" title="{{ cp.name }}"></div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap">
+                  <span style="flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-family:'Silkscreen',monospace;font-size:8px;letter-spacing:2px;color:#5b6079">RECENT</span>
+                  <span style="flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:8px;color:#3f4460">YOURS</span>
+                  <span style="flex:1 1 0;min-width:0"></span>
+                  <div style="{{ pickEraseBtn }}" onClick="{{ onPickErase }}" title="{{ pickEraseTitle }}">{{ pickEraseLabel }}</div>
+                  <div style="{{ pickWipeBtn }}" onClick="{{ onPickWipe }}" title="{{ pickWipeTitle }}">{{ pickWipeLabel }}</div>
+                </div>
+                <div style="{{ pickRingGrid }}">
+                  <sc-for list="{{ pickSlots }}" as="s" hint-placeholder-count="16">
+                    <div tabindex="{{ s.tab }}" style="{{ s.style }}" onClick="{{ s.onClick }}" onKeyDown="{{ s.onKey }}" onContextMenu="{{ s.onCtx }}" onPointerDown="{{ s.onDown }}" onPointerUp="{{ s.onUp }}" onPointerCancel="{{ s.onUp }}" onPointerEnter="{{ s.onEnter }}" onPointerLeave="{{ s.onLeave }}" onFocus="{{ s.onFocus }}" onBlur="{{ s.onBlur }}" title="{{ s.title }}">
+                      <div style="{{ s.xStyle }}" onClick="{{ s.onX }}" title="Remove this colour">×</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="{{ pickBtnRow }}">
+                  <div style="{{ pickCancelBtn }}" onClick="{{ onPickCancel }}">CANCEL</div>
+                  <div style="{{ pickApplyBtn }}" onClick="{{ onPickApply }}">APPLY</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
         <sc-if value="{{ perfHud }}" hint-placeholder-val="{{ false }}">
           <div style="position:absolute;left:12px;top:12px;z-index:33;pointer-events:none;background:rgba(13,16,25,.88);border:1px solid #2b3150;padding:7px 9px;display:flex;flex-direction:column;gap:3px;min-width:138px">
             <div style="font-family:'Silkscreen',monospace;font-size:10px;letter-spacing:2px;color:#59e391;text-shadow:0 0 8px rgba(89,227,145,.4)">{{ perfHud.fps }} FPS</div>
@@ -3079,32 +3131,45 @@
                   </sc-for>
                 </div>
                 <div style="flex:1 1 auto"></div>
-                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.5px;color:#5b6079;white-space:nowrap;flex:0 0 auto">{{ texInkLabel }}</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0">
-                <div style="{{ texInkChip }}" onClick="{{ onTexInkPick }}" title="Pick any colour for the selected ink slot">
-                  <div style="{{ texInkChipDot }}"></div>
-                  <span>EDIT INK</span>
-                </div>
-                <div style="display:flex;gap:3px;flex-wrap:wrap;flex:1 1 auto;min-width:0">
-                  <sc-for list="{{ texRecents }}" as="r" hint-placeholder-count="8">
-                    <div style="{{ r.style }}" onClick="{{ r.onClick }}" title="{{ r.title }}"></div>
-                  </sc-for>
-                </div>
               </div>
             </div>
 
-            <div style="flex:1;min-height:0;container-type:size;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0;align-items:stretch">
-              <div style="display:flex;flex-direction:column;gap:4px;align-items:center;min-height:0;overflow-y:auto;scrollbar-gutter:stable;scrollbar-width:thin;padding:5px 4px;background:#0e1120;border-right:1px solid #1b1f36;width:62px;box-sizing:border-box">
-                <div style="font-size:6px;letter-spacing:1px;color:#5b6079;flex:0 0 auto">INK</div>
-                <div style="flex:0 0 auto;width:100%;display:grid;grid-template-columns:repeat(2,18px);grid-auto-rows:18px;gap:2px;justify-content:center;align-content:start;justify-items:center;align-items:center">
-                  <sc-for list="{{ texInks }}" as="c" hint-placeholder-count="16">
-                    <div style="{{ c.style }}" onClick="{{ c.onClick }}"></div>
-                  </sc-for>
+            <div style="flex:1;min-height:0;position:relative;container-type:size;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:0;align-items:stretch">
+              <sc-if value="{{ texRailStrip }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ texStripStyle }}">
+                  <div style="{{ texStripBtn }}" onClick="{{ onTexRailOpen }}" title="Show the colour rail over the picture — there is no room for it beside one">{{ texRailOpenLabel }}</div>
+                  <div style="{{ texStripDot }}" onClick="{{ onTexInkPick }}" title="{{ texInkLabel }} — pick any colour for it"></div>
                 </div>
+              </sc-if>
+
+              <sc-if value="{{ texRailPanelOn }}" hint-placeholder-val="{{ true }}">
+              <div style="{{ texRailPanel }}">
+
+                <div style="display:flex;flex-direction:column;gap:5px;flex:0 0 auto">
+                  <div style="{{ texSecInk }}" title="This tile's sixteen colours — the set every pattern fill reads from">
+                    <span>PALETTE</span>
+                    <span style="flex:1"></span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0;color:#5b6079">{{ texInkLabel }}</span>
+                  </div>
+                  <div style="{{ texRailGrid }}">
+                    <sc-for list="{{ texInks }}" as="c" hint-placeholder-count="16">
+                      <div style="{{ c.style }}" onClick="{{ c.onClick }}" title="{{ c.title }}"></div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px;padding:1px 0" title="{{ texPairTitle }}">
+                    <div style="{{ texPairDot }}"></div>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#8a7a3f;line-height:1.4;min-width:0">{{ texPairNote }}</span>
+                  </div>
+                  <div style="{{ texInkChip }}" onClick="{{ onTexInkPick }}" title="Open the colour picker on the selected slot — assign from BASE, from RECENT, or mix your own">
+                    <div style="{{ texInkChipDot }}"></div>
+                    <span>EDIT INK</span>
+                  </div>
+                </div>
+
               </div>
+              </sc-if>
               <div style="min-width:0;min-height:0;display:grid;place-items:center;padding:4px">
-                <div style="width:min(100%, 100cqh - 10px);aspect-ratio:1;box-sizing:border-box;display:grid;grid-template-columns:{{ texGridCols }};grid-auto-rows:1fr;gap:0;background:{{ texUnderColor }};padding:3px;border:1px solid #2b3150" onPointerUp="{{ onTexUp }}">
+                <div style="width:min(100%, 100cqh - 10px, 880px);aspect-ratio:1;box-sizing:border-box;display:grid;grid-template-columns:{{ texGridCols }};grid-auto-rows:1fr;gap:0;background:{{ texUnderColor }};padding:3px;border:1px solid #2b3150" onPointerUp="{{ onTexUp }}">
                   <sc-for list="{{ texPixels }}" as="p" hint-placeholder-count="256">
                     <div style="{{ p.style }}" onPointerDown="{{ p.onDown }}" onPointerEnter="{{ p.onEnter }}"></div>
                   </sc-for>
@@ -8438,10 +8503,10 @@ const MANUAL = [
     ["VIEWPORT FX", "Post effects on the render only — the HUD, badges and cursor sit above them and stay sharp. Five sliders: MONO drains the picture to black and white, PIXELATE, SCANLINE, SPREAD and VIGNETTE. Under them, KEEP COLOUR turns MONO into a spot-colour screen effect: BLUE, GOLD, GREEN, MAGENTA, RED or PICK for any colour you choose, and that colour survives while everything else goes grey — SPREAD sets how much of the colour counts, NONE is plain black and white. Grey keeps nothing, since grey is not a hue."],
     ["THE SWITCH LIST", "Every preference under it, in one A–Z list rather than named groups: AUTO SPIN, CHAT, CHAT PRESETS ONLY, CRT SCANLINES, DEFAULT CAMERA, DOOR SIGNS, FPS CAP, FPS METER, GROUND GRID, INPUT, INVERT CAMERA Y, RESOLUTION, SELECTION BOX, SOUND, SPAWN DISC, TEXTURES, TOUCH PADS, UI SCALE, VOLUME. Each row carries its own one-line description."],
   ]],
-  ["Textures", "16x16 tile art. The viewport becomes a pixel grid. Each face paints on its own: TOP is the +Y lid, BOTTOM the underside, SIDE the four walls.", [
+  ["Textures", "16x16 tile art. The viewport becomes a pixel grid. Each face paints on its own: TOP is the +Y lid, BOTTOM the underside, SIDE the four walls. The left rail holds one grid: PALETTE, this tile's sixteen colours and the set every pattern fill reads from. Slot order is functional, not cosmetic — a pattern pairs the slot you picked with the slot nine along, and that partner is outlined in the grid, so moving a colour to a different slot changes what it pairs with. Tap a slot to select it, then EDIT INK opens the colour picker on it: BASE, the studio's fixed palette shared with the Actor page, sits above RECENT, the sixteen colours you mixed before, and you can mix your own between them — APPLY writes to the selected slot. On a narrow screen the rail shrinks to a strip carrying the current colour, and ▶ opens it over the picture so the paint grid never gets squeezed out. RECENT is kept for you rather than for the project, so it follows you between games, and a swatch there can be removed four ways: the × on the swatch, ERASE mode, right-click, or a long press.", [
     ["SAVED", "Your texture bank, as real thumbnails — save the current tile into a slot or load one back."],
     ["TILE", "Which tile type you are painting, and which of its faces."],
-    ["FILL", "Ink, seed fills and clear. The ink you pick is also the seed's main colour."],
+    ["FILL", "Seed fills and clear. The palette slot you pick is the motif's main colour; its partner is the slot nine along, outlined in the grid."],
   ]],
   ["Touch", "On-screen controls for tablets and phones, and where they sit. The pads are drawn over the viewport here even outside a run, so you can lay a game out for touch without playing it.", [
     ["LAYOUT", "SET UP PADS opens a full-screen stage — the level dims out of the way and the pads sit on a frame the shape of the player's screen, so you place them without the game fighting for the same pixels. Tap a pad there to select it, drag to place it, DONE locks up. LOCKED / UNLOCKED does the same in place, RESET LAYOUT starts over, and PAD OPACITY and PAD SIZE apply to every pad at once. Nothing fires while pads are unlocked; positions are kept as a fraction of the screen so rotating a tablet keeps them roughly in place."],
@@ -9866,7 +9931,7 @@ const SETTING_DEF = [
   { key: "quality", label: "RESOLUTION", desc: "Real pixels the viewport renders per CSS pixel — LOW is 1x, MED 1.5x, HIGH 2x on a retina screen, which is four times the pixels of LOW. Tablets report 2x or 3x, so HIGH is where the frame rate goes", opts: ["LOW", "MED", "HIGH"] },
   { key: "perf", label: "FPS METER", desc: "Frame rate, worst frame, draw calls, GPU objects and heap over the viewport", opts: ["OFF", "ON"] },
   { key: "fpsCap", label: "FPS CAP", desc: "60 caps the loop for steady frame pacing and lower GPU load; uncapped runs as fast as the display allows", opts: ["60", "UNCAPPED"] },
-  { key: "textures", label: "TEXTURES", desc: "Tile face art in the viewport — OFF shows flat tile colours and skips the per-tile bake, the biggest frame cost on the Textures page", opts: ["ON", "OFF"] },
+  { key: "textures", label: "TEXTURES", desc: "Tile face art in the viewport — OFF shows flat tile colours and skips the per-tile bake, the biggest frame cost on the Textures page. The same switch sits on the viewport bar beside RIG and HITBOX", opts: ["ON", "OFF"] },
   { key: "touchPads", label: "TOUCH PADS", desc: "On-screen sticks and buttons during a run. AUTO shows them on touch screens only; ON forces them on for testing with a mouse", opts: ["AUTO", "ON", "OFF"] },
   { key: "uiScale", label: "UI SCALE", desc: "Size of the studio interface — the viewport rescales with it", opts: ["S", "M", "L", "XL"] },
   { key: "sound", label: "SOUND", desc: "Music and sound effects during play", opts: ["ON", "OFF"] },
@@ -10000,7 +10065,8 @@ class Component extends DCLogic {
     cam: "ORBIT", ready: false, clock: "", railW: 296, conH: 98, railOpen: true, inspOpen: true, conOpen: true, manualSel: "Actor",
     world: { size: "M", brush: 1, tiles: null, spawn: 0, props: {}, enemies: {}, pets: {}, npcs: {}, bosses: {}, spawners: {}, weapons: {}, up: {}, trot: {}, level: 0, tileRot: 0, mode: "tile", gap: TILE_GAP_DEF, grid: 0, sky: Object.assign({}, SKY_DEF) },
     tileColors: {}, textures: {}, texTile: 1, texFace: "top", texInk: 8, texAlpha: 1, texPal: TEX_PALETTE.slice(), texRecent: [],
-    userTex: [], texMineSel: -1, partTexOpen: false,
+    userTex: [], texMineSel: -1, partTexOpen: false, texRailOpen: false,
+    pickOn: false, pickHex: "#d85cff", pickHsv: null, pickField: "#d85cff", pickPos: null, pickRing: [], pickErase: false, pickWipe: false, pickHoverIdx: -1, pickFocusIdx: -1,
     face: clone(FACE_DEF), faceSlots: [null, null, null, null, null, null, null, clone(FACE_DEF)], faceSlot: 0,
     facePaint: false, faceErase: false, faceTarget: "HERO", npcEdit: false,
     npcSel: 0, dialogues: null, dlgSel: 0, dlgLineSel: 0, questOpen: true,
@@ -10509,7 +10575,9 @@ class Component extends DCLogic {
     return true;
   }
 
-  ENGINE = "bloom3d/0.3.0";
+  // Ship gate reads the version from HERE, not the filename. Bump on every export that
+  // changes anything — two distinct builds must never claim the same version.
+  ENGINE = "bloom3d/0.3.1";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -10628,6 +10696,33 @@ class Component extends DCLogic {
     this.saveProject("restore");
     this.rebuildAll();
     this.push("Backup restored — press RESTORE again to flip back.", "success");
+  }
+
+  // The ↻ on the viewport bar. Ctrl-Shift-R was the sledgehammer people were reaching for
+  // when the picture went stale; this does what they actually wanted — drop every cache,
+  // re-bake, rebuild, re-fit — without throwing the session away. It touches no project
+  // data, so it is safe to hit at any time, and it un-sticks a watchdog-paused loop too.
+  refreshEngine() {
+    if (this._refreshing) return;
+    this._refreshing = true;
+    this.pickLatchOut();
+    this.resumeLoop();
+    const old = this.texCache || {};
+    for (const k in old) { try { old[k].dispose(); } catch (e) {} }
+    this.texCache = {};
+    this.matCache = {};
+    this.texGen = (this.texGen || 0) + 1;
+    this.tilesDirty = true;
+    this.retexture();
+    this.queueWeaponRebuild();
+    this.rebuildAll();
+    if (this.rebuildSpawners) this.rebuildSpawners();
+    if (this.applySky) this.applySky();
+    if (this.applyFx) this.applyFx();
+    this.applyUiScale();
+    this.refitViewport();
+    this.push("engine refreshed · caches dropped, scene re-baked", "info");
+    setTimeout(() => { this._refreshing = false; this.forceUpdate(); }, 80);
   }
 
   rebuildAll() {
@@ -11635,6 +11730,10 @@ class Component extends DCLogic {
 
   componentDidMount() {
     this.phase("mount");
+    // Editor prefs, read once at boot and never allowed to throw here
+    const ring = this.ringLoad();
+    if (ring.length) this.setState({ pickRing: ring });
+
     if (window.THREE) this.initGL();
     else window.addEventListener("three-ready", () => this.initGL(), { once: true });
     this.gpCur = { x: window.innerWidth / 2, y: window.innerHeight / 2, vis: false, last: 0, r2: false, l2: false, moved: 0, snap: null, wasMoving: false, downEl: null, hoverEl: null };
@@ -11827,6 +11926,18 @@ class Component extends DCLogic {
         if (e.stopImmediatePropagation) e.stopImmediatePropagation();
       }
       if (this.keyStamp === e.timeStamp && this.keyCode === code) return;
+      // The colour picker owns the keyboard while it is up. It has a hex field in it, so a
+      // keystroke must never fall through to a tool hotkey — typing "S" would otherwise
+      // swap tools out from under the field. Esc reverts, everything else goes to the input.
+      if (this.state.pickOn) {
+        if (e.type === "keydown" && code === "Escape") {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+          this.pickClose(false);
+        }
+        return;
+      }
       this.keyStamp = e.timeStamp;
       this.keyCode = code;
       const down = e.type === "keydown";
@@ -12380,7 +12491,12 @@ class Component extends DCLogic {
         if (p && this.painting) this.paintAt(p);
       });
     });
-    this.ro = new ResizeObserver(() => this.refitViewport());
+    this.ro = new ResizeObserver(() => {
+      this.refitViewport();
+      // the colour rail's fits-or-strip verdict is measured, so a resize has to re-ask it
+      const f = this.texRailFits();
+      if (this._railFit !== f) { this._railFit = f; this.forceUpdate(); }
+    });
     this.ro.observe(el);
 
     const hemi = new THREE.HemisphereLight(0x9a6bd0, 0x090b17, 1.2);
@@ -14241,20 +14357,436 @@ class Component extends DCLogic {
     return fb || "#000000";
   }
 
+  // ── COLOUR PICKER ─────────────────────────────────────────────────────────
+  // One modal for every colour in the studio. It floats over the VIEWPORT rather than
+  // the window — rendered inside the viewport mount, so it is centred on the picture and
+  // physically cannot cover the readout rail or the tool/inspector cluster. The old
+  // version hung off the swatch that opened it, which pinned it to the top of the right
+  // rail and clipped it. Colour lands on the mesh live while you pick; the ring below
+  // banks what you committed so a second body part can match the first.
+  hexToHsv(hex) {
+    const s = this.hexOr(hex, "#000000");
+    const r = parseInt(s.slice(1, 3), 16) / 255, g = parseInt(s.slice(3, 5), 16) / 255, b = parseInt(s.slice(5, 7), 16) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    let h = 0;
+    if (d) {
+      if (mx === r) h = 60 * (((g - b) / d) % 6);
+      else if (mx === g) h = 60 * ((b - r) / d + 2);
+      else h = 60 * ((r - g) / d + 4);
+    }
+    return { h: h < 0 ? h + 360 : h, s: mx ? d / mx : 0, v: mx };
+  }
+  hsvToHex(h, s, v) {
+    const ch = (n) => {
+      const k = (n + h / 60) % 6;
+      const x = v - v * s * Math.max(0, Math.min(k, 4 - k, 1));
+      return Math.round(Math.max(0, Math.min(1, x)) * 255).toString(16).padStart(2, "0");
+    };
+    return "#" + ch(5) + ch(3) + ch(1);
+  }
+
+  // input_latch_rule_v1: opening the picker is a pointer EXIT path. The gesture that
+  // opened it never gets its own pointerup — the modal eats it — so every latch the
+  // viewport might be holding is released HERE rather than assumed to be already clear.
+  pickLatchOut() {
+    this.dragCam = false; this.dragCamBtn = undefined;
+    this.dragSlider = null; this.dragRail = null; this.dragCon = null;
+    this._padDrag = null; this.facePainting = false;
+    if (this.dragPan) { this.dragPan = false; if (this.canvasEl) this.canvasEl.style.cursor = ""; }
+    if (this.painting) { this.painting = false; this.lastCell = -1; }
+    if (this.canvasEl && this.dragPointer !== undefined) {
+      try { this.canvasEl.releasePointerCapture(this.dragPointer); } catch (err) {}
+      this.dragPointer = undefined;
+    }
+    if (this.fireHold) { this.fireHold.L = false; this.fireHold.R = false; }
+    if (this.keys) for (const k in this.keys) this.keys[k] = false;
+  }
+
   openPicker(initial, apply) {
-    const inp = document.createElement("input");
-    inp.type = "color";
-    // named so the browser does not treat this throwaway swatch as an autofill field
-    inp.name = "bloom-colour-picker";
-    inp.id = "bloom-colour-picker";
-    inp.autocomplete = "off";
-    inp.value = initial && initial[0] === "#" ? initial : "#d85cff";
-    inp.style.cssText = "position:fixed;left:-100px;top:0;opacity:0";
-    document.body.appendChild(inp);
-    const done = () => { apply(inp.value); this.forceUpdate(); };
-    inp.addEventListener("input", done);
-    inp.addEventListener("change", () => { done(); setTimeout(() => inp.remove(), 200); });
-    inp.click();
+    const hex = this.hexOr(initial, "#d85cff");
+    this.pickLatchOut();
+    this._pickApply = typeof apply === "function" ? apply : null;
+    this._pickFrom = hex;
+    this._pickPad = null;
+    // never land in erase mode or mid-confirm — both reset with every open
+    this.setState({ pickOn: true, pickHex: hex, pickHsv: this.hexToHsv(hex), pickField: hex, pickErase: false, pickWipe: false });
+  }
+
+  // Live: paint the mesh on every move, but do NOT touch the ring. Dragging across the
+  // square would otherwise fill all sixteen slots with one gesture's worth of near-
+  // identical shades, which is the difference between a useful ring and landfill.
+  pickLive(hex, hsv) {
+    if (this._pickApply) this._pickApply(hex);
+    this.setState({ pickHex: hex, pickField: hex, pickHsv: hsv || this.hexToHsv(hex) });
+  }
+
+  // The ring is EDITOR prefs, not project data — deliberately NOT where texRecent went.
+  // texRecent (the Textures ink recents) rides inside the project snapshot under SAVE_KEY,
+  // which is right for it: those eight colours belong to that one game's palette. The
+  // picker ring is the opposite case — matching a prop in one project to a character in
+  // another is the whole reason it exists — so it sits beside bloom3d.unlock in its own
+  // user-scoped key and survives a project switch. Written through on every mutation, not
+  // on unload: a crashed tab must not eat the ring.
+  RING_KEY = "bloom3d.ring.v1";
+  RING_MAX = 16;
+
+  ringLoad() {
+    let colors = [];
+    try {
+      const raw = JSON.parse(localStorage.getItem(this.RING_KEY) || "null");
+      const list = raw && raw.v === 1 && Array.isArray(raw.colors) ? raw.colors : [];
+      const seen = {};
+      list.forEach((c) => {
+        const h = typeof c === "string" ? c.trim().toLowerCase() : "";
+        if (!/^#[0-9a-f]{6}$/.test(h) || seen[h]) return;
+        seen[h] = 1;
+        colors.push(h);
+      });
+    } catch (e) { colors = []; }
+    // The cap is enforced on the way IN as well as on add: a stored payload with forty
+    // entries is trimmed and rewritten here rather than carried until the next commit.
+    if (colors.length > this.RING_MAX) { colors = colors.slice(0, this.RING_MAX); this.ringSave(colors); }
+    return colors;
+  }
+  ringSave(colors) {
+    try { localStorage.setItem(this.RING_KEY, JSON.stringify({ v: 1, colors: colors.slice(0, this.RING_MAX) })); } catch (e) {}
+  }
+  ringSet(colors) {
+    const next = colors.slice(0, this.RING_MAX);
+    this.ringSave(next);
+    this.setState({ pickRing: next, pickWipe: false });
+    return next;
+  }
+  ringDrop(c) { this.ringSet((this.state.pickRing || []).filter((x) => x !== c)); }
+
+  // The ring renders in two places — inside the picker and in the Textures rail — and this
+  // is the one builder both use, so the four delete paths (× badge, ERASE mode, right-click,
+  // touch-hold) cannot drift apart. ctx only namespaces the hover/focus keys so the two
+  // mounts do not light each other's slots. apply() is what a plain click means on that
+  // surface: set the picker's colour, or drop the colour into the selected ink.
+  ringSlots(ctx, opts) {
+    const ring = this.state.pickRing || [];
+    const erase = !!this.state.pickErase;
+    const live = String(opts.live || "").toLowerCase();
+    const cell = opts.cell || {};
+    return Array.from({ length: this.RING_MAX }, (_, i) => {
+      const c = ring[i] || null;
+      // An empty slot must not read as a swatch holding a very dark colour: hatched,
+      // dashed, no pointer events, out of the tab order.
+      if (!c) return Object.assign({
+        title: "", tab: -1,
+        onClick: null, onCtx: null, onDown: null, onUp: null, onKey: null, onX: null,
+        onEnter: null, onLeave: null, onFocus: null, onBlur: null,
+        xStyle: { display: "none" },
+        style: Object.assign({
+          boxSizing: "border-box", border: "1px dashed #1d2240", background: "#0a0c17",
+          pointerEvents: "none",
+          backgroundImage: "repeating-linear-gradient(45deg,#141834 0 3px,rgba(0,0,0,0) 3px 7px)",
+        }, cell),
+      });
+      const key = ctx + ":" + i;
+      const on = c === live;
+      const lit = erase || this.state.pickHoverIdx === key || this.state.pickFocusIdx === key;
+      const drop = (e) => { if (e) { e.preventDefault(); e.stopPropagation(); } this.ringDrop(c); };
+      const use = () => { if (this._pickHeld) { this._pickHeld = false; return; } opts.apply(c); };
+      return {
+        title: erase ? c.toUpperCase() + " · tap to remove" : c.toUpperCase() + " · " + opts.verb + " · right-click or × removes",
+        tab: 0,
+        onEnter: () => this.setState({ pickHoverIdx: key }),
+        onLeave: () => { if (this.state.pickHoverIdx === key) this.setState({ pickHoverIdx: null }); },
+        onFocus: () => this.setState({ pickFocusIdx: key }),
+        onBlur: () => { if (this.state.pickFocusIdx === key) this.setState({ pickFocusIdx: null }); },
+        onClick: (e) => (erase ? drop(e) : use()),
+        onX: drop,
+        onCtx: drop,
+        onKey: (e) => {
+          if (e.key === "Delete" || e.key === "Backspace") return drop(e);
+          if (e.key !== "Enter" && e.key !== " ") return;
+          e.preventDefault();
+          if (erase) return drop(e);
+          use();
+        },
+        onDown: (e) => {
+          if (e.pointerType !== "touch" || erase) return;
+          this._pickHold = setTimeout(() => {
+            this._pickHold = null; this._pickHeld = true;
+            this.ringDrop(c);
+          }, 550);
+        },
+        onUp: () => { if (this._pickHold) { clearTimeout(this._pickHold); this._pickHold = null; } },
+        xStyle: {
+          position: "absolute", top: -1, right: -1, width: 14, height: 14, display: "flex",
+          alignItems: "center", justifyContent: "center", lineHeight: 1,
+          fontFamily: "'JetBrains Mono',monospace", fontSize: 11, color: "#fff",
+          background: "#c0245f", border: "1px solid #ff75bd", boxShadow: "0 0 8px rgba(0,0,0,.55)",
+          opacity: lit ? 1 : 0, pointerEvents: lit ? "auto" : "none", cursor: "pointer",
+          transition: "opacity 120ms cubic-bezier(.4,0,.2,1)",
+        },
+        style: Object.assign({
+          position: "relative", cursor: "pointer", background: c, boxSizing: "border-box",
+          border: "1px solid " + (erase ? "#ff75bd" : on ? "#d85cff" : "#2b3150"),
+          outline: this.state.pickFocusIdx === key ? "1px solid #d85cff" : "none", outlineOffset: 1,
+          boxShadow: on && !erase ? "0 0 12px -2px #d85cff" : "none",
+        }, cell),
+      };
+    });
+  }
+
+  // ERASE / CLEAR are shared by both ring mounts, so their chrome is built once too.
+  ringCtl() {
+    const ring = this.state.pickRing || [];
+    const erase = !!this.state.pickErase;
+    const wipe = !!this.state.pickWipe;
+    return {
+      eraseLabel: erase ? "ERASE ON" : "ERASE",
+      eraseTitle: erase ? "Tapping a swatch removes it — tap again to go back" : "Turn on to remove swatches by tapping them",
+      eraseBtn: {
+        flex: "0 0 auto", padding: "4px 7px", cursor: "pointer", whiteSpace: "nowrap",
+        fontFamily: "'Silkscreen',monospace", fontSize: 8, letterSpacing: "1px",
+        background: erase ? "#3d0f26" : "#151a33", color: erase ? "#ff9ecb" : "#8a90ad",
+        border: "1px solid " + (erase ? "#ff75bd" : "#2a2f52"),
+        boxShadow: erase ? "0 0 12px -2px #ff75bd" : "none",
+      },
+      wipeLabel: wipe ? "SURE?" : "CLEAR",
+      wipeTitle: wipe ? "Click again to empty all sixteen slots" : "Empty the ring",
+      wipeBtn: {
+        flex: "0 0 auto", padding: "4px 7px", cursor: ring.length ? "pointer" : "not-allowed", whiteSpace: "nowrap",
+        fontFamily: "'Silkscreen',monospace", fontSize: 8, letterSpacing: "1px",
+        opacity: ring.length ? 1 : 0.4,
+        background: wipe ? "#5a1020" : "#151a33", color: wipe ? "#ffd0dd" : "#8a90ad",
+        border: "1px solid " + (wipe ? "#ff4d6d" : "#2a2f52"),
+      },
+      onErase: () => this.setState({ pickErase: !erase, pickWipe: false }),
+      onWipe: () => {
+        if (!ring.length) return;
+        if (!wipe) {
+          this.setState({ pickWipe: true });
+          clearTimeout(this._pickWipeT);
+          // the confirm is not a mode you can get stuck in
+          this._pickWipeT = setTimeout(() => { if (this.state.pickWipe) this.setState({ pickWipe: false }); }, 3200);
+          return;
+        }
+        clearTimeout(this._pickWipeT);
+        this.ringSet([]);
+      },
+    };
+  }
+
+  ringWith(hex) {
+    const h = String(hex || "").toLowerCase();
+    const ring = this.state.pickRing || [];
+    if (!/^#[0-9a-f]{6}$/.test(h)) return ring;
+    return [h].concat(ring.filter((x) => x !== h)).slice(0, this.RING_MAX);
+  }
+
+  // commit=false reverts to the colour the picker held when it opened
+  pickClose(commit) {
+    const hex = this.state.pickHex;
+    if (this._pickApply) this._pickApply(commit ? hex : (this._pickFrom || hex));
+    this._pickApply = null;
+    this._pickPad = null;
+    this._pickDrag = null;
+    const ring = commit ? this.ringWith(hex) : (this.state.pickRing || []);
+    if (commit) this.ringSave(ring);
+    this.setState({ pickOn: false, pickRing: ring, pickErase: false, pickWipe: false });
+  }
+
+  pickHexType(raw) {
+    this.setState({ pickField: raw });
+    let s = String(raw || "").trim();
+    if (s && s[0] !== "#") s = "#" + s;
+    if (/^#[0-9a-f]{3}$/i.test(s)) s = "#" + s[1] + s[1] + s[2] + s[2] + s[3] + s[3];
+    if (!/^#[0-9a-f]{6}$/i.test(s)) return;
+    const hex = s.toLowerCase();
+    if (this._pickApply) this._pickApply(hex);
+    this.setState({ pickHex: hex, pickHsv: this.hexToHsv(hex) });
+  }
+
+  // Both pads read as a fraction of their own box, so UI SCALE's zoom cancels out.
+  pickPad(e, kind, down) {
+    if (down) {
+      this._pickPad = kind;
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    } else if (this._pickPad !== kind) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const fx = Math.max(0, Math.min(1, (e.clientX - r.left) / (r.width || 1)));
+    const fy = Math.max(0, Math.min(1, (e.clientY - r.top) / (r.height || 1)));
+    const hsv = Object.assign({}, this.state.pickHsv || { h: 0, s: 0, v: 0 });
+    if (kind === "hue") hsv.h = fx * 360; else { hsv.s = fx; hsv.v = 1 - fy; }
+    this.pickLive(this.hsvToHex(hsv.h, hsv.s, hsv.v), hsv);
+  }
+
+  // Dragged position is remembered for the session only — pickPos is not part of the
+  // saved project, so a reload puts the panel back in the middle of the picture.
+  pickDrag(e, phase) {
+    const panel = this._pickPanel;
+    if (!panel) return;
+    if (phase === "down") {
+      if (e.button !== undefined && e.button > 0) return;
+      e.preventDefault();
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      this._pickDrag = { x0: e.clientX, y0: e.clientY, l0: panel.offsetLeft, t0: panel.offsetTop, z: this.uiZoom() };
+      this.setState({ pickPos: { x: panel.offsetLeft, y: panel.offsetTop } });
+      return;
+    }
+    if (phase === "up") { this._pickDrag = null; return; }
+    const d = this._pickDrag;
+    if (!d) return;
+    const box = panel.offsetParent;
+    // clamped to the viewport box: the header can always be grabbed again
+    const maxX = Math.max(0, (box ? box.offsetWidth : 0) - panel.offsetWidth);
+    const maxY = Math.max(0, (box ? box.offsetHeight : 0) - panel.offsetHeight);
+    this.setState({ pickPos: {
+      x: Math.max(0, Math.min(maxX, d.l0 + (e.clientX - d.x0) / d.z)),
+      y: Math.max(0, Math.min(maxY, d.t0 + (e.clientY - d.y0) / d.z)),
+    } });
+  }
+
+  pickVals() {
+    if (!this.state.pickOn) return { pickOn: false };
+    const hsv = this.state.pickHsv || { h: 0, s: 0, v: 0 };
+    const hex = this.state.pickHex || "#000000";
+    const pos = this.state.pickPos;
+    const pure = this.hsvToHex(hsv.h, 1, 1);
+    const ring = this.state.pickRing || [];
+    const from = this._pickFrom || hex;
+    // a short viewport gets a shorter mixing square rather than a taller scroll
+    const mount = this.mountRef && this.mountRef.current;
+    const short = !!mount && mount.clientHeight < 460;
+    const ctl = this.ringCtl();
+    const btn = (bg, fg, bd) => ({
+      flex: 1, textAlign: "center", padding: "8px 0", cursor: "pointer", background: bg, color: fg,
+      border: "1px solid " + bd, fontFamily: "'Silkscreen',monospace", fontSize: 9, letterSpacing: "2px",
+      transition: "all 150ms cubic-bezier(.4,0,.2,1)",
+    });
+    return {
+      pickOn: true,
+      pickScrim: {
+        position: "absolute", inset: 0, zIndex: 88, display: "flex", alignItems: "center",
+        justifyContent: "center", padding: 14, boxSizing: "border-box",
+        // low opacity on purpose — the mesh has to stay readable while the colour lands on it
+        background: "rgba(5,7,16,.42)",
+      },
+      pickPanelRef: (el) => { this._pickPanel = el; },
+      pickPanel: Object.assign({
+        width: 320, maxWidth: "100%", maxHeight: "100%", boxSizing: "border-box", overflow: "hidden",
+        background: "#0b0e1c", border: "1px solid #2f3560",
+        boxShadow: "0 0 70px rgba(216,92,255,.16),0 24px 60px rgba(0,0,0,.65)",
+        display: "flex", flexDirection: "column",
+      }, pos ? { position: "absolute", left: Math.round(pos.x), top: Math.round(pos.y), margin: 0 } : {}),
+      pickHead: {
+        flex: "0 0 auto", display: "flex", alignItems: "center", gap: 8, padding: "9px 11px",
+        background: "#0e1224", borderBottom: "1px solid #1d2240", cursor: "grab", touchAction: "none", userSelect: "none",
+      },
+      // The body scrolls and the commit row is stuck to its floor: on a short viewport the
+      // ring goes below the fold, but APPLY and CANCEL must never be the thing you have to
+      // scroll to find.
+      pickBody: {
+        flex: "1 1 auto", minHeight: 0, overflowY: "auto", overflowX: "auto",
+        display: "flex", flexDirection: "column", gap: 9, padding: 11,
+      },
+      pickSv: {
+        position: "relative", flex: "0 0 auto", height: short ? 92 : 132, cursor: "crosshair", touchAction: "none", border: "1px solid #2b3150",
+        background: "linear-gradient(to top,#000,rgba(0,0,0,0)),linear-gradient(to right,#fff," + pure + ")",
+      },
+      pickSvDot: {
+        position: "absolute", left: (hsv.s * 100).toFixed(2) + "%", top: ((1 - hsv.v) * 100).toFixed(2) + "%",
+        width: 12, height: 12, marginLeft: -6, marginTop: -6, borderRadius: "50%", pointerEvents: "none",
+        border: "2px solid #fff", boxShadow: "0 0 0 1px rgba(0,0,0,.6),0 0 10px rgba(0,0,0,.5)",
+      },
+      pickHue: {
+        position: "relative", height: 16, cursor: "ew-resize", touchAction: "none", border: "1px solid #2b3150",
+        background: "linear-gradient(to right,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)",
+      },
+      pickHueDot: {
+        position: "absolute", left: (hsv.h / 3.6).toFixed(2) + "%", top: -2, bottom: -2, width: 4, marginLeft: -2,
+        background: pure, border: "2px solid #fff", boxSizing: "border-box", pointerEvents: "none",
+        boxShadow: "0 0 0 1px rgba(0,0,0,.6)",
+      },
+      pickWasTitle: "Was " + from.toUpperCase() + " — click to put it back",
+      pickWas: {
+        width: 26, height: 26, flex: "0 0 26px", cursor: "pointer", background: from,
+        border: "1px solid #2b3150",
+      },
+      pickNow: {
+        width: 26, height: 26, flex: "0 0 26px", background: hex, border: "1px solid #d85cff",
+        boxShadow: "0 0 14px -2px " + hex,
+      },
+      pickInput: {
+        flex: 1, minWidth: 0, boxSizing: "border-box", padding: "6px 8px", background: "#151a30",
+        border: "1px solid #2b3150", color: "#e7e2f5", fontFamily: "'JetBrains Mono',monospace",
+        fontSize: 11, letterSpacing: "1px", textTransform: "uppercase", outline: "none",
+      },
+      // 32px is the floor because it is the touch target, and auto-fit is how it holds:
+      // eight across whenever the panel has the room, fewer columns and more rows when it
+      // does not. A hard eight-track set cannot fit a panel under ~306px, and since the
+      // ring would then be the widest child it dragged every other row — hex field, caption
+      // — out past the panel edge with it. minmax(0,·) is the other wrong answer: the track
+      // collapses under the slot's own min-width and all sixteen swatches stack up.
+      pickRingGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(32px,1fr))", gap: 4, flex: "0 0 auto" },
+      pickBtnRow: {
+        position: "sticky", bottom: -11, marginTop: "auto", display: "flex", gap: 7, flex: "0 0 auto",
+        padding: "9px 0 0", background: "#0b0e1c", borderTop: "1px solid #1d2240",
+      },
+      // BASE and RECENT are the two places you pull a colour FROM, so they belong together
+      // in here rather than eating permanent rail space. Same colorRow every other tool
+      // mounts, minus its rainbow chip.
+      pickBase: this.colorRow(hex, (c) => this.pickLive(c, this.hexToHsv(c)), true).map((r) => Object.assign({}, r, {
+        style: Object.assign({}, r.style, { width: "100%", height: "auto", aspectRatio: "1", minWidth: 0, flex: "0 0 auto" }),
+      })),
+      pickSlots: this.ringSlots("pick", {
+        live: hex, verb: "click applies",
+        cell: { height: 32, minWidth: 32 },
+        apply: (c) => this.pickLive(c, this.hexToHsv(c)),
+      }),
+      pickEraseLabel: ctl.eraseLabel,
+      pickEraseTitle: ctl.eraseTitle,
+      pickEraseBtn: ctl.eraseBtn,
+      pickWipeLabel: ctl.wipeLabel,
+      pickWipeTitle: ctl.wipeTitle,
+      pickWipeBtn: ctl.wipeBtn,
+      onPickErase: ctl.onErase,
+      onPickWipe: ctl.onWipe,
+      pickField: this.state.pickField == null ? hex : this.state.pickField,
+      onPickHex: (e) => this.pickHexType(e.target.value),
+      onPickWas: () => this.pickLive(from, this.hexToHsv(from)),
+      onPickStop: (e) => e.stopPropagation(),
+      onPickCtx: (e) => { e.preventDefault(); e.stopPropagation(); },
+      onPickScrim: () => this.pickClose(true),
+      onPickApply: () => this.pickClose(true),
+      onPickCancel: () => this.pickClose(false),
+      onPickHeadDown: (e) => this.pickDrag(e, "down"),
+      onPickHeadMove: (e) => this.pickDrag(e, "move"),
+      onPickHeadUp: (e) => this.pickDrag(e, "up"),
+      onPickSvDown: (e) => this.pickPad(e, "sv", true),
+      onPickSvMove: (e) => this.pickPad(e, "sv", false),
+      onPickHueDown: (e) => this.pickPad(e, "hue", true),
+      onPickHueMove: (e) => this.pickPad(e, "hue", false),
+      onPickPadUp: () => { this._pickPad = null; },
+      pickCancelBtn: btn("#151a33", "#8a90ad", "#2a2f52"),
+      pickApplyBtn: btn("#2a1140", "#e7c6ff", "#d85cff"),
+    };
+  }
+
+  // Is there room for the colour rail beside the picture? 152 rail + 60 OPQ + a 120px floor
+  // for the canvas. Measured, not guessed — the studio's own rails can squeeze the viewport
+  // to 200px, which is where a fixed rail drove the canvas track to zero.
+  texRailFits() {
+    const m = this.mountRef && this.mountRef.current;
+    const w = m ? m.clientWidth : 0;
+    return !w || w >= 152 + 60 + 120;
+  }
+
+  // Rail block header. Same face as the inspector's section titles, sized for the rail.
+  // `always` marks a block that has no fold — INK is the working set and never hides.
+  texSec(label, open, always) {
+    return {
+      display: "flex", alignItems: "center", gap: 5, padding: "3px 1px",
+      cursor: always ? "default" : "pointer", userSelect: "none", whiteSpace: "nowrap",
+      fontFamily: "'Silkscreen',monospace", fontSize: 8, letterSpacing: "1px",
+      color: always || open ? "#8f93af" : "#5b6079",
+      borderBottom: "1px solid " + (always || open ? "#2b3150" : "#1b1f36"),
+    };
   }
 
   // stretch swatch chips to fill a grid cell so a whole palette fits a short column
@@ -14577,7 +15109,9 @@ class Component extends DCLogic {
     };
   }
 
-  colorRow(current, apply) {
+  // noPick drops the rainbow chip: inside the picker itself it is a button that opens the
+  // thing you are already standing in.
+  colorRow(current, apply, noPick) {
     const cell = (bg, selected, extra) => Object.assign({
       // border-box on purpose: there is no global reset in this document, so without it the
       // 1px border makes every cell 24px and a row of eight overflows what it was sized for.
@@ -14594,6 +15128,7 @@ class Component extends DCLogic {
       onClick: () => { apply(c); this.forceUpdate(); },
       style: cell(c, current === c),
     }));
+    if (noPick) return rows;
     rows.push({
       onClick: () => this.openPicker(current, apply),
       style: cell(
@@ -14742,6 +15277,7 @@ class Component extends DCLogic {
     const keyStyle = { flex: 1, minWidth: 0, color: "#5b6079", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
     const out = [];
     groups.sort((a, b) => a.title.localeCompare(b.title)).forEach((g) => {
+      // "\u00a0" not "" — an empty hole reads as unresolved to the template runtime and warns.
       out.push({ k: g.title, v: "\u00a0", row: head, keyStyle: { color: "#8f5cd0", letterSpacing: "2px" }, style: { display: "none" } });
       Object.keys(g.rows).sort((a, b) => a.localeCompare(b)).forEach((k) => {
         out.push({ k, v: g.rows[k].v === "" || g.rows[k].v == null ? "\u00a0" : g.rows[k].v, row, keyStyle, style: g.rows[k].style });
@@ -16114,6 +16650,19 @@ class Component extends DCLogic {
     const rec = [c].concat((this.state.texRecent || []).filter((x) => x !== c)).slice(0, 8);
     this.touched = true;
     this.setState({ texPal: p, texRecent: rec }, () => { this.texCache = {}; this.retexture(); this.retexParts(); this.saveProject("palette"); });
+    // A BASE swatch clicked while the picker is open writes the ink under edit, so the
+    // picker has to follow it — otherwise its cursor and hex still show the old colour.
+    this.pickFollow(c);
+  }
+
+  // Sync an OPEN picker's display to a colour set from somewhere else. Does not re-apply
+  // (the caller already did) and does not move the revert target: Esc still goes back to
+  // the colour the picker opened on.
+  pickFollow(hex) {
+    if (!this.state.pickOn) return;
+    const h = typeof hex === "string" ? hex.trim().toLowerCase() : "";
+    if (!/^#[0-9a-f]{6}$/.test(h)) return;
+    this.setState({ pickHex: h, pickField: h, pickHsv: this.hexToHsv(h) });
   }
 
   // `al` is an optional per-pixel alpha string (one hex char, F = opaque). When a base
@@ -26635,6 +27184,7 @@ class Component extends DCLogic {
       palRef: (this._palRefFn = this._palRefFn || ((el) => this.palMount(el))),
       // A slot style per piece per render is real work — only build them while the
       // palette is actually on screen.
+      ...this.pickVals(),
       ...(this.state.palOn ? this.palVals() : { palOn: false }),
       ...(this.state.dclOn ? this.dclVals() : { dclOn: false }),
       ...this.unlockVals(),
@@ -28281,17 +28831,36 @@ class Component extends DCLogic {
         this.editRebuild();
         this.forceUpdate();
       }),
-      texInks: this.pal().map((c, i) => ({
-        onClick: () => this.setState({ texInk: i }),
-        style: {
-          width: 18, height: 18, minWidth: 0, minHeight: 0, padding: 0, cursor: "pointer", background: c,
-          border: "1px solid " + (this.state.texInk === i ? "#d85cff" : "#2b3150"),
-          borderRadius: 2,
-          boxShadow: this.state.texInk === i ? "0 0 14px -1px #d85cff" : "none",
-          transform: this.state.texInk === i ? "translateY(-1px)" : "none",
-          transition: "all 150ms cubic-bezier(.4,0,.2,1)",
-        },
-      })),
+      // Slot order is FUNCTIONAL, not cosmetic: texSeed pairs the selected ink with slot
+      // (n + 9) % 16, so which slot a colour sits in decides what a pattern fill pairs it
+      // with. That was invisible, which is how a checker comes out with a colour nobody
+      // chose — the partner slot is now outlined while its mate is selected.
+      texInks: this.pal().map((c, i) => {
+        const sel = this.state.texInk === i;
+        const mate = i === (this.state.texInk + 9) % 16;
+        return {
+          onClick: () => this.setState({ texInk: i }),
+          title: "SLOT " + (i + 1) + " · " + c + (sel ? " — selected" : mate ? " — pattern partner of the selected slot" : "")
+            + " · pairs with slot " + (((i + 9) % 16) + 1),
+          style: {
+            width: "100%", aspectRatio: "1", minWidth: 0, minHeight: 0, padding: 0, cursor: "pointer", background: c,
+            boxSizing: "border-box",
+            border: "1px solid " + (sel ? "#d85cff" : "#2b3150"),
+            outline: mate ? "1px dashed #f8d66d" : "none", outlineOffset: 1,
+            borderRadius: 2,
+            boxShadow: sel ? "0 0 14px -1px #d85cff" : "none",
+            transform: sel ? "translateY(-1px)" : "none",
+            transition: "all 150ms cubic-bezier(.4,0,.2,1)",
+          },
+        };
+      }),
+      texPairNote: "PAIRS WITH SLOT " + (((this.state.texInk + 9) % 16) + 1),
+      texPairTitle: "Pattern fills use two colours: the slot you picked and slot "
+        + (((this.state.texInk + 9) % 16) + 1) + ", outlined in the grid. Moving a colour to a different slot changes what it pairs with.",
+      texPairDot: {
+        width: 11, height: 11, flex: "0 0 11px", boxSizing: "border-box",
+        background: this.pal()[(this.state.texInk + 9) % 16], border: "1px dashed #f8d66d",
+      },
       texTiles: TILES.filter((t) => t.h && !t.hidden).sort((a, b) => a.name.localeCompare(b.name)).map((t) => {
         const on = this.state.texTile === t.id;
         const has = !!(this.texStr(t.id, "top") || this.texStr(t.id, "side"));
@@ -28325,6 +28894,50 @@ class Component extends DCLogic {
         background: this.pal()[this.state.texInk], border: "1px solid #2b3150",
       },
       onTexInkPick: () => this.openPicker(this.pal()[this.state.texInk], (c) => this.texInkSet(c)),
+      // BASE is the studio's fixed starting palette — the SAME colorRow every other tool
+      // mounts, not a lookalike, so a change to PALETTE lands here and in Actor at once.
+      // Read-only by construction: colorRow maps PALETTE and hands out its strings, and
+      // texInkSet copies the ink palette before writing, so nothing here can write back.
+      // The rainbow chip at the end is colorRow's own, and it opens the picker on the
+      // selected ink — the same modal EDIT INK opens.
+      // Four columns, pinned. Sixteen divides by four with no ragged row, and the cells are
+      // square by aspect-ratio rather than a fixed height, so they stay square whatever the
+      // track resolves to once the scrollbar gutter has taken its bite. auto-fill was the
+      // wrong tool: the gutter knocked it down to three tracks and left a row of one.
+      texRailGrid: { display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", gap: 4 },
+      // WIDTH CONTRACT. Four 30px columns need a 152px rail, and that plus the 60px OPQ rail
+      // does not fit beside the picture on a narrow viewport — the middle track resolved to
+      // ZERO and the canvas vanished. So the canvas gets a 120px floor and the colour rail is
+      // what gives way: under that it drops to a 36px strip and the same three blocks open as
+      // a panel OVER the picture. The rail never resizes — it is 152 or it is not there.
+      texRailFits: this.texRailFits(),
+      texRailStrip: !this.texRailFits(),
+      texRailPanelOn: this.texRailFits() || !!this.state.texRailOpen,
+      texRailOpenLabel: this.state.texRailOpen ? "◀" : "▶",
+      texStripStyle: {
+        width: 36, boxSizing: "border-box", background: "#0e1120", borderRight: "1px solid #1b1f36",
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "7px 4px",
+      },
+      texStripBtn: {
+        width: 24, height: 24, flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: "pointer", fontSize: 10, color: this.state.texRailOpen ? "#f7f3ff" : "#8f93af",
+        background: this.state.texRailOpen ? "rgba(216,92,255,.16)" : "#151a30",
+        border: "1px solid " + (this.state.texRailOpen ? "#d85cff" : "#2b3150"),
+      },
+      texStripDot: {
+        width: 24, height: 24, flex: "0 0 auto", cursor: "pointer", boxSizing: "border-box",
+        background: this.pal()[this.state.texInk], border: "1px solid #d85cff",
+      },
+      onTexRailOpen: () => this.setState({ texRailOpen: !this.state.texRailOpen }),
+      texRailPanel: Object.assign({
+        boxSizing: "border-box", minHeight: 0, overflowY: "auto", scrollbarGutter: "stable",
+        display: "flex", flexDirection: "column", gap: 11, padding: "7px 6px 12px",
+        background: "#0e1120", borderRight: "1px solid #1b1f36",
+      }, this.texRailFits() ? { width: 152 } : {
+        position: "absolute", left: 36, top: 0, bottom: 0, width: 172, zIndex: 20,
+        borderRight: "1px solid #2b3150", boxShadow: "0 0 40px rgba(0,0,0,.6)",
+      }),
+      texSecInk: this.texSec("PALETTE", true, true),
       texRecents: Array.from({ length: 8 }, (_, i) => {
         const c = (this.state.texRecent || [])[i] || null;
         return {
@@ -28358,7 +28971,7 @@ class Component extends DCLogic {
       texClearBtn: this.pill(false, "#ff6f91", true),
       onTexCopy: () => this.texCopyFace(),
       onTexClear: () => this.texClear(),
-      texNote: "Each face paints on its own: TOP is the +Y lid, BOTTOM the underside, SIDE the four walls. The ink you pick is also the seed's main colour — its partner is picked from the far side of the palette. FILL WITH lays the motif down at the OPQ opacity — 100% for a solid fill. TOP paints the +Y face (what you walk on), SIDE paints the other five. A tile with no texture renders as its flat colour, so an untextured pack costs nothing.",
+      texNote: "Each face paints on its own: TOP is the +Y lid, BOTTOM the underside, SIDE the four walls. The slot you pick is also the seed's main colour, and its partner is the slot nine along — outlined in the grid while you have its mate selected. That makes slot ORDER functional: move a colour to a different slot and it pairs with something else. FILL WITH lays the motif down at the OPQ opacity — 100% for a solid fill. TOP paints the +Y face (what you walk on), SIDE paints the other five. A tile with no texture renders as its flat colour, so an untextured pack costs nothing.",
       settingsMode: tool === "Settings" || tool === "Export" || tool === "Project" || tool === "Host",
       hostMode: tool === "Host",
       ...this.hostVals(),
@@ -28566,29 +29179,67 @@ class Component extends DCLogic {
             .concat(this.SFX_ORDER.map(([sid, sl]) => ({ value: sid, label: sl })))
             .concat(this.sfxBank16().map((sv, i) => sv && { value: "bank:" + i, label: "★ " + (sv.name || ("SLOT " + (i + 1))) }).filter(Boolean)),
           onChange: (e) => { this.resumeAudio(); this.setEventSfx(id, e.target.value); },
-          onTest: () => { this.resumeAudio(); this.evt(id); },
+          // ▶ plays the bound sound; it does NOT fire the game event. evt() was the wrong
+          // call here on three counts: it bumps that event's STAT counter, so testing a
+          // sound quietly inflated coins and kills; it goes through the 55ms event throttle;
+          // and it plays UNFORCED, which is the only thing that resumes a suspended
+          // AudioContext — so the first press after load made no sound at all. This is the
+          // same forced path the dropdown preview uses, which is why that one always worked.
+          onTest: () => {
+            this.resumeAudio();
+            const ref = (this.state.eventSfx || {})[id];
+            if (ref === "none") { this.push(label + " is set to SILENT", "muted"); return; }
+            this.playSfxRef(ref || def, true);
+          },
           selStyle: { flex: "0 0 118px", background: "#151a30", border: "1px solid #2b3150", color: cur === "none" ? "#5b6079" : cur ? "#f8d66d" : "#b6b0ca", fontSize: 9, padding: "3px 4px", fontFamily: "inherit", cursor: "pointer" },
           testStyle: { flex: "0 0 auto", cursor: "pointer", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#59e391", background: "rgba(89,227,145,.10)", border: "1px solid rgba(89,227,145,.4)" },
         };
       }),
       offlineName: tool.toUpperCase(),
       offlineDesc: def[1],
+      // A–Z, like every other strip. TEXTURES is not an overlay like the other two — it is
+      // the Settings switch of the same name, mirrored here because it is the one you flip
+      // constantly while building and the Settings page is a tool away.
       overlayChips: (this.state.running || tool === "Animation") ? [] : [
-        { key: "rigOv", name: "RIG", col: "#78a9ff", tip: "Blue dots are joints — fixed topology. Red squares are attach points: cosmetic mounts stored as a normalized face/u/v, so they stay put when a part resizes." },
         { key: "hitOv", name: "HITBOX", col: "#59e391", tip: "The collision capsule. Its height is HITBOX HEIGHT in STATS, counted in build levels (0.5–2.5) — the body art can be any size you like. At 1L or under the body crawls through a single-block gap." },
+        { key: "rigOv", name: "RIG", col: "#78a9ff", tip: "Blue dots are joints — fixed topology. Red squares are attach points: cosmetic mounts stored as a normalized face/u/v, so they stay put when a part resizes." },
+        {
+          key: "textures", name: "TEXTURES", col: "#f8d66d",
+          tip: "Tile and part art in the viewport. OFF drops the whole scene to flat colour — the same switch as SETTINGS → TEXTURES, and the quickest way to read a level's shapes without its paint.",
+          get: () => this.state.settings.textures !== "OFF",
+          set: (on) => {
+            const o = on ? "ON" : "OFF";
+            this.setState({ settings: Object.assign({}, this.state.settings, { textures: o }) }, () => {
+              this.touched = true;
+              this.saveProject("settings");
+            });
+            // retexture() only rebuilds TILE materials — props, weapons, enemies and placed
+            // actors hold their own baked ones, so that cache has to go too.
+            setTimeout(() => { this.retexture(); this.retexParts(); }, 0);
+            this.push("textures → " + o.toLowerCase(), "muted");
+          },
+        },
       ].map((c) => {
-        const on = !!this.state[c.key];
+        const on = c.get ? c.get() : !!this.state[c.key];
         return {
           name: c.name, tip: c.tip,
-          onClick: () => this.setState({ [c.key]: !on }),
+          onClick: () => (c.set ? c.set(!on) : this.setState({ [c.key]: !on })),
           style: {
-            padding: "3px 9px", cursor: "pointer", fontFamily: "'Silkscreen', monospace", fontSize: 7, letterSpacing: ".5px",
+            padding: "3px 8px", cursor: "pointer", fontFamily: "'Silkscreen', monospace", fontSize: 7, letterSpacing: ".5px",
             color: on ? "#090b17" : c.col, background: on ? c.col : "rgba(13,16,25,.82)", border: "1px solid " + c.col,
             flex: "0 0 auto", whiteSpace: "nowrap", pointerEvents: "auto",
             boxShadow: on ? "0 0 10px " + c.col + "66" : "none",
           },
         };
       }),
+      vbRefreshTip: "Refresh the engine — drops every cached texture and material, re-bakes the scene and re-fits the viewport. Not a page reload: nothing you have made is lost. Also restarts a frame loop the watchdog paused.",
+      vbRefreshStyle: {
+        width: 22, height: 20, flex: "0 0 auto", display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: "pointer", fontSize: 11, lineHeight: 1, pointerEvents: "auto",
+        color: "#9a6bd0", background: "rgba(13,16,25,.82)", border: "1px solid #9a6bd0",
+        transition: "all 150ms cubic-bezier(.4,0,.2,1)",
+      },
+      onVbRefresh: () => this.refreshEngine(),
       vbLabel: this.state.running ? "PLAY" : "VIEWPORT",
       vbInfo: this.state.running
         ? this.roomName() + " · live · " + ((PRESETS[this.state.preset] && !PRESETS[this.state.preset].ally ? PRESETS[this.state.preset] : PRESETS[0]).name.toLowerCase()) + "_r6"
