@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Two Squares</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #101217;
+      color: #f4f6fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+    main { width: min(720px, 100%); }
+    h1 { margin: 0 0 12px; font-size: 22px; }
+    button, input {
+      min-height: 44px;
+      border: 1px solid #5b6478;
+      border-radius: 5px;
+      background: #1d2230;
+      color: inherit;
+      font: inherit;
+      padding: 8px 12px;
+    }
+    button { cursor: pointer; touch-action: manipulation; }
+    button:active { background: #343c52; }
+    button:disabled { opacity: 0.4; cursor: default; }
+    input { width: 150px; text-transform: uppercase; }
+    #setup {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    #readout {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px 18px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #343b4b;
+      background: #171a22;
+      font-size: 14px;
+    }
+    #readout strong { color: #9eb9ff; }
+    #statusText.good { color: #6ef19a; }
+    #statusText.bad { color: #ff7d7d; }
+    #box {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      max-height: 65vh;
+      overflow: hidden;
+      border: 3px solid #e3e6ef;
+      background: #080a0e;
+      touch-action: none;
+    }
+    .square {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      transform: translate3d(0, 0, 0);
+    }
+    #a { background: #37a2ff; }
+    #b { background: #ff4e77; }
+    #touch {
+      display: grid;
+      grid-template-columns: repeat(3, 52px);
+      grid-template-rows: repeat(2, 52px);
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      user-select: none;
+    }
+    #touch button { padding: 0; font-size: 22px; }
+    #touch [data-key="up"] { grid-column: 2; }
+    #touch [data-key="left"] { grid-column: 1; grid-row: 2; }
+    #touch [data-key="down"] { grid-column: 2; grid-row: 2; }
+    #touch [data-key="right"] { grid-column: 3; grid-row: 2; }
+    #log {
+      margin-top: 12px;
+      padding: 10px;
+      border: 1px solid #343b4b;
+      background: #14161d;
+      font-size: 12px;
+      line-height: 1.5;
+      height: 120px;
+      overflow-y: auto;
+      color: #9aa3b6;
+    }
+    @media (min-width: 760px) and (hover: hover) {
+      #touch { display: none; }
+    }
+    @media (max-width: 520px) {
+      #readout { grid-template-columns: 1fr; }
+      body { padding: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Two Squares</h1>
+
+    <section id="setup" aria-label="Session setup">
+      <input id="codeInput" maxlength="12" value="BLOOM" aria-label="Join code" autocomplete="off" spellcheck="false">
+      <button id="hostButton" type="button">Host</button>
+      <button id="joinButton" type="button">Join</button>
+    </section>
+
+    <section id="readout" aria-live="polite">
+      <div>ROLE: <strong id="roleText">NOT STARTED</strong></div>
+      <div>CODE: <strong id="codeText">&mdash;</strong></div>
+      <div>LINK: <strong id="statusText">DISCONNECTED</strong></div>
+      <div>ROUND TRIP: <strong id="ageText">&mdash; ms</strong></div>
+    </section>
+
+    <div id="box" aria-label="Game box">
+      <div id="a" class="square" aria-label="Host square"></div>
+      <div id="b" class="square" aria-label="Guest square"></div>
+    </div>
+
+    <div id="touch" aria-label="Touch controls">
+      <button type="button" data-key="up" aria-label="Up">&uarr;</button>
+      <button type="button" data-key="left" aria-label="Left">&larr;</button>
+      <button type="button" data-key="down" aria-label="Down">&darr;</button>
+      <button type="button" data-key="right" aria-label="Right">&rarr;</button>
+    </div>
+
+    <div id="log" aria-label="Event log"></div>
+  </main>
+
+  <!-- unpkg, NOT jsdelivr - Edge tracking prevention blocks jsdelivr -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script>
+    (() => {
+      'use strict';
+
+      // ---- CONNECTION CONSTANTS ------------------------------------
+      // Public anon key. Ships in every Spiralside page by design.
+      const SUPA_URL = 'https://qfawusrelwthxabfbglg.supabase.co';
+      const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E';
+
+      // ---- SIMULATION CONSTANTS ------------------------------------
+      const TICK_MS = 50;          // 20 Hz
+      const SPEED = 0.28;          // fraction of the box crossed per second
+      const SQUARE_SIZE = 30;      // pixels, drawing only
+      const TIMEOUT_MS = 2200;     // silence before we call it dead
+
+      const box = document.querySelector('#box');
+      const squareA = document.querySelector('#a');
+      const squareB = document.querySelector('#b');
+      const roleText = document.querySelector('#roleText');
+      const codeText = document.querySelector('#codeText');
+      const statusText = document.querySelector('#statusText');
+      const ageText = document.querySelector('#ageText');
+      const codeInput = document.querySelector('#codeInput');
+      const logEl = document.querySelector('#log');
+
+      let role = null;
+      let code = '';
+      let channel = null;
+      let peerPresent = false;
+      let startedAt = 0;
+      let lastMessageAt = 0;
+      let everReceived = false;
+      let lastTickAt = performance.now();
+      let rtt = null;              // measured round-trip, ms
+      let myId = Math.random().toString(36).slice(2, 8);
+
+      const held = { up: false, down: false, left: false, right: false };
+      const guestHeld = { up: false, down: false, left: false, right: false };
+
+      // POSITIONS ARE NORMALISED 0..1, NEVER PIXELS.
+      // The host's box and the guest's box are different sizes - a desktop
+      // and a phone do not agree on what x=900 means. Sending fractions
+      // means every screen resolves them to its own pixels at draw time,
+      // and the guest never has to correct what the host told it.
+      const state = {
+        a: { x: 0.10, y: 0.15 },
+        b: { x: 0.70, y: 0.60 }
+      };
+
+      function log(line) {
+        const time = new Date().toLocaleTimeString();
+        logEl.insertAdjacentHTML('afterbegin', `${time} &middot; ${line}<br>`);
+      }
+
+      // ---- THE ONLY INBOUND MESSAGE DOOR ---------------------------
+      window.onNetMessage = (msg) => {
+        if (!msg || (msg.type !== 'keys' && msg.type !== 'state')) return;
+
+        lastMessageAt = performance.now();
+        everReceived = true;
+
+        if (role === 'host' && msg.type === 'keys') {
+          guestHeld.up = Boolean(msg.up);
+          guestHeld.down = Boolean(msg.down);
+          guestHeld.left = Boolean(msg.left);
+          guestHeld.right = Boolean(msg.right);
+          setLink('CONNECTED', true);
+        }
+
+        if (role === 'guest' && msg.type === 'state') {
+          // Take what we are told. No clamping, no correcting, no arguing.
+          // Normalised values mean nothing here can be out of range for us.
+          state.a.x = finite(msg.a && msg.a.x, state.a.x);
+          state.a.y = finite(msg.a && msg.a.y, state.a.y);
+          state.b.x = finite(msg.b && msg.b.x, state.b.x);
+          state.b.y = finite(msg.b && msg.b.y, state.b.y);
+          draw();
+          setLink('CONNECTED', true);
+        }
+      };
+
+      // ---- THE ONLY OUTBOUND MESSAGE DOOR --------------------------
+      window.sendNet = (msg) => {
+        if (!channel) return;
+        channel.send({ type: 'broadcast', event: 'net', payload: msg });
+      };
+
+      function finite(value, fallback) {
+        return Number.isFinite(value) ? value : fallback;
+      }
+
+      // ---- TRANSPORT -----------------------------------------------
+      function connect() {
+        // persistSession:false stops the client writing auth state to
+        // storage. We do no auth here, and it removes the Edge
+        // 'Tracking Prevention blocked access to storage' warning.
+        const client = window.supabase.createClient(SUPA_URL, SUPA_KEY, {
+          auth: { persistSession: false, autoRefreshToken: false }
+        });
+
+        channel = client.channel('two-squares-' + code, {
+          config: {
+            // self:false - without this the host receives its own broadcasts
+            // and talks to itself. Small setting, very confusing to debug.
+            broadcast: { self: false },
+            presence: { key: role }
+          }
+        });
+
+        channel.on('broadcast', { event: 'net' }, ({ payload }) => {
+          window.onNetMessage(payload);
+        });
+
+        // Presence answers the question the message stream cannot:
+        // a guest holding still and a guest who closed the tab both send
+        // nothing. Presence distinguishes them definitively.
+        // PING/PONG measures actual round-trip. Age-of-last-message
+        // conflates network lag with the peer simply having nothing to say.
+        channel.on('broadcast', { event: 'ping' }, ({ payload }) => {
+          if (payload.id === myId) return;
+          channel.send({ type: 'broadcast', event: 'pong',
+                         payload: { toId: payload.id, t0: payload.t0 } });
+        });
+
+        channel.on('broadcast', { event: 'pong' }, ({ payload }) => {
+          if (payload.toId !== myId) return;
+          rtt = Math.round(performance.now() - payload.t0);
+        });
+
+        channel.on('presence', { event: 'join' }, ({ key }) => {
+          if (key !== role) {
+            peerPresent = true;
+            log('peer joined: ' + key);
+            setLink('CONNECTED', true);
+          }
+        });
+
+        channel.on('presence', { event: 'leave' }, ({ key }) => {
+          if (key !== role) {
+            peerPresent = false;
+            log('peer left: ' + key);
+            setLink(role === 'host' ? 'GUEST LEFT' : 'HOST LEFT', false);
+          }
+        });
+
+        channel.subscribe((status) => {
+          log('channel: ' + status);
+          if (status === 'SUBSCRIBED') {
+            channel.track({ role: role, at: Date.now() });
+            setLink(role === 'host' ? 'WAITING FOR GUEST' : 'LOOKING FOR HOST', false);
+            if (role === 'guest') sendLocalKeys();
+            setInterval(() => {
+              if (!channel) return;
+              channel.send({ type: 'broadcast', event: 'ping',
+                             payload: { id: myId, t0: performance.now() } });
+            }, 1000);
+          }
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            setLink('CONNECTION PROBLEM', false);
+          }
+        });
+      }
+
+      function start(nextRole) {
+        code = codeInput.value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 12);
+        if (!code) { codeInput.focus(); return; }
+
+        role = nextRole;
+        startedAt = performance.now();
+        lastMessageAt = 0;
+        everReceived = false;
+        peerPresent = false;
+        Object.keys(held).forEach((k) => { held[k] = false; });
+        Object.keys(guestHeld).forEach((k) => { guestHeld[k] = false; });
+
+        roleText.textContent = role.toUpperCase();
+        codeText.textContent = code;
+        document.querySelector('#hostButton').disabled = true;
+        document.querySelector('#joinButton').disabled = true;
+        codeInput.disabled = true;
+
+        log('starting as ' + role + ' on code ' + code);
+        connect();
+      }
+
+      function setLink(text, good) {
+        statusText.textContent = text;
+        statusText.className = good ? 'good' : 'bad';
+      }
+
+      function setHeld(key, value) {
+        if (!role || held[key] === value) return;
+        held[key] = value;
+        if (role === 'guest') sendLocalKeys();
+      }
+
+      function sendLocalKeys() {
+        if (role !== 'guest') return;
+        window.sendNet({
+          type: 'keys',
+          up: held.up, down: held.down, left: held.left, right: held.right
+        });
+      }
+
+      function move(pos, keys, seconds) {
+        const h = Number(keys.right) - Number(keys.left);
+        const v = Number(keys.down) - Number(keys.up);
+        const diag = h !== 0 && v !== 0 ? Math.SQRT1_2 : 1;
+        pos.x += h * SPEED * diag * seconds;
+        pos.y += v * SPEED * diag * seconds;
+        // Clamp in normalised space. Only the host does this - it owns truth.
+        pos.x = Math.max(0, Math.min(1, pos.x));
+        pos.y = Math.max(0, Math.min(1, pos.y));
+      }
+
+      function draw() {
+        // Normalised -> local pixels. Each screen resolves independently.
+        const maxX = Math.max(0, box.clientWidth - SQUARE_SIZE);
+        const maxY = Math.max(0, box.clientHeight - SQUARE_SIZE);
+        squareA.style.transform =
+          `translate3d(${state.a.x * maxX}px, ${state.a.y * maxY}px, 0)`;
+        squareB.style.transform =
+          `translate3d(${state.b.x * maxX}px, ${state.b.y * maxY}px, 0)`;
+      }
+
+      function hostTick(seconds) {
+        move(state.a, held, seconds);
+        move(state.b, guestHeld, seconds);
+        draw();
+        window.sendNet({
+          type: 'state',
+          // Four decimals is sub-pixel on any screen and keeps packets small.
+          a: { x: +state.a.x.toFixed(4), y: +state.a.y.toFixed(4) },
+          b: { x: +state.b.x.toFixed(4), y: +state.b.y.toFixed(4) }
+        });
+      }
+
+      function updateReadout(now) {
+        if (!role) { ageText.textContent = '— ms'; return; }
+        const reference = everReceived ? lastMessageAt : startedAt;
+        const age = Math.max(0, Math.round(now - reference));
+        ageText.textContent = rtt === null ? '— ms' : rtt + ' ms';
+
+        // Presence is the authority on whether anyone is there. Message age
+        // only downgrades the status while the peer is still present.
+        if (peerPresent && everReceived && age > TIMEOUT_MS) {
+          setLink(role === 'host' ? 'CONNECTED — GUEST IDLE' : 'HOST STALLED', false);
+        }
+      }
+
+      function loop(now) {
+        const elapsed = now - lastTickAt;
+        if (elapsed >= TICK_MS) {
+          const seconds = Math.min(elapsed, 150) / 1000;
+          lastTickAt = now;
+          if (role === 'host') hostTick(seconds);
+        }
+        updateReadout(now);
+        requestAnimationFrame(loop);
+      }
+
+      const arrowToKey = {
+        ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right'
+      };
+
+      window.addEventListener('keydown', (e) => {
+        const k = arrowToKey[e.key];
+        if (!k) return;
+        e.preventDefault();
+        setHeld(k, true);
+      }, { passive: false });
+
+      window.addEventListener('keyup', (e) => {
+        const k = arrowToKey[e.key];
+        if (!k) return;
+        e.preventDefault();
+        setHeld(k, false);
+      }, { passive: false });
+
+      // Alt-tab must not leave a key stuck down. Input latch rule.
+      window.addEventListener('blur', () => {
+        for (const k of Object.keys(held)) setHeld(k, false);
+      });
+
+      for (const button of document.querySelectorAll('#touch [data-key]')) {
+        const key = button.dataset.key;
+        button.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          button.setPointerCapture(e.pointerId);
+          setHeld(key, true);
+        });
+        const release = (e) => { e.preventDefault(); setHeld(key, false); };
+        button.addEventListener('pointerup', release);
+        button.addEventListener('pointercancel', release);
+        button.addEventListener('lostpointercapture', release);
+      }
+
+      document.querySelector('#hostButton').addEventListener('click', () => start('host'));
+      document.querySelector('#joinButton').addEventListener('click', () => start('guest'));
+
+      // Redraw on resize - normalised state is unaffected, only pixels change.
+      window.addEventListener('resize', draw);
+
+      // ?join=CODE drops straight in as guest - the emailed-link flow.
+      const linkCode = new URL(location.href).searchParams.get('join');
+      if (linkCode) {
+        codeInput.value = linkCode.toUpperCase();
+        start('guest');
+      }
+
+      draw();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
