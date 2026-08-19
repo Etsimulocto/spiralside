@@ -10780,7 +10780,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.6";
+  ENGINE = "bloom3d/0.3.7";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -11970,7 +11970,14 @@ class Component extends DCLogic {
   }
   // Opens a frame's books. Work before the frame's first phase() call — pad polling,
   // stepPlay, pickups — is real frame time and has to land somewhere, so it lands here.
-  phaseFrame(p) { this._phaseMs = {}; this._phaseT0 = this._frameT0; this._lastPhase = p; }
+  phaseFrame(p) {
+    this._phaseMs = {}; this._phaseT0 = this._frameT0; this._lastPhase = p;
+    // Heap at frame start, so a slow frame can report which way it moved. A frame that ENDS
+    // holding less than it started with was collected during — that is the GC signature, and
+    // it is the difference between "we allocate too much" and "the GPU stalled".
+    const M = typeof performance !== "undefined" ? performance.memory : null;
+    this._heap0 = M ? M.usedJSHeapSize : 0;
+  }
   // Slowest first, sub-ms phases dropped: the point is which one ate the frame.
   phaseReport() {
     const b = this._phaseMs || {};
@@ -11987,11 +11994,31 @@ class Component extends DCLogic {
       if (m) out.push("geo " + m.geometries, "tex " + m.textures);
       const r = this.renderer && this.renderer.info ? this.renderer.info.render : null;
       if (r) out.push("draws " + r.calls);
+      // Shader programs. three.js compiles one the first time a material/light combination is
+      // drawn, and that compile is synchronous — a few hundred ms of it is normal and it lands
+      // entirely inside the gl phase. If this number is HIGHER than the frame before, the
+      // frame paid for a compile; if it is flat, it did not, and the stall is something else.
+      const progs = this.renderer && this.renderer.info ? this.renderer.info.programs : null;
+      if (progs) out.push("prog " + progs.length
+        + (this._progWas != null && progs.length > this._progWas ? " (+" + (progs.length - this._progWas) + " COMPILED)" : ""));
+      const M = typeof performance !== "undefined" ? performance.memory : null;
+      if (M && this._heap0) {
+        const d = (M.usedJSHeapSize - this._heap0) / 1048576;
+        out.push("heap " + (d >= 0 ? "+" : "") + d.toFixed(1) + "mb" + (d < -1 ? " (GC)" : ""));
+      }
       if (this.scene) out.push("scene " + this.scene.children.length);
       if (this.enemyGroup) out.push("bodies " + this.enemyGroup.children.length);
       out.push("tool " + this.state.tool + (this.state.running ? " · running" : ""));
     } catch (e) {}
     return out.join(", ");
+  }
+  // Sampled every frame, read only when one runs long — the compile test needs the count from
+  // the frame BEFORE, which is gone by the time the warning fires.
+  progSample() {
+    try {
+      const p = this.renderer && this.renderer.info ? this.renderer.info.programs : null;
+      if (p) this._progWas = p.length;
+    } catch (e) {}
   }
 
   componentDidMount() {
@@ -12825,6 +12852,14 @@ class Component extends DCLogic {
     this.buildOverlays(THREE);
 
     this.THREE = THREE; this.scene = scene; this.cam = cam; this.renderer = renderer;
+    // draw() has five return paths and a render call on each. Wrapping the method once splits
+    // every one of them into `draw` (posing, overlays, everything we do) and `gl` (the render
+    // itself — driver time, shader compiles, GPU stalls), without five copies of two lines.
+    const glRender = renderer.render.bind(renderer);
+    renderer.render = (sc, cm) => {
+      this.phase("gl");
+      try { glRender(sc, cm); } finally { this.phase("draw"); }
+    };
     this.t = 0; this.last = performance.now();
     this.setState({ ready: true });
     if (this.safeMode() || this.flag("noloop")) { this.phase("no-loop"); return; }
@@ -13081,6 +13116,7 @@ class Component extends DCLogic {
     } else if (spent < 200) {
       this._slowRun = 0;
     }
+    this.progSample();   // last thing: the next frame's compile test reads THIS frame's count
     if (this.flag("noloop")) return;
     this.raf = requestAnimationFrame(this.loop);
   };
