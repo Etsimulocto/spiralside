@@ -1146,8 +1146,7 @@
   var BABEL_URL = "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js";
   var BABEL_SRI = "sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y";
   function cdnScriptFor(url, sri) {
-    const res = void 0;
-    const v = res ? res[url] : void 0;
+    const v = void 0;
     return typeof v === "string" && v ? { src: v } : { src: url, integrity: sri };
   }
 
@@ -1380,7 +1379,8 @@
       const bg = appTheme === "dark" ? CANVAS_BG_DARK : CANVAS_BG_LIGHT;
       canvasStyleEl.textContent = `html,body{background:${bg}}#dc-root>.sc-host{position:relative}`;
     }
-    function postDesignMode() {}
+    function postDesignMode(mode) {
+    }
     function setDesignDocMode(mode) {
       if (mode === designDocMode) return;
       designDocMode = mode;
@@ -1432,8 +1432,7 @@
             if (tag === "LINK") {
               const rel = (child.getAttribute("rel") || "").toLowerCase().split(/\s+/);
               const href = (child.getAttribute("href") || "").trim();
-              const res = void 0;
-              const pre = res && rel.includes("stylesheet") && !rel.includes("alternate") ? res[href] : void 0;
+              const pre = void 0;
               const blob = typeof pre === "string" && pre ? bundledBlob(pre) : null;
               if (blob) {
                 const el = doc.createElement("style");
@@ -1624,8 +1623,7 @@
       if (r.fetched) return;
       r.fetched = true;
       const url = COMPONENT_DIR + "/" + encodeURIComponent(name) + ".dc.html";
-      const res = void 0;
-      const pre = res ? res[url] : void 0;
+      const pre = void 0;
       const target = typeof pre === "string" && pre ? pre : url;
       const blob = bundledBlob(target);
       (blob ? blob.text() : fetch(target).then((res2) => {
@@ -1831,7 +1829,8 @@
     const baseCss = document.createElement("style");
     baseCss.textContent = BASE_CSS;
     document.head.prepend(baseCss);
-    const notifyHost = () => {};
+    const notifyHost = () => {
+    };
     const streams = createStreamTracker();
     const api = {
       __dcUpdate: (name, kind, content, streaming, viewportKey) => {
@@ -3774,7 +3773,7 @@
                   <div style="width:100%;font-size:9px;color:#5b6079;margin-top:2px">editing the pet body — the player is untouched</div>
                 </sc-if>
                 <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:4px">
-                  <div style="{{ randomStyle }}" onClick="{{ onPresetRandom }}" title="Roll every socket — shape, paint, what is attached — and nudge every size and stat by up to 20%">✦ RANDOMIZE</div>
+                  <div style="{{ randomStyle }}" onClick="{{ onPresetRandom }}" title="Roll every socket and every worn point — shape, paint, what is attached — from the pieces you own, and nudge every size and stat by up to 20%">✦ RANDOMIZE</div>
                   <div style="flex:1"></div>
                   <div style="{{ petResetStyle }}" onClick="{{ onPresetReset }}" title="{{ resetTip }}">{{ resetLabel }}</div>
                 </div>
@@ -7927,6 +7926,18 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;projectName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;SpiralQuest 3D&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;scanlines&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
 const SHAPES = ["BOX", "CONE", "CYL", "ORB", "PRISM", "WEDGE"];
+// Every picker in the studio is A-Z at the source, so a list added later lands in place
+// without touching a call site. A neutral NONE / OFF / ANY option stays pinned at the top;
+// true sequences (animation frames, build levels, song steps, speed scales) keep their order.
+const NEUTRAL_FIRST = ["none", "NONE", "OFF", "ANY"];
+const azBy = (pick) => (a, b) => {
+  const ka = pick(a), kb = pick(b);
+  const na = NEUTRAL_FIRST.indexOf(ka) >= 0, nb = NEUTRAL_FIRST.indexOf(kb) >= 0;
+  if (na !== nb) return na ? -1 : 1;
+  return String(ka).localeCompare(String(kb));
+};
+const azId = azBy((r) => (Array.isArray(r) ? r[0] : r));      // pickers that show the id
+const azLabel = azBy((r) => (Array.isArray(r) ? r[1] : r));   // pickers that show a sentence
 
 // ── PIECE LIBRARY ────────────────────────────────────────────────────────────
 // The six primitives above are the free grammar. Everything below is catalogue:
@@ -8342,6 +8353,33 @@ const ATTACH_BY_KEY = ATTACH_POINTS.reduce((m, a) => { m[a.key] = a; return m; }
 // One base cube for every point: an attachment is sized by its own sliders, not by which
 // joint it hangs on, so the same bracelet reads the same on a wrist and on an ankle.
 const ATTACH_BASE = { w: 0.2, h: 0.2, d: 0.2 };
+// What a joint tends to wear, read by RANDOMIZE only: the packs it draws from first when the
+// author owns one, and how often the point is worn at all. A point missing from here rolls from
+// the whole owned pool at CHANCE_ANY. Kept low on purpose — gear reads as a choice, and a body
+// wearing all nineteen points is a pile, not a character. L/R pairs share one roll (see
+// randomizeSubject), so only the left entry of a pair is ever consulted. A-Z at the source.
+const ATTACH_TASTE = {
+  atAnkleL: { packs: ["JEWELRY"], chance: 0.16 },
+  atAnkleR: { packs: ["JEWELRY"], chance: 0.16 },
+  atChest: { packs: ["JEWELRY"], chance: 0.24 },
+  atElbowL: { chance: 0.12 },
+  atElbowR: { chance: 0.12 },
+  atFootL: { packs: ["HANDS", "ODDITY"], chance: 0.34 },
+  atFootR: { packs: ["HANDS", "ODDITY"], chance: 0.34 },
+  atHair: { packs: ["HAIR", "HATS"], chance: 0.62 },
+  atHipL: { packs: ["PROPS"], chance: 0.12 },
+  atHipR: { packs: ["PROPS"], chance: 0.12 },
+  atKneeL: { chance: 0.12 },
+  atKneeR: { chance: 0.12 },
+  atNeck: { packs: ["JEWELRY"], chance: 0.3 },
+  atShoulderL: { packs: ["ARCHITECTURE", "SCI-FI"], chance: 0.16 },
+  atShoulderR: { packs: ["ARCHITECTURE", "SCI-FI"], chance: 0.16 },
+  atWaist: { packs: ["PROPS"], chance: 0.2 },
+  atWings: { packs: ["WINGS"], chance: 0.3 },
+  atWristL: { packs: ["JEWELRY"], chance: 0.26 },
+  atWristR: { packs: ["JEWELRY"], chance: 0.26 },
+};
+const ATTACH_CHANCE_ANY = 0.14;
 const EXTRA_KEYS = ["earL", "earR", "tail"].concat(SEG_KEYS, ACC_KEYS);
 const PART_NAMES = {
   head: "HEAD", torso: "UPPER TORSO", torsoLow: "↳ LOWER TORSO",
@@ -8368,11 +8406,11 @@ const TOOL_ICON = {
 const MANUAL = [
   ["Actor", "Player, NPC and enemy blueprints. The R6 rig — head, torso, two arms, two legs plus ears, tail, segments and accessories — built socket by socket. Editing a pet or an NPC body swaps this same page onto that creature.", [
     ["PLAYERS", "Saved player characters. Pick one to make it the live body; NEW banks the body you are looking at, DUPLICATE branches a variant with its own held items, pet, face and stats."],
-    ["PRESETS", "Actor blueprints — load a whole body in one tap. RANDOMIZE rerolls each socket’s shape, paint and whether it is attached, and nudges every size and stat by up to 20%; RESET restores whichever body you are editing to its stock preset."],
+    ["PRESETS", "Actor blueprints — load a whole body in one tap. RANDOMIZE rerolls each socket’s shape, paint and whether it is attached, rolls the nineteen worn points as well, and nudges every size and stat by up to 20%; RESET restores whichever body you are editing to its stock preset. Both socket and gear rolls draw only from pieces you own, so every unlocked pack widens what RANDOMIZE can build; gear is deliberately sparse, each point favours pieces that suit it (hair on the crown, jewelry at the wrists), and left/right pairs always roll the same piece. Angles and offsets are never rolled."],
     ["SOCKETS", "The rig's parts list AND the editor for whichever socket is selected, in one panel — the same shape ATTACH has. Tap a socket to select it, toggle one off to make a limbless creature, and edit it below the divider: shape (with + MORE for the full piece library), paint, texture, the size and angle sliders, and RESET PART / RESET BODY. Every paint row in the studio is the same sixteen slots: fifteen colours — eight brights, then white, grey and black, then four skin tones from pale to dark brown — and a + that opens the picker for anything else."],
     ["ATTACH", "Nineteen attachment points — one per joint, plus HAIR, WINGS, CHEST and two per foot. Gear worn here rides the joint through the whole animation. Separate from SOCKETS on purpose: sockets are the body, attachments are what it wears."],
     ["HOLDING", "What is in each hand at the start of a run — the loadout, not an armoury. The held item declares its own action. In play you can only swap between this loadout and weapons you have picked up, so anything else has to be found in the room. Hidden while editing a pet."],
-    ["GRIP", "Where the held item sits in the hand — offset and angle, per hand. Hidden on a pet."],
+    ["GRIP", "Where the held item sits in the hand, per hand: OFFSET X, Y and Z slide it, PITCH, ROLL and YAW turn it, GRIP SIZE scales it. The offsets are body-space \u2014 +X the body's right, +Y up, +Z forward, the same axes the animation timeline uses \u2014 and are not mirrored between hands, so a value means one direction whichever hand you are on. Everything here scales with the body, so a grip tuned once holds when the actor is resized. Hidden on a pet."],
     ["PET", "The companion that follows the player: whether it is on, how it trails, and a jump into its body."],
     ["STATS", "Body values every brain reads — health, speed, jump, reach. HITBOX HEIGHT is the collision capsule in build levels, 0.5L to 2.5L in half steps — at 1L or under the body crawls through a single-block gap, and the art can be any size you like either way. Under the sliders, CAN SWIM is a yes/no rather than a slider: it decides whether this body may enter a WATER BLOCK or treats one as a wall."],
     ["CAMERA", "Rig offsets — DISTANCE, HEIGHT, SHOULDER, AIM HEIGHT — shared by the ORBIT, DRONE and EYES cameras."],
@@ -8482,8 +8520,9 @@ const MANUAL = [
   ["Objects", "Placeable props and set pieces — crates, doors, pickups, platforms, the board cabinet. You build the object here; you place copies of it in WORLD.", [
     ["PROPERTIES", "The one placement selected in the room. Values here belong to that copy alone — two doors from the same object can lead to two different rooms."],
     ["OBJECTS", "The premade library — pick which prop you are editing."],
-    ["BEHAVE", "What the prop does when touched — pickup, door, hazard, platform, water — and the settings each kind needs."],
-    ["PUSHABLES", "The push setup, all in BEHAVE: effect PUSH on a SOLID or a PICKUP, with BLOCKS on. It slides one tile per shove and stops at anything solid, at any other prop, and at a floor more than half a level up or down; a PUSH pickup is never collected, so it survives being walked into. The same PUSH effect on a HAZARD or a PAD is a conveyor belt instead and stays where you placed it. Pair pushables with RESET BLOCK — a PAD whose effect is RESETPUSH — to send every one in the room back to its placed cell; the pad fires when the player stands on it and when F (X on a pad) is pressed beside it, whatever TYPE it carries. The placed cell is home: a run never rewrites it, and STOP puts every block back."],
+    ["BEHAVE", "What the prop does when touched — pickup, door, hazard, platform, water — and the settings each kind needs. Anything that opens carries NEEDS KEYS: a SWING DOOR will not swing, a warp DOOR will not take you through, and a CHEST — or any pickup — will not give up its prize until you are carrying that many keys, and opening it spends them. The spend happens once — the placement stays unlocked for the rest of the run, so shutting a door you opened is free — and every door relocks on STOP. Set it per doorway or per chest in PLACED, so one definition can be a locked gate in one room and an open arch in another."],
+    ["SWITCHES", "The puzzle pair, both set in BEHAVE. A SWITCH is a PAD whose effect is SWITCH: a pushable block standing on it holds it down, and so does the player. A GATE is a SOLID whose effect is GATE: a wall while shut, sinking into the floor while it is open. CHANNEL (1–8) is the wiring — every switch on a channel must be held for its gates to open, so one switch is the simple case and three switches is the three-block puzzle, no Logic rules involved. Take the weight off and a switch comes back up, and its gates shut behind it — HOLD AFTER keeps it down for a few seconds longer, and the STAYS DOWN flag latches it for the rest of the run for a one-way door. RAISE TIME is how long the gate takes to sink or rise. A flat pad is the one prop a block may be shoved onto: the pad steps under the block, keeps its own channel while covered, and comes back out when the block moves on. Both can be re-channelled per placement in PLACED, so two puzzles can share a room, and a run never rewrites the authored state — STOP shuts every gate again."],
+    ["PUSHABLES", "The push setup, all in BEHAVE: effect PUSH on a SOLID or a PICKUP, with BLOCKS on. A block reads neither AMOUNT nor RESPAWN — AMOUNT is the conveyor’s belt speed and a block is never collected — so BEHAVE hides both sliders on one. It slides one tile per shove and stops at anything solid, at any other prop except a flat pad, and at a floor more than half a level up or down; a PUSH pickup is never collected, so it survives being walked into. The same PUSH effect on a HAZARD or a PAD is a conveyor belt instead and stays where you placed it. Pair pushables with RESET BLOCK — a PAD whose effect is RESETPUSH — to send every one in the room back to its placed cell; the pad fires when the player stands on it and when F (X on a pad) is pressed beside it, whatever TYPE it carries. The placed cell is home: a run never rewrites it, and STOP puts every block back. Push a block onto a SWITCH to open the GATE it shares a channel with."],
     ["PIECE", "Shape, paint, texture, opacity and placement of one piece of the mesh. OPACITY is what makes a piece see-through — water, glass, a ghost — and a see-through piece stops writing depth so the world behind it still sorts correctly."],
   ]],
   ["Project", "Game identity and metadata, as a full page in the viewport.", [
@@ -8534,7 +8573,7 @@ const MANUAL = [
     ["SKY", "Sky, fog, sun and the LIGHTING switch (off = flat colour, no sun or torch lights, faster). Presets move it together; each room keeps its own, and ALL ROOMS copies this one across."],
     ["TOOLS", "Bulk edits for the whole room — fill, clear, flatten and the room-wide paint actions."],
   ]],
-].sort((a, b) => a[0].localeCompare(b[0]));
+].sort(azId);
 // ── THE LOBBY (your room) ────────────────────────────────────────────────
 // The hub is just a world, so this tool is composition, not engine: which fixtures the
 // room ships with, what the leaderboard shows, how the cert wall renders, where the door goes.
@@ -8800,30 +8839,32 @@ const TOOLS = [
   ["Settings", "Theme, layout & input", null],
   ["Assets", "Project asset browser", null],
   ["Export", "Save, load & publish", null],
-].sort((a, b) => a[0].localeCompare(b[0]));
+].sort(azId);
 // HUD — same contract as BloomStudio 2D: a list of badges living in named zones.
 const HUD_SWATCH = { electricTeal: "#00F6D6", coldBlue: "#4DA3FF", chaosPink: "#FF4BCB", signalYellow: "#FFD93D", whiteBloom: "#F3F7FF", voidBlack: "#101014" };
 const HUD_SWATCH_ORDER = ["electricTeal", "coldBlue", "chaosPink", "signalYellow", "whiteBloom", "voidBlack"];
 const HUD_ICONS = ["⤢", "♥", "◉", "⚷", "✸", "▣", "◈", "★", "⚔", "⛨", "⚡", "☠", "⏱", "◆", "▲", "●", "■", "✦", "⚑", "⌂", "✿", "⬢", "◐", "☾", "✚"];
 const HUD_ZONES = ["topLeft", "topCenter", "topRight", "banner", "bottomLeft", "bottomCenter", "bottomRight"];
 const HUD_ZONE_LABEL = { topLeft: "TOP LEFT", topCenter: "TOP CENTER", topRight: "TOP RIGHT", banner: "BANNER", bottomLeft: "BOTTOM LEFT", bottomCenter: "BOTTOM CENTER", bottomRight: "BOTTOM RIGHT" };
-const HUD_KINDS = ["pips", "count", "fraction", "bar", "label", "flag", "timer", "button"];
+const HUD_KINDS = ["bar", "button", "count", "flag", "fraction", "label", "pips", "timer"];
 const HUD_SIZE = { sm: 0.85, md: 1, lg: 1.35 };
 const HUD_SHOW = ["always", "hideWhenZero", "showWhenNonzero"];
 const HUD_THEMES = {
-  neon: { pad: "5px 12px", radius: "3px", bw: "1px", font: 11, ls: 1, bgA: 0.08, glow: true },
-  minimal: { pad: "3px 6px", radius: "0px", bw: "0px", font: 11, ls: 1, bgA: 0, glow: false },
   chunky: { pad: "7px 14px", radius: "7px", bw: "2px", font: 13, ls: 1.5, bgA: 0.16, glow: true },
+  minimal: { pad: "3px 6px", radius: "0px", bw: "0px", font: 11, ls: 1, bgA: 0, glow: false },
+  neon: { pad: "5px 12px", radius: "3px", bw: "1px", font: 11, ls: 1, bgA: 0.08, glow: true },
 };
 // Every readout the 3D engine can expose. A badge binds to one of these names.
 const HUD_BINDS = [
-  ["hp", "player health"], ["hpMax", "player max health"], ["weapon", "right hand"], ["offhand", "left hand"],
-  ["playState", "ready / playing / paused"], ["enemies", "enemies alive"], ["bosses", "bosses alive"],
-  ["speed", "current speed"], ["cam", "camera mode"], ["time", "time in play"],
-  ["lives", "lives left"], ["keys", "keys held"], ["coins", "coins collected"], ["ammo", "ammo held"],
-  ["best_lap", "best lap time"], ["lap", "laps completed"], ["last_lap", "last lap time"], ["race_time", "race clock"],
-  ["boss_hp", "boss health"], ["boss_hpMax", "boss max health"], ["boss_name", "boss name"], ["boss_phase", "boss phase"],
-];
+  ["ammo", "ammo held"], ["best_lap", "best lap time"], ["boss_hp", "boss health"],
+  ["boss_hpMax", "boss max health"], ["boss_name", "boss name"], ["boss_phase", "boss phase"],
+  ["bosses", "bosses alive"], ["cam", "camera mode"], ["coins", "coins collected"],
+  ["enemies", "enemies alive"], ["hp", "player health"], ["hpMax", "player max health"],
+  ["keys", "keys held"], ["lap", "laps completed"], ["last_lap", "last lap time"],
+  ["lives", "lives left"], ["offhand", "left hand"], ["playState", "ready / playing / paused"],
+  ["race_time", "race clock"], ["speed", "current speed"], ["time", "time in play"],
+  ["weapon", "right hand"],
+].sort(azId);
 const HUD_ACTIONS = ["camera", "chat", "door", "fullscreen", "pause", "restart", "wave"];
 const BASE_DIM = {
   head:  { w: 0.46, h: 0.42, d: 0.42, x: 0, y: 1.46 },
@@ -9039,7 +9080,7 @@ const SKY_PRESETS = [
   { name: "NIGHT", top: "#05060d", horizon: "#161f3f", ground: "#05060d", sunCol: "#9ab8ff", sun: 55, amb: 60, sunH: 34, sunA: 200, fog: 34, stars: 1 },
   { name: "TOXIC", top: "#0b2018", horizon: "#59e391", ground: "#08130e", sunCol: "#c9ffdf", sun: 120, amb: 110, sunH: 30, sunA: 130, fog: 62, stars: 0 },
   { name: "VOID", top: "#090b17", horizon: "#090b17", ground: "#090b17", sunCol: "#ffe6ff", sun: 130, amb: 105, sunH: 55, sunA: 40, fog: 0, stars: 0 },
-];
+].sort((a, b) => a.name.localeCompare(b.name));
 const OBJECT_DEFS = {
   "RESET BLOCK": [
     { n: "PAD", shape: "BOX", color: "#1b1f36", w: 0.92, h: 0.14, d: 0.92, x: 0, y: 0.07, z: 0, rx: 0, ry: 0, glow: 0.05 },
@@ -9157,6 +9198,19 @@ const OBJECT_DEFS = {
     { n: "LID", shape: "BOX", color: "#59e391", w: 0.64, h: 0.08, d: 0.46, x: 0, y: 0.38, z: 0, rx: 0, ry: 0, glow: 0.35 },
     { n: "SHELL", shape: "CYL", color: "#f8d66d", w: 0.12, h: 0.26, d: 0.12, x: 0.18, y: 0.5, z: 0, rx: 0, ry: 0, glow: 0.3 },
   ],
+  GATE: [
+    { n: "POST L", shape: "BOX", color: "#4a4f66", w: 0.14, h: 2, d: 0.3, x: -0.43, y: 1, z: 0, rx: 0, ry: 0, glow: 0.04 },
+    { n: "POST R", shape: "BOX", color: "#4a4f66", w: 0.14, h: 2, d: 0.3, x: 0.43, y: 1, z: 0, rx: 0, ry: 0, glow: 0.04 },
+    { n: "LINTEL", shape: "BOX", color: "#4a4f66", w: 1, h: 0.18, d: 0.3, x: 0, y: 1.91, z: 0, rx: 0, ry: 0, glow: 0.08 },
+    { n: "BAR L", shape: "CYL", color: "#78a9ff", w: 0.1, h: 1.86, d: 0.1, x: -0.2, y: 0.93, z: 0, rx: 0, ry: 0, glow: 0.32 },
+    { n: "BAR R", shape: "CYL", color: "#78a9ff", w: 0.1, h: 1.86, d: 0.1, x: 0.2, y: 0.93, z: 0, rx: 0, ry: 0, glow: 0.32 },
+    { n: "CROSSBAR", shape: "BOX", color: "#8fd6ff", w: 0.8, h: 0.1, d: 0.12, x: 0, y: 0.95, z: 0, rx: 0, ry: 0, glow: 0.4 },
+  ],
+  SWITCH: [
+    { n: "FRAME", shape: "BOX", color: "#1b1f36", w: 0.94, h: 0.1, d: 0.94, x: 0, y: 0.05, z: 0, rx: 0, ry: 0, glow: 0.04 },
+    { n: "PLATE", shape: "BOX", color: "#f8d66d", w: 0.72, h: 0.1, d: 0.72, x: 0, y: 0.13, z: 0, rx: 0, ry: 0, glow: 0.42 },
+    { n: "STUD", shape: "CYL", color: "#59e391", w: 0.24, h: 0.1, d: 0.24, x: 0, y: 0.2, z: 0, rx: 0, ry: 0, glow: 0.6 },
+  ],
   CHECKPOINT: [
     { n: "POST", shape: "CYL", color: "#b6b0ca", w: 0.12, h: 1.5, d: 0.12, x: 0, y: 0.75, z: 0, rx: 0, ry: 0, glow: 0.1 },
     { n: "FLAG", shape: "BOX", color: "#d85cff", w: 0.6, h: 0.4, d: 0.04, x: 0.32, y: 1.3, z: 0, rx: 0, ry: 0, glow: 0.6 },
@@ -9167,13 +9221,13 @@ const OBJECT_DEFS = {
 // What an object DOES. The mesh is dumb geometry; this record is the behaviour,
 // so any object can be turned into a pickup and any pickup back into scenery.
 const PICKUP_EFFECTS = [
-  ["none", "nothing — decoration"], ["swing", "hinged door — press E to open or shut"], ["heal", "restore health"], ["maxhp", "raise max health"],
+  ["none", "nothing — decoration"], ["swing", "hinged door — press E to open or shut"], ["gate", "gate — a wall that sinks into the floor while its switch channel is held"], ["heal", "restore health"], ["maxhp", "raise max health"],
   ["life", "extra life"], ["key", "add a key"], ["coin", "add coins"],
   ["ammo", "add ammo"], ["drive", "vehicle — press E to get in and drive it"],
   ["ramp", "sloped deck — drive up it, launch off the top"],
   ["speed", "temporary speed boost"], ["checkpoint", "move the respawn point"],
   ["push", "pushable — hold F (X on a pad) and walk into it to slide it one tile"], ["resetpush", "reset pad — stand on it or press F (X) to send every pushable in the room home"],
-];
+].sort(azId);
 Object.assign(OBJECT_DEFS, {
   SPIKES: [
     { n: "BASE", shape: "BOX", color: "#3a3f52", w: 0.9, h: 0.08, d: 0.9, x: 0, y: 0.04, z: 0, rx: 0, ry: 0, glow: 0 },
@@ -9304,8 +9358,8 @@ const OBJECT_META = {
   TREE: { type: "SOLID", effect: "none", amount: 1, respawn: 0, spin: false, bob: false, blocks: true },
   ROCK: { type: "SOLID", effect: "none", amount: 1, respawn: 0, spin: false, bob: false, blocks: true },
   TORCH: { type: "SOLID", effect: "none", amount: 1, respawn: 0, spin: false, bob: false, blocks: false },
-  CHEST: { type: "PICKUP", effect: "coin", amount: 10, respawn: 0, spin: false, bob: false, blocks: true },
-  DOOR: { type: "PAD", effect: "warp", amount: 2, respawn: 0, range: 0, spin: false, bob: false, blocks: false },
+  CHEST: { type: "PICKUP", effect: "coin", amount: 10, respawn: 0, spin: false, bob: false, blocks: true, lock: 0 },
+  DOOR: { type: "PAD", effect: "warp", amount: 2, respawn: 0, range: 0, spin: false, bob: false, blocks: false, lock: 0 },
   PLATFORM: { type: "SOLID", effect: "none", amount: 1, respawn: 0, spin: false, bob: false, blocks: false },
   HEART: { type: "PICKUP", effect: "heal", amount: 25, respawn: 0, spin: true, bob: true, blocks: false },
   ONEUP: { type: "PICKUP", effect: "life", amount: 1, respawn: 0, spin: true, bob: true, blocks: false },
@@ -9334,7 +9388,10 @@ const OBJECT_META = {
   RAMP: { type: "SOLID", effect: "ramp", amount: 1, respawn: 0, range: 0, wide: 2, spin: false, bob: false, blocks: false },
   STAIRS: { type: "SOLID", effect: "ramp", amount: 1, respawn: 0, range: 0, wide: 2, spin: false, bob: false, blocks: false },
   "START LINE": { type: "PAD", effect: "start", amount: 3, respawn: 0, range: 0, wide: 3, spin: false, bob: false, blocks: false },
-  "SWING DOOR": { type: "SOLID", effect: "swing", amount: 90, respawn: 0.5, range: 0, wide: 2, spin: false, bob: false, blocks: true },
+  // channel pairs the two: amount is the CHANNEL, respawn the raise time / pop-back time
+  GATE: { type: "SOLID", effect: "gate", amount: 1, respawn: 0.6, range: 0, wide: 1, spin: false, bob: false, blocks: true },
+  SWITCH: { type: "PAD", effect: "switch", amount: 1, respawn: 0, range: 0, wide: 1, spin: false, bob: false, blocks: false, latch: false },
+  "SWING DOOR": { type: "SOLID", effect: "swing", amount: 90, respawn: 0.5, range: 0, wide: 2, spin: false, bob: false, blocks: true, lock: 0 },
 };
 const PROJECT_DEF = { name: "Bloom Quest 3D", author: "you", version: "0.1.0", notes: "" };
 // Who you are IN the game, as opposed to who made it. The handle is what the board and the
@@ -9348,12 +9405,13 @@ const HAZARD_EFFECTS = [
   ["sweep", "spinning arm damages inside range"],
   ["launch", "throws the player upward"],
   ["push", "shoves the player along its facing"],
+  ["switch", "weight switch — holds down while a pushable block (or you) stands on it"],
   ["break", "solid until destroyed by an attack"],
   ["warp", "sends the player to another room"],
   ["ramp", "sloped deck — drive up it, launch off the top"],
   ["start", "race start — crossing it starts the clock"],
   ["finish", "race finish — crossing it takes the time"],
-];
+].sort(azId);
 // The rule model is the 2D engine's, trimmed to what 3D actually has: one sentence per rule —
 // WHEN an event fires ▸ REQUIRES gates pass ▸ THEN run the actions in order.
 // A brain is a small record the body reads — same split as the player (BODY + BRAIN),
@@ -9365,24 +9423,24 @@ const BRAIN_MODES = [
   ["PATROL", "Paces a line through its post"],
   ["FLEE", "Backs away and keeps its distance"],
   ["CIRCLE", "Strafes around you at sight range"],
-];
+].sort(azId);
 const PET_CFG = { follow: 1.5, space: 1, roam: 2.5, attack: 0, bite: 6, gap: 0.9, collect: "ALL", reach: 2.5 };
 const PET_COLLECT = [
   ["OFF", "Walks past everything"],
   ["COINS", "Only coins and gems"],
   ["HEALTH", "Only hearts and potions"],
   ["ALL", "Fetches every pickup it passes"],
-];
+].sort(azId);
 const BRAIN_DEF = { mode: "WANDER", sight: 9, speed: 100, leash: 3.5, hit: 4, cool: 0.7 };
 const PLAYER_BRAINS = [
   ["INPUT", "You drive the body — keyboard and pad"],
   ["AI", "Autopilot: hunts the nearest enemy (demo mode)"],
   ["NONE", "Body is inert — a target dummy"],
-];
+].sort(azId);
 const ALLY_BRAINS = [
   ["OFF", "No second body"],
   ["AI", "Companion follows you — a pet trails you, a hero fights"],
-];
+].sort(azId);
 const LOGIC_EVENTS = [
   ["game_start", "Play starts"],
   ["enter_room", "Enter a room ▸ pick which"],
@@ -9406,14 +9464,14 @@ const LOGIC_EVENTS = [
   ["step_tile", "Step on a tile ▸ pick which"],
   ["touch_prop", "Touch a prop ▸ pick which"],
   ["var_changed", "A variable changes"],
-];
+].sort(azLabel);
 const LOGIC_VARS = [
   ["hp", "Health"], ["hpMax", "Max health"], ["lives", "Lives"],
   ["coins", "Coins"], ["keys", "Keys"], ["ammo", "Ammo"],
   ["enemies_left", "Enemies alive"], ["bosses_left", "Bosses alive"],
   ["boss_hp", "Boss HP"], ["kills", "Enemies defeated"],
   ["seconds", "Seconds elapsed"], ["speed", "Player speed"],
-];
+].sort(azLabel);
 const LOGIC_OPS = [">=", "<=", ">", "<", "==", "!="];
 const LOGIC_ACTIONS = [
   ["message", "Show a message", "text"],
@@ -9440,7 +9498,7 @@ const LOGIC_ACTIONS = [
   ["win", "Win the game", "none"],
   ["lose", "Lose the game", "none"],
   ["wait", "Wait, then continue", "num"],
-];
+].sort(azLabel);
 const RULE_SEED = [
   { id: "r1", name: "Clear the room to win", enabled: true, when: "all_enemies", ifs: [],
     then: [{ do: "message", text: "Room clear!" }, { do: "win" }] },
@@ -9504,14 +9562,18 @@ const ATTACK_SLIDERS = [
   { key: "reach", label: "REACH", min: 0, max: 1.2, step: 0.02, unit: "u" },
   { key: "hit", label: "HIT FRAME", min: 0.05, max: 0.95, step: 0.01, unit: "" },
 ];
+// x/y/z are a nudge in BODY space — +x is the body's right, +y up, +z forward — the same
+// axes the timeline's OFFSET channels use, and deliberately NOT mirrored per hand, so a
+// number means the same direction whichever hand you are tuning. Scaled by body size with
+// everything else in the hand group, so a grip tuned on the hero survives being resized.
 const GRIP_DEFAULTS = {
-  WAND: { pitch: 0, yaw: 0, roll: 0, size: 1 },
-  HOOKSHOT: { pitch: 0, yaw: 0, roll: 0, size: 1 },
-  SWORD: { pitch: 0, yaw: 0, roll: 0, size: 1 },
-  AXE: { pitch: 0, yaw: 0, roll: 0, size: 1.1 },
-  SHOTGUN: { pitch: -0.15, yaw: 0, roll: 0, size: 1 },
-  SHIELD: { pitch: 0.2, yaw: 0, roll: 0, size: 1 },
-  NONE: { pitch: 0, yaw: 0, roll: 0, size: 1 },
+  WAND: { pitch: 0, yaw: 0, roll: 0, size: 1, x: 0, y: 0, z: 0 },
+  HOOKSHOT: { pitch: 0, yaw: 0, roll: 0, size: 1, x: 0, y: 0, z: 0 },
+  SWORD: { pitch: 0, yaw: 0, roll: 0, size: 1, x: 0, y: 0, z: 0 },
+  AXE: { pitch: 0, yaw: 0, roll: 0, size: 1.1, x: 0, y: 0, z: 0 },
+  SHOTGUN: { pitch: -0.15, yaw: 0, roll: 0, size: 1, x: 0, y: 0, z: 0 },
+  SHIELD: { pitch: 0.2, yaw: 0, roll: 0, size: 1, x: 0, y: 0, z: 0 },
+  NONE: { pitch: 0, yaw: 0, roll: 0, size: 1, x: 0, y: 0, z: 0 },
 };
 const CAMS = ["ORBIT", "DRONE", "EYES"];
 // Moving-platform paths. NONE pinned first, the rest A–Z.
@@ -9570,6 +9632,28 @@ const TUNE_BY_EFFECT = {
       { key: "dir", label: "SWINGS", hue: "#d85cff", opts: [[1, "OUTWARD"], [-1, "INWARD"]] },
       { key: "amt", label: "OPEN ANGLE", hue: "#78a9ff", opts: [[70, "70\u00b0"], [90, "90\u00b0"], [110, "110\u00b0"], [140, "140\u00b0"]] },
       { key: "gap", label: "SWING TIME", hue: "#f8d66d", opts: [[0.2, "SNAP"], [0.5, "NORMAL"], [1, "SLOW"], [2, "CREAK"]] },
+      { key: "lock", label: "NEEDS KEY", hue: "#f8d66d", opts: [[0, "UNLOCKED"], [1, "1 KEY"], [2, "2 KEYS"], [3, "3 KEYS"]] },
+    ],
+  },
+  warp: {
+    note: "This doorway alone. NEEDS KEY spends keys from your pouch the first time it is used \u2014 after that it stays unlocked for the rest of the run.",
+    rows: [
+      { key: "lock", label: "NEEDS KEY", hue: "#f8d66d", opts: [[0, "UNLOCKED"], [1, "1 KEY"], [2, "2 KEYS"], [3, "3 KEYS"]] },
+    ],
+  },
+  gate: {
+    note: "This gate alone. CHANNEL is which switches it listens to \u2014 every SWITCH on that channel must be held down for it to open. Place two gates side by side on the same channel for a wider opening.",
+    rows: [
+      { key: "amt", label: "CHANNEL", hue: "#78a9ff", opts: [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"], [6, "6"], [7, "7"], [8, "8"]] },
+      { key: "gap", label: "RAISE TIME", hue: "#f8d66d", opts: [[0.25, "SNAP"], [0.6, "NORMAL"], [1.2, "SLOW"], [2.5, "GRIND"]] },
+    ],
+  },
+  switch: {
+    note: "This switch alone. CHANNEL is which gates it drives. Take the weight off and it comes back up, shutting its gates \u2014 HOLD AFTER keeps it down for a moment longer, and STAYS DOWN latches it for the rest of the run for a one-way door.",
+    rows: [
+      { key: "amt", label: "CHANNEL", hue: "#78a9ff", opts: [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"], [6, "6"], [7, "7"], [8, "8"]] },
+      { key: "gap", label: "HOLD AFTER", hue: "#f8d66d", opts: [[0, "AT ONCE"], [0.5, "0.5s"], [1, "1s"], [2, "2s"], [4, "4s"]] },
+      { key: "lat", label: "STAYS DOWN", hue: "#59e391", opts: [[0, "NO"], [1, "ONE-WAY"]] },
     ],
   },
   break: {
@@ -9596,12 +9680,20 @@ const TUNE_DEF = (key, m) => {
   if (key === "dir") return 1;
   if (key === "foe") return m && m.foe != null ? m.foe : 3;
   if (key === "fix") return m && m.fix != null ? m.fix : 3;
+  if (key === "lat") return m && m.latch ? 1 : 0;
+  if (key === "lock") return m && m.lock != null ? m.lock : 0;
   if (key === "lit") return "#ff9d5c";
   if (key === "lrad") return 7;
   if (key === "flick") return 1;
   return 0;
 };
 const TUNE_BY_NAME = {
+  CHEST: {
+    note: "This chest alone. NEEDS KEY spends keys from your pouch the first time you open it \u2014 after that it stays unlocked for the rest of the run.",
+    rows: [
+      { key: "lock", label: "NEEDS KEY", hue: "#f8d66d", opts: [[0, "UNLOCKED"], [1, "1 KEY"], [2, "2 KEYS"], [3, "3 KEYS"]] },
+    ],
+  },
   TORCH: {
     note: "Torches light the room they stand in. Turn GLOW off for a prop that is only scenery.",
     rows: [
@@ -9903,11 +9995,11 @@ const DLG_RATE = { INSTANT: 0, TYPE: 45, SLOW: 22 };   // characters per second
 const QUEST_REWARDS = [
   ["coins", "Coins"], ["keys", "Keys"], ["ammo", "Ammo"], ["lives", "Lives"],
   ["heal", "Full heal"], ["hpMax", "Max HP up"], ["none", "Nothing"],
-];
+].sort(azId);
 const QUEST_BINDS = [
   ["coins", "coins collected"], ["keys", "keys held"], ["kills", "enemies defeated"],
   ["ammo", "ammo held"], ["seconds", "seconds survived"],
-];
+].sort(azId);
 const QUEST_DEF = {
   on: false, id: "", bind: "coins", count: 3, take: true, repeatable: false,
   reward: { kind: "coins", amount: 10 }, requires: "",
@@ -9918,8 +10010,8 @@ const NPC_ROAM = [
   ["PACE", "Walks a short beat and back"],
   ["WANDER", "Drifts around near home"],
   ["FACE", "Turns to watch you nearby"],
-];
-const TEX_SEED_NAMES = ["FLAT", "NOISE", "CHECKER", "BRICK", "PLANK", "STONE", "GRASS", "GRADIENT"];
+].sort(azId);
+const TEX_SEED_NAMES = ["BRICK", "CHECKER", "FLAT", "GRADIENT", "GRASS", "NOISE", "PLANK", "STONE"].sort();
 const ROOM_SIZES = [["S", 25], ["M", 50], ["L", 100]];
 const SETTING_DEF = [
   { key: "chat", label: "CHAT", desc: "Chat in play — the keyboard, the quick-chat wheel, the preset lines and the 💬 button. OFF removes every way in, including the HUD's CHAT badge", opts: ["ON", "OFF"] },
@@ -10232,7 +10324,9 @@ class Component extends DCLogic {
   authoredWorld() {
     const w = this.state.world;
     if (!this.state.running || !this.runProps) return w;
-    return Object.assign({}, w, { props: this.runProps });
+    const out = Object.assign({}, w, { props: this.runProps });
+    delete out.under;   // pads parked under a shoved block are run state, not level data
+    return out;
   }
 
   // STOP puts the room back the way it was authored, same as it already does for spawned
@@ -10240,7 +10334,9 @@ class Component extends DCLogic {
   // in world.props, so dropping the run's copy IS the restore.
   restoreAuthoredProps() {
     if (!this.runProps) return;
-    this.state.world = Object.assign({}, this.state.world, { props: this.runProps });
+    const w = Object.assign({}, this.state.world, { props: this.runProps });
+    delete w.under;
+    this.state.world = w;
     this.runProps = null;
     this.rebuildProps();
   }
@@ -10581,7 +10677,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.2";
+  ENGINE = "bloom3d/0.3.3";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -10893,6 +10989,16 @@ class Component extends DCLogic {
   resetRunState() {
     this.clearGlass();
     this.doorOpen = {};
+    this._chanHeld = {};
+    // Gates and switches hold their state on the mesh, which outlives a run — put them back.
+    if (this.propGroup) this.propGroup.children.forEach((g) => {
+      const u = g.userData;
+      if (!u) return;
+      u.unlocked = false;                   // a locked door is locked again on every run
+      if (u.gateT == null && !u.swHold) return;
+      u.gateT = 0; u.swHold = false; u.swWas = false; u.swT = 0;
+      g.position.y = u.baseY || 0;
+    });
     this._chatMsg = null;
     this.emote = null;
     clearTimeout(this._tHold); this._tHold = null;
@@ -13088,8 +13194,12 @@ class Component extends DCLogic {
       const body = ((ST.sw == null ? 1 : ST.sw) + (ST.sh == null ? 1 : ST.sh)) / 2;
       const hs = 1 + (body - 1) * 0.7;
       const outward = Math.sign(ab.x) * (ab.w * arm.sw / 2 + 0.03 * hs);
-      hand.group.position.set(wrist.x + outward, wrist.y, wrist.z + reachZ);
       const hc = (S.grip && S.grip[side]) || this.holdCfg[side];
+      hand.group.position.set(
+        wrist.x + outward + (hc.x || 0) * hs,
+        wrist.y + (hc.y || 0) * hs,
+        wrist.z + reachZ + (hc.z || 0) * hs,
+      );
       const shieldTurn = held === "SHIELD" ? Math.sign(ab.x) * -0.35 : 0;
       hand.group.rotation.set(armPitch + hc.pitch + spin, shieldTurn + hc.yaw, Math.sign(ab.x) * -0.12 + hc.roll);
       const thrown = atk.type === "THROW" && p >= 0 && p > atk.hit;
@@ -13926,6 +14036,20 @@ class Component extends DCLogic {
     this.queueSave();
   }
 
+  // The pool every roll draws from. Two filters, both load-bearing: a piece must be OWNED
+  // (the six primitives always are; a pack widens the pool the moment its grant lands, which
+  // is most of what buying one buys) and it must have real geometry, since a catalogue name
+  // with no mesh behind it would roll an invisible limb.
+  rollPool(packs) {
+    const modelled = (n) => SHAPES.indexOf(n) >= 0 || MESH_SHAPES.indexOf(n) >= 0;
+    const lib = PIECE_LIB.filter((p) => modelled(p.name) && this.unlockHas(p.pack));
+    if (packs && packs.length) {
+      const want = lib.filter((p) => packs.indexOf(p.pack) >= 0);
+      if (want.length) return want.map((p) => p.name);   // taste applies only when owned
+    }
+    return lib.map((p) => p.name);
+  }
+
   randomizeSubject() {
     const S = this.subject();
     const pick = (a) => a[Math.floor(Math.random() * a.length)];
@@ -13936,10 +14060,11 @@ class Component extends DCLogic {
       const n = (v == null ? 1 : v) * (0.8 + Math.random() * 0.4);
       return +Math.max(lo, Math.min(hi, n)).toFixed(2);
     };
+    const pool = this.rollPool();
     PART_KEYS.forEach((k) => {
       const p = S.parts[k];
       if (!p) return;
-      p.shape = pick(SHAPES);
+      p.shape = pick(pool);
       p.color = pick(PALETTE);
       ["sw", "sh", "sd"].forEach((key) => {
         const cl = this.partClamp(k, key) || [0.5, 2.2];
@@ -13953,11 +14078,42 @@ class Component extends DCLogic {
     S.stats.health = Math.round(jitter(S.stats.health, 1, 999));
     S.stats.stepHeight = jitter(S.stats.stepHeight, 0.2, 2);
     S.stats.gravityScale = jitter(S.stats.gravityScale, 0, 2);
+    // Worn gear rolls too — it was skipped entirely before, which made RANDOMIZE quietly
+    // ignore two thirds of the catalogue. L/R points share ONE roll: a bangle on one wrist
+    // and a girder on the other reads as a bug, not a character. Offsets and tilts stay put
+    // for the same reason sockets leave them alone — the piece would drift off its joint.
+    const wearGroups = {};
+    ATTACH_POINTS.forEach((A) => {
+      const base = A.key.replace(/[LR]$/, "");
+      (wearGroups[base] = wearGroups[base] || []).push(A);
+    });
+    let worn = 0;
+    Object.keys(wearGroups).sort().forEach((base) => {
+      const members = wearGroups[base];
+      const taste = ATTACH_TASTE[members[0].key] || {};
+      const on = Math.random() < (taste.chance == null ? ATTACH_CHANCE_ANY : taste.chance);
+      const shape = pick(this.rollPool(taste.packs));
+      const color = pick(PALETTE);
+      members.forEach((A) => {
+        const p = S.parts[A.key];
+        if (!p) return;
+        p.on = on;
+        if (!on) return;
+        worn++;
+        p.shape = shape;
+        p.color = color;
+        const def = A.def || {};
+        ["sw", "sh", "sd"].forEach((key) => {
+          const from = p[key] == null ? (def[key] == null ? 1 : def[key]) : p[key];
+          p[key] = jitter(from, 0.2, 4);
+        });
+      });
+    });
     // gait is not rolled any more: there is no control for it since the picker went, so a
     // random one would be a change the author cannot see or undo.
     S.touch();
     this.touched = true;
-    this.push("Randomized · " + S.parts.torso.shape.toLowerCase() + " torso", "rose");
+    this.push("Randomized · " + S.parts.torso.shape.toLowerCase() + " torso · " + worn + " worn", "rose");
     this.rebuildPreview && this.rebuildPreview();
     this.queueSave();
   }
@@ -18003,7 +18159,11 @@ class Component extends DCLogic {
       const outward = Math.sign(b.x) * (b.w * arm.sw / 2 + 0.03 * hs);
       const len = b.h * arm.sh;
       const hc = (p.grip && p.grip[side]) || GRIP_DEFAULTS[held] || GRIP_DEFAULTS.NONE;
-      w.position.set(b.x * arm.sw + outward, b.y + len / 2 - len, 0);
+      w.position.set(
+        b.x * arm.sw + outward + (hc.x || 0) * hs,
+        b.y + len / 2 - len + (hc.y || 0) * hs,
+        (hc.z || 0) * hs,
+      );
       w.rotation.set(hc.pitch || 0, (held === "SHIELD" ? Math.sign(b.x) * -0.35 : 0) + (hc.yaw || 0), Math.sign(b.x) * -0.12 + (hc.roll || 0));
       const sc = hs * (hc.size || 1);
       w.scale.set(sc, sc, sc);
@@ -19371,6 +19531,7 @@ class Component extends DCLogic {
     this.propGroup.children.forEach((p) => {
       const pu = p.userData || {};
       if (!p.visible || pu.taken > 0 || !want(pu.obj)) return;
+      if (this.propLocked(pu, this.meta(pu.obj))) return;   // a pet does not spend your keys
       const d = Math.hypot(p.position.x - g.position.x, p.position.z - g.position.z);
       if (d < bd && d < Math.max(1.2, c.reach) + 2) { bd = d; best = p; }
     });
@@ -19382,9 +19543,11 @@ class Component extends DCLogic {
       u.trot = (u.trot || 0) + dt * 6;
       u.hopY = Math.abs(Math.sin(u.trot)) * 0.09;
     } else {
-      this.collect(best, this.meta(best.userData.obj));   // scores for the player, same as walking over it
-      this.bump("assists");
-      this.push("Pet fetched " + (best.userData.obj || "item").toLowerCase(), "muted");
+      // scores for the player, same as walking over it — but only if it took something
+      if (this.collect(best, this.meta(best.userData.obj))) {
+        this.bump("assists");
+        this.push("Pet fetched " + (best.userData.obj || "item").toLowerCase(), "muted");
+      }
     }
     return true;
   }
@@ -20608,7 +20771,7 @@ class Component extends DCLogic {
 /*=== MUS_TRACKS ===*/
   MUS_TRACKS = [['drums', 'DRUMS', '#ff9d5c'], ['bass', 'BASS', '#59e391'], ['lead1', 'LEAD 1', '#d85cff'], ['lead2', 'ORCH', '#78a9ff'], ['lead3', 'ARP', '#ff75bd'], ['sfx', 'SFX', '#ffd27a']];
 /*=== SFX_ORDER ===*/
-  SFX_ORDER = [['jump', 'JUMP'], ['coin', 'COIN'], ['key', 'KEY'], ['hit', 'HIT'], ['attack', 'ATK'], ['defeat', 'DEFEAT'], ['chest', 'CHEST'], ['win', 'WIN'], ['lose', 'LOSE'], ['zap', 'ZAP'], ['boom', 'BOOM'], ['pow', 'POW']];
+  SFX_ORDER = [['attack', 'ATK'], ['boom', 'BOOM'], ['chest', 'CHEST'], ['coin', 'COIN'], ['defeat', 'DEFEAT'], ['hit', 'HIT'], ['jump', 'JUMP'], ['key', 'KEY'], ['lose', 'LOSE'], ['pow', 'POW'], ['win', 'WIN'], ['zap', 'ZAP']].sort(azLabel);
 /*=== _musPat ===*/
   static _musPat() {
     const z = (f) => new Array(32).fill(f);
@@ -21784,7 +21947,7 @@ class Component extends DCLogic {
     ["bossPhase", "BOSS PHASE", "boom"], ["coin", "COIN", "coin"], ["key", "KEY", "key"],
     ["heal", "HEART · HEAL", "chest"], ["life", "1UP", "win"], ["pickup", "OTHER PICKUP", "coin"],
     ["spawn", "SPAWNER RELEASE", "zap"], ["win", "YOU WIN", "win"], ["lose", "YOU DIE", "lose"],
-  ];
+  ].sort(azLabel);
 
   evt(id) {
     // Counting happens before the sound lookup, so an event with no sound bound still scores.
@@ -22292,10 +22455,18 @@ class Component extends DCLogic {
     this.boardFaceMeshes = [];
     this.lampSources = [];
     this._lampT = 0;
-    for (const key in props) {
+    // A pushable shoved onto a floor pad parks that pad in world.under at the SAME key: one
+    // occupant per tile still holds for collision (props is the only map blocked() reads), but
+    // both meshes have to be drawn. Unders are built first so the block wins propMeshByKey.
+    const under = this.state.world.under || {};
+    const entries = [];
+    for (const k in under) if (under[k]) entries.push([k, under[k], true]);
+    for (const k in props) entries.push([k, props[k], false]);
+    for (const ent of entries) {
+      const key = ent[0], isUnder = ent[2];
       const i = +key;                       // the placement key (cell + build level)
       const cell = this.propCell(key);      // where it stands in the grid
-      const rec = props[key];
+      const rec = ent[1];
       if (!rec) continue;                   // a hole in the map is not a prop
       const name = typeof rec === "string" ? rec : rec.n;
       if (!name) continue;
@@ -22319,6 +22490,9 @@ class Component extends DCLogic {
       // build time — the reset pad used to learn it lazily on the first push check, which made
       // "home" wherever the block happened to be standing by then rather than where it was placed.
       g.userData = { obj: name, cell: i, gridCell: cell, homeCell: i, baseY: base, taken: 0, rot: rot, hp: this.breakHp(this.meta(name)) };
+      // A covered pad cannot read its own per-placement settings off props[key] any more —
+      // the block owns that key now — so it carries its own tuning on the mesh.
+      if (isUnder) { g.userData.under = true; g.userData.recP = (typeof rec === "string" ? null : rec.p) || null; }
       const meta = this.meta(name);
       if (meta.effect === "swim") this.cullWaterFaces(g, cell, lvl, base, rot, n);
       // A torch is a light source, but a real PointLight per torch is what kills the
@@ -22415,7 +22589,7 @@ class Component extends DCLogic {
         ring.position.y = 0.03;
         g.add(ring);
       }
-      this.propMeshByKey.set(i, g);
+      if (!isUnder) this.propMeshByKey.set(i, g);
       this.propGroup.add(g);
     }
   }
@@ -23014,7 +23188,7 @@ class Component extends DCLogic {
       const lvl = this.propLvl(u.cell == null ? 0 : u.cell);
       const from = this.propKey(cz * n + cx, lvl), to = this.propKey(tz * n + tx, lvl);
       if (!props[from]) return;                     // not where the map says it is — leave it
-      if (props[to]) return;                        // something already lives there
+      if (props[to] && !this.isFloorPad(props[to])) return;   // occupied — unless it is a flat pad
       // and the floor has to be walkable there — no shoving blocks up a wall or off a ledge
       const hereY = this.groundAt(g.position.x, g.position.z, n);
       const destX = tx - half + 0.5, destZ = tz - half + 0.5;
@@ -23025,8 +23199,19 @@ class Component extends DCLogic {
     if (!moved) return;
     const w = Object.assign({}, this.state.world);
     w.props = Object.assign({}, w.props);
+    w.under = Object.assign({}, w.under || {});
     const name = w.props[moved.from];
     delete w.props[moved.from];
+    if (w.under[moved.from]) {
+      const out = w.under[moved.from];
+      w.props[moved.from] = out; delete w.under[moved.from];
+      this.markUnder(moved.from, out, false);
+    }
+    if (w.props[moved.to]) {                                        // the pad steps under
+      const pad = w.props[moved.to];
+      w.under[moved.to] = pad;
+      this.markUnder(moved.to, pad, true);
+    }
     w.props[moved.to] = name;
     // a fresh props object is what invalidates the cell-collision cache, so the block's
     // solidity travels with it instead of staying behind
@@ -23146,6 +23331,7 @@ class Component extends DCLogic {
     const n = this.worldDim(), half = n / 2;
     const w = Object.assign({}, this.state.world);
     w.props = Object.assign({}, w.props);
+    w.under = Object.assign({}, w.under || {});
     let moved = 0;
     this.propGroup.children.forEach((g) => {
       const u = g.userData || {};
@@ -23155,6 +23341,16 @@ class Component extends DCLogic {
       if (cur === u.homeCell) return;
       const name = w.props[cur] || u.obj;
       delete w.props[cur];
+      if (w.under[cur]) {
+        const out = w.under[cur];
+        w.props[cur] = out; delete w.under[cur];
+        this.markUnder(cur, out, false);
+      }
+      if (w.props[u.homeCell]) {
+        const pad = w.props[u.homeCell];
+        w.under[u.homeCell] = pad;
+        this.markUnder(u.homeCell, pad, true);
+      }
       w.props[u.homeCell] = name;
       const hc = this.propCell(u.homeCell);
       const hx = (hc % n) - half + 0.5, hz = Math.floor(hc / n) - half + 0.5;
@@ -23204,6 +23400,7 @@ class Component extends DCLogic {
 
   stepPickups(dt) {
     if (!this.propGroup || !this.pos) return;
+    this.scanSwitches(dt);   // one pass for the whole room, so gate order never matters
     this.propGroup.children.forEach((g) => {
       const u = g.userData || {};
       const m = this.meta(u.obj);
@@ -23215,6 +23412,8 @@ class Component extends DCLogic {
       if (m.spin) g.rotation.y += dt * 2.2;
       if (m.effect === "break") { this.stepBreakable(g, u, m, dt); return; }
       if (m.effect === "swing") { this.stepSwing(g, u, m, dt); return; }
+      if (m.effect === "gate") { this.stepGate(g, u, m, dt); return; }
+      if (m.effect === "switch") return;      // scanSwitches already pressed or released it
       if (m.type === "SOLID") { this.stepSolidTouch(g, u, dt); return; }
       g.position.y = (u.baseY || 0) + (m.bob ? 0.16 + Math.sin(this.t * 3 + (u.cell || 0)) * 0.08 : 0);
       const near = Math.hypot(this.pos.x - g.position.x, this.pos.z - g.position.z) < 1.15;
@@ -23249,6 +23448,107 @@ class Component extends DCLogic {
     }
     this.stepSolidTouch(g, u, dt);
   }
+  // ── Switches and gates ────────────────────────────────────────────────────
+  // A SWITCH is a weight pad; a GATE is a wall that listens to one. They are paired by
+  // CHANNEL (1-8), so a room can hold eight independent puzzles, and EVERY switch on a
+  // channel must be held for its gates to open — one switch is the simple case, three
+  // switches is the three-block puzzle, with no rule wiring in Logic. Gates reuse the same
+  // doorOpen map swing doors use, so an open gate stops being a wall the moment it clears.
+  scanSwitches(dt) {
+    const chan = this._chanHeld = {};
+    if (!this.propGroup) return;
+    const blocks = [];
+    this.propGroup.children.forEach((g) => {
+      const u = g.userData || {};
+      if (g.visible && this.isPushable(this.meta(u.obj))) blocks.push(g);
+    });
+    this.propGroup.children.forEach((g) => {
+      const u = g.userData || {};
+      const m = this.meta(u.obj);
+      if (!m || m.effect !== "switch" || !g.visible) return;
+      const c = this.propChannel(u.cell, m, u);
+      const rec = chan[c] = chan[c] || { n: 0, on: 0 };
+      rec.n++;
+      const base = u.baseY || 0;
+      // A block counts when it is standing ON the plate — same floor, not on a ledge above it.
+      const onBlock = blocks.some((b) => Math.abs(b.position.x - g.position.x) < 0.6
+        && Math.abs(b.position.z - g.position.z) < 0.6
+        && Math.abs(b.position.y - base) < 1.2);
+      const onFoot = !!this.pos && !this.swimming
+        && Math.hypot(this.pos.x - g.position.x, this.pos.z - g.position.z) < 0.62
+        && Math.abs((this.py || 0) - base) < 1.2;
+      const pop = Math.max(0, +this.propOwn(u, u.cell, "gap", m.respawn == null ? 0 : m.respawn));
+      const latch = +this.propOwn(u, u.cell, "lat", m.latch ? 1 : 0) > 0;
+      if (onBlock || onFoot) { u.swHold = true; u.swT = 0; }
+      else if (u.swHold && !latch) {
+        // Take the weight off and the switch comes up — at once unless HOLD AFTER keeps it
+        // down a moment longer. Its gates shut behind it, which is the whole point of a switch.
+        u.swT = (u.swT || 0) + dt;
+        if (u.swT >= pop) u.swHold = false;
+      }
+      if (!!u.swHold !== !!u.swWas) {
+        u.swWas = !!u.swHold;
+        this.sfx(u.swHold ? "key" : "step");
+        this.fireEvent("touch_prop", { filter: u.obj });
+        this.push("switch " + c + (u.swHold ? " pressed" : " released"), u.swHold ? "success" : "muted");
+      }
+      g.position.y = base - (u.swHold ? 0.07 : 0);   // it visibly sits down
+      if (u.swHold) rec.on++;
+    });
+  }
+  // A pad parked under a block reads its tuning off the mesh; everything else off the map.
+  propOwn(u, cell, key, fallback) {
+    const v = u && u.recP ? u.recP[key] : undefined;
+    return v != null ? v : this.propProp(cell, key, fallback);
+  }
+  propChannel(cell, m, u) {
+    const c = Math.round(+this.propOwn(u, cell, "amt", m && m.amount != null ? m.amount : 1));
+    return Math.max(1, Math.min(8, c || 1));
+  }
+  // Covering a pad moves its per-placement tuning onto the mesh, because props[key] now holds
+  // the BLOCK's record and the pad can no longer read its own channel off the map. Matched by
+  // cell AND object name so a mid-run rebuild (where the block wins the key) cannot stamp the
+  // block instead. Uncovering hands the pad back to the map.
+  markUnder(key, rec, on) {
+    const nm = typeof rec === "string" ? rec : (rec && rec.n);
+    if (!nm || !this.propGroup) return;
+    this.propGroup.children.forEach((g) => {
+      const u = g.userData;
+      if (!u || u.obj !== nm || +u.cell !== +key) return;
+      u.under = !!on;
+      u.recP = on ? ((typeof rec === "string" ? null : rec.p) || null) : null;
+    });
+  }
+  // Flat, and not a wall: the one kind of prop a block may be shoved ONTO. That is the puzzle.
+  isFloorPad(rec) {
+    const nm = typeof rec === "string" ? rec : (rec && rec.n);
+    if (!nm) return false;
+    const m = this.meta(nm);
+    return !!m && m.type === "PAD" && !m.blocks && this.objTop(nm) <= 0.45;
+  }
+  chanOpen(c) { const r = (this._chanHeld || {})[c]; return !!r && r.n > 0 && r.on >= r.n; }
+
+  stepGate(g, u, m, dt) {
+    const c = this.propChannel(u.cell, m, u);
+    const span = Math.max(0.08, +this.propOwn(u, u.cell, "gap", m.respawn == null ? 0.6 : m.respawn));
+    if (u.gateH == null) {
+      const b = new THREE.Box3().setFromObject(g);
+      u.gateH = Math.max(0.5, b.max.y - b.min.y);
+    }
+    const open = this.chanOpen(c);
+    u.gateT = Math.max(0, Math.min(1, (u.gateT || 0) + (open ? dt : -dt) / span));
+    g.position.y = (u.baseY || 0) - (u.gateH + 0.25) * u.gateT;
+    // Half sunk is the moment it stops being a wall — earlier and you clip the bars.
+    const through = u.gateT > 0.55;
+    this.doorOpen = this.doorOpen || {};
+    if (!!this.doorOpen[u.cell] !== through) {
+      this.doorOpen[u.cell] = through;
+      this.sfx(through ? "key" : "hit");
+      this.push("gate " + c + (through ? " open" : " shut"), through ? "success" : "warn");
+    }
+    this.stepSolidTouch(g, u, dt);
+  }
+
   // ── Vehicles ──────────────────────────────────────────────────────────────
   // Any object whose effect is "drive" is a vehicle. It is an ordinary placement until you
   // board it; from then until you step out the placement is suspended (it stops blocking,
@@ -23463,9 +23763,40 @@ class Component extends DCLogic {
     });
     return best;
   }
+  // A locked door spends its keys ONCE. u.unlocked lives on the placement for the length of
+  // the run, so shutting a door you opened never charges you twice, and STOP relocks the room.
+  // Read through propOwn, so a placement's own NEEDS KEY beats the object's default.
+  doorNeed(u, m) {
+    return Math.max(0, Math.round(+this.propOwn(u, u.cell, "lock", m && m.lock != null ? m.lock : 0)));
+  }
+  propLocked(u, m) { const need = this.doorNeed(u, m); return need > 0 && !u.unlocked; }
+
+  doorUnlock(u, m) {
+    const need = this.doorNeed(u, m);
+    if (!need || u.unlocked) return true;
+    const have = (this.inv && this.inv.keys) || 0;
+    const word = need === 1 ? " key" : " keys";
+    if (have < need) {
+      // Walking into a locked chest calls this every frame — one line and one clunk a second.
+      const now = this.t || 0;
+      if (!u.lockNag || now - u.lockNag > 1.2 || now < u.lockNag) {
+        u.lockNag = now;
+        this.push("Locked \u00b7 needs " + need + word + ", you have " + have, "warn");
+        this.sfx("hit");
+      }
+      return false;
+    }
+    this.inv.keys = have - need;
+    u.unlocked = true;
+    this.sfx("key");
+    this.push("Unlocked with " + need + word + " \u00b7 " + this.inv.keys + " left", "success");
+    return true;
+  }
+
   toggleDoor(g) {
     if (!g || !g.userData) return false;
     const u = g.userData;
+    if (!u.open && !this.doorUnlock(u, this.meta(u.obj))) return false;
     u.open = !u.open;
     this.doorOpen = this.doorOpen || {};
     this.doorOpen[u.cell] = u.open;
@@ -23590,7 +23921,8 @@ class Component extends DCLogic {
     }
     if (m.effect === "warp") {
       if (u.onPad || (this.warpLock || 0) > 0) return;
-      u.onPad = true;
+      u.onPad = true;                       // set first, so a locked door says so once, not every frame
+      if (!this.doorUnlock(u, m)) return;
       // this placement's own target wins over the object definition's default
       this.warpTo(this.doorTargetIndex(u.cell, m));
       return;
@@ -23607,10 +23939,13 @@ class Component extends DCLogic {
     const inv = this.inv;
     const amt = m.amount == null ? 1 : m.amount;
     // PUSH is a behaviour, not a prize — it must survive being walked into whatever TYPE says
-    if (m.effect === "push") return;
+    if (m.effect === "push") return false;
+    // A locked chest is shut until you carry the keys. Same reader the doors use, so a
+    // placement's own NEEDS KEY wins and the spend happens once per run.
+    if (!this.doorUnlock(u, m)) return false;
     const label = (u.obj || "item").toLowerCase();
     if (m.effect === "heal") {
-      if (this.hp >= this.maxHp) return;
+      if (this.hp >= this.maxHp) return false;
       this.bump("healing", amt);
       this.hp = Math.min(this.maxHp, this.hp + amt);
       this.push(label + " · +" + amt + " hp", "success");
@@ -23633,14 +23968,14 @@ class Component extends DCLogic {
     else if (m.effect === "resetpush") {
       // a pad, not a pickup: it stays put and can be used again on the next attempt
       this.padReset(g, true);
-      return;
+      return true;
     }
     else if (m.effect === "checkpoint") {
-      if (this.checkpoint && this.checkpoint === u.cell) return;
+      if (this.checkpoint && this.checkpoint === u.cell) return false;
       this.checkpoint = u.cell;
       this.push("checkpoint set", "success");
       this.fireEvent("checkpoint", { filter: u.obj });
-      return;
+      return true;
     }
     g.visible = false;
     u.taken = m.respawn > 0 ? m.respawn : 1e9;
@@ -23648,6 +23983,7 @@ class Component extends DCLogic {
     this.fireEvent("pickup", { filter: u.obj });
     const evt = { coin: "collect_coin", key: "collect_key", ammo: "collect_ammo", heal: "heal" }[m.effect];
     if (evt) this.fireEvent(evt, { filter: u.obj });
+    return true;
   }
 
   placeRig(n) {
@@ -26235,7 +26571,11 @@ class Component extends DCLogic {
         const g = this.nearNpc();
         if (!g) {
           const d = this.nearDoor();
-          return d ? (d.userData.open ? "CLOSE DOOR" : "OPEN DOOR") : null;
+          if (!d) return null;
+          const du = d.userData;
+          const need = this.doorNeed(du, this.meta(du.obj));
+          if (du.open) return "CLOSE DOOR";
+          return need && !du.unlocked ? "UNLOCK · " + need + (need === 1 ? " KEY" : " KEYS") : "OPEN DOOR";
         }
         const def = g.userData.def || {};
         const mark = def.quest ? this.questMarker(def.quest) : null;
@@ -27149,7 +27489,7 @@ class Component extends DCLogic {
       })()),
       objHeightLevels: this.objLevels(this.state.object) + (this.objLevels(this.state.object) === 1 ? " LEVEL" : " LEVELS"),
       objHeightUnits: this.objTop(this.state.object).toFixed(2) + "u tall",
-      objTypes: ["SOLID", "PICKUP", "HAZARD", "PAD"].map((t) => ({
+      objTypes: ["HAZARD", "PAD", "PICKUP", "SOLID"].map((t) => ({
         name: t,
         onClick: () => { this.objectMeta[this.state.object].type = t; this.touched = true; this.queueSave(); this.forceUpdate(); },
         style: this.pill(this.meta(this.state.object).type === t, "#59e391", true),
@@ -27167,9 +27507,9 @@ class Component extends DCLogic {
           onClick: () => {
             const m = this.objectMeta[this.state.object];
             m.effect = id;
-            if (id === "swing" || id === "ramp") m.type = "SOLID";   // a door and a ramp are walls that move you, not pickups
+            if (id === "swing" || id === "ramp" || id === "gate") m.type = "SOLID";   // a door, a gate and a ramp are walls that move you, not pickups
             else if (!haz && id !== "none") m.type = "PICKUP";
-            if (haz) m.type = (id === "launch" || id === "push" || id === "start" || id === "finish") ? "PAD" : (id === "break" ? "SOLID" : "HAZARD");
+            if (haz) m.type = (id === "launch" || id === "push" || id === "start" || id === "finish" || id === "switch") ? "PAD" : (id === "break" ? "SOLID" : "HAZARD");
             this.forceUpdate();
           },
           style: this.pill(this.meta(this.state.object).effect === id, haz ? "#ff6f91" : "#f8d66d"),
@@ -27181,6 +27521,15 @@ class Component extends DCLogic {
         if (m.effect === "swing") return [
           this.sliderRow("obj", "amount", "OPEN ANGLE", 20, 160, 5, m.amount == null ? 90 : m.amount, "\u00b0"),
           this.sliderRow("obj", "respawn", "SWING TIME", 0.1, 3, 0.05, m.respawn == null ? 0.5 : m.respawn, "s"),
+          this.sliderRow("obj", "lock", "NEEDS KEYS", 0, 3, 1, m.lock == null ? 0 : m.lock, ""),
+        ];
+        if (m.effect === "gate") return [
+          this.sliderRow("obj", "amount", "CHANNEL", 1, 8, 1, m.amount == null ? 1 : m.amount, ""),
+          this.sliderRow("obj", "respawn", "RAISE TIME", 0.1, 3, 0.05, m.respawn == null ? 0.6 : m.respawn, "s"),
+        ];
+        if (m.effect === "switch") return [
+          this.sliderRow("obj", "amount", "CHANNEL", 1, 8, 1, m.amount == null ? 1 : m.amount, ""),
+          this.sliderRow("obj", "respawn", "HOLD AFTER", 0, 6, 0.5, m.respawn == null ? 0 : m.respawn, "s"),
         ];
         if (m.effect === "ramp") return [this.sliderRow("obj", "amount", "RISE", 1, 4, 1, m.amount == null ? 1 : m.amount, " levels")];
         if (m.effect === "climb") return [this.sliderRow("obj", "amount", "HEIGHT", 1, 6, 1, m.amount == null ? 1 : m.amount, " levels")];
@@ -27188,11 +27537,24 @@ class Component extends DCLogic {
           this.sliderRow("obj", "speed", "TOP SPEED", 3, 30, 0.5, m.speed == null ? 11 : m.speed, "u/s"),
           this.sliderRow("obj", "turn", "TURN SPEED", 0.4, 5, 0.1, m.turn == null ? 2 : m.turn, "r/s"),
         ];
-        if (!haz) return [
-          this.sliderRow("obj", "amount", "AMOUNT", 0, 100, 1, m.amount, ""),
-          this.sliderRow("obj", "respawn", "RESPAWN", 0, 30, 0.5, m.respawn, "s"),
+        // A pushable BLOCK reads neither: AMOUNT is the conveyor's BELT SPEED and a block is
+        // never collected, so it never respawns. Showing them meant two live sliders that did
+        // nothing but record stray edits on the object.
+        if (this.isPushable(m)) return [];
+        if (!haz) {
+          const rows = [
+            this.sliderRow("obj", "amount", "AMOUNT", 0, 100, 1, m.amount, ""),
+            this.sliderRow("obj", "respawn", "RESPAWN", 0, 30, 0.5, m.respawn, "s"),
+          ];
+          // A lock only means something to a prop that is picked up — never to scenery.
+          if (m.type === "PICKUP" && m.effect !== "none")
+            rows.push(this.sliderRow("obj", "lock", "NEEDS KEYS", 0, 3, 1, m.lock == null ? 0 : m.lock, ""));
+          return rows;
+        }
+        if (m.effect === "warp") return [
+          this.sliderRow("obj", "amount", "TARGET ROOM", 1, this.MAX_ROOMS, 1, m.amount, ""),
+          this.sliderRow("obj", "lock", "NEEDS KEYS", 0, 3, 1, m.lock == null ? 0 : m.lock, ""),
         ];
-        if (m.effect === "warp") return [this.sliderRow("obj", "amount", "TARGET ROOM", 1, this.MAX_ROOMS, 1, m.amount, "")];
         if (m.effect === "start" || m.effect === "finish") return [this.sliderRow("obj", "wide", "LINE WIDTH", 1, 8, 1, m.wide == null ? 3 : m.wide, " cells")];
         const aLabel = m.effect === "launch" ? "LAUNCH POWER" : m.effect === "push" ? "PUSH SPEED" : m.effect === "break" ? "HIT POINTS" : "DAMAGE";
         const rows = [this.sliderRow("obj", "amount", aLabel, 0, m.effect === "break" ? 200 : 100, 1, m.amount, "")];
@@ -27207,11 +27569,12 @@ class Component extends DCLogic {
           rows.push(this.sliderRow("obj", "range", m.effect === "sweep" ? "ARM LENGTH" : "RANGE", 0.5, 24, 0.5, m.range == null ? 10 : m.range, "u"));
         return rows;
       })(),
-      objFlags: ["spin", "bob", "blocks"].map((k) => {
+      objFlags: ["spin", "bob", "blocks"].concat(this.meta(this.state.object).effect === "switch" ? ["latch"] : []).map((k) => {
         const on = !!this.meta(this.state.object)[k];
         return {
-          label: k === "spin" ? "SPIN" : k === "bob" ? "BOB" : "BLOCKS MOVEMENT",
-          note: k === "spin" ? "idle turntable" : k === "bob" ? "float up and down" : "solid to the player",
+          label: k === "spin" ? "SPIN" : k === "bob" ? "BOB" : k === "latch" ? "STAYS DOWN" : "BLOCKS MOVEMENT",
+          note: k === "spin" ? "idle turntable" : k === "bob" ? "float up and down"
+            : k === "latch" ? "never comes back up — a one-way door" : "solid to the player",
           text: on ? "ON" : "OFF",
           onClick: () => { this.objectMeta[this.state.object][k] = !on; this.touched = true; this.queueSave(); this.forceUpdate(); },
           style: this.pill(on, on ? "#59e391" : "#6b6f8a", true),
@@ -27235,12 +27598,20 @@ class Component extends DCLogic {
           return "Vehicle \u00b7 press E to drive \u00b7 " + (m.speed == null ? 11 : m.speed) + " u/s top \u00b7 "
             + (m.turn == null ? 2 : m.turn) + " r/s steering";
         }
+        if (m.effect === "switch") return "Weight switch · channel " + Math.round(m.amount == null ? 1 : m.amount)
+          + " — a pushable block standing on it holds it down, and so do you. "
+          + (m.latch ? "Stays down once pressed \u2014 a one-way door."
+            : (m.respawn || 0) > 0 ? "Comes back up " + m.respawn + "s after the weight leaves, shutting its gates."
+            : "Comes back up the moment the weight leaves, shutting its gates.");
+        if (m.effect === "gate") return "Gate · channel " + Math.round(m.amount == null ? 1 : m.amount)
+          + " — a wall while shut, sinks into the floor while every switch on the channel is held. Place two side by side for a wider opening.";
         if (m.effect === "resetpush") return "Reset pad — stand on it, or press F (X on a pad), to send every pushable in the room back to its placed cell.";
         if (m.type === "HAZARD" || m.type === "PAD" || m.effect === "break") {
           const h = (HAZARD_EFFECTS.find((p) => p[0] === m.effect) || [])[1] || "";
           if (m.effect === "warp") {
             const t = this.rooms()[Math.round(m.amount) - 1];
-            return "Door · walk in to reach " + (t ? t.name : "room " + m.amount + " (not created yet)");
+            return "Door · walk in to reach " + (t ? t.name : "room " + m.amount + " (not created yet)")
+              + ((m.lock || 0) > 0 ? " · needs " + m.lock + (m.lock === 1 ? " key" : " keys") + ", spent on the first use" : "");
           }
           if (m.effect === "start") return "Race \u00b7 crossing it starts the clock \u00b7 " + (m.wide == null ? 3 : m.wide) + " cells wide";
           if (m.effect === "finish") return "Race \u00b7 crossing it takes the lap time \u00b7 " + (m.wide == null ? 3 : m.wide) + " cells wide";
@@ -27250,11 +27621,14 @@ class Component extends DCLogic {
             (m.blocks ? " · blocks movement" : "");
         }
         if (m.effect === "push") return "Pushable — hold F (X on a pad) and walk into it to slide it one tile. Never collected, and STOP puts it back.";
-        if (m.effect === "swing") return "Door · two tiles wide · press E to swing it open, blocks while shut";
+        if (m.effect === "swing") return "Door · two tiles wide · press E to swing it open, blocks while shut"
+          + ((m.lock || 0) > 0 ? " · needs " + m.lock + (m.lock === 1 ? " key" : " keys") + ", spent on the first open" : "");
         if (m.type !== "PICKUP" || m.effect === "none") return "Scenery — sits in the room, no pickup.";
+        const lockNote = (m.lock || 0) > 0
+          ? " · locked: needs " + m.lock + (m.lock === 1 ? " key" : " keys") + ", spent on the first open" : "";
         const e = (PICKUP_EFFECTS.find((p) => p[0] === m.effect) || [])[1] || "";
         return "Touch to collect · " + e + " × " + m.amount +
-          (m.respawn > 0 ? " · returns after " + m.respawn + "s" : " · gone for good");
+          (m.respawn > 0 ? " · returns after " + m.respawn + "s" : " · gone for good") + lockNote;
       })(),
       onObjectReset: () => {
         this.touched = true; this.queueSave();
@@ -29630,9 +30004,12 @@ class Component extends DCLogic {
         style: this.pill(this.state.gripHand === side, "#f8d66d"),
       })),
       holdSliders: [
+        this.sliderRow("hold", "x", "OFFSET X", -0.4, 0.4, 0.01, S.grip[this.state.gripHand].x || 0, ""),
+        this.sliderRow("hold", "y", "OFFSET Y", -0.4, 0.4, 0.01, S.grip[this.state.gripHand].y || 0, ""),
+        this.sliderRow("hold", "z", "OFFSET Z", -0.4, 0.4, 0.01, S.grip[this.state.gripHand].z || 0, ""),
         this.sliderRow("hold", "pitch", "PITCH", -3.14, 3.14, 0.05, S.grip[this.state.gripHand].pitch, "r"),
-        this.sliderRow("hold", "yaw", "YAW", -3.14, 3.14, 0.05, S.grip[this.state.gripHand].yaw, "r"),
         this.sliderRow("hold", "roll", "ROLL", -3.14, 3.14, 0.05, S.grip[this.state.gripHand].roll, "r"),
+        this.sliderRow("hold", "yaw", "YAW", -3.14, 3.14, 0.05, S.grip[this.state.gripHand].yaw, "r"),
         this.sliderRow("hold", "size", "GRIP SIZE", 0.4, 2, 0.05, S.grip[this.state.gripHand].size, "×"),
       ].map((s) => ((this.state.gripHand === "R" ? S.heldR : S.heldL) === "NONE"
         ? Object.assign({}, s, { onDown: undefined, track: Object.assign({}, s.track, { opacity: 0.35, cursor: "default" }) })
