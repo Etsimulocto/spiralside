@@ -10780,7 +10780,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.5";
+  ENGINE = "bloom3d/0.3.6";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -11948,11 +11948,50 @@ class Component extends DCLogic {
     try { return new URLSearchParams(location.search).has(name); } catch (e) { return false; }
   }
   safeMode() { return this._safe != null ? this._safe : (this._safe = this.flag("safe")); }
+  // Phase bookkeeping. Each phase() closes the previous phase's books, so a slow frame can
+  // say WHERE the time went. It could not before: the guard read `_lastPhase` at measure
+  // time, and measuring happens after the last phase() call of the frame — which is always
+  // phase("idle"). Every slow frame therefore blamed idle, whatever actually ran. The label
+  // was never a diagnosis, it was a timestamp of the reporting code.
+  phaseClose() {
+    const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+    if (this._lastPhase != null) {
+      const b = this._phaseMs || (this._phaseMs = {});
+      b[this._lastPhase] = (b[this._lastPhase] || 0) + (now - (this._phaseT0 == null ? now : this._phaseT0));
+    }
+    this._phaseT0 = now;
+  }
   phase(p) {
+    this.phaseClose();
     this._lastPhase = p;
     // Writing the title every frame costs real time — only do it when asked to trace.
     if (this._trace == null) this._trace = this.flag("trace");
     if (this._trace) { try { document.title = "bloom · " + p; } catch (e) {} }
+  }
+  // Opens a frame's books. Work before the frame's first phase() call — pad polling,
+  // stepPlay, pickups — is real frame time and has to land somewhere, so it lands here.
+  phaseFrame(p) { this._phaseMs = {}; this._phaseT0 = this._frameT0; this._lastPhase = p; }
+  // Slowest first, sub-ms phases dropped: the point is which one ate the frame.
+  phaseReport() {
+    const b = this._phaseMs || {};
+    const rows = Object.keys(b).map((k) => [k, b[k]]).filter((r) => r[1] >= 1).sort((x, y) => y[1] - x[1]);
+    return rows.length ? rows.map((r) => r[0] + " " + Math.round(r[1]) + "ms").join(", ") : "nothing over 1ms";
+  }
+  // What the frame was carrying when it ran long. A cost that CLIMBS across a session is a
+  // different bug from a cost that is simply high, and these are the counts that would show
+  // it — geometries and textures especially, which only climb if something is not disposed.
+  frameScale() {
+    const out = [];
+    try {
+      const m = this.renderer && this.renderer.info ? this.renderer.info.memory : null;
+      if (m) out.push("geo " + m.geometries, "tex " + m.textures);
+      const r = this.renderer && this.renderer.info ? this.renderer.info.render : null;
+      if (r) out.push("draws " + r.calls);
+      if (this.scene) out.push("scene " + this.scene.children.length);
+      if (this.enemyGroup) out.push("bodies " + this.enemyGroup.children.length);
+      out.push("tool " + this.state.tool + (this.state.running ? " · running" : ""));
+    } catch (e) {}
+    return out.join(", ");
   }
 
   componentDidMount() {
@@ -12959,6 +12998,7 @@ class Component extends DCLogic {
       this._lastFrameAt = now;
     }
     this._frameT0 = typeof performance !== "undefined" ? performance.now() : Date.now();
+    this.phaseFrame("step");
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
     this.t += dt;
@@ -13024,13 +13064,15 @@ class Component extends DCLogic {
     // is genuinely wedged, and killing the app for a single hiccup left the viewport blank
     // with no way back except a reload that stalled again.
     if (spent > 500 && !this.flag("noguard")) {
+      this.phaseClose();   // close idle's books so the breakdown covers the whole frame
       this._slowRun = (this._slowRun || 0) + 1;
       if (this._slowRun === 1)
-        console.warn("[bloom] slow frame: " + Math.round(spent) + "ms in phase " + this._lastPhase);
+        console.warn("[bloom] slow frame: " + Math.round(spent) + "ms — " + this.phaseReport()
+          + " · " + this.frameScale());
       if (this._slowRun >= 4) {
         this._slowRun = 0;
         this.phase("STALLED:" + this._lastPhase);
-        console.warn("[bloom] four slow frames in a row (" + Math.round(spent) + "ms in " + this._lastPhase + ") — frame loop paused. Click the viewport to resume, or reload with ?noguard.");
+        console.warn("[bloom] four slow frames in a row (" + Math.round(spent) + "ms — " + this.phaseReport() + ") — frame loop paused. Click the viewport to resume, or reload with ?noguard.");
         this.push("Frame loop paused after four slow frames in " + this._lastPhase + ". Click the viewport to resume.", "danger");
         this.loopStopped = true;
         this.forceUpdate();
@@ -15337,9 +15379,33 @@ class Component extends DCLogic {
     // the more reliable side to build. "bloom3d:none" is the ack for a visitor who owns
     // nothing, and stops the announce just as a grant does.
     let tries = 0;
+    // Posting to every allowed origin guarantees a red console error on every attempt — the
+    // browser logs the targetOrigin mismatch for the one that is not the parent, four times
+    // a session. Nothing breaks (the matching post lands), but a false error in the log is a
+    // trap for whoever is chasing a real one later. So learn the parent's origin and post
+    // once. ancestorOrigins is the direct read; the referrer is the fallback. NEITHER is
+    // trusted for anything: a wrong answer costs us the announce and nothing else, because
+    // every INBOUND message is still exact-matched against UNLOCK_HOSTS in _unlockMsg. If
+    // the origin cannot be read at all — Firefox has no ancestorOrigins, a no-referrer host
+    // sends none — we fall back to the old ladder, errors and all, rather than not announce.
+    const parentOrigin = () => {
+      try {
+        const ao = window.location.ancestorOrigins;
+        if (ao && ao.length && this.UNLOCK_HOSTS.indexOf(ao[0]) >= 0) return ao[0];
+      } catch (e) {}
+      try {
+        if (document.referrer) {
+          const o = new URL(document.referrer).origin;
+          if (this.UNLOCK_HOSTS.indexOf(o) >= 0) return o;
+        }
+      } catch (e) {}
+      return null;
+    };
+    const known = parentOrigin();
+    const targets = known ? [known] : this.UNLOCK_HOSTS;
     const announce = () => {
       if (this._unlockAck) return;
-      this.UNLOCK_HOSTS.forEach((o) => {
+      targets.forEach((o) => {
         try { window.parent.postMessage({ type: "bloom3d:ready", v: 1 }, o); } catch (e) {}
       });
       if (++tries < 4) this._unlockTid = setTimeout(announce, tries * 400);
