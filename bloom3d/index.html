@@ -2719,6 +2719,37 @@
                   <div style="font-size:8px;line-height:1.6;color:#3f4460;text-wrap:pretty">With MONO up, one colour stays — everything else drains to grey. SPREAD widens how much of that colour counts.</div>
                 </div>
               </div>
+              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <div style="font-family:'Silkscreen',monospace;font-size:10px;letter-spacing:2px;color:#e7e2f5">CROSSHAIR</div>
+                  <div style="{{ xhairPrev }}">
+                    <div style="{{ xhairPrevV }}"></div>
+                    <div style="{{ xhairPrevH }}"></div>
+                    <div style="{{ xhairPrevDot }}"></div>
+                  </div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:1px;color:#5b6079">{{ xhairNote }}</div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:4px">
+                  <sc-for list="{{ xhairSwatches }}" as="c" hint-placeholder-count="16">
+                    <div style="{{ c.style }}" onClick="{{ c.onClick }}" title="{{ c.name }}">{{ c.glyph }}</div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:8px;letter-spacing:2px;text-transform:uppercase;color:#5b6079">sprite</div>
+                  <div style="{{ xhairTex.btnStyle }}" onClick="{{ xhairTex.onToggle }}">{{ xhairTex.label }}</div>
+                  <sc-if value="{{ xhairTex.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="max-height:118px;overflow-y:auto;display:flex;flex-direction:column;gap:2px;border:1px solid #1b1f36;background:#0b0e1a;padding:3px">
+                      <sc-for list="{{ xhairTex.list }}" as="t" hint-placeholder-count="3">
+                        <div style="{{ t.style }}" onClick="{{ t.onClick }}">{{ t.name }}</div>
+                      </sc-for>
+                      <sc-if value="{{ xhairTex.empty }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size:8px;color:#5b6079;padding:4px;line-height:1.6">No saved textures yet — make one in the TEXTURES tool.</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+                <div style="font-size:8px;line-height:1.7;color:#3f4460;text-wrap:pretty">A sprite replaces the drawn cross and ignores the colour — its own pixels are the art, scaled into the size box. CROSSHAIR SIZE is in the list below.</div>
+              </div>
               <div style="background:#0b0e1a;border:1px solid #2b3150;display:flex;flex-direction:column">
                 <sc-for list="{{ settingRows }}" as="s" hint-placeholder-count="8">
                   <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;padding:9px 11px;border-bottom:1px solid #1b1f36">
@@ -3087,16 +3118,46 @@
                 </sc-for>
               </div>
             </div>
-            <div style="flex:1;min-height:200px;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:14px">
+            <sc-if value="{{ facePaint }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:7px 13px;border-bottom:1px solid #1b1f36;flex:0 0 auto">
+                <div style="display:flex;gap:4px;flex-wrap:nowrap;flex:0 0 auto">
+                  <sc-for list="{{ faceSizes }}" as="sz" hint-placeholder-count="3">
+                    <div style="{{ sz.style }}" onClick="{{ sz.onClick }}" title="{{ sz.tip }}">{{ sz.name }}</div>
+                  </sc-for>
+                </div>
+                <div style="width:1px;height:14px;background:#1b1f36;flex:0 0 auto"></div>
+                <div style="display:flex;gap:4px;flex-wrap:nowrap;flex:0 0 auto">
+                  <sc-for list="{{ texMirrors }}" as="mr" hint-placeholder-count="2">
+                    <div style="{{ mr.style }}" onClick="{{ mr.onClick }}" title="{{ mr.tip }}">{{ mr.name }}</div>
+                  </sc-for>
+                </div>
+                <div style="width:1px;height:14px;background:#1b1f36;flex:0 0 auto"></div>
+                <div style="{{ texInkChip }}" onClick="{{ onTexInkPick }}" title="Open the colour picker on the selected slot — the same palette the Textures tool paints from">
+                  <div style="{{ texInkChipDot }}"></div>
+                  <span>EDIT INK</span>
+                </div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.5px;color:#8f93af;white-space:nowrap">{{ texInkLabel }}</div>
+                <div style="flex:1 1 auto"></div>
+              </div>
+            </sc-if>
+            <div style="flex:1;min-height:200px;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px">
               <div style="{{ faceStageStyle }}">
                 <canvas ref="{{ faceCanvasRef }}" width="512" height="512" onPointerDown="{{ onFaceDown }}" onPointerMove="{{ onFaceMove }}" onPointerUp="{{ onFaceUp }}" style="{{ faceCanvasStyle }}"></canvas>
                 <sc-if value="{{ facePaint }}" hint-placeholder-val="{{ false }}">
                   <div style="{{ faceGridStyle }}"></div>
                 </sc-if>
               </div>
+              <sc-if value="{{ facePaint }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:4px;align-items:center;align-self:stretch;max-height:100%;padding:5px 3px;background:#0e1120;border:1px solid #1b1f36;flex:0 0 auto">
+                  <div style="font-size:6px;letter-spacing:1px;color:#5b6079;flex:0 0 auto">OPQ</div>
+                  <input type="range" min="2" max="100" step="1" value="{{ texAlphaVal }}" onInput="{{ onTexAlpha }}" onChange="{{ onTexAlpha }}" style="{{ texAlphaTrack }}" title="Brush opacity — a see-through stroke lets the skin read through" />
+                  <div style="{{ texAlphaSwatch }}"><div style="{{ texAlphaFill }}"></div></div>
+                  <div style="font-family:'JetBrains Mono',monospace;font-size:7px;color:#8f93af;flex:0 0 auto">{{ texAlphaLabel }}</div>
+                </div>
+              </sc-if>
             </div>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 13px;border-top:1px solid #1b1f36;flex:0 0 auto">
-              <div style="{{ facePaintBtn }}" onClick="{{ onFacePaintMode }}" title="Draw straight onto a 64×64 layer under the features">✎ PAINT</div>
+              <div style="{{ facePaintBtn }}" onClick="{{ onFacePaintMode }}" title="Draw straight onto a pixel layer under the features — 16, 32 or 64 a side">✎ PAINT</div>
               <sc-if value="{{ facePaint }}" hint-placeholder-val="{{ false }}">
                 <div style="{{ faceEraseBtn }}" onClick="{{ onFaceErase }}" title="Erase pixels instead of painting">◌ ERASE</div>
                 <div style="display:flex;gap:3px;flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:2px">
@@ -3131,6 +3192,12 @@
                 <div style="display:flex;gap:4px;flex-wrap:nowrap;flex:0 0 auto">
                   <sc-for list="{{ texSizes }}" as="sz" hint-placeholder-count="3">
                     <div style="{{ sz.style }}" onClick="{{ sz.onClick }}">{{ sz.name }}</div>
+                  </sc-for>
+                </div>
+                <div style="width:1px;height:14px;background:#1b1f36;flex:0 0 auto"></div>
+                <div style="display:flex;gap:4px;flex-wrap:nowrap;flex:0 0 auto">
+                  <sc-for list="{{ texMirrors }}" as="mr" hint-placeholder-count="2">
+                    <div style="{{ mr.style }}" onClick="{{ mr.onClick }}" title="{{ mr.tip }}">{{ mr.name }}</div>
                   </sc-for>
                 </div>
                 <div style="flex:1 1 auto"></div>
@@ -7936,8 +8003,10 @@ const azBy = (pick) => (a, b) => {
   if (na !== nb) return na ? -1 : 1;
   return String(ka).localeCompare(String(kb));
 };
-const azId = azBy((r) => (Array.isArray(r) ? r[0] : r));      // pickers that show the id
-const azLabel = azBy((r) => (Array.isArray(r) ? r[1] : r));   // pickers that show a sentence
+// Three shapes of list live here: a bare string, a [id, label, …] tuple, and a record with
+// .key / .label. All three go through the same two comparators.
+const azId = azBy((r) => (Array.isArray(r) ? r[0] : (r && typeof r === "object" ? r.key : r)));
+const azLabel = azBy((r) => (Array.isArray(r) ? r[1] : (r && typeof r === "object" ? (r.label != null ? r.label : r.name) : r)));
 
 // ── PIECE LIBRARY ────────────────────────────────────────────────────────────
 // The six primitives above are the free grammar. Everything below is catalogue:
@@ -8461,7 +8530,7 @@ const MANUAL = [
     ["BACKUP", "The last auto-save, restorable in one tap when it exists."],
     ["UNLOCK", "Redeem a pack code, or see the packs a Spiralside account already grants. Stored per browser only \u2014 never in the project file, so a shared project cannot carry someone else's unlock."],
   ]],
-  ["Face", "Eyes, mouths, glasses and marks. The viewport becomes a paint page: features layer over a hand-drawn paint layer, and every feature carries its own six sliders. A target picker aims the tool at the hero, an NPC, an enemy or a boss.", [
+  ["Face", "Eyes, mouths, glasses and marks. The viewport becomes a paint page: features layer over a hand-drawn paint layer, and every feature carries its own six sliders. A target picker aims the tool at the hero, an NPC, an enemy or a boss. PAINT turns the page into a pixel grid with the same controls the Textures tool has, because it is the same brush: 16²/32²/64² sets the layer resolution and resamples what is already drawn, MIRROR X and MIRROR Y paint the reflected cell as you go, EDIT INK opens the colour picker on the selected palette slot, and the OPQ slider beside the picture is brush opacity — a see-through stroke lets the skin read through. Ink, palette, opacity and mirror mode are shared with Textures, so a colour mixed in one tool is already loaded in the other.", [
     ["EYES", "Eye decals plus the six sliders — SIZE, ROTATE, MOVE X, MOVE Y, OPACITY, GLOW."],
     ["BROWS", "Brow decals and the same six sliders. This is where most of a face's mood lives."],
     ["MOUTH", "Mouth decals and sliders."],
@@ -8520,7 +8589,7 @@ const MANUAL = [
   ["Objects", "Placeable props and set pieces — crates, doors, pickups, platforms, the board cabinet. You build the object here; you place copies of it in WORLD.", [
     ["PROPERTIES", "The one placement selected in the room. Values here belong to that copy alone — two doors from the same object can lead to two different rooms."],
     ["OBJECTS", "The premade library — pick which prop you are editing."],
-    ["BEHAVE", "What the prop does when touched — pickup, door, hazard, platform, water — and the settings each kind needs. Anything that opens carries NEEDS KEYS: a SWING DOOR will not swing, a warp DOOR will not take you through, and a CHEST — or any pickup — will not give up its prize until you are carrying that many keys, and opening it spends them. The spend happens once — the placement stays unlocked for the rest of the run, so shutting a door you opened is free — and every door relocks on STOP. Set it per doorway or per chest in PLACED, so one definition can be a locked gate in one room and an open arch in another."],
+    ["BEHAVE", "What the prop does when touched — pickup, door, hazard, platform, water — and the settings each kind needs. BOOST PAD is a PAD whose effect is BOOST: SPEED multiplies walk speed, TIME is how long it lasts after you run off, it stays put and works every lap, and crossing another tops the timer up rather than restarting it — the SPEED pickup is still the one-shot version. Anything that opens carries NEEDS KEYS: a SWING DOOR will not swing, a warp DOOR will not take you through, and a CHEST — or any pickup — will not give up its prize until you are carrying that many keys, and opening it spends them. The spend happens once — the placement stays unlocked for the rest of the run, so shutting a door you opened is free — and every door relocks on STOP. Set it per doorway or per chest in PLACED, so one definition can be a locked gate in one room and an open arch in another."],
     ["SWITCHES", "The puzzle pair, both set in BEHAVE. A SWITCH is a PAD whose effect is SWITCH: a pushable block standing on it holds it down, and so does the player. A GATE is a SOLID whose effect is GATE: a wall while shut, sinking into the floor while it is open. CHANNEL (1–8) is the wiring — every switch on a channel must be held for its gates to open, so one switch is the simple case and three switches is the three-block puzzle, no Logic rules involved. Take the weight off and a switch comes back up, and its gates shut behind it — HOLD AFTER keeps it down for a few seconds longer, and the STAYS DOWN flag latches it for the rest of the run for a one-way door. RAISE TIME is how long the gate takes to sink or rise. A flat pad is the one prop a block may be shoved onto: the pad steps under the block, keeps its own channel while covered, and comes back out when the block moves on. Both can be re-channelled per placement in PLACED, so two puzzles can share a room, and a run never rewrites the authored state — STOP shuts every gate again."],
     ["PUSHABLES", "The push setup, all in BEHAVE: effect PUSH on a SOLID or a PICKUP, with BLOCKS on. A block reads neither AMOUNT nor RESPAWN — AMOUNT is the conveyor’s belt speed and a block is never collected — so BEHAVE hides both sliders on one. It slides one tile per shove and stops at anything solid, at any other prop except a flat pad, and at a floor more than half a level up or down; a PUSH pickup is never collected, so it survives being walked into. The same PUSH effect on a HAZARD or a PAD is a conveyor belt instead and stays where you placed it. Pair pushables with RESET BLOCK — a PAD whose effect is RESETPUSH — to send every one in the room back to its placed cell; the pad fires when the player stands on it and when F (X on a pad) is pressed beside it, whatever TYPE it carries. The placed cell is home: a run never rewrites it, and STOP puts every block back. Push a block onto a SWITCH to open the GATE it shares a channel with."],
     ["PIECE", "Shape, paint, texture, opacity and placement of one piece of the mesh. OPACITY is what makes a piece see-through — water, glass, a ghost — and a see-through piece stops writing depth so the world behind it still sorts correctly."],
@@ -8544,9 +8613,10 @@ const MANUAL = [
   ]],
   ["Settings", "Theme, layout and input — a full page of switches. These are studio preferences, not game data.", [
     ["VIEWPORT FX", "Post effects on the render only — the HUD, badges and cursor sit above them and stay sharp. Five sliders: MONO drains the picture to black and white, PIXELATE, SCANLINE, SPREAD and VIGNETTE. Under them, KEEP COLOUR turns MONO into a spot-colour screen effect: BLUE, GOLD, GREEN, MAGENTA, RED or PICK for any colour you choose, and that colour survives while everything else goes grey — SPREAD sets how much of the colour counts, NONE is plain black and white. Grey keeps nothing, since grey is not a hue."],
-    ["THE SWITCH LIST", "Every preference under it, in one A–Z list rather than named groups: AUTO SPIN, CHAT, CHAT PRESETS ONLY, CRT SCANLINES, DEFAULT CAMERA, DOOR SIGNS, FPS CAP, FPS METER, GROUND GRID, INPUT, INVERT CAMERA Y, RESOLUTION, SELECTION BOX, SOUND, SPAWN DISC, TEXTURES, TOUCH PADS, UI SCALE, VOLUME. Each row carries its own one-line description."],
+    ["CROSSHAIR", "How the play reticle looks. The sixteen-slot paint row — plus the picker for any other colour — recolours the drawn cross, and SPRITE swaps it for any texture you have saved in the TEXTURES tool: the sprite's own pixels become the crosshair, so the colour no longer applies. Its SIDE face is the art, transparent pixels stay transparent, and repainting the texture updates the reticle. NONE · FLAT COLOUR puts the drawn cross back. Size lives in the switch list as CROSSHAIR SIZE (S / M / L) and a sprite is scaled into the same box, so the reticle covers the same screen either way. These are studio preferences, saved with the project."],
+    ["THE SWITCH LIST", "Every preference under it, in one A–Z list rather than named groups: AUTO SPIN, CHAT, CHAT PRESETS ONLY, CROSSHAIR SIZE, CRT SCANLINES, DEFAULT CAMERA, DOOR SIGNS, FPS CAP, FPS METER, GROUND GRID, INPUT, INVERT CAMERA Y, RESOLUTION, SELECTION BOX, SOUND, SPAWN DISC, TEXTURES, TOUCH PADS, UI SCALE, VOLUME. Each row carries its own one-line description."],
   ]],
-  ["Textures", "16x16 tile art. The viewport becomes a pixel grid. Each face paints on its own: TOP is the +Y lid, BOTTOM the underside, SIDE the four walls. The left rail holds one grid: PALETTE, this tile's sixteen colours and the set every pattern fill reads from. Slot order is functional, not cosmetic — a pattern pairs the slot you picked with the slot nine along, and that partner is outlined in the grid, so moving a colour to a different slot changes what it pairs with. Tap a slot to select it, then EDIT INK opens the colour picker on it: BASE, the studio's fixed palette shared with the Actor page, sits above RECENT, the sixteen colours you mixed before, and you can mix your own between them — APPLY writes to the selected slot. On a narrow screen the rail shrinks to a strip carrying the current colour, and ▶ opens it over the picture so the paint grid never gets squeezed out. RECENT is kept for you rather than for the project, so it follows you between games, and a swatch there can be removed four ways: the × on the swatch, ERASE mode, right-click, or a long press.", [
+  ["Textures", "16x16 tile art. The viewport becomes a pixel grid. Each face paints on its own: TOP is the +Y lid, BOTTOM the underside, SIDE the four walls. The left rail holds one grid: PALETTE, this tile's sixteen colours and the set every pattern fill reads from. Slot order is functional, not cosmetic — a pattern pairs the slot you picked with the slot nine along, and that partner is outlined in the grid, so moving a colour to a different slot changes what it pairs with. Tap a slot to select it, then EDIT INK opens the colour picker on it: BASE, the studio's fixed palette shared with the Actor page, sits above RECENT, the sixteen colours you mixed before, and you can mix your own between them — APPLY writes to the selected slot. On a narrow screen the rail shrinks to a strip carrying the current colour, and ▶ opens it over the picture so the paint grid never gets squeezed out. RECENT is kept for you rather than for the project, so it follows you between games, and a swatch there can be removed four ways: the × on the swatch, ERASE mode, right-click, or a long press. Above the picture, MIRROR X and MIRROR Y are drawing modes rather than transforms: with one on, every dab also paints its reflection across that centre line — both on gives four-way symmetry from a single stroke — and turning them off leaves what you already painted exactly as it is. A cell sitting on a centre line is written once, not twice, and a mirrored stroke is one undo step.", [
     ["SAVED", "Your texture bank, as real thumbnails — save the current tile into a slot or load one back."],
     ["TILE", "Which tile type you are painting, and which of its faces."],
     ["FILL", "Seed fills and clear. The palette slot you pick is the motif's main colour; its partner is the slot nine along, outlined in the grid."],
@@ -9206,6 +9276,12 @@ const OBJECT_DEFS = {
     { n: "BAR R", shape: "CYL", color: "#78a9ff", w: 0.1, h: 1.86, d: 0.1, x: 0.2, y: 0.93, z: 0, rx: 0, ry: 0, glow: 0.32 },
     { n: "CROSSBAR", shape: "BOX", color: "#8fd6ff", w: 0.8, h: 0.1, d: 0.12, x: 0, y: 0.95, z: 0, rx: 0, ry: 0, glow: 0.4 },
   ],
+  "BOOST PAD": [
+    { n: "PAD", shape: "BOX", color: "#1b1f36", w: 0.94, h: 0.12, d: 0.94, x: 0, y: 0.06, z: 0, rx: 0, ry: 0, glow: 0.05 },
+    { n: "LANE", shape: "BOX", color: "#37d0ff", w: 0.78, h: 0.05, d: 0.86, x: 0, y: 0.13, z: 0, rx: 0, ry: 0, glow: 0.45 },
+    { n: "CHEVRON A", shape: "CONE", color: "#59e391", w: 0.42, h: 0.3, d: 0.42, x: 0, y: 0.19, z: -0.18, rx: -1.5708, ry: 0, glow: 0.7 },
+    { n: "CHEVRON B", shape: "CONE", color: "#59e391", w: 0.42, h: 0.3, d: 0.42, x: 0, y: 0.19, z: 0.2, rx: -1.5708, ry: 0, glow: 0.7 },
+  ],
   SWITCH: [
     { n: "FRAME", shape: "BOX", color: "#1b1f36", w: 0.94, h: 0.1, d: 0.94, x: 0, y: 0.05, z: 0, rx: 0, ry: 0, glow: 0.04 },
     { n: "PLATE", shape: "BOX", color: "#f8d66d", w: 0.72, h: 0.1, d: 0.72, x: 0, y: 0.13, z: 0, rx: 0, ry: 0, glow: 0.42 },
@@ -9389,6 +9465,7 @@ const OBJECT_META = {
   STAIRS: { type: "SOLID", effect: "ramp", amount: 1, respawn: 0, range: 0, wide: 2, spin: false, bob: false, blocks: false },
   "START LINE": { type: "PAD", effect: "start", amount: 3, respawn: 0, range: 0, wide: 3, spin: false, bob: false, blocks: false },
   // channel pairs the two: amount is the CHANNEL, respawn the raise time / pop-back time
+  "BOOST PAD": { type: "PAD", effect: "boost", amount: 1.6, respawn: 3, range: 0, wide: 1, spin: false, bob: false, blocks: false },
   GATE: { type: "SOLID", effect: "gate", amount: 1, respawn: 0.6, range: 0, wide: 1, spin: false, bob: false, blocks: true },
   SWITCH: { type: "PAD", effect: "switch", amount: 1, respawn: 0, range: 0, wide: 1, spin: false, bob: false, blocks: false, latch: false },
   "SWING DOOR": { type: "SOLID", effect: "swing", amount: 90, respawn: 0.5, range: 0, wide: 2, spin: false, bob: false, blocks: true, lock: 0 },
@@ -9405,6 +9482,7 @@ const HAZARD_EFFECTS = [
   ["sweep", "spinning arm damages inside range"],
   ["launch", "throws the player upward"],
   ["push", "shoves the player along its facing"],
+  ["boost", "speed boost pad — run over it for a burst of speed"],
   ["switch", "weight switch — holds down while a pushable block (or you) stands on it"],
   ["break", "solid until destroyed by an attack"],
   ["warp", "sends the player to another room"],
@@ -9648,6 +9726,13 @@ const TUNE_BY_EFFECT = {
       { key: "gap", label: "RAISE TIME", hue: "#f8d66d", opts: [[0.25, "SNAP"], [0.6, "NORMAL"], [1.2, "SLOW"], [2.5, "GRIND"]] },
     ],
   },
+  boost: {
+    note: "This pad alone. SPEED multiplies walk speed while the boost lasts; TIME is how long it keeps running after you leave the pad.",
+    rows: [
+      { key: "amt", label: "SPEED", hue: "#59e391", opts: [[1.3, "1.3\u00d7"], [1.6, "1.6\u00d7"], [2, "2\u00d7"], [3, "3\u00d7"]] },
+      { key: "gap", label: "TIME", hue: "#f8d66d", opts: [[1, "1s"], [3, "3s"], [6, "6s"], [10, "10s"]] },
+    ],
+  },
   switch: {
     note: "This switch alone. CHANNEL is which gates it drives. Take the weight off and it comes back up, shutting its gates \u2014 HOLD AFTER keeps it down for a moment longer, and STAYS DOWN latches it for the rest of the run for a one-way door.",
     rows: [
@@ -9820,7 +9905,7 @@ const FACE_DEF = {
   pupS: 1, pupR: 0, pupX: 0, pupYo: 0, pupO: 1, pupG: 0,
   blushS: 1, blushR: 0, blushX: 0, blushYo: 0, blushO: 1, blushG: 0,
   lashS: 1, lashR: 0, lashX: 0, lashYo: 0, lashO: 1, lashG: 0,
-  paint: null, paintOn: false,
+  paint: null, paintOn: false, paintN: 64, paintA: null,
 };
 const FACE_N = 64;                                  // paint layer resolution
 // which decal family a transform group borrows its glow colour from
@@ -10035,9 +10120,10 @@ const SETTING_DEF = [
   { key: "invertY", label: "INVERT CAMERA Y", desc: "Right stick / arrows pitch the camera the other way", opts: ["OFF", "ON"] },
   { key: "defaultCam", label: "DEFAULT CAMERA", desc: "Camera used when entering play mode", opts: ["ORBIT", "DRONE", "EYES"] },
   { key: "input", label: "INPUT", desc: "Brains available to bind on the player body", opts: ["KB", "PAD", "BOTH"] },
+  { key: "xhairSize", label: "CROSSHAIR SIZE", desc: "How big the play crosshair is drawn — a sprite is scaled into the same box", opts: ["S", "M", "L"] },
 // One sort at the source, like every other list in the studio: the page and the console
 // readout both render from this array, so A-Z here is A-Z everywhere it is shown.
-].sort((a, b) => a.label.localeCompare(b.label));
+].sort(azLabel);
 // Spot colour: one hue survives the drain to grey. The mask weights are DERIVED from the
 // colour (see fxWeights) rather than hand-written, so the five presets and a hand-picked
 // colour go down the same path. A-Z, and the picker pins NONE first — plain black and white.
@@ -10161,7 +10247,7 @@ class Component extends DCLogic {
     cam: "ORBIT", ready: false, clock: "", railW: 296, conH: 98, railOpen: true, inspOpen: true, conOpen: true, manualSel: "Actor",
     world: { size: "M", brush: 1, tiles: null, spawn: 0, props: {}, enemies: {}, pets: {}, npcs: {}, bosses: {}, spawners: {}, weapons: {}, up: {}, trot: {}, level: 0, tileRot: 0, mode: "tile", gap: TILE_GAP_DEF, grid: 0, sky: Object.assign({}, SKY_DEF) },
     tileColors: {}, textures: {}, texTile: 1, texFace: "top", texInk: 8, texAlpha: 1, texPal: TEX_PALETTE.slice(), texRecent: [],
-    userTex: [], texMineSel: -1, partTexOpen: false, texRailOpen: false,
+    userTex: [], texMineSel: -1, partTexOpen: false, texRailOpen: false, texMirX: false, texMirY: false,
     pickOn: false, pickHex: "#d85cff", pickHsv: null, pickField: "#d85cff", pickPos: null, pickRing: [], pickErase: false, pickWipe: false, pickHoverIdx: -1, pickFocusIdx: -1,
     face: clone(FACE_DEF), faceSlots: [null, null, null, null, null, null, null, clone(FACE_DEF)], faceSlot: 0,
     facePaint: false, faceErase: false, faceTarget: "HERO", npcEdit: false,
@@ -10179,7 +10265,7 @@ class Component extends DCLogic {
     music: Component.demoBank()[0],
     weapon: "SWORD", wpart: 0, wpHand: "R", object: "CRATE", opart: 0, enemyPreset: 0, propRot: 0, enemySel: 0, bossSel: 0, phaseSel: 0, frameSel: 0, clipPart: "torso", paused: false, liveEdit: false, chatWheel: false, chatWheelSel: 0,
     askOpen: false, askLabel: "", askVal: "", askShift: false, askRow: 1, askCol: 0, askPage: "abc", menuSel: 0, outSel: 0,
-    settings: { chat: "ON", chatPresets: "OFF", perf: "OFF", fpsCap: "60", textures: "ON", doorSigns: "ON", scanlines: "ON", grid: "ON", disc: "ON", spin: "ON", selBox: "ON", quality: "HIGH", defaultCam: "DRONE", input: "BOTH", invertY: "OFF", uiScale: "M", sound: "ON", volume: "50" },
+    settings: { chat: "ON", chatPresets: "OFF", perf: "OFF", fpsCap: "60", textures: "ON", doorSigns: "ON", scanlines: "ON", grid: "ON", disc: "ON", spin: "ON", selBox: "ON", quality: "HIGH", defaultCam: "DRONE", input: "BOTH", invertY: "OFF", uiScale: "M", sound: "ON", volume: "50", xhairSize: "M", xhairColor: "#59e391", xhairTex: null },
     secOpen: { npcList: true, npcSay: true, npcQuest: true, dlgList: true, dlgWho: true, dlgLines: true, dlgLook: false, dlgPort: false, dlgBack: false, dlgFeel: false, dlgImg: false, pages: true, pageLook: false, faceSlots: true, enemyFace: true, bossFace: true, npcFace: true, texTile: true, texFill: true, behave: true, presets: true, sockets: true, holding: true, part: true, grip: true, stats: true, overrides: true, room: true, tiles: true, roomTools: true, camera: true, weapon: true, piece: true, attack: true, object: true, place: true, enemies: true, blueprint: true, boss: true, phases: true, lines: true, hud: true, zones: true, badge: true },
     secOrder: ["boss", "blueprint", "cast", "blast", "presets", "sockets", "attach", "holding", "grip", "companion", "stats", "overrides", "camera", "room", "placed", "sky", "pages", "pageLook", "tiles", "roomTools", "object", "behave", "weapon", "attack", "piece", "place", "loot", "enemies", "spawners", "phases", "lines", "hud", "zones", "badge", "npcList", "npcSay", "npcQuest", "dlgList", "dlgWho", "dlgLines", "dlgLook", "dlgPort", "dlgBack", "dlgFeel", "dlgImg", "npcFace", "enemyFace", "bossFace", "faceSlots", "faceEyes", "faceBrows", "faceMouth", "faceGear", "faceExtra", "texTile", "texFill", "texMine", "touchLayout", "touchPads", "lobbyRoom", "boardPreview", "lobbyBoard", "lobbyStats", "lobbyCerts", "lobbyDoor", "driver", "ai", "ally", "rules", "rule", "ifs", "then", "logicjson", "endLook", "endText"],
     lobby: clone(LOBBY_DEF), lobbyFind: "",
@@ -10677,7 +10763,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.3";
+  ENGINE = "bloom3d/0.3.4";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -10935,7 +11021,7 @@ class Component extends DCLogic {
     this.race = { on: false, t: 0, lap: 0, last: null, best: (this.race || {}).best == null ? null : this.race.best };
     this.scorePosted = false;
     this.boardLiveDirty = true;
-    this.boostT = 0; this.checkpoint = null; this.playT = 0;
+    this.boostT = 0; this.boostMul = 1.6; this.checkpoint = null; this.playT = 0;
     this.clearShots();
     this.resetRunState();
     if (this.propGroup) this.propGroup.children.forEach((g) => {
@@ -11333,7 +11419,7 @@ class Component extends DCLogic {
           if (svx) page.scrollLeft += s3(svx);
           c.vis = true; c.last = t;
           el.style.display = "block";
-          el.style.transform = "translate(" + c.x + "px," + c.y + "px)";
+          el.style.transform = this.overlayXf(el, c.x, c.y);
           return;
         }
       }
@@ -11343,7 +11429,7 @@ class Component extends DCLogic {
         if (svy) this.pitchView(-svy * dt * 1.1);
         c.vis = true; c.last = t;
         el.style.display = "block";
-        el.style.transform = "translate(" + c.x + "px," + c.y + "px)";
+        el.style.transform = this.overlayXf(el, c.x, c.y);
         return;
       }
       let n = document.elementFromPoint(c.x, c.y);
@@ -11363,7 +11449,7 @@ class Component extends DCLogic {
     }
     const show = c.vis && (t - c.last < 3500 || c.r2);
     el.style.display = show ? "block" : "none";
-    if (show) el.style.transform = "translate(" + c.x + "px," + c.y + "px)";
+    if (show) el.style.transform = this.overlayXf(el, c.x, c.y);
   }
 
   activePad() {
@@ -11677,7 +11763,7 @@ class Component extends DCLogic {
     if (this.race && this.race.on) this.race.t += dt;
     if (this.driving) { this.stepDrive(dt, n, inp); inp.mx = 0; inp.mz = 0; inp.jump = false; }
     const s = this.stats;
-    const speed = s.walkSpeed * (inp.sprint ? 1.7 : 1) * (this.boostT > 0 ? 1.6 : 1);
+    const speed = s.walkSpeed * (inp.sprint ? 1.7 : 1) * (this.boostT > 0 ? (this.boostMul || 1.6) : 1);
     const cos = Math.cos(this.camYaw), sin = Math.sin(this.camYaw);
     const dx = (inp.mz * sin - inp.mx * cos) * speed * dt;
     const dz = (inp.mz * cos + inp.mx * sin) * speed * dt;
@@ -11858,14 +11944,10 @@ class Component extends DCLogic {
     this.gpCursorEl = cur;
     // play-mode crosshair: follows the OS pointer over the viewport and is what guns aim at
     const xh = document.createElement("div");
-    xh.style.cssText = "position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;pointer-events:none;z-index:9998;display:none";
-    xh.innerHTML = '<div style="position:absolute;left:12px;top:0;width:2px;height:9px;background:#59e391;box-shadow:0 0 6px #59e391"></div>'
-      + '<div style="position:absolute;left:12px;bottom:0;width:2px;height:9px;background:#59e391;box-shadow:0 0 6px #59e391"></div>'
-      + '<div style="position:absolute;top:12px;left:0;height:2px;width:9px;background:#59e391;box-shadow:0 0 6px #59e391"></div>'
-      + '<div style="position:absolute;top:12px;right:0;height:2px;width:9px;background:#59e391;box-shadow:0 0 6px #59e391"></div>'
-      + '<div style="position:absolute;left:12px;top:12px;width:2px;height:2px;background:#f7f3ff"></div>';
+    xh.style.cssText = "position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;pointer-events:none;z-index:9998;display:none;background-repeat:no-repeat";
     document.body.appendChild(xh);
     this.xhairEl = xh;
+    this.paintXhair(true);        // colour, size and sprite all come from Settings
     this.applyUiScale();
     this.onWinResize = () => {
       const sig = JSON.stringify(this.conFit());
@@ -11934,7 +12016,7 @@ class Component extends DCLogic {
           if (inside) {
             this.xhair = { x: e.clientX, y: e.clientY };
             this.xhairEl.style.display = "block";
-            this.xhairEl.style.transform = "translate(" + e.clientX + "px," + e.clientY + "px)";
+            this.xhairEl.style.transform = this.overlayXf(this.xhairEl, e.clientX, e.clientY);
           } else {
             this.xhair = null;                 // off the game view: aim falls back to the barrel
             this.xhairEl.style.display = "none";
@@ -12185,6 +12267,7 @@ class Component extends DCLogic {
   componentDidUpdate() {
     const el = this.logRef.current;
     if (el) el.scrollTop = el.scrollHeight;
+    this.paintXhair();
     this.applyUiScale();
     this.refitViewport();
     // The preset shelf scrolls itself to whatever the pad has highlighted. Measured off the
@@ -15650,6 +15733,76 @@ class Component extends DCLogic {
     }
   }
 
+  // Three sizes, in pixels of drawn box. A sprite is scaled into the same box, so switching
+  // between the drawn cross and your own art never changes how much screen the reticle covers.
+  XHAIR_PX = { S: 18, M: 26, L: 38 };
+
+  // A saved texture baked to a data URL for use as the reticle art. Same pixel data the mesh
+  // materials read — palette index per cell, optional per-cell alpha — cached by art, alpha and
+  // palette, so repainting the texture in the TEXTURES tool updates the crosshair on the next
+  // frame without rebaking on every frame.
+  xhairSpriteURL() {
+    const t = this.userTexById((this.state.settings || {}).xhairTex);
+    if (!t) return null;
+    const face = this.texMineFace(t, "side");
+    if (!face.px) return null;
+    const n = this.texMineN(t), pal = this.pal();
+    const key = t.id + "|" + face.px + "|" + (face.al || "-") + "|" + pal.join("");
+    if (this._xhSprite && this._xhSprite.key === key) return this._xhSprite.url;
+    const c = document.createElement("canvas");
+    c.width = c.height = n;
+    const g = c.getContext("2d");
+    for (let i = 0; i < n * n; i++) {
+      const a = face.al ? this.aNum(face.al[i]) : 1;
+      if (a <= 0) continue;
+      g.globalAlpha = a;
+      g.fillStyle = pal[HEX.indexOf(face.px[i])] || pal[0];
+      g.fillRect(i % n, (i / n) | 0, 1, 1);
+    }
+    const url = c.toDataURL();
+    this._xhSprite = { key: key, url: url };
+    return url;
+  }
+
+  // Repaints only when something it reads actually changed, so calling it from every update
+  // costs one string compare.
+  paintXhair(force) {
+    const el = this.xhairEl;
+    if (!el) return;
+    const s = this.state.settings || {};
+    const url = this.xhairSpriteURL();
+    const sig = [s.xhairSize, s.xhairColor, s.xhairTex, url ? url.length : 0, url ? url.slice(-24) : ""].join("|");
+    if (!force && sig === this._xhSig) return;
+    this._xhSig = sig;
+    const d = this.XHAIR_PX[s.xhairSize] || 26;
+    el.style.width = d + "px";
+    el.style.height = d + "px";
+    el.style.margin = (-d / 2) + "px 0 0 " + (-d / 2) + "px";
+    if (url) {
+      // Your own art wins outright: no drawn cross under it and no tint — the sprite's own
+      // pixels ARE the crosshair. The shadow is what keeps it readable over a bright sky.
+      el.innerHTML = "";
+      el.style.backgroundImage = "url(" + url + ")";
+      el.style.backgroundSize = "100% 100%";
+      el.style.imageRendering = "pixelated";
+      el.style.filter = "drop-shadow(0 0 5px rgba(0,0,0,.65))";
+      return;
+    }
+    el.style.backgroundImage = "none";
+    el.style.filter = "none";
+    const col = this.hexOr(s.xhairColor, "#59e391");
+    const th = d >= 34 ? 3 : 2;
+    const arm = Math.max(5, Math.round(d * 0.35));
+    const mid = Math.round((d - th) / 2);
+    const bar = (rule) => '<div style="position:absolute;' + rule + ';background:' + col + ';box-shadow:0 0 6px ' + col + '"></div>';
+    el.innerHTML =
+      bar("left:" + mid + "px;top:0;width:" + th + "px;height:" + arm + "px")
+      + bar("left:" + mid + "px;bottom:0;width:" + th + "px;height:" + arm + "px")
+      + bar("top:" + mid + "px;left:0;height:" + th + "px;width:" + arm + "px")
+      + bar("top:" + mid + "px;right:0;height:" + th + "px;width:" + arm + "px")
+      + '<div style="position:absolute;left:' + mid + 'px;top:' + mid + 'px;width:' + th + 'px;height:' + th + 'px;background:#f7f3ff"></div>';
+  }
+
   // The crosshair tracks the OS pointer in play and gives guns a world point to aim at.
   // A pad stick or the ORBIT/DRONE camera taking over drops it, so aiming never fights itself.
   syncCursor() {
@@ -15771,7 +15924,7 @@ class Component extends DCLogic {
     const px = Math.max(rect.left + m, Math.min(rect.right - m, rect.left + (v.x * 0.5 + 0.5) * rect.width));
     const py = Math.max(rect.top + m, Math.min(rect.bottom - m, rect.top + (-v.y * 0.5 + 0.5) * rect.height));
     el.style.display = "block";
-    el.style.transform = "translate(" + px + "px," + py + "px)";
+    el.style.transform = this.overlayXf(el, px, py);
   }
 
   // SELECT freezes play and hands the pad to the editor cursor, so the world can be
@@ -16267,14 +16420,22 @@ class Component extends DCLogic {
     };
     // hand-painted layer sits under every feature
     if (F.paint) {
-      const px = S / FACE_N;
-      for (let y = 0; y < FACE_N; y++) for (let x = 0; x < FACE_N; x++) {
-        const ch = F.paint[y * FACE_N + x];
-        if (!ch || ch === ".") continue;
-        const idx = HEX.indexOf(ch);
-        if (idx < 0) continue;
-        ctx.fillStyle = (this.state.texPal || TEX_PALETTE)[idx];
-        ctx.fillRect(Math.floor(x * px), Math.floor(y * px), Math.ceil(px), Math.ceil(px));
+      const n = this.faceN();
+      if (F.paint.length === n * n) {
+        const A = F.paintA && F.paintA.length === n * n ? F.paintA : null;
+        const px = S / n;
+        for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+          const i = y * n + x, ch = F.paint[i];
+          if (!ch || ch === ".") continue;
+          const idx = HEX.indexOf(ch);
+          if (idx < 0) continue;
+          const a = A ? this.aNum(A[i]) : 1;
+          if (a <= 0) continue;
+          ctx.globalAlpha = a;                 // a see-through stroke lets the skin read through
+          ctx.fillStyle = (this.state.texPal || TEX_PALETTE)[idx];
+          ctx.fillRect(Math.floor(x * px), Math.floor(y * px), Math.ceil(px), Math.ceil(px));
+        }
+        ctx.globalAlpha = 1;
       }
     }
 
@@ -16547,18 +16708,52 @@ class Component extends DCLogic {
   }
 
   // ── paint layer ─────────────────────────────────────────────────────────────────────
+  // 16, 32 or 64 a side, per face record. FACE_N stays the default, so every face painted
+  // before this reads back unchanged.
+  faceN() {
+    const F = this.faceRec();
+    return TEX_SIZES.indexOf(F.paintN) >= 0 ? F.paintN : FACE_N;
+  }
+  // Resamples the art AND its alpha, so a drawing survives the jump between sizes — the same
+  // helper the texture bank resizes through.
+  faceResize(n) {
+    if (TEX_SIZES.indexOf(n) < 0) return;
+    const F = this.faceRec();
+    const from = this.faceN();
+    if (from === n) return;
+    const px = F.paint && F.paint.length === from * from ? texResample(F.paint, from, n, ".") : null;
+    const al = F.paintA && F.paintA.length === from * from ? texResample(F.paintA, from, n, "f") : null;
+    this.faceSet({ paintN: n, paint: px, paintA: px ? (al || "f".repeat(n * n)) : null });
+    this.push("face paint → " + n + "×" + n, "muted");
+  }
   facePaintPixel(x, y) {
     const F = this.faceRec();
-    let s = F.paint;
-    if (!s || s.length !== FACE_N * FACE_N) s = ".".repeat(FACE_N * FACE_N);
-    const i = y * FACE_N + x;
-    const ink = this.state.faceErase ? "." : HEX[this.state.texInk];
-    if (s[i] === ink) return;
-    this.faceSet({ paint: s.slice(0, i) + ink + s.slice(i + 1) });
+    const n = this.faceN(), want = n * n;
+    let s = F.paint, a = F.paintA;
+    if (!s || s.length !== want) s = ".".repeat(want);
+    if (!a || a.length !== want) a = "f".repeat(want);
+    const erase = !!this.state.faceErase;
+    const ink = erase ? "." : HEX[this.state.texInk];
+    let hit = false;
+    // Same mirror mode the Textures tool uses, so a symmetric face is one stroke — and every
+    // mirrored cell lands in ONE write, which keeps it to one state change and one undo step.
+    for (const i of this.texMirrorCells(x, y, n)) {
+      const na = erase ? "f" : this.texAlphaChar(s[i], a[i]);
+      if (s[i] === ink && a[i] === na) continue;
+      s = s.slice(0, i) + ink + s.slice(i + 1);
+      a = a.slice(0, i) + na + a.slice(i + 1);
+      hit = true;
+    }
+    if (hit) this.faceSet({ paint: s, paintA: a, paintN: n });
   }
-  facePaintClear() { this.faceSet({ paint: null }); this.push("paint layer cleared", "rose"); }
+  facePaintClear() { this.faceSet({ paint: null, paintA: null }); this.push("paint layer cleared", "rose"); }
   facePaintFill() {
-    this.faceSet({ paint: HEX[this.state.texInk].repeat(FACE_N * FACE_N) });
+    const n = this.faceN(), want = n * n;
+    this.faceSet({
+      paint: HEX[this.state.texInk].repeat(want),
+      paintA: this.aChar(this.texBrush()).repeat(want),
+      paintN: n,
+    });
     this.push("paint layer filled", "muted");
   }
   faceCanvasPointer(e, down) {
@@ -16568,9 +16763,10 @@ class Component extends DCLogic {
     const r = e.currentTarget.getBoundingClientRect();
     const side = Math.min(r.width, r.height);            // object-fit: contain letterboxes
     const ox = r.left + (r.width - side) / 2, oy = r.top + (r.height - side) / 2;
-    const x = Math.floor(((e.clientX - ox) / side) * FACE_N);
-    const y = Math.floor(((e.clientY - oy) / side) * FACE_N);
-    if (x < 0 || y < 0 || x >= FACE_N || y >= FACE_N) return;
+    const n = this.faceN();
+    const x = Math.floor(((e.clientX - ox) / side) * n);
+    const y = Math.floor(((e.clientY - oy) / side) * n);
+    if (x < 0 || y < 0 || x >= n || y >= n) return;
     this.facePaintPixel(x, y);
   }
 
@@ -17979,27 +18175,49 @@ class Component extends DCLogic {
     window.addEventListener("pointercancel", this._texEnd, true);
     window.addEventListener("blur", this._texEnd, true);
   }
+  // Which cells one dab writes: itself, its reflection across the vertical centre line
+  // (MIRROR X), across the horizontal one (MIRROR Y), and the diagonal when both are on —
+  // four-way symmetry out of a single stroke. Deduped, because a cell ON a centre line
+  // reflects back onto itself, and writing it twice would flip its alpha back off.
+  texMirrorCells(x, y, n) {
+    const xs = this.state.texMirX && n - 1 - x !== x ? [x, n - 1 - x] : [x];
+    const ys = this.state.texMirY && n - 1 - y !== y ? [y, n - 1 - y] : [y];
+    const out = [];
+    for (const yy of ys) for (const xx of xs) out.push(yy * n + xx);
+    return out;
+  }
+  // Every mirrored cell lands in ONE write, so a symmetric stroke is a single state change
+  // and a single undo step — not two or four.
   texPaintPixel(x, y) {
     const ink = HEX[this.state.texInk];
     const mine = this.texMineCur();
+    const face = this.state.texFace;
     if (mine) {
-      const n = this.texMineN(mine), face = this.state.texFace;
+      const n = this.texMineN(mine);
       const f = this.texMineFaceOwn(mine, face);
-      const cur2 = f.px || texBlank(0, n);
-      const al2 = f.al || "f".repeat(n * n);
-      const j = y * n + x;
-      const na = this.texAlphaChar(cur2[j], al2[j]);
-      if (cur2[j] === ink && al2[j] === na) return;
-      this.texMineWriteFace(face, cur2.slice(0, j) + ink + cur2.slice(j + 1), al2.slice(0, j) + na + al2.slice(j + 1));
+      let px = f.px || texBlank(0, n), al = f.al || "f".repeat(n * n), hit = false;
+      for (const j of this.texMirrorCells(x, y, n)) {
+        const na = this.texAlphaChar(px[j], al[j]);
+        if (px[j] === ink && al[j] === na) continue;
+        px = px.slice(0, j) + ink + px.slice(j + 1);
+        al = al.slice(0, j) + na + al.slice(j + 1);
+        hit = true;
+      }
+      if (hit) this.texMineWriteFace(face, px, al);
       return;
     }
-    const id = this.state.texTile, face = this.state.texFace;
-    const cur = this.texStr(id, face) || texBlank(0);
-    const al = this.texAlphaStr(id, face) || "f".repeat(TEX_N * TEX_N);
-    const i = y * TEX_N + x;
-    const na = this.texAlphaChar(cur[i], al[i]);
-    if (cur[i] === ink && al[i] === na) return;
-    this.texWrite(id, face, cur.slice(0, i) + ink + cur.slice(i + 1), al.slice(0, i) + na + al.slice(i + 1));
+    const id = this.state.texTile;
+    let px = this.texStr(id, face) || texBlank(0);
+    let al = this.texAlphaStr(id, face) || "f".repeat(TEX_N * TEX_N);
+    let hit = false;
+    for (const i of this.texMirrorCells(x, y, TEX_N)) {
+      const na = this.texAlphaChar(px[i], al[i]);
+      if (px[i] === ink && al[i] === na) continue;
+      px = px.slice(0, i) + ink + px.slice(i + 1);
+      al = al.slice(0, i) + na + al.slice(i + 1);
+      hit = true;
+    }
+    if (hit) this.texWrite(id, face, px, al);
   }
   texSeed(name) {
     const a = this.state.texInk, b = (this.state.texInk + 9) % 16;
@@ -23919,6 +24137,20 @@ class Component extends DCLogic {
       this.push("jump pad", "info");
       return;
     }
+    if (m.effect === "boost") {
+      // A pad, not a prize: it stays where you put it and works every lap. Crossing one TOPS UP
+      // the timer rather than restarting it, so a run of pads reads as one long boost instead of
+      // stuttering, and a slower pad can never cut a faster one short.
+      const mul = Math.max(1, amt || 1.6);
+      const secs = Math.max(0.2, gap);
+      if ((this.boostT || 0) <= 0 || mul >= (this.boostMul || 1)) this.boostMul = mul;
+      this.boostT = Math.max(this.boostT || 0, secs);
+      if (u.onPad) return;
+      u.onPad = true;
+      this.sfx("zap");
+      this.push("boost pad · " + String(+mul.toFixed(2)) + "× for " + secs + "s", "warn");
+      return;
+    }
     if (m.effect === "warp") {
       if (u.onPad || (this.warpLock || 0) > 0) return;
       u.onPad = true;                       // set first, so a locked door says so once, not every frame
@@ -23964,7 +24196,7 @@ class Component extends DCLogic {
       this.push(label + " · " + inv.coins + " coins", "warn");
     }
     else if (m.effect === "ammo") { inv.ammo += amt; this.push(label + " · " + inv.ammo + " ammo", "info"); }
-    else if (m.effect === "speed") { this.boostT = 4 + amt; this.push(label + " · speed boost", "warn"); }
+    else if (m.effect === "speed") { this.boostMul = 1.6; this.boostT = 4 + amt; this.push(label + " · speed boost", "warn"); }
     else if (m.effect === "resetpush") {
       // a pad, not a pickup: it stays put and can be used again on the next attempt
       this.padReset(g, true);
@@ -26154,6 +26386,30 @@ class Component extends DCLogic {
     this.setState({ secOpen: o });
   }
 
+  // Viewport pixels → the overlay's own coordinate space, as a ready-to-assign transform.
+  //
+  // The crosshair and the pad cursor normally hang off document.body, where a fixed element's
+  // coordinates ARE viewport pixels. In fullscreen they are re-homed inside the studio root so
+  // the browser will paint them at all (only the fullscreen element's subtree is drawn) — and
+  // that root carries the UI SCALE zoom. A zoomed containing block measures its fixed children
+  // in ZOOMED units from its own box, while getBoundingClientRect() and clientX report real
+  // pixels: the reticle was drawn at its true point × zoom, which at XL (1.45) throws it most
+  // of a screen right and up. Aim itself was never wrong — this.xhair and the canvas rect are
+  // both real pixels — only the drawing was, which is why it read as "snapped to a fixed spot".
+  //
+  // The zoom is MEASURED off the host (real width ÷ layout width) rather than read from the
+  // setting, so it stays right whatever puts a scale on that element.
+  overlayXf(el, x, y) {
+    const p = el && el.parentElement;
+    if (!p || p === document.body || p === document.documentElement)
+      return "translate(" + x + "px," + y + "px)";
+    const r = p.getBoundingClientRect();
+    const z = (p.offsetWidth && r.width ? r.width / p.offsetWidth : this.uiZoom()) || 1;
+    const px = (x - r.left) / z, py = (y - r.top) / z;
+    // undo the zoom on the art too, so the reticle is the same size fullscreen as in a window
+    return "translate(" + px + "px," + py + "px)" + (Math.abs(z - 1) < 0.001 ? "" : " scale(" + (1 / z) + ")");
+  }
+
   // Kept to one place: two overlays, either on the body or inside the fullscreen element.
   reparentOverlays(host) {
     if (!host) return;
@@ -27509,7 +27765,7 @@ class Component extends DCLogic {
             m.effect = id;
             if (id === "swing" || id === "ramp" || id === "gate") m.type = "SOLID";   // a door, a gate and a ramp are walls that move you, not pickups
             else if (!haz && id !== "none") m.type = "PICKUP";
-            if (haz) m.type = (id === "launch" || id === "push" || id === "start" || id === "finish" || id === "switch") ? "PAD" : (id === "break" ? "SOLID" : "HAZARD");
+            if (haz) m.type = (id === "launch" || id === "push" || id === "start" || id === "finish" || id === "switch" || id === "boost") ? "PAD" : (id === "break" ? "SOLID" : "HAZARD");
             this.forceUpdate();
           },
           style: this.pill(this.meta(this.state.object).effect === id, haz ? "#ff6f91" : "#f8d66d"),
@@ -27526,6 +27782,10 @@ class Component extends DCLogic {
         if (m.effect === "gate") return [
           this.sliderRow("obj", "amount", "CHANNEL", 1, 8, 1, m.amount == null ? 1 : m.amount, ""),
           this.sliderRow("obj", "respawn", "RAISE TIME", 0.1, 3, 0.05, m.respawn == null ? 0.6 : m.respawn, "s"),
+        ];
+        if (m.effect === "boost") return [
+          this.sliderRow("obj", "amount", "SPEED", 1, 4, 0.1, m.amount == null ? 1.6 : m.amount, "\u00d7"),
+          this.sliderRow("obj", "respawn", "TIME", 0.5, 12, 0.5, m.respawn == null ? 3 : m.respawn, "s"),
         ];
         if (m.effect === "switch") return [
           this.sliderRow("obj", "amount", "CHANNEL", 1, 8, 1, m.amount == null ? 1 : m.amount, ""),
@@ -27598,6 +27858,8 @@ class Component extends DCLogic {
           return "Vehicle \u00b7 press E to drive \u00b7 " + (m.speed == null ? 11 : m.speed) + " u/s top \u00b7 "
             + (m.turn == null ? 2 : m.turn) + " r/s steering";
         }
+        if (m.effect === "boost") return "Boost pad · " + String(+(m.amount == null ? 1.6 : m.amount).toFixed(2))
+          + "× walk speed for " + (m.respawn == null ? 3 : m.respawn) + "s — stays put, works every lap, and crossing another tops the timer up.";
         if (m.effect === "switch") return "Weight switch · channel " + Math.round(m.amount == null ? 1 : m.amount)
           + " — a pushable block standing on it holds it down, and so do you. "
           + (m.latch ? "Stays down once pressed \u2014 a one-way door."
@@ -29117,8 +29379,19 @@ class Component extends DCLogic {
       faceGridStyle: {
         position: "absolute", inset: 0, pointerEvents: "none",
         backgroundImage: "linear-gradient(to right,rgba(216,92,255,.16) 1px,transparent 1px),linear-gradient(to bottom,rgba(216,92,255,.16) 1px,transparent 1px)",
-        backgroundSize: (100 / FACE_N) + "% " + (100 / FACE_N) + "%",
+        backgroundSize: (100 / this.faceN()) + "% " + (100 / this.faceN()) + "%",
       },
+      // The brush is shared with the Textures tool — same ink slots, same palette, same
+      // opacity, same mirror mode — so these three groups are that tool's vals, mounted again.
+      // Only the size tabs are the face's own, since the resolution lives on the face record.
+      faceSizes: TEX_SIZES.map((n) => {
+        const on = this.faceN() === n;
+        return {
+          name: n + "²", tip: "Paint the face layer at " + n + "×" + n + " — existing art is resampled",
+          onClick: () => this.faceResize(n),
+          style: Object.assign(this.pill(on, "#78a9ff"), { flex: "0 0 auto", padding: "4px 6px", minWidth: 0, whiteSpace: "nowrap" }),
+        };
+      }),
       facePaint: !!this.state.facePaint,
       facePaintBtn: this.pill(!!this.state.facePaint, "#59e391", true),
       faceEraseBtn: this.pill(!!this.state.faceErase, "#ff6f91", true),
@@ -29246,6 +29519,22 @@ class Component extends DCLogic {
           name: n + "²",
           onClick: () => { if (cur) this.texMineResize(n); else this.push("Pick a texture in MY TEXTURES to resize — tiles stay 16×16.", "muted"); },
           style: Object.assign(this.pill(on, "#78a9ff"), { flex: "0 0 auto", padding: "4px 6px", minWidth: 0, whiteSpace: "nowrap", opacity: cur ? 1 : 0.45 }),
+        };
+      }),
+      // Mirror is a drawing mode, not a transform: it changes where the next dab lands and
+      // never touches what is already painted, so turning it off leaves your art alone.
+      texMirrors: [
+        { key: "texMirX", name: "MIRROR X", tip: "Paint the mirrored cell across the vertical centre line too" },
+        { key: "texMirY", name: "MIRROR Y", tip: "Paint the mirrored cell across the horizontal centre line too" },
+      ].map((mr) => {
+        const on = !!this.state[mr.key];
+        return {
+          name: mr.name, tip: mr.tip,
+          onClick: () => {
+            this.setState({ [mr.key]: !on });
+            this.push("mirror " + mr.name.slice(-1).toLowerCase() + " " + (on ? "off" : "on"), "muted");
+          },
+          style: Object.assign(this.pill(on, "#59e391"), { flex: "0 0 auto", padding: "4px 6px", minWidth: 0, whiteSpace: "nowrap" }),
         };
       }),
       texPixels: (() => {
@@ -29584,6 +29873,44 @@ class Component extends DCLogic {
         };
       }),
       perfHud: this.state.settings.perf === "ON" ? this.perfHudVals() : null,
+      // The PICK chip's modal applies live on every pointermove, so this writes through the
+      // debounce — one save at the end of a drag, the same contract every slider has.
+      xhairSwatches: this.colorRow((this.state.settings || {}).xhairColor || "#59e391", (c) => {
+        const next = Object.assign({}, this.state.settings, { xhairColor: c });
+        this.setState({ settings: next }, () => { this.touched = true; this.queueSave(); });
+      }),
+      xhairTex: this.texPickVals((this.state.settings || {}).xhairTex || null, (id) => {
+        const next = Object.assign({}, this.state.settings, { xhairTex: id || null });
+        this.setState({ settings: next }, () => { this.touched = true; this.saveProject("settings"); });
+        this.push(id ? "crosshair sprite set" : "crosshair back to the drawn cross", "muted");
+      }, "xhairTexOpen"),
+      xhairNote: (() => {
+        const s = this.state.settings || {};
+        const t = this.userTexById(s.xhairTex);
+        return (s.xhairSize || "M") + " · " + (t ? t.name : "DRAWN CROSS " + (s.xhairColor || "#59e391").toUpperCase());
+      })(),
+      // The preview is the same three parts the real reticle is drawn from, at a fixed 26px.
+      xhairPrev: (() => {
+        const url = this.xhairSpriteURL();
+        return {
+          position: "relative", width: 26, height: 26, flex: "0 0 auto",
+          border: "1px solid #1b1f36", background: "#0e1120",
+          backgroundImage: url ? "url(" + url + ")" : "none",
+          backgroundSize: "100% 100%", imageRendering: url ? "pixelated" : "auto",
+        };
+      })(),
+      xhairPrevV: (() => {
+        const on = !this.xhairSpriteURL(), col = this.hexOr((this.state.settings || {}).xhairColor, "#59e391");
+        return { display: on ? "block" : "none", position: "absolute", left: 12, top: 3, width: 2, height: 20, background: col };
+      })(),
+      xhairPrevH: (() => {
+        const on = !this.xhairSpriteURL(), col = this.hexOr((this.state.settings || {}).xhairColor, "#59e391");
+        return { display: on ? "block" : "none", position: "absolute", top: 12, left: 3, height: 2, width: 20, background: col };
+      })(),
+      xhairPrevDot: (() => {
+        const on = !this.xhairSpriteURL();
+        return { display: on ? "block" : "none", position: "absolute", left: 12, top: 12, width: 2, height: 2, background: "#f7f3ff" };
+      })(),
       settingRows: SETTING_DEF.map((s) => ({
         label: s.label, desc: s.desc,
         opts: s.opts.map((o) => ({
