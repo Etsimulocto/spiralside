@@ -2038,9 +2038,12 @@
         </sc-if>
         <sc-if value="{{ infoTip }}" hint-placeholder-val="{{ false }}">
           <div style="position:absolute;inset:0;z-index:46;display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;pointer-events:none">
-            <div style="{{ infoTip.card }}">
+            <div style="{{ infoTip.card }}" onMouseEnter="{{ infoTip.onEnter }}" onMouseLeave="{{ infoTip.onLeave }}" onClick="{{ infoTip.onClick }}">
               <div style="{{ infoTip.title }}">{{ infoTip.label }}</div>
-              <div style="font-family:'JetBrains Mono',monospace;font-size:16px;line-height:1.65;color:#d7dbef;text-wrap:pretty">{{ infoTip.text }}</div>
+              <div style="{{ infoTip.body }}">{{ infoTip.text }}</div>
+              <sc-if value="{{ infoTip.pinned }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ infoTip.hint }}">CLICK TO CLOSE</div>
+              </sc-if>
             </div>
           </div>
         </sc-if>
@@ -3506,7 +3509,7 @@
                   <div style="{{ secBoss.header }}">
                     <span style="{{ secBoss.dot }}"></span>
                     <span style="{{ secBoss.title }}">BOSS</span>
-                    <span data-info="1" style="{{ secBoss.help }}" onMouseEnter="{{ secBoss.onHelpIn }}" onMouseLeave="{{ secBoss.onHelpOut }}" onClick="{{ secBoss.onHelpIn }}">?</span>
+                    <span data-info="1" style="{{ secBoss.help }}" onMouseEnter="{{ secBoss.onHelpIn }}" onMouseLeave="{{ secBoss.onHelpOut }}" onClick="{{ secBoss.onHelpPin }}">?</span>
                     <span style="{{ secBoss.meta }}">{{ secBoss.metaText }}</span>
                     <div style="flex:1"></div>
                     <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3562,7 +3565,7 @@
                   <div style="{{ secPhases.header }}">
                     <span style="{{ secPhases.dot }}"></span>
                     <span style="{{ secPhases.title }}">PHASES</span>
-                    <span data-info="1" style="{{ secPhases.help }}" onMouseEnter="{{ secPhases.onHelpIn }}" onMouseLeave="{{ secPhases.onHelpOut }}" onClick="{{ secPhases.onHelpIn }}">?</span>
+                    <span data-info="1" style="{{ secPhases.help }}" onMouseEnter="{{ secPhases.onHelpIn }}" onMouseLeave="{{ secPhases.onHelpOut }}" onClick="{{ secPhases.onHelpPin }}">?</span>
                     <span style="{{ secPhases.meta }}">{{ secPhases.metaText }}</span>
                     <div style="flex:1"></div>
                     <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3657,7 +3660,7 @@
                   <div style="{{ secLines.header }}">
                     <span style="{{ secLines.dot }}"></span>
                     <span style="{{ secLines.title }}">LINES</span>
-                    <span data-info="1" style="{{ secLines.help }}" onMouseEnter="{{ secLines.onHelpIn }}" onMouseLeave="{{ secLines.onHelpOut }}" onClick="{{ secLines.onHelpIn }}">?</span>
+                    <span data-info="1" style="{{ secLines.help }}" onMouseEnter="{{ secLines.onHelpIn }}" onMouseLeave="{{ secLines.onHelpOut }}" onClick="{{ secLines.onHelpPin }}">?</span>
                     <div style="flex:1"></div>
                     <div style="display:flex;gap:1px;flex:0 0 auto">
                       <div style="{{ secLines.btn }}" onClick="{{ secLines.onUp }}">▲</div>
@@ -3682,7 +3685,7 @@
                   <div style="{{ secBossFace.header }}">
                     <span style="{{ secBossFace.dot }}"></span>
                     <span style="{{ secBossFace.title }}">FACE</span>
-                    <span data-info="1" style="{{ secBossFace.help }}" onMouseEnter="{{ secBossFace.onHelpIn }}" onMouseLeave="{{ secBossFace.onHelpOut }}" onClick="{{ secBossFace.onHelpIn }}">?</span>
+                    <span data-info="1" style="{{ secBossFace.help }}" onMouseEnter="{{ secBossFace.onHelpIn }}" onMouseLeave="{{ secBossFace.onHelpOut }}" onClick="{{ secBossFace.onHelpPin }}">?</span>
                     <span style="{{ secBossFace.meta }}">{{ secBossFace.metaText }}</span>
                     <div style="flex:1"></div>
                     <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3715,7 +3718,7 @@
                 <div style="{{ secBlueprint.header }}">
                   <span style="{{ secBlueprint.dot }}"></span>
                   <span style="{{ secBlueprint.title }}">BODY</span>
-                  <span data-info="1" style="{{ secBlueprint.help }}" onMouseEnter="{{ secBlueprint.onHelpIn }}" onMouseLeave="{{ secBlueprint.onHelpOut }}" onClick="{{ secBlueprint.onHelpIn }}">?</span>
+                  <span data-info="1" style="{{ secBlueprint.help }}" onMouseEnter="{{ secBlueprint.onHelpIn }}" onMouseLeave="{{ secBlueprint.onHelpOut }}" onClick="{{ secBlueprint.onHelpPin }}">?</span>
                   <span style="{{ secBlueprint.meta }}">{{ secBlueprint.metaText }}</span>
                   <div style="flex:1"></div>
                   <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3750,7 +3753,7 @@
                   <div style="{{ secEnemyFace.header }}">
                     <span style="{{ secEnemyFace.dot }}"></span>
                     <span style="{{ secEnemyFace.title }}">FACE</span>
-                    <span data-info="1" style="{{ secEnemyFace.help }}" onMouseEnter="{{ secEnemyFace.onHelpIn }}" onMouseLeave="{{ secEnemyFace.onHelpOut }}" onClick="{{ secEnemyFace.onHelpIn }}">?</span>
+                    <span data-info="1" style="{{ secEnemyFace.help }}" onMouseEnter="{{ secEnemyFace.onHelpIn }}" onMouseLeave="{{ secEnemyFace.onHelpOut }}" onClick="{{ secEnemyFace.onHelpPin }}">?</span>
                     <span style="{{ secEnemyFace.meta }}">{{ secEnemyFace.metaText }}</span>
                     <div style="flex:1"></div>
                     <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3782,7 +3785,7 @@
               <div style="{{ secCast.header }}">
                 <span style="{{ secCast.dot }}"></span>
                 <span style="{{ secCast.title }}">PLAYERS</span>
-                <span data-info="1" style="{{ secCast.help }}" onMouseEnter="{{ secCast.onHelpIn }}" onMouseLeave="{{ secCast.onHelpOut }}" onClick="{{ secCast.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secCast.help }}" onMouseEnter="{{ secCast.onHelpIn }}" onMouseLeave="{{ secCast.onHelpOut }}" onClick="{{ secCast.onHelpPin }}">?</span>
                 <span style="{{ secCast.meta }}">{{ secCast.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3818,7 +3821,7 @@
               <div style="{{ secPresets.header }}">
                 <span style="{{ secPresets.dot }}"></span>
                 <span style="{{ secPresets.title }}">PRESETS</span>
-                <span data-info="1" style="{{ secPresets.help }}" onMouseEnter="{{ secPresets.onHelpIn }}" onMouseLeave="{{ secPresets.onHelpOut }}" onClick="{{ secPresets.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secPresets.help }}" onMouseEnter="{{ secPresets.onHelpIn }}" onMouseLeave="{{ secPresets.onHelpOut }}" onClick="{{ secPresets.onHelpPin }}">?</span>
                 <span style="{{ secPresets.meta }}">{{ secPresets.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3853,7 +3856,7 @@
               <div style="{{ secSockets.header }}">
                 <span style="{{ secSockets.dot }}"></span>
                 <span style="{{ secSockets.title }}">SOCKETS</span>
-                <span data-info="1" style="{{ secSockets.help }}" onMouseEnter="{{ secSockets.onHelpIn }}" onMouseLeave="{{ secSockets.onHelpOut }}" onClick="{{ secSockets.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secSockets.help }}" onMouseEnter="{{ secSockets.onHelpIn }}" onMouseLeave="{{ secSockets.onHelpOut }}" onClick="{{ secSockets.onHelpPin }}">?</span>
                 <span style="{{ secSockets.meta }}">{{ secSockets.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -3945,7 +3948,7 @@
               <div style="{{ secAttach.header }}">
                 <span style="{{ secAttach.dot }}"></span>
                 <span style="{{ secAttach.title }}">ATTACH</span>
-                <span data-info="1" style="{{ secAttach.help }}" onMouseEnter="{{ secAttach.onHelpIn }}" onMouseLeave="{{ secAttach.onHelpOut }}" onClick="{{ secAttach.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secAttach.help }}" onMouseEnter="{{ secAttach.onHelpIn }}" onMouseLeave="{{ secAttach.onHelpOut }}" onClick="{{ secAttach.onHelpPin }}">?</span>
                 <span style="{{ secAttach.meta }}">{{ secAttach.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4019,7 +4022,7 @@
               <div style="{{ secHolding.header }}">
                 <span style="{{ secHolding.dot }}"></span>
                 <span style="{{ secHolding.title }}">HOLDING</span>
-                <span data-info="1" style="{{ secHolding.help }}" onMouseEnter="{{ secHolding.onHelpIn }}" onMouseLeave="{{ secHolding.onHelpOut }}" onClick="{{ secHolding.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secHolding.help }}" onMouseEnter="{{ secHolding.onHelpIn }}" onMouseLeave="{{ secHolding.onHelpOut }}" onClick="{{ secHolding.onHelpPin }}">?</span>
                 <span style="{{ secHolding.meta }}">{{ secHolding.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4055,7 +4058,7 @@
               <div style="{{ secGrip.header }}">
                 <span style="{{ secGrip.dot }}"></span>
                 <span style="{{ secGrip.title }}">GRIP</span>
-                <span data-info="1" style="{{ secGrip.help }}" onMouseEnter="{{ secGrip.onHelpIn }}" onMouseLeave="{{ secGrip.onHelpOut }}" onClick="{{ secGrip.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secGrip.help }}" onMouseEnter="{{ secGrip.onHelpIn }}" onMouseLeave="{{ secGrip.onHelpOut }}" onClick="{{ secGrip.onHelpPin }}">?</span>
                 <span style="{{ secGrip.meta }}">{{ secGrip.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4094,7 +4097,7 @@
               <div style="{{ secCompanion.header }}">
                 <span style="{{ secCompanion.dot }}"></span>
                 <span style="{{ secCompanion.title }}">PET</span>
-                <span data-info="1" style="{{ secCompanion.help }}" onMouseEnter="{{ secCompanion.onHelpIn }}" onMouseLeave="{{ secCompanion.onHelpOut }}" onClick="{{ secCompanion.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secCompanion.help }}" onMouseEnter="{{ secCompanion.onHelpIn }}" onMouseLeave="{{ secCompanion.onHelpOut }}" onClick="{{ secCompanion.onHelpPin }}">?</span>
                 <span style="{{ secCompanion.meta }}">{{ secCompanion.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4143,7 +4146,7 @@
               <div style="{{ secStats.header }}">
                 <span style="{{ secStats.dot }}"></span>
                 <span style="{{ secStats.title }}">STATS</span>
-                <span data-info="1" style="{{ secStats.help }}" onMouseEnter="{{ secStats.onHelpIn }}" onMouseLeave="{{ secStats.onHelpOut }}" onClick="{{ secStats.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secStats.help }}" onMouseEnter="{{ secStats.onHelpIn }}" onMouseLeave="{{ secStats.onHelpOut }}" onClick="{{ secStats.onHelpPin }}">?</span>
                 <span style="{{ secStats.meta }}">{{ secStats.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4187,7 +4190,7 @@
               <div style="{{ secCamera.header }}">
                 <span style="{{ secCamera.dot }}"></span>
                 <span style="{{ secCamera.title }}">CAMERA</span>
-                <span data-info="1" style="{{ secCamera.help }}" onMouseEnter="{{ secCamera.onHelpIn }}" onMouseLeave="{{ secCamera.onHelpOut }}" onClick="{{ secCamera.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secCamera.help }}" onMouseEnter="{{ secCamera.onHelpIn }}" onMouseLeave="{{ secCamera.onHelpOut }}" onClick="{{ secCamera.onHelpPin }}">?</span>
                 <span style="{{ secCamera.meta }}">{{ secCamera.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4226,7 +4229,7 @@
               <div style="{{ secOverrides.header }}">
                 <span style="{{ secOverrides.dot }}"></span>
                 <span style="{{ secOverrides.title }}">CHANGES</span>
-                <span data-info="1" style="{{ secOverrides.help }}" onMouseEnter="{{ secOverrides.onHelpIn }}" onMouseLeave="{{ secOverrides.onHelpOut }}" onClick="{{ secOverrides.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secOverrides.help }}" onMouseEnter="{{ secOverrides.onHelpIn }}" onMouseLeave="{{ secOverrides.onHelpOut }}" onClick="{{ secOverrides.onHelpPin }}">?</span>
                 <span style="{{ secOverrides.meta }}">{{ secOverrides.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4269,7 +4272,7 @@
               <div style="{{ secWeapon.header }}">
                 <span style="{{ secWeapon.dot }}"></span>
                 <span style="{{ secWeapon.title }}">WEAPON</span>
-                <span data-info="1" style="{{ secWeapon.help }}" onMouseEnter="{{ secWeapon.onHelpIn }}" onMouseLeave="{{ secWeapon.onHelpOut }}" onClick="{{ secWeapon.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secWeapon.help }}" onMouseEnter="{{ secWeapon.onHelpIn }}" onMouseLeave="{{ secWeapon.onHelpOut }}" onClick="{{ secWeapon.onHelpPin }}">?</span>
                 <span style="{{ secWeapon.meta }}">{{ secWeapon.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4309,7 +4312,7 @@
               <div style="{{ secBlast.header }}">
                 <span style="{{ secBlast.dot }}"></span>
                 <span style="{{ secBlast.title }}">BLAST</span>
-                <span data-info="1" style="{{ secBlast.help }}" onMouseEnter="{{ secBlast.onHelpIn }}" onMouseLeave="{{ secBlast.onHelpOut }}" onClick="{{ secBlast.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secBlast.help }}" onMouseEnter="{{ secBlast.onHelpIn }}" onMouseLeave="{{ secBlast.onHelpOut }}" onClick="{{ secBlast.onHelpPin }}">?</span>
                 <span style="{{ secBlast.meta }}">{{ secBlast.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4360,7 +4363,7 @@
               <div style="{{ secAttack.header }}">
                 <span style="{{ secAttack.dot }}"></span>
                 <span style="{{ secAttack.title }}">ATTACK</span>
-                <span data-info="1" style="{{ secAttack.help }}" onMouseEnter="{{ secAttack.onHelpIn }}" onMouseLeave="{{ secAttack.onHelpOut }}" onClick="{{ secAttack.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secAttack.help }}" onMouseEnter="{{ secAttack.onHelpIn }}" onMouseLeave="{{ secAttack.onHelpOut }}" onClick="{{ secAttack.onHelpPin }}">?</span>
                 <span style="{{ secAttack.meta }}">{{ secAttack.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4408,7 +4411,7 @@
               <div style="{{ secPlaced.header }}">
                 <span style="{{ secPlaced.dot }}"></span>
                 <span style="{{ secPlaced.title }}">PROPERTIES</span>
-                <span data-info="1" style="{{ secPlaced.help }}" onMouseEnter="{{ secPlaced.onHelpIn }}" onMouseLeave="{{ secPlaced.onHelpOut }}" onClick="{{ secPlaced.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secPlaced.help }}" onMouseEnter="{{ secPlaced.onHelpIn }}" onMouseLeave="{{ secPlaced.onHelpOut }}" onClick="{{ secPlaced.onHelpPin }}">?</span>
                 <span style="{{ secPlaced.meta }}">{{ secPlaced.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4517,7 +4520,7 @@
               <div style="{{ secObject.header }}">
                 <span style="{{ secObject.dot }}"></span>
                 <span style="{{ secObject.title }}">OBJECTS</span>
-                <span data-info="1" style="{{ secObject.help }}" onMouseEnter="{{ secObject.onHelpIn }}" onMouseLeave="{{ secObject.onHelpOut }}" onClick="{{ secObject.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secObject.help }}" onMouseEnter="{{ secObject.onHelpIn }}" onMouseLeave="{{ secObject.onHelpOut }}" onClick="{{ secObject.onHelpPin }}">?</span>
                 <span style="{{ secObject.meta }}">{{ secObject.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4556,7 +4559,7 @@
               <div style="{{ secBehave.header }}">
                 <span style="{{ secBehave.dot }}"></span>
                 <span style="{{ secBehave.title }}">BEHAVE</span>
-                <span data-info="1" style="{{ secBehave.help }}" onMouseEnter="{{ secBehave.onHelpIn }}" onMouseLeave="{{ secBehave.onHelpOut }}" onClick="{{ secBehave.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secBehave.help }}" onMouseEnter="{{ secBehave.onHelpIn }}" onMouseLeave="{{ secBehave.onHelpOut }}" onClick="{{ secBehave.onHelpPin }}">?</span>
                 <span style="{{ secBehave.meta }}">{{ secBehave.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4626,7 +4629,7 @@
               <div style="{{ secPiece.header }}">
                 <span style="{{ secPiece.dot }}"></span>
                 <span style="{{ secPiece.title }}">PIECE</span>
-                <span data-info="1" style="{{ secPiece.help }}" onMouseEnter="{{ secPiece.onHelpIn }}" onMouseLeave="{{ secPiece.onHelpOut }}" onClick="{{ secPiece.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secPiece.help }}" onMouseEnter="{{ secPiece.onHelpIn }}" onMouseLeave="{{ secPiece.onHelpOut }}" onClick="{{ secPiece.onHelpPin }}">?</span>
                 <span style="{{ secPiece.meta }}">{{ secPiece.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4696,7 +4699,7 @@
               <div style="{{ secNpcList.header }}">
                 <span style="{{ secNpcList.dot }}"></span>
                 <span style="{{ secNpcList.title }}">CAST</span>
-                <span data-info="1" style="{{ secNpcList.help }}" onMouseEnter="{{ secNpcList.onHelpIn }}" onMouseLeave="{{ secNpcList.onHelpOut }}" onClick="{{ secNpcList.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secNpcList.help }}" onMouseEnter="{{ secNpcList.onHelpIn }}" onMouseLeave="{{ secNpcList.onHelpOut }}" onClick="{{ secNpcList.onHelpPin }}">?</span>
                 <span style="{{ secNpcList.meta }}">{{ secNpcList.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4735,7 +4738,7 @@
               <div style="{{ secNpcFace.header }}">
                 <span style="{{ secNpcFace.dot }}"></span>
                 <span style="{{ secNpcFace.title }}">FACE</span>
-                <span data-info="1" style="{{ secNpcFace.help }}" onMouseEnter="{{ secNpcFace.onHelpIn }}" onMouseLeave="{{ secNpcFace.onHelpOut }}" onClick="{{ secNpcFace.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secNpcFace.help }}" onMouseEnter="{{ secNpcFace.onHelpIn }}" onMouseLeave="{{ secNpcFace.onHelpOut }}" onClick="{{ secNpcFace.onHelpPin }}">?</span>
                 <span style="{{ secNpcFace.meta }}">{{ secNpcFace.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4765,7 +4768,7 @@
               <div style="{{ secNpcSay.header }}">
                 <span style="{{ secNpcSay.dot }}"></span>
                 <span style="{{ secNpcSay.title }}">SPEECH</span>
-                <span data-info="1" style="{{ secNpcSay.help }}" onMouseEnter="{{ secNpcSay.onHelpIn }}" onMouseLeave="{{ secNpcSay.onHelpOut }}" onClick="{{ secNpcSay.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secNpcSay.help }}" onMouseEnter="{{ secNpcSay.onHelpIn }}" onMouseLeave="{{ secNpcSay.onHelpOut }}" onClick="{{ secNpcSay.onHelpPin }}">?</span>
                 <span style="{{ secNpcSay.meta }}">{{ secNpcSay.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4798,7 +4801,7 @@
               <div style="{{ secNpcQuest.header }}">
                 <span style="{{ secNpcQuest.dot }}"></span>
                 <span style="{{ secNpcQuest.title }}">QUEST</span>
-                <span data-info="1" style="{{ secNpcQuest.help }}" onMouseEnter="{{ secNpcQuest.onHelpIn }}" onMouseLeave="{{ secNpcQuest.onHelpOut }}" onClick="{{ secNpcQuest.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secNpcQuest.help }}" onMouseEnter="{{ secNpcQuest.onHelpIn }}" onMouseLeave="{{ secNpcQuest.onHelpOut }}" onClick="{{ secNpcQuest.onHelpPin }}">?</span>
                 <span style="{{ secNpcQuest.meta }}">{{ secNpcQuest.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4869,7 +4872,7 @@
               <div style="{{ secDlgList.header }}">
                 <span style="{{ secDlgList.dot }}"></span>
                 <span style="{{ secDlgList.title }}">DIALOGS</span>
-                <span data-info="1" style="{{ secDlgList.help }}" onMouseEnter="{{ secDlgList.onHelpIn }}" onMouseLeave="{{ secDlgList.onHelpOut }}" onClick="{{ secDlgList.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgList.help }}" onMouseEnter="{{ secDlgList.onHelpIn }}" onMouseLeave="{{ secDlgList.onHelpOut }}" onClick="{{ secDlgList.onHelpPin }}">?</span>
                 <span style="{{ secDlgList.meta }}">{{ secDlgList.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4903,7 +4906,7 @@
               <div style="{{ secDlgWho.header }}">
                 <span style="{{ secDlgWho.dot }}"></span>
                 <span style="{{ secDlgWho.title }}">SPEAKER</span>
-                <span data-info="1" style="{{ secDlgWho.help }}" onMouseEnter="{{ secDlgWho.onHelpIn }}" onMouseLeave="{{ secDlgWho.onHelpOut }}" onClick="{{ secDlgWho.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgWho.help }}" onMouseEnter="{{ secDlgWho.onHelpIn }}" onMouseLeave="{{ secDlgWho.onHelpOut }}" onClick="{{ secDlgWho.onHelpPin }}">?</span>
                 <span style="{{ secDlgWho.meta }}">{{ secDlgWho.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -4936,7 +4939,7 @@
               <div style="{{ secDlgLook.header }}">
                 <span style="{{ secDlgLook.dot }}"></span>
                 <span style="{{ secDlgLook.title }}">LOOK</span>
-                <span data-info="1" style="{{ secDlgLook.help }}" onMouseEnter="{{ secDlgLook.onHelpIn }}" onMouseLeave="{{ secDlgLook.onHelpOut }}" onClick="{{ secDlgLook.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgLook.help }}" onMouseEnter="{{ secDlgLook.onHelpIn }}" onMouseLeave="{{ secDlgLook.onHelpOut }}" onClick="{{ secDlgLook.onHelpPin }}">?</span>
                 <span style="{{ secDlgLook.meta }}">{{ secDlgLook.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5167,7 +5170,7 @@
               <div style="{{ secDlgPort.header }}">
                 <span style="{{ secDlgPort.dot }}"></span>
                 <span style="{{ secDlgPort.title }}">PORTRAIT</span>
-                <span data-info="1" style="{{ secDlgPort.help }}" onMouseEnter="{{ secDlgPort.onHelpIn }}" onMouseLeave="{{ secDlgPort.onHelpOut }}" onClick="{{ secDlgPort.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgPort.help }}" onMouseEnter="{{ secDlgPort.onHelpIn }}" onMouseLeave="{{ secDlgPort.onHelpOut }}" onClick="{{ secDlgPort.onHelpPin }}">?</span>
                 <span style="{{ secDlgPort.meta }}">{{ secDlgPort.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5238,7 +5241,7 @@
               <div style="{{ secDlgBack.header }}">
                 <span style="{{ secDlgBack.dot }}"></span>
                 <span style="{{ secDlgBack.title }}">BACKDROP</span>
-                <span data-info="1" style="{{ secDlgBack.help }}" onMouseEnter="{{ secDlgBack.onHelpIn }}" onMouseLeave="{{ secDlgBack.onHelpOut }}" onClick="{{ secDlgBack.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgBack.help }}" onMouseEnter="{{ secDlgBack.onHelpIn }}" onMouseLeave="{{ secDlgBack.onHelpOut }}" onClick="{{ secDlgBack.onHelpPin }}">?</span>
                 <span style="{{ secDlgBack.meta }}">{{ secDlgBack.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5294,7 +5297,7 @@
               <div style="{{ secDlgFeel.header }}">
                 <span style="{{ secDlgFeel.dot }}"></span>
                 <span style="{{ secDlgFeel.title }}">VOICE</span>
-                <span data-info="1" style="{{ secDlgFeel.help }}" onMouseEnter="{{ secDlgFeel.onHelpIn }}" onMouseLeave="{{ secDlgFeel.onHelpOut }}" onClick="{{ secDlgFeel.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgFeel.help }}" onMouseEnter="{{ secDlgFeel.onHelpIn }}" onMouseLeave="{{ secDlgFeel.onHelpOut }}" onClick="{{ secDlgFeel.onHelpPin }}">?</span>
                 <span style="{{ secDlgFeel.meta }}">{{ secDlgFeel.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5358,7 +5361,7 @@
               <div style="{{ secDlgImg.header }}">
                 <span style="{{ secDlgImg.dot }}"></span>
                 <span style="{{ secDlgImg.title }}">IMAGES</span>
-                <span data-info="1" style="{{ secDlgImg.help }}" onMouseEnter="{{ secDlgImg.onHelpIn }}" onMouseLeave="{{ secDlgImg.onHelpOut }}" onClick="{{ secDlgImg.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgImg.help }}" onMouseEnter="{{ secDlgImg.onHelpIn }}" onMouseLeave="{{ secDlgImg.onHelpOut }}" onClick="{{ secDlgImg.onHelpPin }}">?</span>
                 <span style="{{ secDlgImg.meta }}">{{ secDlgImg.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5395,7 +5398,7 @@
               <div style="{{ secDlgLines.header }}">
                 <span style="{{ secDlgLines.dot }}"></span>
                 <span style="{{ secDlgLines.title }}">LINES</span>
-                <span data-info="1" style="{{ secDlgLines.help }}" onMouseEnter="{{ secDlgLines.onHelpIn }}" onMouseLeave="{{ secDlgLines.onHelpOut }}" onClick="{{ secDlgLines.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDlgLines.help }}" onMouseEnter="{{ secDlgLines.onHelpIn }}" onMouseLeave="{{ secDlgLines.onHelpOut }}" onClick="{{ secDlgLines.onHelpPin }}">?</span>
                 <span style="{{ secDlgLines.meta }}">{{ secDlgLines.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5436,7 +5439,7 @@
               <div style="{{ secFaceEyes.header }}">
                 <span style="{{ secFaceEyes.dot }}"></span>
                 <span style="{{ secFaceEyes.title }}">EYES</span>
-                <span data-info="1" style="{{ secFaceEyes.help }}" onMouseEnter="{{ secFaceEyes.onHelpIn }}" onMouseLeave="{{ secFaceEyes.onHelpOut }}" onClick="{{ secFaceEyes.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secFaceEyes.help }}" onMouseEnter="{{ secFaceEyes.onHelpIn }}" onMouseLeave="{{ secFaceEyes.onHelpOut }}" onClick="{{ secFaceEyes.onHelpPin }}">?</span>
                 <span style="{{ secFaceEyes.meta }}">{{ secFaceEyes.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5520,7 +5523,7 @@
               <div style="{{ secFaceBrows.header }}">
                 <span style="{{ secFaceBrows.dot }}"></span>
                 <span style="{{ secFaceBrows.title }}">BROWS</span>
-                <span data-info="1" style="{{ secFaceBrows.help }}" onMouseEnter="{{ secFaceBrows.onHelpIn }}" onMouseLeave="{{ secFaceBrows.onHelpOut }}" onClick="{{ secFaceBrows.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secFaceBrows.help }}" onMouseEnter="{{ secFaceBrows.onHelpIn }}" onMouseLeave="{{ secFaceBrows.onHelpOut }}" onClick="{{ secFaceBrows.onHelpPin }}">?</span>
                 <span style="{{ secFaceBrows.meta }}">{{ secFaceBrows.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5590,7 +5593,7 @@
               <div style="{{ secFaceMouth.header }}">
                 <span style="{{ secFaceMouth.dot }}"></span>
                 <span style="{{ secFaceMouth.title }}">MOUTH</span>
-                <span data-info="1" style="{{ secFaceMouth.help }}" onMouseEnter="{{ secFaceMouth.onHelpIn }}" onMouseLeave="{{ secFaceMouth.onHelpOut }}" onClick="{{ secFaceMouth.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secFaceMouth.help }}" onMouseEnter="{{ secFaceMouth.onHelpIn }}" onMouseLeave="{{ secFaceMouth.onHelpOut }}" onClick="{{ secFaceMouth.onHelpPin }}">?</span>
                 <span style="{{ secFaceMouth.meta }}">{{ secFaceMouth.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5647,7 +5650,7 @@
               <div style="{{ secFaceGear.header }}">
                 <span style="{{ secFaceGear.dot }}"></span>
                 <span style="{{ secFaceGear.title }}">GLASSES</span>
-                <span data-info="1" style="{{ secFaceGear.help }}" onMouseEnter="{{ secFaceGear.onHelpIn }}" onMouseLeave="{{ secFaceGear.onHelpOut }}" onClick="{{ secFaceGear.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secFaceGear.help }}" onMouseEnter="{{ secFaceGear.onHelpIn }}" onMouseLeave="{{ secFaceGear.onHelpOut }}" onClick="{{ secFaceGear.onHelpPin }}">?</span>
                 <span style="{{ secFaceGear.meta }}">{{ secFaceGear.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5697,7 +5700,7 @@
               <div style="{{ secFaceExtra.header }}">
                 <span style="{{ secFaceExtra.dot }}"></span>
                 <span style="{{ secFaceExtra.title }}">NOSE</span>
-                <span data-info="1" style="{{ secFaceExtra.help }}" onMouseEnter="{{ secFaceExtra.onHelpIn }}" onMouseLeave="{{ secFaceExtra.onHelpOut }}" onClick="{{ secFaceExtra.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secFaceExtra.help }}" onMouseEnter="{{ secFaceExtra.onHelpIn }}" onMouseLeave="{{ secFaceExtra.onHelpOut }}" onClick="{{ secFaceExtra.onHelpPin }}">?</span>
                 <span style="{{ secFaceExtra.meta }}">{{ secFaceExtra.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5793,7 +5796,7 @@
               <div style="{{ secFaceSlots.header }}">
                 <span style="{{ secFaceSlots.dot }}"></span>
                 <span style="{{ secFaceSlots.title }}">SLOTS</span>
-                <span data-info="1" style="{{ secFaceSlots.help }}" onMouseEnter="{{ secFaceSlots.onHelpIn }}" onMouseLeave="{{ secFaceSlots.onHelpOut }}" onClick="{{ secFaceSlots.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secFaceSlots.help }}" onMouseEnter="{{ secFaceSlots.onHelpIn }}" onMouseLeave="{{ secFaceSlots.onHelpOut }}" onClick="{{ secFaceSlots.onHelpPin }}">?</span>
                 <span style="{{ secFaceSlots.meta }}">{{ secFaceSlots.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5831,7 +5834,7 @@
               <div style="{{ secTexMine.header }}">
                 <span style="{{ secTexMine.dot }}"></span>
                 <span style="{{ secTexMine.title }}">SAVED</span>
-                <span data-info="1" style="{{ secTexMine.help }}" onMouseEnter="{{ secTexMine.onHelpIn }}" onMouseLeave="{{ secTexMine.onHelpOut }}" onClick="{{ secTexMine.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secTexMine.help }}" onMouseEnter="{{ secTexMine.onHelpIn }}" onMouseLeave="{{ secTexMine.onHelpOut }}" onClick="{{ secTexMine.onHelpPin }}">?</span>
                 <span style="{{ secTexMine.meta }}">{{ secTexMine.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5870,7 +5873,7 @@
               <div style="{{ secTexTile.header }}">
                 <span style="{{ secTexTile.dot }}"></span>
                 <span style="{{ secTexTile.title }}">TILE</span>
-                <span data-info="1" style="{{ secTexTile.help }}" onMouseEnter="{{ secTexTile.onHelpIn }}" onMouseLeave="{{ secTexTile.onHelpOut }}" onClick="{{ secTexTile.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secTexTile.help }}" onMouseEnter="{{ secTexTile.onHelpIn }}" onMouseLeave="{{ secTexTile.onHelpOut }}" onClick="{{ secTexTile.onHelpPin }}">?</span>
                 <span style="{{ secTexTile.meta }}">{{ secTexTile.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5895,7 +5898,7 @@
               <div style="{{ secTexFill.header }}">
                 <span style="{{ secTexFill.dot }}"></span>
                 <span style="{{ secTexFill.title }}">FILL</span>
-                <span data-info="1" style="{{ secTexFill.help }}" onMouseEnter="{{ secTexFill.onHelpIn }}" onMouseLeave="{{ secTexFill.onHelpOut }}" onClick="{{ secTexFill.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secTexFill.help }}" onMouseEnter="{{ secTexFill.onHelpIn }}" onMouseLeave="{{ secTexFill.onHelpOut }}" onClick="{{ secTexFill.onHelpPin }}">?</span>
                 <span style="{{ secTexFill.meta }}">{{ secTexFill.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5928,7 +5931,7 @@
           <div style="{{ secTouchLayout.header }}">
             <span style="{{ secTouchLayout.dot }}"></span>
             <span style="{{ secTouchLayout.title }}">LAYOUT</span>
-            <span data-info="1" style="{{ secTouchLayout.help }}" onMouseEnter="{{ secTouchLayout.onHelpIn }}" onMouseLeave="{{ secTouchLayout.onHelpOut }}" onClick="{{ secTouchLayout.onHelpIn }}">?</span>
+            <span data-info="1" style="{{ secTouchLayout.help }}" onMouseEnter="{{ secTouchLayout.onHelpIn }}" onMouseLeave="{{ secTouchLayout.onHelpOut }}" onClick="{{ secTouchLayout.onHelpPin }}">?</span>
             <span style="{{ secTouchLayout.meta }}">{{ secTouchLayout.metaText }}</span>
             <div style="flex:1"></div>
             <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -5967,7 +5970,7 @@
           <div style="{{ secTouchPads.header }}">
             <span style="{{ secTouchPads.dot }}"></span>
             <span style="{{ secTouchPads.title }}">PADS</span>
-            <span data-info="1" style="{{ secTouchPads.help }}" onMouseEnter="{{ secTouchPads.onHelpIn }}" onMouseLeave="{{ secTouchPads.onHelpOut }}" onClick="{{ secTouchPads.onHelpIn }}">?</span>
+            <span data-info="1" style="{{ secTouchPads.help }}" onMouseEnter="{{ secTouchPads.onHelpIn }}" onMouseLeave="{{ secTouchPads.onHelpOut }}" onClick="{{ secTouchPads.onHelpPin }}">?</span>
             <span style="{{ secTouchPads.meta }}">{{ secTouchPads.metaText }}</span>
             <div style="flex:1"></div>
             <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6004,7 +6007,7 @@
               <div style="{{ secPlaced.header }}">
                 <span style="{{ secPlaced.dot }}"></span>
                 <span style="{{ secPlaced.title }}">PROPERTIES</span>
-                <span data-info="1" style="{{ secPlaced.help }}" onMouseEnter="{{ secPlaced.onHelpIn }}" onMouseLeave="{{ secPlaced.onHelpOut }}" onClick="{{ secPlaced.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secPlaced.help }}" onMouseEnter="{{ secPlaced.onHelpIn }}" onMouseLeave="{{ secPlaced.onHelpOut }}" onClick="{{ secPlaced.onHelpPin }}">?</span>
                 <span style="{{ secPlaced.meta }}">{{ secPlaced.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6114,7 +6117,7 @@
               <div style="{{ secRoom.header }}">
                 <span style="{{ secRoom.dot }}"></span>
                 <span style="{{ secRoom.title }}">ROOM</span>
-                <span data-info="1" style="{{ secRoom.help }}" onMouseEnter="{{ secRoom.onHelpIn }}" onMouseLeave="{{ secRoom.onHelpOut }}" onClick="{{ secRoom.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secRoom.help }}" onMouseEnter="{{ secRoom.onHelpIn }}" onMouseLeave="{{ secRoom.onHelpOut }}" onClick="{{ secRoom.onHelpPin }}">?</span>
                 <span style="{{ secRoom.meta }}">{{ secRoom.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6166,7 +6169,7 @@
               <div style="{{ secPages.header }}">
                 <span style="{{ secPages.dot }}"></span>
                 <span style="{{ secPages.title }}">PAGES</span>
-                <span data-info="1" style="{{ secPages.help }}" onMouseEnter="{{ secPages.onHelpIn }}" onMouseLeave="{{ secPages.onHelpOut }}" onClick="{{ secPages.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secPages.help }}" onMouseEnter="{{ secPages.onHelpIn }}" onMouseLeave="{{ secPages.onHelpOut }}" onClick="{{ secPages.onHelpPin }}">?</span>
                 <span style="{{ secPages.meta }}">{{ secPages.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6217,7 +6220,7 @@
                 <div style="{{ secPageLook.header }}">
                   <span style="{{ secPageLook.dot }}"></span>
                   <span style="{{ secPageLook.title }}">LOOK</span>
-                  <span data-info="1" style="{{ secPageLook.help }}" onMouseEnter="{{ secPageLook.onHelpIn }}" onMouseLeave="{{ secPageLook.onHelpOut }}" onClick="{{ secPageLook.onHelpIn }}">?</span>
+                  <span data-info="1" style="{{ secPageLook.help }}" onMouseEnter="{{ secPageLook.onHelpIn }}" onMouseLeave="{{ secPageLook.onHelpOut }}" onClick="{{ secPageLook.onHelpPin }}">?</span>
                   <span style="{{ secPageLook.meta }}">{{ secPageLook.metaText }}</span>
                   <div style="flex:1"></div>
                   <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6420,7 +6423,7 @@
               <div style="{{ secTiles.header }}">
                 <span style="{{ secTiles.dot }}"></span>
                 <span style="{{ secTiles.title }}">TILES</span>
-                <span data-info="1" style="{{ secTiles.help }}" onMouseEnter="{{ secTiles.onHelpIn }}" onMouseLeave="{{ secTiles.onHelpOut }}" onClick="{{ secTiles.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secTiles.help }}" onMouseEnter="{{ secTiles.onHelpIn }}" onMouseLeave="{{ secTiles.onHelpOut }}" onClick="{{ secTiles.onHelpPin }}">?</span>
                 <span style="{{ secTiles.meta }}">{{ secTiles.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6480,7 +6483,7 @@
               <div style="{{ secPlace.header }}">
                 <span style="{{ secPlace.dot }}"></span>
                 <span style="{{ secPlace.title }}">OBJECTS</span>
-                <span data-info="1" style="{{ secPlace.help }}" onMouseEnter="{{ secPlace.onHelpIn }}" onMouseLeave="{{ secPlace.onHelpOut }}" onClick="{{ secPlace.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secPlace.help }}" onMouseEnter="{{ secPlace.onHelpIn }}" onMouseLeave="{{ secPlace.onHelpOut }}" onClick="{{ secPlace.onHelpPin }}">?</span>
                 <span style="{{ secPlace.meta }}">{{ secPlace.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6517,7 +6520,7 @@
               <div style="{{ secLoot.header }}">
                 <span style="{{ secLoot.dot }}"></span>
                 <span style="{{ secLoot.title }}">WEAPONS</span>
-                <span data-info="1" style="{{ secLoot.help }}" onMouseEnter="{{ secLoot.onHelpIn }}" onMouseLeave="{{ secLoot.onHelpOut }}" onClick="{{ secLoot.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secLoot.help }}" onMouseEnter="{{ secLoot.onHelpIn }}" onMouseLeave="{{ secLoot.onHelpOut }}" onClick="{{ secLoot.onHelpPin }}">?</span>
                 <span style="{{ secLoot.meta }}">{{ secLoot.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6554,7 +6557,7 @@
               <div style="{{ secEnemies.header }}">
                 <span style="{{ secEnemies.dot }}"></span>
                 <span style="{{ secEnemies.title }}">ENEMIES</span>
-                <span data-info="1" style="{{ secEnemies.help }}" onMouseEnter="{{ secEnemies.onHelpIn }}" onMouseLeave="{{ secEnemies.onHelpOut }}" onClick="{{ secEnemies.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secEnemies.help }}" onMouseEnter="{{ secEnemies.onHelpIn }}" onMouseLeave="{{ secEnemies.onHelpOut }}" onClick="{{ secEnemies.onHelpPin }}">?</span>
                 <span style="{{ secEnemies.meta }}">{{ secEnemies.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6608,7 +6611,7 @@
               <div style="{{ secSpawners.header }}">
                 <span style="{{ secSpawners.dot }}"></span>
                 <span style="{{ secSpawners.title }}">PADS</span>
-                <span data-info="1" style="{{ secSpawners.help }}" onMouseEnter="{{ secSpawners.onHelpIn }}" onMouseLeave="{{ secSpawners.onHelpOut }}" onClick="{{ secSpawners.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secSpawners.help }}" onMouseEnter="{{ secSpawners.onHelpIn }}" onMouseLeave="{{ secSpawners.onHelpOut }}" onClick="{{ secSpawners.onHelpPin }}">?</span>
                 <span style="{{ secSpawners.meta }}">{{ secSpawners.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6668,7 +6671,7 @@
               <div style="{{ secSky.header }}">
                 <span style="{{ secSky.dot }}"></span>
                 <span style="{{ secSky.title }}">SKY</span>
-                <span data-info="1" style="{{ secSky.help }}" onMouseEnter="{{ secSky.onHelpIn }}" onMouseLeave="{{ secSky.onHelpOut }}" onClick="{{ secSky.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secSky.help }}" onMouseEnter="{{ secSky.onHelpIn }}" onMouseLeave="{{ secSky.onHelpOut }}" onClick="{{ secSky.onHelpPin }}">?</span>
                 <span style="{{ secSky.meta }}">{{ secSky.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6721,7 +6724,7 @@
               <div style="{{ secRoomTools.header }}">
                 <span style="{{ secRoomTools.dot }}"></span>
                 <span style="{{ secRoomTools.title }}">TOOLS</span>
-                <span data-info="1" style="{{ secRoomTools.help }}" onMouseEnter="{{ secRoomTools.onHelpIn }}" onMouseLeave="{{ secRoomTools.onHelpOut }}" onClick="{{ secRoomTools.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secRoomTools.help }}" onMouseEnter="{{ secRoomTools.onHelpIn }}" onMouseLeave="{{ secRoomTools.onHelpOut }}" onClick="{{ secRoomTools.onHelpPin }}">?</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
                   <div style="{{ secRoomTools.btn }}" onClick="{{ secRoomTools.onUp }}">▲</div>
@@ -6756,7 +6759,7 @@
               <div style="{{ secBoardPreview.header }}">
                 <span style="{{ secBoardPreview.dot }}"></span>
                 <span style="{{ secBoardPreview.title }}">THE BOARD</span>
-                <span data-info="1" style="{{ secBoardPreview.help }}" onMouseEnter="{{ secBoardPreview.onHelpIn }}" onMouseLeave="{{ secBoardPreview.onHelpOut }}" onClick="{{ secBoardPreview.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secBoardPreview.help }}" onMouseEnter="{{ secBoardPreview.onHelpIn }}" onMouseLeave="{{ secBoardPreview.onHelpOut }}" onClick="{{ secBoardPreview.onHelpPin }}">?</span>
                 <span style="{{ secBoardPreview.meta }}">{{ secBoardPreview.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6807,7 +6810,7 @@
               <div style="{{ secLobbyBoard.header }}">
                 <span style="{{ secLobbyBoard.dot }}"></span>
                 <span style="{{ secLobbyBoard.title }}">LEADERBOARD</span>
-                <span data-info="1" style="{{ secLobbyBoard.help }}" onMouseEnter="{{ secLobbyBoard.onHelpIn }}" onMouseLeave="{{ secLobbyBoard.onHelpOut }}" onClick="{{ secLobbyBoard.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secLobbyBoard.help }}" onMouseEnter="{{ secLobbyBoard.onHelpIn }}" onMouseLeave="{{ secLobbyBoard.onHelpOut }}" onClick="{{ secLobbyBoard.onHelpPin }}">?</span>
                 <span style="{{ secLobbyBoard.meta }}">{{ secLobbyBoard.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6872,7 +6875,7 @@
               <div style="{{ secLobbyStats.header }}">
                 <span style="{{ secLobbyStats.dot }}"></span>
                 <span style="{{ secLobbyStats.title }}">STAT POOL</span>
-                <span data-info="1" style="{{ secLobbyStats.help }}" onMouseEnter="{{ secLobbyStats.onHelpIn }}" onMouseLeave="{{ secLobbyStats.onHelpOut }}" onClick="{{ secLobbyStats.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secLobbyStats.help }}" onMouseEnter="{{ secLobbyStats.onHelpIn }}" onMouseLeave="{{ secLobbyStats.onHelpOut }}" onClick="{{ secLobbyStats.onHelpPin }}">?</span>
                 <span style="{{ secLobbyStats.meta }}">{{ secLobbyStats.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6905,7 +6908,7 @@
               <div style="{{ secLobbyRoom.header }}">
                 <span style="{{ secLobbyRoom.dot }}"></span>
                 <span style="{{ secLobbyRoom.title }}">HUB ROOM</span>
-                <span data-info="1" style="{{ secLobbyRoom.help }}" onMouseEnter="{{ secLobbyRoom.onHelpIn }}" onMouseLeave="{{ secLobbyRoom.onHelpOut }}" onClick="{{ secLobbyRoom.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secLobbyRoom.help }}" onMouseEnter="{{ secLobbyRoom.onHelpIn }}" onMouseLeave="{{ secLobbyRoom.onHelpOut }}" onClick="{{ secLobbyRoom.onHelpPin }}">?</span>
                 <span style="{{ secLobbyRoom.meta }}">{{ secLobbyRoom.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6938,7 +6941,7 @@
               <div style="{{ secLobbyCerts.header }}">
                 <span style="{{ secLobbyCerts.dot }}"></span>
                 <span style="{{ secLobbyCerts.title }}">CERT WALL</span>
-                <span data-info="1" style="{{ secLobbyCerts.help }}" onMouseEnter="{{ secLobbyCerts.onHelpIn }}" onMouseLeave="{{ secLobbyCerts.onHelpOut }}" onClick="{{ secLobbyCerts.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secLobbyCerts.help }}" onMouseEnter="{{ secLobbyCerts.onHelpIn }}" onMouseLeave="{{ secLobbyCerts.onHelpOut }}" onClick="{{ secLobbyCerts.onHelpPin }}">?</span>
                 <span style="{{ secLobbyCerts.meta }}">{{ secLobbyCerts.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -6968,7 +6971,7 @@
               <div style="{{ secLobbyDoor.header }}">
                 <span style="{{ secLobbyDoor.dot }}"></span>
                 <span style="{{ secLobbyDoor.title }}">GAME DOOR</span>
-                <span data-info="1" style="{{ secLobbyDoor.help }}" onMouseEnter="{{ secLobbyDoor.onHelpIn }}" onMouseLeave="{{ secLobbyDoor.onHelpOut }}" onClick="{{ secLobbyDoor.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secLobbyDoor.help }}" onMouseEnter="{{ secLobbyDoor.onHelpIn }}" onMouseLeave="{{ secLobbyDoor.onHelpOut }}" onClick="{{ secLobbyDoor.onHelpPin }}">?</span>
                 <span style="{{ secLobbyDoor.meta }}">{{ secLobbyDoor.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7008,7 +7011,7 @@
               <div style="{{ secDriver.header }}">
                 <span style="{{ secDriver.dot }}"></span>
                 <span style="{{ secDriver.title }}">PLAYER</span>
-                <span data-info="1" style="{{ secDriver.help }}" onMouseEnter="{{ secDriver.onHelpIn }}" onMouseLeave="{{ secDriver.onHelpOut }}" onClick="{{ secDriver.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secDriver.help }}" onMouseEnter="{{ secDriver.onHelpIn }}" onMouseLeave="{{ secDriver.onHelpOut }}" onClick="{{ secDriver.onHelpPin }}">?</span>
                 <span style="{{ secDriver.meta }}">{{ secDriver.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7043,7 +7046,7 @@
               <div style="{{ secAI.header }}">
                 <span style="{{ secAI.dot }}"></span>
                 <span style="{{ secAI.title }}">ENEMY</span>
-                <span data-info="1" style="{{ secAI.help }}" onMouseEnter="{{ secAI.onHelpIn }}" onMouseLeave="{{ secAI.onHelpOut }}" onClick="{{ secAI.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secAI.help }}" onMouseEnter="{{ secAI.onHelpIn }}" onMouseLeave="{{ secAI.onHelpOut }}" onClick="{{ secAI.onHelpPin }}">?</span>
                 <span style="{{ secAI.meta }}">{{ secAI.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7091,7 +7094,7 @@
               <div style="{{ secAlly.header }}">
                 <span style="{{ secAlly.dot }}"></span>
                 <span style="{{ secAlly.title }}">ALLY</span>
-                <span data-info="1" style="{{ secAlly.help }}" onMouseEnter="{{ secAlly.onHelpIn }}" onMouseLeave="{{ secAlly.onHelpOut }}" onClick="{{ secAlly.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secAlly.help }}" onMouseEnter="{{ secAlly.onHelpIn }}" onMouseLeave="{{ secAlly.onHelpOut }}" onClick="{{ secAlly.onHelpPin }}">?</span>
                 <span style="{{ secAlly.meta }}">{{ secAlly.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7133,7 +7136,7 @@
               <div style="{{ secRules.header }}">
                 <span style="{{ secRules.dot }}"></span>
                 <span style="{{ secRules.title }}">RULES</span>
-                <span data-info="1" style="{{ secRules.help }}" onMouseEnter="{{ secRules.onHelpIn }}" onMouseLeave="{{ secRules.onHelpOut }}" onClick="{{ secRules.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secRules.help }}" onMouseEnter="{{ secRules.onHelpIn }}" onMouseLeave="{{ secRules.onHelpOut }}" onClick="{{ secRules.onHelpPin }}">?</span>
                 <span style="{{ secRules.meta }}">{{ secRules.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7169,7 +7172,7 @@
               <div style="{{ secRule.header }}">
                 <span style="{{ secRule.dot }}"></span>
                 <span style="{{ secRule.title }}">WHEN</span>
-                <span data-info="1" style="{{ secRule.help }}" onMouseEnter="{{ secRule.onHelpIn }}" onMouseLeave="{{ secRule.onHelpOut }}" onClick="{{ secRule.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secRule.help }}" onMouseEnter="{{ secRule.onHelpIn }}" onMouseLeave="{{ secRule.onHelpOut }}" onClick="{{ secRule.onHelpPin }}">?</span>
                 <span style="{{ secRule.meta }}">{{ secRule.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7209,7 +7212,7 @@
               <div style="{{ secIfs.header }}">
                 <span style="{{ secIfs.dot }}"></span>
                 <span style="{{ secIfs.title }}">REQUIRES</span>
-                <span data-info="1" style="{{ secIfs.help }}" onMouseEnter="{{ secIfs.onHelpIn }}" onMouseLeave="{{ secIfs.onHelpOut }}" onClick="{{ secIfs.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secIfs.help }}" onMouseEnter="{{ secIfs.onHelpIn }}" onMouseLeave="{{ secIfs.onHelpOut }}" onClick="{{ secIfs.onHelpPin }}">?</span>
                 <span style="{{ secIfs.meta }}">{{ secIfs.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7249,7 +7252,7 @@
               <div style="{{ secThen.header }}">
                 <span style="{{ secThen.dot }}"></span>
                 <span style="{{ secThen.title }}">THEN</span>
-                <span data-info="1" style="{{ secThen.help }}" onMouseEnter="{{ secThen.onHelpIn }}" onMouseLeave="{{ secThen.onHelpOut }}" onClick="{{ secThen.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secThen.help }}" onMouseEnter="{{ secThen.onHelpIn }}" onMouseLeave="{{ secThen.onHelpOut }}" onClick="{{ secThen.onHelpPin }}">?</span>
                 <span style="{{ secThen.meta }}">{{ secThen.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7312,7 +7315,7 @@
               <div style="{{ secEndText.header }}">
                 <span style="{{ secEndText.dot }}"></span>
                 <span style="{{ secEndText.title }}">END SCREEN</span>
-                <span data-info="1" style="{{ secEndText.help }}" onMouseEnter="{{ secEndText.onHelpIn }}" onMouseLeave="{{ secEndText.onHelpOut }}" onClick="{{ secEndText.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secEndText.help }}" onMouseEnter="{{ secEndText.onHelpIn }}" onMouseLeave="{{ secEndText.onHelpOut }}" onClick="{{ secEndText.onHelpPin }}">?</span>
                 <span style="{{ secEndText.meta }}">{{ secEndText.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7357,7 +7360,7 @@
               <div style="{{ secEndLook.header }}">
                 <span style="{{ secEndLook.dot }}"></span>
                 <span style="{{ secEndLook.title }}">LOOK</span>
-                <span data-info="1" style="{{ secEndLook.help }}" onMouseEnter="{{ secEndLook.onHelpIn }}" onMouseLeave="{{ secEndLook.onHelpOut }}" onClick="{{ secEndLook.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secEndLook.help }}" onMouseEnter="{{ secEndLook.onHelpIn }}" onMouseLeave="{{ secEndLook.onHelpOut }}" onClick="{{ secEndLook.onHelpPin }}">?</span>
                 <span style="{{ secEndLook.meta }}">{{ secEndLook.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7518,7 +7521,7 @@
               <div style="{{ secLogicJson.header }}">
                 <span style="{{ secLogicJson.dot }}"></span>
                 <span style="{{ secLogicJson.title }}">JSON</span>
-                <span data-info="1" style="{{ secLogicJson.help }}" onMouseEnter="{{ secLogicJson.onHelpIn }}" onMouseLeave="{{ secLogicJson.onHelpOut }}" onClick="{{ secLogicJson.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secLogicJson.help }}" onMouseEnter="{{ secLogicJson.onHelpIn }}" onMouseLeave="{{ secLogicJson.onHelpOut }}" onClick="{{ secLogicJson.onHelpPin }}">?</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
                   <div style="{{ secLogicJson.btn }}" onClick="{{ secLogicJson.onUp }}">▲</div>
@@ -7548,7 +7551,7 @@
               <div style="{{ secHud.header }}">
                 <span style="{{ secHud.dot }}"></span>
                 <span style="{{ secHud.title }}">HUD</span>
-                <span data-info="1" style="{{ secHud.help }}" onMouseEnter="{{ secHud.onHelpIn }}" onMouseLeave="{{ secHud.onHelpOut }}" onClick="{{ secHud.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secHud.help }}" onMouseEnter="{{ secHud.onHelpIn }}" onMouseLeave="{{ secHud.onHelpOut }}" onClick="{{ secHud.onHelpPin }}">?</span>
                 <span style="{{ secHud.meta }}">{{ secHud.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7581,7 +7584,7 @@
               <div style="{{ secZones.header }}">
                 <span style="{{ secZones.dot }}"></span>
                 <span style="{{ secZones.title }}">ZONES</span>
-                <span data-info="1" style="{{ secZones.help }}" onMouseEnter="{{ secZones.onHelpIn }}" onMouseLeave="{{ secZones.onHelpOut }}" onClick="{{ secZones.onHelpIn }}">?</span>
+                <span data-info="1" style="{{ secZones.help }}" onMouseEnter="{{ secZones.onHelpIn }}" onMouseLeave="{{ secZones.onHelpOut }}" onClick="{{ secZones.onHelpPin }}">?</span>
                 <span style="{{ secZones.meta }}">{{ secZones.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -7622,7 +7625,7 @@
                 <div style="{{ secBadge.header }}">
                   <span style="{{ secBadge.dot }}"></span>
                   <span style="{{ secBadge.title }}">BADGE</span>
-                  <span data-info="1" style="{{ secBadge.help }}" onMouseEnter="{{ secBadge.onHelpIn }}" onMouseLeave="{{ secBadge.onHelpOut }}" onClick="{{ secBadge.onHelpIn }}">?</span>
+                  <span data-info="1" style="{{ secBadge.help }}" onMouseEnter="{{ secBadge.onHelpIn }}" onMouseLeave="{{ secBadge.onHelpOut }}" onClick="{{ secBadge.onHelpPin }}">?</span>
                   <span style="{{ secBadge.meta }}">{{ secBadge.metaText }}</span>
                   <div style="flex:1"></div>
                   <div style="display:flex;gap:1px;flex:0 0 auto">
@@ -8288,7 +8291,7 @@ const ANIM_DEF = { rate: 1, lock: {} };   // per-actor playback: clip rate + fro
 // or nineteen. Every preset below ships with real keys, so picking one and hitting
 // PLAY shows the motion immediately; the frame editor then reworks it.
 const CLIP_LEN = 7;
-const CLIP_VER = 3;                       // bump to re-seed presets into existing saves
+const CLIP_VER = 4;                       // bump to re-seed presets into existing saves
 const CLIP_CH = ["rx", "ry", "rz", "ox", "oy", "oz", "gl"];
 const CLIP_CH_LABEL = { rx: "TWIST X", ry: "TWIST Y", rz: "TWIST Z", ox: "OFFSET X", oy: "OFFSET Y", oz: "OFFSET Z", gl: "GLOW" };
 const CLIP_CH_SHORT = { rx: "X", ry: "Y", rz: "Z", ox: "OX", oy: "OY", oz: "OZ", gl: "GLOW" };
@@ -8352,6 +8355,12 @@ const CLIP_PRESETS = [
     { torso: { rx: -20 }, head: { rx: -18 }, armL: { rx: 44, rz: 22 }, armR: { rx: 44, rz: -22 }, legL: { rx: -12 }, legR: { rx: -12 } },
     { torso: { rx: -8 }, head: { rx: -7 }, armL: { rx: 18, rz: 10 }, armR: { rx: 18, rz: -10 } },
     {},
+  ] },
+  { id: "DIE", label: "DIE", fps: 5, loop: false, frames: [
+    { torso: { rx: -22, oy: -0.05 }, head: { rx: -26 }, armL: { rx: 52, rz: 30 }, armR: { rx: 52, rz: -30 }, legL: { rx: -16 }, legR: { rx: -16 } },
+    { torso: { rx: 34, oy: -0.3 }, torsoLow: { rx: -14 }, head: { rx: 20 }, armL: { rx: 84, rz: 40 }, forearmL: { rx: -30 }, armR: { rx: 84, rz: -40 }, forearmR: { rx: -30 }, legL: { rx: -40 }, shinL: { rx: 70 }, legR: { rx: -34 }, shinR: { rx: 62 } },
+    { torso: { rx: 76, oy: -0.62 }, torsoLow: { rx: -20 }, head: { rx: 34 }, armL: { rx: 96, rz: 54 }, forearmL: { rx: -18 }, armR: { rx: 96, rz: -54 }, forearmR: { rx: -18 }, legL: { rx: -58 }, shinL: { rx: 44 }, legR: { rx: -50 }, shinR: { rx: 38 } },
+    { torso: { rx: 88, oy: -0.74 }, torsoLow: { rx: -22 }, head: { rx: 40 }, armL: { rx: 100, rz: 62 }, forearmL: { rx: -10 }, armR: { rx: 100, rz: -62 }, forearmR: { rx: -10 }, legL: { rx: -64 }, shinL: { rx: 36 }, legR: { rx: -56 }, shinR: { rx: 30 } },
   ] },
   { id: "GUARD", label: "GUARD", fps: 2, loop: true, frames: [
     { torso: { ry: 14, rx: 4 }, torsoLow: { rx: -3 }, head: { ry: -10 }, armL: { rx: -40, rz: 18 }, forearmL: { rx: -64 }, armR: { rx: -14, rz: -6 }, forearmR: { rx: -34 }, legL: { rx: -8 }, shinL: { rx: 14 }, legR: { rx: -8 }, shinR: { rx: 14 } },
@@ -8474,22 +8483,22 @@ const TOOL_ICON = {
 // drift apart. Sorted A-Z at the source, like every other list in the studio.
 const MANUAL = [
   ["Actor", "Player, NPC and enemy blueprints. The R6 rig — head, torso, two arms, two legs plus ears, tail, segments and accessories — built socket by socket. Editing a pet or an NPC body swaps this same page onto that creature.", [
-    ["PLAYERS", "Saved player characters. Pick one to make it the live body; NEW banks the body you are looking at, DUPLICATE branches a variant with its own held items, pet, face and stats."],
-    ["PRESETS", "Actor blueprints — load a whole body in one tap. RANDOMIZE rerolls each socket’s shape, paint and whether it is attached, rolls the nineteen worn points as well, and nudges every size and stat by up to 20%; RESET restores whichever body you are editing to its stock preset. Both socket and gear rolls draw only from pieces you own, so every unlocked pack widens what RANDOMIZE can build; gear is deliberately sparse, each point favours pieces that suit it (hair on the crown, jewelry at the wrists), and left/right pairs always roll the same piece. Angles and offsets are never rolled."],
+    ["PLAYERS", "Saved player characters. Pick one to make it the live body; NEW banks the body you are looking at, DUPLICATE branches a variant with its own held items, pet, face and stats. While a row is selected the live body tracks it — every edit is banked into that slot, so the roster never shows a body you have edited past. RESET and RANDOMIZE are the exception: on the hero or its pet, both bank the slot as it stands and then let go of it, leaving the row exactly as you built it and the live body a scratch copy that belongs to no slot. On an enemy, boss or NPC they change that blueprint alone — those live in their own libraries and never touched a PLAYERS row. Nothing is selected until you tap a row (which loads it back) or NEW banks the scratch body as its own character."],
+    ["PRESETS", "Actor blueprints — load a whole body in one tap. Neither button here can reach a saved character: on the hero or its pet, RESET and RANDOMIZE release the selected PLAYERS row first, so your save survives and the change lands on a scratch copy. On an enemy, boss or NPC they only touch that blueprint. RANDOMIZE rerolls each socket’s shape, paint and whether it is attached, rolls the nineteen worn points as well, and nudges every size and stat by up to 20%; RESET restores whichever body you are editing to its stock preset. Both socket and gear rolls draw only from pieces you own, so every unlocked pack widens what RANDOMIZE can build; gear is deliberately sparse, each point favours pieces that suit it (hair on the crown, jewelry at the wrists), and left/right pairs always roll the same piece. Angles and offsets are never rolled."],
     ["SOCKETS", "The rig's parts list AND the editor for whichever socket is selected, in one panel — the same shape ATTACH has. Tap a socket to select it, toggle one off to make a limbless creature, and edit it below the divider: shape (with + MORE for the full piece library), paint, texture, the size and angle sliders, and RESET PART / RESET BODY. Every paint row in the studio is the same sixteen slots: fifteen colours — eight brights, then white, grey and black, then four skin tones from pale to dark brown — and a + that opens the picker for anything else."],
     ["ATTACH", "Nineteen attachment points — one per joint, plus HAIR, WINGS, CHEST and two per foot. Gear worn here rides the joint through the whole animation. Separate from SOCKETS on purpose: sockets are the body, attachments are what it wears."],
-    ["HOLDING", "What is in each hand at the start of a run — the loadout, not an armoury. The held item declares its own action. In play you can only swap between this loadout and weapons you have picked up, so anything else has to be found in the room. Hidden while editing a pet."],
+    ["HOLDING", "What is in each hand at the start of a run — the loadout, not an armoury. An enemy, boss, NPC or pet is not offered the HOOKSHOT: a grapple reels its own user in, so an AI body has no use for it and never picks one when ARMED rolls a weapon. The held item declares its own action. In play you can only swap between this loadout and weapons you have picked up, so anything else has to be found in the room. Hidden while editing a pet."],
     ["GRIP", "Where the held item sits in the hand, per hand: OFFSET X, Y and Z slide it, PITCH, ROLL and YAW turn it, GRIP SIZE scales it. The offsets are body-space \u2014 +X the body's right, +Y up, +Z forward, the same axes the animation timeline uses \u2014 and are not mirrored between hands, so a value means one direction whichever hand you are on. Everything here scales with the body, so a grip tuned once holds when the actor is resized. Hidden on a pet."],
     ["PET", "The companion that follows the player: whether it is on, how it trails, and a jump into its body."],
-    ["STATS", "Body values every brain reads — health, speed, jump, reach. HITBOX HEIGHT is the collision capsule in build levels, 0.5L to 2.5L in half steps — at 1L or under the body crawls through a single-block gap, and the art can be any size you like either way. Under the sliders, CAN SWIM is a yes/no rather than a slider: it decides whether this body may enter a WATER BLOCK or treats one as a wall."],
+    ["STATS", "Body values every brain reads — health, speed, jump, reach. ANIM SPEED is playback for this body's clips and its procedural walk swing, everywhere the body is drawn — in play, on the Actor page and in the Animation preview. Drop it and a heavy thing shambles, raise it and a small one skitters, with no keys of its own either way. It rides the blueprint, so every spawn of that enemy runs at the speed you set. The Animation studio's own CLIP RATE is a different control — that one scales the clip you are posing, and the two multiply. The capsule is also what bodies collide on: two actors never share a spot, so a crowd of chasers spreads around you instead of stacking into one. HITBOX HEIGHT is the collision capsule in build levels, 0.5L to 2.5L in half steps — at 1L or under the body crawls through a single-block gap, and the art can be any size you like either way. Under the sliders, CAN SWIM is a yes/no rather than a slider: it decides whether this body may enter a WATER BLOCK or treats one as a wall."],
     ["CAMERA", "Rig offsets — DISTANCE, HEIGHT, SHOULDER, AIM HEIGHT — shared by the ORBIT, DRONE and EYES cameras."],
     ["CHANGES", "A diff: everything this actor changes against the base body. Empty means stock."],
   ]],
   ["Animation", "The clip editor with the whole screen to itself: opening it folds the studio panels away, the way RUN's fullscreen does — body in the middle, every socket down one side, every attachment down the other, the timeline across the bottom. The only place clips are posed — the ACTOR card carries no timeline, because posing from the inspector meant scrolling between the socket list and the timeline for every single key.", [
-    ["CLIP BAR", "Across the top: which clip you are posing — idle, walk, run, jump, attack and the rest, A–Z — the body being posed, a live readout of how many of the seven frames are keyed, and CLOSE — Esc does the same — which drops you back in ACTOR and brings the studio panels back. Attacks have a clip per hand: ATTACK swings the right arm, ATTACK L the left, and the engine picks by the hand that struck — except a gun, which fires SHOOT from either hand, and a shield, which stands in GUARD instead of IDLE while you hold still. The held item's action, set in WEAPONS ▸ ATTACK, is what chooses."],
+    ["CLIP BAR", "Across the top: which clip you are posing — idle, walk, run, jump, attack and the rest, A–Z — the body being posed, a live readout of how many of the seven frames are keyed, and CLOSE — Esc does the same — which drops you back in ACTOR and brings the studio panels back. Attacks have a clip per hand: ATTACK swings the right arm, ATTACK L the left, and the engine picks by the hand that struck — except a gun, which fires SHOOT from either hand, and a shield, which stands in GUARD instead of IDLE while you hold still. The held item's action, set in WEAPONS ▸ ATTACK, is what chooses. DIE is played once when a body goes down: it keels over for three seconds, fades out and clears. Leave DIE unkeyed and the engine tips the whole body onto its side instead, so you only pose it when you want something specific. The hero plays it too — a beat on the ground before the respawn, rather than the instant teleport it used to be."],
     ["SOCKETS", "Every socket the body HAS, A–Z — not just the attached ones — with what it does on the SELECTED frame written beside it — X 24°, OY 0.08 — so you can read the whole pose down one column. ON / OFF attaches or removes a socket without leaving the editor; tap the row to pose it; HOLD freezes it — kept out of every clip, so a clip can animate the legs while the head stays put."],
     ["ATTACHMENTS", "All nineteen wear points, A–Z, each showing the socket it rides. Gear cannot be keyed on its own — it follows its joint — so tapping a piece selects the socket that carries it, and ON / OFF wears or removes it without leaving the editor."],
-    ["TIMELINE", "The seven frames, each marked KEY or empty, and KEY·F when the frame also sets a face. Under them, the seven channels for the selected socket on the selected frame — TWIST X, TWIST Y, TWIST Z, OFFSET X, OFFSET Y, OFFSET Z and GLOW, which lights the part up on top of its authored glow. The row labels them X, Y, Z, OX, OY, OZ, the same shorthand the SOCKETS column prints, with the full name on hover. GLOW sits at 0 until you move it and a socket no clip has keyed is never touched, so it costs nothing on a body that does not use it. Under that the FACE row: NONE plus the eight saved face slots. A frame that names a slot puts that face on the body and holds it until a later frame changes it — a blink, a shout, a hurt face, keyed like any other channel; it wears the saved slot without touching the body's own face, and it rides the body in the editor and the player in play. To the side PLAY, HOLD, ＋KEY, COPY PREV, LOOP, RESET CLIP, CLIP FPS, and ANIM SPEED — which scales how fast every clip on this body runs, 0 freezing it mid-pose — plus the IN GAME switch."],
+    ["TIMELINE", "The seven frames, each marked KEY or empty, and KEY·F when the frame also sets a face. Under them, the seven channels for the selected socket on the selected frame — TWIST X, TWIST Y, TWIST Z, OFFSET X, OFFSET Y, OFFSET Z and GLOW, which lights the part up on top of its authored glow. The row labels them X, Y, Z, OX, OY, OZ, the same shorthand the SOCKETS column prints, with the full name on hover. GLOW sits at 0 until you move it and a socket no clip has keyed is never touched, so it costs nothing on a body that does not use it. Under that the FACE row: NONE plus the eight saved face slots. A frame that names a slot puts that face on the body and holds it until a later frame changes it — a blink, a shout, a hurt face, keyed like any other channel; it wears the saved slot without touching the body's own face, and it rides the body in the editor and the player in play. To the side PLAY, HOLD, ＋KEY, COPY PREV, LOOP, RESET CLIP, CLIP FPS, and CLIP RATE — which scales how fast every clip on this body runs, 0 freezing it mid-pose, and which multiplies with the body’s own ANIM SPEED in ACTOR ▸ STATS — plus the IN GAME switch."],
   ]],
   ["Assets", "The project asset browser. Every piece of content the game currently holds, grouped and counted. A stock check, not an editor.", [
     ["BROWSER", "Takes over the viewport. Groups of asset tiles with live counts — click one to open the tool that owns it."],
@@ -8506,7 +8515,7 @@ const MANUAL = [
   ]],
   ["Brain", "Who is driving. A body is dumb; a brain moves it. Bind the player to input, enemies to an AI mode, and the ally to a follow behaviour.", [
     ["PLAYER", "The driver on the hero — local input, an AI demo driver, or a remote one."],
-    ["ENEMY", "The AI mode for the selected enemy blueprint — chase, patrol, guard — and its tuning."],
+    ["ENEMY", "The AI mode for the selected enemy blueprint — chase, patrol, guard — and its tuning: SIGHT, SPEED, LEASH, CONTACT HIT, HIT GAP, and the loadout roll. ARMED is the chance a spawn of this enemy picks a weapon at all, TWO HANDS the chance its off hand gets one too — both 0 by default, which leaves the blueprint’s own loadout alone. The roll happens per BODY as it spawns, from the whole weapon library, so one wave arrives carrying a mix instead of five copies of the same axe. The Enemies page still shows the loadout you authored: the reroll only happens in a run. An armed body actually uses what it is holding: a weapon whose action fires — SHOOT or CAST — makes that enemy a shooter, closing to a comfortable range, backing off if you crowd it, and firing at the weapon’s own DAMAGE and COOLDOWN. Melee weapons still land CONTACT HIT.  An armed enemy uses every action but HOOK: SHOOT and CAST fire, a ROCKET explodes on arrival, THROW throws a real grenade — the same object the player throws, arcing, bouncing and going off on its fuse, and SWING or THRUST lands the weapon’s own damage on its own cooldown instead of the brain’s CONTACT HIT. With two weapons it alternates hands, and it picks by distance — a blade inside 2.4u, the gun otherwise. Bodies play their ATTACK clip as they strike. Shooting is an action inside the mode, never a replacement for it: a FLEE gunner fires while backing away, GUARD fires without giving its post up, PATROL holds its line, CIRCLE strafes and fires, and a chaser closes to firing range and holds there instead of walking into you. COPY TO ALL pushes this whole brain onto every other enemy."],
     ["ALLY", "An optional second body on your side: which preset it wears and how it behaves."],
   ]],
   ["Dialogue", "What everybody says, and how the window saying it looks. The viewport turns into a live preview of the talk box, so styling changes read instantly.", [
@@ -8627,7 +8636,7 @@ const MANUAL = [
   ]],
   ["Weapons", "Held item meshes and how they swing. A weapon is a small stack of pieces with an attack definition attached; the hand that holds it is set in ACTOR's GRIP panel.", [
     ["WEAPON", "Pick the held item to edit, and reset its mesh back to stock."],
-    ["ATTACK", "What this weapon DOES when used, not just how it looks doing it. TYPE is the action itself and any weapon can take any of the six: CAST throws the wand's blast pattern, HOOK fires a grapple line that reels you to a HOOK BLOCK, SHOOT sends a bullet from the muzzle, SWING arcs through whatever is in reach, THROW lobs a grenade on an arc, THRUST stabs straight ahead. A sword set to SHOOT really does shoot — the mesh does not change, the action does. Under TYPE sit the tuning sliders — reach, windup, arc, spin, hit window, DAMAGE — and COOLDOWN, the seconds between uses, where 0 makes the animation length the gate. RESET puts the whole definition back to stock and says which action it restored."],
+    ["ATTACK", "What this weapon DOES when used, not just how it looks doing it. TYPE is the action itself and any weapon can take any of the six: CAST throws the wand's blast pattern, HOOK fires a grapple line that reels you to a HOOK BLOCK, SHOOT sends a bullet from the muzzle, SWING arcs through whatever is in reach, THROW throws a real grenade — the same object the player throws, arcing, bouncing and going off on its fuse, THRUST stabs straight ahead. A sword set to SHOOT really does shoot — the mesh does not change, the action does. Under TYPE sit the tuning sliders — reach, windup, arc, spin, hit window, DAMAGE — and COOLDOWN, the seconds between uses, where 0 makes the animation length the gate. DAMAGE applies to every type, swings included — a sword set to 18 lands 18. KNOCKBACK is how hard a landed hit shoves what it hits, in units per second at the moment of impact: it decays over about a sixth of a second, so it is a punch rather than a permanent push, and every source honours it — a bullet shoves along its flight, an explosion shoves radially and falls off toward the rim, a swing shoves the way the arm was travelling. A big body takes less of it, so the same hit sends a slime further than a brute, and the shove travels through the same collision every other move uses, so nothing gets pushed through a wall. RESET puts the whole definition back to stock and says which action it restored."],
     ["PIECE", "Shape, paint, texture, opacity and placement of one piece of the weapon. OPACITY carries over from objects: a see-through blade or a glass vial is one slider."],
   ]],
   ["World", "Rooms, terrain and everything standing in them. The biggest panel stack in the studio, and the only tool with a brush: pick one, then click the ground. WORLD MAP swaps the viewport for a top-down plan of all rooms.", [
@@ -9020,6 +9029,9 @@ const STAT_DEF = [
   { key: "walkSpeed", label: "WALK SPEED", min: 0, max: 30, step: 0.1, unit: "" },
   { key: "jumpPower", label: "JUMP POWER", min: 0, max: 24, step: 0.1, unit: "" },
   { key: "turnSpeed", label: "TURN SPEED", min: 0.2, max: 8, step: 0.1, unit: "×" },
+  // Playback speed for this body's clips AND its procedural gait swing, so a heavy thing can
+  // shamble and a small one skitter without either one needing its own keys.
+  { key: "animRate", label: "ANIM SPEED", min: 0.2, max: 3, step: 0.1, unit: "×", def: 1 },
   { key: "health", label: "HEALTH", min: 1, max: 2000, step: 1, unit: "" },
   { key: "stepHeight", label: "STEP HEIGHT", min: 0, max: 6, step: 0.5, unit: "u" },
   // 0.5L .. 2.5L is the whole useful spread: 1L or under ducks through a single-block gap,
@@ -9509,7 +9521,7 @@ const PET_COLLECT = [
   ["HEALTH", "Only hearts and potions"],
   ["ALL", "Fetches every pickup it passes"],
 ].sort(azId);
-const BRAIN_DEF = { mode: "WANDER", sight: 9, speed: 100, leash: 3.5, hit: 4, cool: 0.7 };
+const BRAIN_DEF = { mode: "WANDER", sight: 9, speed: 100, leash: 3.5, hit: 4, cool: 0.7, arm: 0, dual: 0 };
 const PLAYER_BRAINS = [
   ["INPUT", "You drive the body — keyboard and pad"],
   ["AI", "Autopilot: hunts the nearest enemy (demo mode)"],
@@ -9616,17 +9628,17 @@ const MUZZLE = {
 };
 const ATTACK_TYPES = ["CAST", "HOOK", "SHOOT", "SWING", "THROW", "THRUST"];
 const ATTACK_DEFS = {
-  WAND: { type: "CAST", dur: 0.42, windup: 0.1, arc: 0.5, spin: 0, reach: 0.1, hit: 0.3, cool: 0.35, dmg: 16 },
+  WAND: { type: "CAST", dur: 0.42, windup: 0.1, arc: 0.5, spin: 0, reach: 0.1, hit: 0.3, cool: 0.35, dmg: 16, kb: 3 },
   // reach is the line's length in units; hit is how close to the anchor counts as a bite
-  HOOKSHOT: { type: "HOOK", dur: 0.5, windup: 0.06, arc: 0.3, spin: 0, reach: 1, hit: 0.9, cool: 0.6, dmg: 12 },
-  SWORD: { type: "SWING", dur: 0.55, windup: 0.28, arc: 2.1, spin: 0.6, reach: 0.25, hit: 0.45, cool: 0, dmg: 18 },
-  AXE: { type: "SWING", dur: 0.78, windup: 0.42, arc: 2.6, spin: 0.2, reach: 0.15, hit: 0.55, cool: 0, dmg: 26 },
-  SHOTGUN: { type: "SHOOT", dur: 0.7, windup: 0.05, arc: 0.42, spin: 0, reach: 0.11, hit: 0.06, cool: 0.75, dmg: 22 },
-  PISTOL: { type: "SHOOT", dur: 0.32, windup: 0.05, arc: 0.3, spin: 0, reach: 0.06, hit: 0.05, cool: 0.28, dmg: 14 },
-  MGUN: { type: "SHOOT", dur: 0.14, windup: 0.04, arc: 0.16, spin: 0, reach: 0.04, hit: 0.04, cool: 0.09, dmg: 8 },
-  ROCKET: { type: "SHOOT", dur: 1.1, windup: 0.06, arc: 0.7, spin: 0, reach: 0.22, hit: 0.06, cool: 1.2, dmg: 34 },
-  GRENADE: { type: "THROW", dur: 0.7, windup: 0.35, arc: 2.4, spin: 1.2, reach: 0.35, hit: 0.55, cool: 0, dmg: 30 },
-  SHIELD: { type: "THRUST", dur: 0.4, windup: 0.3, arc: 0.5, spin: 0, reach: 0.3, hit: 0.55, cool: 0, dmg: 6 },
+  HOOKSHOT: { type: "HOOK", dur: 0.5, windup: 0.06, arc: 0.3, spin: 0, reach: 1, hit: 0.9, cool: 0.6, dmg: 12, kb: 0 },
+  SWORD: { type: "SWING", dur: 0.55, windup: 0.28, arc: 2.1, spin: 0.6, reach: 0.25, hit: 0.45, cool: 0, dmg: 18, kb: 5 },
+  AXE: { type: "SWING", dur: 0.78, windup: 0.42, arc: 2.6, spin: 0.2, reach: 0.15, hit: 0.55, cool: 0, dmg: 26, kb: 9 },
+  SHOTGUN: { type: "SHOOT", dur: 0.7, windup: 0.05, arc: 0.42, spin: 0, reach: 0.11, hit: 0.06, cool: 0.75, dmg: 22, kb: 8 },
+  PISTOL: { type: "SHOOT", dur: 0.32, windup: 0.05, arc: 0.3, spin: 0, reach: 0.06, hit: 0.05, cool: 0.28, dmg: 14, kb: 3 },
+  MGUN: { type: "SHOOT", dur: 0.14, windup: 0.04, arc: 0.16, spin: 0, reach: 0.04, hit: 0.04, cool: 0.09, dmg: 8, kb: 1 },
+  ROCKET: { type: "SHOOT", dur: 1.1, windup: 0.06, arc: 0.7, spin: 0, reach: 0.22, hit: 0.06, cool: 1.2, dmg: 34, kb: 14 },
+  GRENADE: { type: "THROW", dur: 0.7, windup: 0.35, arc: 2.4, spin: 1.2, reach: 0.35, hit: 0.55, cool: 0, dmg: 30, kb: 12 },
+  SHIELD: { type: "THRUST", dur: 0.4, windup: 0.3, arc: 0.5, spin: 0, reach: 0.3, hit: 0.55, cool: 0, dmg: 6, kb: 10 },
 };
 const ATTACK_SLIDERS = [
   { key: "dmg", label: "DAMAGE", min: 0, max: 200, step: 1, unit: "" },
@@ -9639,6 +9651,9 @@ const ATTACK_SLIDERS = [
   { key: "spin", label: "WEAPON SPIN", min: -3.14, max: 3.14, step: 0.05, unit: "r" },
   { key: "reach", label: "REACH", min: 0, max: 1.2, step: 0.02, unit: "u" },
   { key: "hit", label: "HIT FRAME", min: 0.05, max: 0.95, step: 0.01, unit: "" },
+  // How hard a landed hit shoves the body it hits, in units per second at the moment of
+  // impact — it decays over KB_DECAY, so this is a punch, not a permanent push.
+  { key: "kb", label: "KNOCKBACK", min: 0, max: 60, step: 0.5, unit: "u/s" },
 ];
 // x/y/z are a nudge in BODY space — +x is the body's right, +y up, +z forward — the same
 // axes the timeline's OFFSET channels use, and deliberately NOT mirrored per hand, so a
@@ -10156,7 +10171,7 @@ const FX_KEEP = {
 };
 const FX_KEEP_NAMES = ["NONE"].concat(Object.keys(FX_KEEP).sort());
 const SEC_TIP = {
-  ai: "The AI mode for the selected enemy blueprint — chase, patrol, guard — and its tuning. Every spawn of that type obeys it.",
+  ai: "The AI mode for the selected enemy blueprint — chase, patrol, guard — and its tuning: SIGHT, SPEED, LEASH, CONTACT HIT, HIT GAP, and the loadout roll. ARMED is the chance a spawn of this enemy picks a weapon at all, TWO HANDS the chance its off hand gets one too — both 0 by default, which leaves the blueprint’s own loadout alone. The roll happens per BODY as it spawns, from the whole weapon library, so one wave arrives carrying a mix instead of five copies of the same axe. The Enemies page still shows the loadout you authored: the reroll only happens in a run. An armed body actually uses what it is holding: a weapon whose action fires — SHOOT or CAST — makes that enemy a shooter, closing to a comfortable range, backing off if you crowd it, and firing at the weapon’s own DAMAGE and COOLDOWN. Melee weapons still land CONTACT HIT.  An armed enemy uses every action but HOOK: SHOOT and CAST fire, a ROCKET explodes on arrival, THROW throws a real grenade — the same object the player throws, arcing, bouncing and going off on its fuse, and SWING or THRUST lands the weapon’s own damage on its own cooldown instead of the brain’s CONTACT HIT. With two weapons it alternates hands, and it picks by distance — a blade inside 2.4u, the gun otherwise. Bodies play their ATTACK clip as they strike. Shooting is an action inside the mode, never a replacement for it: a FLEE gunner fires while backing away, GUARD fires without giving its post up, PATROL holds its line, CIRCLE strafes and fires, and a chaser closes to firing range and holds there instead of walking into you. COPY TO ALL pushes this whole brain onto every other enemy. Every spawn of that type obeys it.",
   ally: "An optional second body on your side: which preset it wears and how it behaves.",
   attach: "Attachment points, one per joint: what the body WEARS, kept apart from the sockets that ARE the body. Turn a point on and give it a piece — bracelets, armour plates, hair, wings. Each leg end carries two, ANKLE and FOOT, because the rig has no foot socket to build on.",
   attack: "How this weapon animates when used",
@@ -10637,7 +10652,9 @@ class Component extends DCLogic {
     });
     // On reload the selected slot decides which body you are editing — without this a pet
     // character came back as the player, which is what made a saved pet look like a hero.
-    const csel = snap && snap.charSel != null ? snap.charSel : 0;
+    // undefined means a save written before scratch bodies existed; null is a real value —
+    // the body was deliberately detached, and re-attaching it on load would bank over slot 0.
+    const csel = snap && snap.charSel !== undefined ? snap.charSel : 0;
     const cslot = this.charLib && this.charLib[csel];
     this.setState({ charSel: csel, petEdit: cslot ? cslot.editing === "pet" : !!(snap && snap.petEdit) });
     // Saves predate any key added later, so merge each weapon OVER its stock definition
@@ -10763,7 +10780,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.4";
+  ENGINE = "bloom3d/0.3.5";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -11011,7 +11028,7 @@ class Component extends DCLogic {
     const sp = this.state.world.spawn;
     this.pos = { x: (sp % n) - n / 2 + 0.5, z: Math.floor(sp / n) - n / 2 + 0.5 };
     this.py = 0; this.vy = 0; this.facing = 0; this.camYaw = 0; this.speedNow = 0;
-    this.useNext = {}; this.fireHold = { R: false };
+    this.useNext = {}; this.fireHold = { R: false, L: false };
     this.maxHp = this.stats.health; this.hp = this.maxHp; this.heroCool = 0; this.line = null;
     this.inv = { lives: 3, keys: 0, coins: 0, ammo: 0 };
     this.runStats = {};
@@ -11022,8 +11039,14 @@ class Component extends DCLogic {
     this.scorePosted = false;
     this.boardLiveDirty = true;
     this.boostT = 0; this.boostMul = 1.6; this.checkpoint = null; this.playT = 0;
+    this.heroDying = 0; this._deadTo = null; this._deadClip = false;
+    if (this.rig) this.rig.rotation.z = 0;
     this.clearShots();
     this.resetRunState();
+    // After the reset, which clears it: the body rebuild below must see a live run or no spawn
+    // rolls its loadout. Synchronous on purpose — setState({running}) lands long after this.
+    this.runLive = true;
+    this.dropInfo();                     // a pinned help card would sit over the game and eat clicks
     if (this.propGroup) this.propGroup.children.forEach((g) => {
       const u = g.userData || {};
       u.broken = false; u.taken = 0; u.cd = 0; u.arm = 0; u.onPad = false;
@@ -11074,6 +11097,7 @@ class Component extends DCLogic {
   // and restart all come through here, so none of it can survive into the editor.
   resetRunState() {
     this.clearGlass();
+    this.runLive = false;
     this.doorOpen = {};
     this._chanHeld = {};
     // Gates and switches hold their state on the mesh, which outlives a run — put them back.
@@ -11752,7 +11776,9 @@ class Component extends DCLogic {
     if (dt < 0.0008 || this.state.paused) return;
     const n = this.worldDim();
     if (!this.pos) this.startPlay();
-    const inp = (this.talk || this.scenePage) ? { mx: 0, mz: 0, turn: 0, pitch: 0, jump: false, sprint: false, shove: false } : this.playerBrain();
+    const down = (this.heroDying || 0) > 0;
+    const inp = (this.talk || this.scenePage || down) ? { mx: 0, mz: 0, turn: 0, pitch: 0, jump: false, sprint: false, shove: false } : this.playerBrain();
+    if (down) { this.fireHold.R = false; this.fireHold.L = false; this.shove = false; }
     this.camYaw += inp.turn * dt * 2.2 * (this.stats.turnSpeed == null ? 1 : this.stats.turnSpeed);
     if (inp.pitch) this.tilt = this.clampTilt(this.tilt + inp.pitch * dt * 1.2);
     // Behind the wheel the body stops walking entirely — the vehicle owns movement and the
@@ -11864,14 +11890,19 @@ class Component extends DCLogic {
     }
     if (this.landT > 0) this.landT -= dt;
     if (this.hurtT > 0) this.hurtT -= dt;
+    // Down means down: the beat plays out, then the respawn lands. No input, no weapons, no
+    // camera fight — and the rest of this method still runs, so enemies, bullets, platforms,
+    // spawners and the corpses around you carry on while you are on the ground.
+    if (down) this.stepHeroDeath(dt);
     this.playT = (this.playT || 0) + dt;
     if (this.talk) { this.stepTalk(dt); }
     if (this.heroCool > 0) this.heroCool -= dt;
     // held buttons keep using the hand; useHand self-gates on COOLDOWN so the rate is the
     // weapon's, not the frame rate's
-    if (!this.talk && !this.scenePage && this.fireHold.R) this.useHand("R");
+    if (!this.talk && !this.scenePage && !down && this.fireHold.R) this.useHand("R");
+    if (!this.talk && !this.scenePage && !down && this.fireHold.L) this.useHand("L");
     const cellNow = Math.floor(this.pos.x + n / 2) + "," + Math.floor(this.pos.z + n / 2);
-    if (cellNow !== this.lastStepCell) {
+    if (!down && cellNow !== this.lastStepCell) {
       this.lastStepCell = cellNow;
       const tid = this.tileIdAt(this.pos.x, this.pos.z, n);
       if (tid > 0) this.fireEvent("step_tile", { filter: (TILES[tid] || {}).name });
@@ -12161,7 +12192,10 @@ class Component extends DCLogic {
       }
       if (down && !this.keys[code] && (code === "ShiftLeft" || code === "ShiftRight")) this.cycleCam();
       if (down && !this.keys[code] && (code === "KeyM" || code === "Escape") && this.state.running) this.togglePause();
-      if (down && !this.keys[code] && code === "KeyQ" && this.state.running && !this.state.paused) this.useHand("L");
+      if (code === "KeyQ" && this.state.running && !this.state.paused) {
+        if (down && !this.keys[code]) { this.fireHold.L = true; this.useHand("L"); }
+        if (!down) this.fireHold.L = false;
+      }
       if (down && !this.keys[code] && code === "KeyF" && this.state.running && !this.state.paused) this.pressReset();
       // T is tap-to-type, hold-for-the-wheel — one key, both ways to say something.
       if (code === "KeyT" && this.chatLive()) {
@@ -12211,7 +12245,7 @@ class Component extends DCLogic {
     this.onBlur = () => {
       this.frameFocused = false;
       this.keys = {};
-      this.fireHold = { R: false };
+      this.fireHold = { R: false, L: false };
       this.painting = false;
       this.dragPan = false;
       this.dragCam = false;
@@ -12253,7 +12287,7 @@ class Component extends DCLogic {
     // compatible with shooting, the way it is in every third-person game.
     this.onFireUp = (e) => {
       if (e && e.buttons !== undefined) { if (!(e.buttons & 1)) this.fireHold.R = false; }
-      else this.fireHold.R = false;
+      else { this.fireHold.R = false; this.fireHold.L = false; }
     };
     ["pointerup", "pointercancel", "lostpointercapture", "mouseleave", "blur"].forEach((ev) =>
       window.addEventListener(ev, this.onFireUp));
@@ -12342,6 +12376,8 @@ class Component extends DCLogic {
     ["pointerdown", "keydown", "wheel"].forEach((ev) => window.removeEventListener(ev, this.onTouched, true));
     cancelAnimationFrame(this.raf);
     this.raf = null;
+    clearTimeout(this._tipT);
+    this._tipT = null;
     if (this.gpCursorEl && this.gpCursorEl.parentNode) this.gpCursorEl.parentNode.removeChild(this.gpCursorEl);
     if (this.ro) this.ro.disconnect();
     if (this.renderer) {
@@ -13121,7 +13157,8 @@ class Component extends DCLogic {
     const gait = clip ? "STILL" : (this.climbing && this.state.running ? "CLIMB" : S.gait);
     const A = this.animCfg();
     const lk = A.lock || {};
-    const rate = A.rate == null ? 1 : A.rate;
+    const sr = ((S && S.stats) || {}).animRate;
+    const rate = (A.rate == null ? 1 : A.rate) * (sr == null ? 1 : sr);
     const moving = !this.state.running || this.speedNow > 0.2;
     // rate scales the cycle; the speed term is capped low so a fast walker doesn't buzz
     const at = (this.state.running ? this.t * Math.min(1.6, 0.5 + this.speedNow / 9) : this.t) * rate;
@@ -13384,10 +13421,11 @@ class Component extends DCLogic {
       this.enemyGroup.children.forEach((g, i) => {
         const u = g.userData || {};
         if (u.dead) return;
+        const preview = !this.state.running;
         g.position.y = (u.baseY !== undefined ? u.baseY : (u.baseY = g.position.y)) +
-          (this.state.running ? Math.abs(Math.sin(this.t * 2 + i)) * 0.06 : 0);
-        if (this.state.running) g.rotation.y += dt * 0.4;
-        if (this.state.running) this.poseActorParts(g, u, dt);
+          (preview ? Math.abs(Math.sin(this.t * 2 + i)) * 0.06 : 0);
+        if (preview) g.rotation.y += dt * 0.4;   // turntable: the shelf, never a live body
+        this.poseActorParts(g, u, dt);
       });
     }
     if (playing && this.pos) {
@@ -14091,7 +14129,29 @@ class Component extends DCLogic {
     return (PRESETS.find((p) => p.name === n) || PRESETS[0]).name;
   }
 
+  // A destructive whole-body action (RESET, RANDOMIZE) must never reach a saved character.
+  // The selected slot is banked as it stands and then LET GO: the roster keeps exactly what you
+  // built, and the live body becomes a scratch copy belonging to no slot. Tap the row to load
+  // it back. charSel is written straight onto state as well as through setState, because the
+  // touch() that follows in this same tick reads it — a queued setState would arrive too late
+  // and bank the reset body over the save, which is the whole bug.
+  detachChar(why, S) {
+    // Only the hero and its pet are banked into a PLAYERS slot. An enemy, boss or NPC lives in
+    // its own library and was never at risk — detaching for one of those would drop the hero's
+    // tracking for nothing, and then quietly lose every edit made after it instead.
+    if (S && (S.boss || S.enemy || S.npc)) return;
+    const i = this.state.charSel;
+    const lib = this.charLibrary();
+    if (i == null || !lib[i]) return;
+    this.charStore(i);
+    const name = String(lib[i].name || "character").toLowerCase();
+    this.state.charSel = null;
+    this.setState({ charSel: null });
+    this.push(name + " is safe in PLAYERS — " + why + " works on a scratch copy from here. Tap the row to load it back.", "warn");
+  }
+
   resetSubject() {
+    this.detachChar("reset", this.subject());
     if (this.state.petEdit) {
       const src = PRESETS[PRESETS.length - 1];
       this.petDef = {
@@ -14135,6 +14195,7 @@ class Component extends DCLogic {
 
   randomizeSubject() {
     const S = this.subject();
+    this.detachChar("randomize", S);
     const pick = (a) => a[Math.floor(Math.random() * a.length)];
     // Everything numeric moves by at most ±20% of where it already is, and never past the
     // socket's clamp. Offsets and rotations are left ALONE — nudging those is what turns a
@@ -15701,7 +15762,7 @@ class Component extends DCLogic {
     else if (this.state.running) this.push("Slot " + n + " is empty — you are not carrying that many.", "muted");
   }
 
-  fireHold = { R: false };
+  fireHold = { R: false, L: false };
 
   useHand(side) {
     const held = side === "R" ? this.state.heldR : this.state.heldL;
@@ -18364,8 +18425,10 @@ class Component extends DCLogic {
     }
     // held items — same grip math the live rig uses, posed at rest
     if (this._faceDirty) { this._faceDirty = false; this.applyFace(); }
+    const arms = this.rollArms(p);
+    const rolled = !!arms.rolled;   // a roll, not the hookshot swap — the grip below depends on it
     for (const side of ["R", "L"]) {
-      const held = side === "R" ? p.heldR : p.heldL;
+      const held = side === "R" ? arms.R : arms.L;
       const key = side === "R" ? "armR" : "armL";
       const arm = PP[key];
       if (!held || held === "NONE" || !arm || !arm.on) continue;
@@ -18376,7 +18439,7 @@ class Component extends DCLogic {
       const hs = 1 + (body - 1) * 0.7;
       const outward = Math.sign(b.x) * (b.w * arm.sw / 2 + 0.03 * hs);
       const len = b.h * arm.sh;
-      const hc = (p.grip && p.grip[side]) || GRIP_DEFAULTS[held] || GRIP_DEFAULTS.NONE;
+      const hc = (rolled ? null : (p.grip && p.grip[side])) || GRIP_DEFAULTS[held] || GRIP_DEFAULTS.NONE;
       w.position.set(
         b.x * arm.sw + outward + (hc.x || 0) * hs,
         b.y + len / 2 - len + (hc.y || 0) * hs,
@@ -18385,6 +18448,15 @@ class Component extends DCLogic {
       w.rotation.set(hc.pitch || 0, (held === "SHIELD" ? Math.sign(b.x) * -0.35 : 0) + (hc.yaw || 0), Math.sign(b.x) * -0.12 + (hc.roll || 0));
       const sc = hs * (hc.size || 1);
       w.scale.set(sc, sc, sc);
+      // The pose pass re-seats this on the arm every frame — without the tag it would sit at
+      // its rest transform while the arm animated away from it.
+      g.userData = g.userData || {};
+      g.userData[side === "R" ? "armR" : "armL"] = held;   // the brain reads what it rolled
+      w.userData.hold = key;
+      w.userData.rest = {
+        px: w.position.x, py: w.position.y, pz: w.position.z,
+        rx: w.rotation.x, ry: w.rotation.y, rz: w.rotation.z,
+      };
       g.add(w);
     }
     // Worn gear, on the same rest pose as the sockets. Without this a body dressed in the
@@ -18825,7 +18897,7 @@ class Component extends DCLogic {
       if (un) return;
       this.touchBtn = this.touchBtn || {};
       if (id === "r") { this.fireHold.R = true; this.useHand("R"); return; }
-      if (id === "l") { this.useHand("L"); return; }
+      if (id === "l") { this.fireHold.L = true; this.useHand("L"); return; }
       if (id === "jump") { this.touchBtn.jump = true; return; }
       if (id === "f") { this.touchBtn.shove = true; this.pressReset(); return; }
       if (id === "gas") { this.touchBtn.gas = true; return; }
@@ -18836,6 +18908,7 @@ class Component extends DCLogic {
     const release = () => {
       this.touchBtn = this.touchBtn || {};
       if (id === "r") this.fireHold.R = false;
+      if (id === "l") this.fireHold.L = false;
       if (id === "jump") this.touchBtn.jump = false;
       if (id === "f") this.touchBtn.shove = false;
       if (id === "gas") this.touchBtn.gas = false;
@@ -19328,7 +19401,7 @@ class Component extends DCLogic {
     this._actors = out; this._actorsF = this.frameId; this._foes = null;
     return out;
   }
-  dropActorCache() { this._actorsF = -1; this._foes = null; }
+  dropActorCache() { this._actorsF = -1; this._foes = null; this._colF = -1; }
 
   // Bodies in the world are ordinary groups of sockets. This walks them once a frame and
   // lays the actor's OWN clip (boss, enemy, pet, npc — whatever the inspector authored)
@@ -19357,18 +19430,32 @@ class Component extends DCLogic {
     const step = isFinite(dt) ? dt : 0;
     if (u.moveT > 0) u.moveT -= step;
     const A = def.anim || null;
-    const rate = A && A.rate != null ? A.rate : 1;
+    const sr = (def.stats || {}).animRate;
+    const rate = (A && A.rate != null ? A.rate : 1) * (sr == null ? 1 : sr);
     const lk = (A && A.lock) || {};
     const gait = u.climbing ? "CLIMB" : (def.gait || "WALK");
     const moving = (u.moveT || 0) > 0;
     let pose = null;
     let poseMat = false;
     if (A && A.clips && A.game !== false && gait !== "HOVER") {
-      const id = u.hurt > 0 ? "HIT" : moving ? "WALK" : "IDLE";
+      const id = u.dying != null ? "DIE" : u.hurt > 0 ? "HIT"
+        : (u.atkT || 0) > 0 ? "ATTACK" : moving ? "WALK" : "IDLE";
       const c = A.clips[id];
       const keys = this.clipKeysCached(c);
       if (keys && keys.length) {
-        if (u.clipId !== id) { u.clipId = id; u.clipT0 = this.t; }
+        // A LOOPING clip runs off the shared clock; only a one-shot starts when it fires.
+        // The brain flips between WALK and IDLE constantly — a turn settle, a re-target, a
+        // pause at leash range, an attack cooldown — and restarting the cycle on every flip
+        // snapped the body back to frame 1 each time. That stutter is what read as a frantic
+        // walk: you were seeing the first frame or two over and over, never a whole stride.
+        // Same truthiness test the sampler wraps on, or a clip record with no loop flag would
+        // be run off an unbounded clock here and clamped to its LAST frame there — frozen.
+        const loops = !!c.loop;
+        // The continuous clock is shared, and so are rate and the blueprint — so a plain 0
+        // offset put every spawn of a type on the same frame and marched them in lockstep.
+        // A stable per-body offset keeps the stagger the old restart used to give for free.
+        if (u.phase == null) u.phase = Math.random() * 4;
+        if (u.clipId !== id) { u.clipId = id; u.clipT0 = loops ? -u.phase : this.t; }
         pose = this.sampleClip(c, (this.t - (u.clipT0 || 0)) * rate);
         poseMat = !!pose && this.clipUsesMat(c);
       }
@@ -19376,11 +19463,12 @@ class Component extends DCLogic {
     if (!pose) u.clipId = null;
     const swing = moving ? Math.sin(this.t * rate * 5) * 0.22 : 0;
     const kids = g.children;
-    // second pass below re-seats worn gear on whatever pose its host lands in
-    let wornAny = false;
+    // second pass below re-seats worn gear and held items on whatever pose their host lands in
+    let wornAny = false, heldAny = false;
     for (let i = 0; i < kids.length; i++) {
       const m = kids[i], ud = m.userData || {};
       if (ud.at) { wornAny = true; continue; }
+      if (ud.hold) { heldAny = true; continue; }
       const pk = ud.pk, rest = ud.rest;
       if (!pk || !rest) continue;
       if (!pose && ud.clipMat) this.clipMatApply(m, 0);   // clip stopped — hand the glow back
@@ -19390,7 +19478,9 @@ class Component extends DCLogic {
         // HOLD in the Animation editor — rest pose, nothing layered on
         if (m.userData.clipMat) this.clipMatApply(m, 0);
       } else if (d) {
-        rx += d.rx || 0; ry += d.ry || 0; rz += d.rz || 0; oy += d.oy || 0; oz += d.oz || 0;
+        const D2 = Math.PI / 180;
+        rx += (d.rx || 0) * D2; ry += (d.ry || 0) * D2; rz += (d.rz || 0) * D2;
+        oy += d.oy || 0; oz += d.oz || 0;
         if (poseMat || m.userData.clipMat) this.clipMatApply(m, d.gl || 0);
       } else if (gait === "CLIMB") {
         const c = Math.sin(this.t * rate * 4);
@@ -19405,7 +19495,7 @@ class Component extends DCLogic {
       m.position.set(rest.px, oy, oz);
       m.rotation.set(rx, ry, rz);
     }
-    if (wornAny) {
+    if (wornAny || heldAny) {
       // hosts have their final pose now: put each worn piece back on its point, in the
       // host's frame, so a bracelet swings with the arm instead of hanging in the air
       const byKey = {};
@@ -19419,6 +19509,30 @@ class Component extends DCLogic {
         m.visible = true;
         m.rotation.set(h.rotation.x + at.rx, h.rotation.y + at.ry, h.rotation.z + at.rz);
         V.set(at.lx, at.ly, at.lz).applyEuler(h.rotation).add(h.position);
+        m.position.copy(V);
+      }
+      // A held item rides its arm the same way: the arm's pose is a rotation about the
+      // shoulder, so the weapon turns WITH it and its rest point swings around the same pivot.
+      // Same rule the live rig follows, which is why the hero's axe already moved and an
+      // enemy's did not.
+      for (let i = 0; i < kids.length; i++) {
+        const m = kids[i], hold = m.userData && m.userData.hold, rest = m.userData && m.userData.rest;
+        if (!hold || !rest) continue;
+        const h = byKey[hold];
+        if (!h || !h.userData.rest) { if (!h) m.visible = false; continue; }
+        m.visible = true;
+        const dx = h.rotation.x - h.userData.rest.rx;
+        const dy = h.rotation.y - h.userData.rest.ry;
+        const dz = h.rotation.z - h.userData.rest.rz;
+        m.rotation.set(rest.rx + dx, rest.ry + dy, rest.rz + dz);
+        // The shoulder is the arm's own pivot: swing the weapon's rest offset around it by the
+        // same delta the arm turned through, so the grip stays in the hand rather than sliding
+        // out of it as the arm rotates.
+        const E = this._holdE || (this._holdE = new this.THREE.Euler());
+        E.set(dx, dy, dz);
+        V.set(rest.px - h.userData.rest.px, rest.py - h.userData.rest.py, rest.pz - h.userData.rest.pz)
+          .applyEuler(E)
+          .add(h.position);
         m.position.copy(V);
       }
     }
@@ -19466,21 +19580,64 @@ class Component extends DCLogic {
     return along > -0.5 - m && along < wide - 0.5 + m && Math.abs(across) < 0.6 + m;
   }
 
-  moveActor(g, vx, vz, dt, n) {
-    const r = 0.3;
+  bodyR(stats) {
+    const h = this.bodyH(stats);
+    return Math.min(this.HITBOX.r, Math.max(0.08, (h - 0.06) / 2));
+  }
+
+  // Every actor in the room, as a flat list of {x, z, r} — one collider per body, the same
+  // capsule the HITBOX overlay draws. Built once a frame because stepAI walks every actor and
+  // each one would otherwise rebuild the list for itself: N bodies, N² work.
+  actorColliders() {
+    if (this._colF === this.frameId && this._col) return this._col;
+    const out = [];
+    for (const a of this.actors()) {
+      if (!a.visible || (a.userData || {}).dying != null) continue;
+      out.push({ g: a, x: a.position.x, z: a.position.z, y: a.position.y, r: this.bodyR((a.userData.def || {}).stats) });
+    }
+    this._col = out; this._colF = this.frameId;
+    return out;
+  }
+
+  moveActor(g, vx, vz, dt, n, noTurn, noWalk) {
     const u = g.userData || {};
+    const r = this.bodyR((u.def || {}).stats);
     const fy = u.hover ? null : g.position.y;
     let st = ((u.def && u.def.stats && u.def.stats.stepHeight) == null ? 0.5 : u.def.stats.stepHeight);
     if (u.pet) st = Math.max(st, this.stats.stepHeight == null ? 0.5 : this.stats.stepHeight);
-    if (vx || vz) u.moveT = 0.18;
+    if ((vx || vz) && !noWalk) u.moveT = 0.32;
     const ebh = this.bodyH(u.def && u.def.stats);
     // A body with CAN SWIM off reads a pool as a wall, which is what keeps it on the bank.
     const wet = this.canSwim(u.def && u.def.stats) ? null
       : (x, z) => !!this.swimVolAt(x, z, u.baseY == null ? g.position.y : u.baseY, ebh);
-    const solid = (x, z) => this.blocked(x, z, n, fy, st, ebh) || this.carHit(x, z, r) || (wet ? wet(x, z) : false);
+    // Two bodies never share a spot. Measured flat and only against actors on roughly the
+    // same floor, so a body on a ledge overhead is not an obstacle down here.
+    const hitsBody = (x, z) => {
+      for (const c of this.actorColliders()) {
+        if (c.g === g) continue;
+        if (Math.abs(c.y - g.position.y) > Math.max(0.9, ebh * 0.6)) continue;
+        // The probe point already carries the mover's OWN radius — it is a leading edge, the
+        // same point blocked() and carHit() are handed. So the gap here is the other body's
+        // radius alone; counting r twice left half a body of air between two actors and stopped
+        // a pair passing each other in a one-tile corridor.
+        const dx = x - c.x, dz = z - c.z;
+        const d2 = dx * dx + dz * dz;
+        if (d2 >= c.r * c.r) continue;
+        // Already inside it — a spawner dropping two bodies on one cell, a split scattering a
+        // child onto its parent, a car shoving a crowd together? Then any move that INCREASES
+        // the distance is allowed. Without this the pair fails the test in every direction,
+        // including straight apart, and both stand frozen for the rest of the run.
+        const cx = g.position.x - c.x, cz = g.position.z - c.z;
+        if (d2 > cx * cx + cz * cz) continue;
+        return true;
+      }
+      return false;
+    };
+    const solid = (x, z) => this.blocked(x, z, n, fy, st, ebh) || this.carHit(x, z, r)
+      || (wet ? wet(x, z) : false) || hitsBody(x, z);
     if (vx && !solid(g.position.x + vx * dt + Math.sign(vx) * r, g.position.z)) g.position.x += vx * dt;
     if (vz && !solid(g.position.x, g.position.z + vz * dt + Math.sign(vz) * r)) g.position.z += vz * dt;
-    if (vx || vz) this.turnTo(g, Math.atan2(vx, vz), dt);
+    if ((vx || vz) && !noTurn) this.turnTo(g, Math.atan2(vx, vz), dt);
   }
 
   // Actors ease onto a heading instead of snapping every frame — a chaser that keeps
@@ -19500,36 +19657,65 @@ class Component extends DCLogic {
     g.rotation.y += Math.max(-max, Math.min(max, a));
   }
 
-  // Death is a one-second beat: the body pops, its parts fly off and spin, then it clears.
+  // A body is down for DEATH_HOLD seconds: it keels over, lies there, fades out over the last
+  // DEATH_FADE, and clears. Deliberately not a ragdoll — the solve is affordable but a corpse
+  // per limb means a groundAt() per limb per frame, and the long hold is what actually costs
+  // (three seconds of corpses is three times as many bodies drawn as one). This is one rotation
+  // and one settle for the WHOLE group, and no material is cloned until the fade starts.
+  DEATH_HOLD = 3;
+  DEATH_FADE = 0.6;
+  DEATH_MAX = 12;                                  // concurrent corpses; the oldest clears early
+
   stepDying(g, u, dt) {
     u.dying -= dt;
-    if (!u.bits) {
-      u.bits = [];
-      g.traverse((c) => { if (c.isMesh) u.bits.push(c); });
-      u.bits.forEach((c) => {
-        c.userData.fly = {
-          vx: (Math.random() - 0.5) * 3.4, vy: 1.6 + Math.random() * 3,
-          vz: (Math.random() - 0.5) * 3.4,
-          rx: (Math.random() - 0.5) * 9, ry: (Math.random() - 0.5) * 9,
-          p0: c.position.clone(),
-        };
-        if (c.material) { this.matClone(c); this.matSet(c, "transparent", true); }
-      });
+    const total = u.dieT || this.DEATH_HOLD;
+    const age = total - u.dying;                    // seconds since it went down
+    // Its own DIE clip drives the pose when the author keyed one; otherwise the whole body
+    // tips over on its side and settles the way a knocked-over piece does.
+    if (u.dieClip) this.poseActorParts(g, u, dt);
+    if (!u.dieClip) {
+      const fall = Math.min(1, age / 0.45);
+      const ease = fall * fall * (3 - 2 * fall);    // smoothstep: quick tip, soft landing
+      g.rotation.z = (u.dieSide || 1) * ease * Math.PI * 0.5;
+      g.position.y = (u.dieY == null ? g.position.y : u.dieY) - ease * 0.12;
     }
-    const k = Math.max(0, 1 - u.dying);
-    u.bits.forEach((c) => {
-      const f = c.userData.fly;
-      f.vy -= 11 * dt;
-      c.position.x += f.vx * dt; c.position.y += f.vy * dt; c.position.z += f.vz * dt;
-      c.rotation.x += f.rx * dt; c.rotation.y += f.ry * dt;
-      this.matSet(c, "opacity", Math.max(0, 1 - k * 1.1));
-    });
+    const fadeIn = total - this.DEATH_FADE;
+    if (age >= fadeIn) {
+      if (!u.bits) {
+        // The clone happens HERE, not on the death frame: a body that is only lying there needs
+        // no material of its own, so a wave of kills costs nothing until each one starts fading.
+        u.bits = [];
+        g.traverse((c) => { if (c.isMesh) u.bits.push(c); });
+        u.bits.forEach((c) => { if (c.material) { this.matClone(c); this.matSet(c, "transparent", true); } });
+      }
+      const o = Math.max(0, 1 - (age - fadeIn) / this.DEATH_FADE);
+      u.bits.forEach((c) => this.matSet(c, "opacity", o));
+    }
     if (u.dying > 0) return;
     g.visible = false;
     u.dying = null;
-    (u.bits || []).forEach((c) => { if (c.userData.fly) this.matDispose(c); });
+    (u.bits || []).forEach((c) => this.matDispose(c));
     u.bits = null;
+    g.rotation.z = 0;
     this.dropActorCache();
+  }
+
+  // One corpse budget for the room. A spawner wave can kill faster than the hold drains, and
+  // every corpse is a full body of meshes still being drawn — so the oldest is hurried off
+  // rather than letting bodies stack without limit.
+  reapCorpses() {
+    if (!this.enemyGroup) return;
+    const down = [];
+    for (const g of this.enemyGroup.children) {
+      if (g.userData && g.userData.dying != null) down.push(g);
+    }
+    if (down.length <= this.DEATH_MAX) return;
+    // smallest .dying left = closest to gone
+    down.sort((a, b) => a.userData.dying - b.userData.dying);
+    for (let i = 0; i < down.length - this.DEATH_MAX; i++) {
+      const u = down[i].userData;
+      u.dying = Math.min(u.dying, this.DEATH_FADE * 0.5);
+    }
   }
 
   stepAI(dt) {
@@ -19539,6 +19725,8 @@ class Component extends DCLogic {
     this.actors().forEach((g) => {
       const u = g.userData;
       if (u.hurt > 0) u.hurt -= dt;
+      if (u.atkT > 0) u.atkT -= dt;
+      this.stepKnock(g, u, dt, n);   // a shove in progress slides the body before it steers
       if (u.swingCool > 0) u.swingCool -= dt;
       const dx = px - g.position.x, dz = pz - g.position.z;
       const d = Math.hypot(dx, dz) || 1e-4;
@@ -19582,6 +19770,29 @@ class Component extends DCLogic {
   }
 
   brainOf(def) { return Object.assign({}, BRAIN_DEF, (def && def.brain) || {}); }
+  // The live attack record for a weapon — the author's edits, not the shipped defaults.
+  attackOf(name) {
+    return Object.assign({}, ATTACK_DEFS[name] || {}, (this.attackDefs && this.attackDefs[name]) || {});
+  }
+
+  // What a spawn actually carries. ARMED is the chance this body picks a weapon at all and
+  // TWO HANDS the chance its off hand gets one too; both 0 by default, which is the blueprint's
+  // own loadout unchanged. Rolled per body at build time — the same enemy type walks in with a
+  // different weapon each spawn — and only during a run, so the Enemies page keeps showing the
+  // loadout you authored rather than rerolling under you every rebuild.
+  rollArms(p) {
+    // An AI body cannot use a grapple: drop one to NONE rather than posing it with a dead item.
+    const usable = (w) => (w && w !== "NONE" && (this.attackOf(w).type || "") === "HOOK" ? "NONE" : w);
+    const kept = { R: usable(p.heldR), L: usable(p.heldL), rolled: false };
+    if (!this.runLive) return kept;      // the Enemies page shows the authored loadout, unrolled
+    const b = this.brainOf(p);
+    const pc = (v) => Math.max(0, Math.min(100, v == null ? 0 : +v));
+    if (Math.random() * 100 >= pc(b.arm)) return kept;
+    const pool = WEAPON_NAMES.filter((w) => w && w !== "NONE" && (this.attackOf(w).type || "") !== "HOOK");
+    if (!pool.length) return kept;
+    const pick = () => pool[Math.floor(Math.random() * pool.length)];
+    return { R: pick(), L: Math.random() * 100 < pc(b.dual) ? pick() : "NONE", rolled: true };
+  }
 
   // One movement path, six behaviours. The brain record is the only difference between
   // a shambling slime and a circling floater.
@@ -19601,10 +19812,97 @@ class Component extends DCLogic {
       this.turnTo(g, Math.atan2(nx, nz), dt);
       this.hurtHero(b.hit, b.cool);
     };
+    // What it is actually HOLDING, both hands. armR/armL are written only when a weapon mesh was
+    // really attached, so a gun named on a body whose arm socket is off cannot fire invisible
+    // bullets. HOOK is left out: a grapple reels the USER in, which is nothing an enemy wants.
+    const hands = [];
+    for (const arm of ["armR", "armL"]) {
+      const w = u[arm];
+      if (!w || w === "NONE") continue;
+      const a = this.attackOf(w);
+      if (!a || !a.type || a.type === "HOOK") continue;
+      hands.push({ arm, w, a });
+    }
+    const guns = hands.filter((h) => h.a.type === "SHOOT" || h.a.type === "CAST" || h.a.type === "THROW");
+    const blades = hands.filter((h) => h.a.type === "SWING" || h.a.type === "THRUST");
+    const ranged = guns.length > 0;
+    // Alternating: each use takes the next hand in the list, so a body with two weapons works
+    // both of them instead of favouring one.
+    const nextOf = (list, key) => {
+      if (!list.length) return null;
+      const i = (u[key] = ((u[key] || 0) + 1) % list.length);
+      return list[i];
+    };
+    u.shotCool = Math.max(0, (u.shotCool || 0) - dt);
+    // Fires from wherever it is standing, so long as it can see you and is not on top of you.
+    const shoot = () => {
+      this.turnTo(g, Math.atan2(nx, nz), dt);
+      if (u.shotCool > 0) return;
+      const H = nextOf(guns, "gunTog");
+      if (!H) return;
+      const atk = H.a, gunArm = H.arm;
+      u.shotCool = Math.max(0.25, atk.cool || atk.dur || 0.6);
+      // A rocket goes off on arrival; a thrown grenade goes off on its fuse, below.
+      const boom = H.w === "ROCKET";   // a THROW leaves as a real grenade below, not a shot
+      const lob = 0;   // shots do not fall: an arc on a SHOT would sail clean over the player
+      const sc = u.scale || 1;
+      // From the weapon in its hand, not from the middle of its chest. The mesh is tagged with
+      // the arm it rides (userData.hold), and the pose pass has already re-seated it this frame.
+      let ox = g.position.x + nx * 0.5, oy = g.position.y + 0.95 * sc, oz = g.position.z + nz * 0.5;
+      for (const c of g.children) {
+        const h = c.userData && c.userData.hold;
+        if (!h || !c.visible || (gunArm && h !== gunArm)) continue;
+        const w = c.getWorldPosition(this._eMuz || (this._eMuz = new this.THREE.Vector3()));
+        ox = w.x + nx * 0.35; oy = w.y; oz = w.z + nz * 0.35;
+        break;
+      }
+      const dy = ((this.py || 0) + 0.9 - oy) / Math.max(1, d) + lob;   // barrel at your chest
+      if (atk.type === "THROW") {
+        // A real grenade: it arcs, bounces, and goes off on its fuse — the player's own object,
+        // thrown from the hand that holds it. Lift is aimed a little up so it carries the gap.
+        u.atkT = 0.3;
+        const lift = Math.min(0.5, 0.12 + d * 0.03);
+        const flight = (2 * (5.2 + Math.max(-3, Math.min(6, lift * 7)))) / 18;
+        this.throwNade(null, nx, nz, lift, atk.kb || 0,
+          { x: ox, y: oy, z: oz }, atk.dmg == null ? 30 : atk.dmg,
+          d / Math.max(0.2, flight));      // lands ON you, not at a fixed 8u
+        return;
+      }
+      this.spawnShot(ox, oy, oz, nx, nz,
+        atk.type === "CAST" ? "#d85cff" : H.w === "ROCKET" ? "#59e391" : "#ff9d5c",
+        atk.dmg == null ? 10 : atk.dmg,
+        false, null, boom, dy, null, atk.kb || 0);
+      u.atkT = 0.3;                                   // plays its ATTACK clip as it fires
+      this.sfx(atk.type === "THROW" ? "attack" : "zap");
+    };
+    // A blade lands the WEAPON's damage on its own cooldown, not the brain's contact hit — and
+    // swings the arm it came out of, so you can see which hand hit you.
+    const swing = () => {
+      this.turnTo(g, Math.atan2(nx, nz), dt);
+      if (u.shotCool > 0) return;
+      const H = nextOf(blades, "meleeTog");
+      if (!H) return;
+      u.shotCool = Math.max(0.25, H.a.cool || H.a.dur || 0.5);
+      u.atkT = 0.3;
+      this.hurtHero(H.a.dmg == null ? b.hit : H.a.dmg, Math.max(b.cool || 0.4, H.a.cool || H.a.dur || 0.4));
+      this.sfx("attack");
+    };
+    // A gun keeps its distance where the MODE lets it: chasers close to this range instead of
+    // walking into you, and every other mode fires from wherever its own behaviour puts it.
+    const gunRange = Math.max(3, Math.min(b.sight, 9));
+    // The weapon replaces the punch, never the movement: a blade lands its own DAMAGE and a gun
+    // fires, while the mode keeps steering. CONTACT HIT is the fallback for empty hands only.
+    const strike = () => {
+      if (blades.length && d < 2.4) { swing(); return; }
+      if (ranged) { shoot(); return; }
+      if (blades.length) { swing(); return; }
+      contact();
+    };
     if (b.mode === "FLEE") {
-      if (sees && d < b.sight * 0.75) this.moveActor(g, -nx * sp, -nz * sp, dt, n);
+      if (sees && d < b.sight * 0.75) this.moveActor(g, -nx * sp, -nz * sp, dt, n, ranged && sees);
       else if (homeD > b.leash) this.moveActor(g, (hx / homeD) * sp * 0.5, (hz / homeD) * sp * 0.5, dt, n);
       else this.turnTo(g, Math.atan2(nx, nz), dt);
+      if (ranged && sees) shoot();          // shoots while backing away, which is the mode
       return;
     }
     if (b.mode === "CIRCLE") {
@@ -19613,11 +19911,17 @@ class Component extends DCLogic {
       const radial = (d - want) * 1.4;
       this.moveActor(g, (-nz * sp * 0.9) + nx * radial, (nx * sp * 0.9) + nz * radial, dt, n);
       this.turnTo(g, Math.atan2(nx, nz), dt);
-      if (d < 1.2) contact();
+      if (ranged) shoot();                  // strafing and firing, still circling
+      else if (d < 1.2) strike();
       return;
     }
     if (b.mode === "PATROL") {
-      if (sees && d < b.sight * 0.6) { if (d > 1.15) this.moveActor(g, nx * sp, nz * sp, dt, n); else contact(); return; }
+      if (sees && d < b.sight * 0.6) {
+        // holds the line and fires down it; a melee patroller still closes to punch
+        if (ranged) { if (d > gunRange) this.moveActor(g, nx * sp, nz * sp, dt, n); else shoot(); return; }
+        if (d > 1.15) this.moveActor(g, nx * sp, nz * sp, dt, n); else strike();
+        return;
+      }
       u.patrol = u.patrol || { a: Math.random() * 6.28, t: 0 };
       u.patrol.t -= dt;
       if (u.patrol.t <= 0 || homeD > b.leash) { u.patrol.a += Math.PI; u.patrol.t = 2.4; }
@@ -19625,15 +19929,23 @@ class Component extends DCLogic {
       return;
     }
     if (b.mode === "GUARD") {
-      if (sees) { if (d > 1.15) this.moveActor(g, nx * sp, nz * sp, dt, n); else contact(); return; }
+      if (sees) {
+        // a gun guards from its post: it fires without giving the post up
+        if (ranged) { if (d > gunRange) this.moveActor(g, nx * sp, nz * sp, dt, n); else shoot(); return; }
+        if (d > 1.15) this.moveActor(g, nx * sp, nz * sp, dt, n); else strike();
+        return;
+      }
       if (homeD > 0.35) this.moveActor(g, (hx / homeD) * sp * 0.7, (hz / homeD) * sp * 0.7, dt, n);
       else this.turnTo(g, Math.atan2(nx, nz), dt);
       return;
     }
     // CHASE ignores the leash entirely; WANDER drifts until it sees you.
     if (sees || b.mode === "CHASE") {
-      if (d > 1.15) this.moveActor(g, nx * sp, nz * sp, dt, n);
-      else contact();
+      // a shooter closes to firing range and holds there, backing off if you crowd it
+      const near = ranged ? gunRange : 1.15;
+      if (d > near) this.moveActor(g, nx * sp, nz * sp, dt, n);
+      else if (ranged && d < 2.2) { this.moveActor(g, -nx * sp * 0.6, -nz * sp * 0.6, dt, n, true); shoot(); }
+      else strike();
     } else drift();
   }
 
@@ -19953,7 +20265,7 @@ class Component extends DCLogic {
 
   // Bullets are capped and short-lived: one shared geometry, a hard ceiling that recycles
   // the oldest shot, and a lifetime so a stray never lingers in the room.
-  spawnShot(x, y, z, dx, dz, color, dmg, fromHero, life, boom, dy, blast) {
+  spawnShot(x, y, z, dx, dz, color, dmg, fromHero, life, boom, dy, blast, kb) {
     const THREE = this.THREE;
     if (!this.shotGroup) { this.shotGroup = new THREE.Group(); this.worldGroup.add(this.shotGroup); }
     if (!this.shotGeo) this.shotGeo = new THREE.SphereGeometry(0.14, 8, 8);
@@ -19968,7 +20280,7 @@ class Component extends DCLogic {
       spd = Math.max(6, Math.min(28, spd + v.x * dx + v.z * dz));
     }
     if (blast) spd = Math.max(3, blast.speed || spd);
-    m.userData = { dx, dz, dy: dy || 0, life: life || (fromHero ? 1.6 : 2.6), dmg, hero: !!fromHero, spd, boom: !!boom,
+    m.userData = { dx, dz, dy: dy || 0, life: life || (fromHero ? 1.6 : 2.6), dmg, hero: !!fromHero, spd, boom: !!boom, kb: kb || 0,
       drop: blast ? (blast.arc || 0) : 0, pierce: blast ? !!blast.pierce : false };
     if (boom) m.scale.setScalar(1.7);
     if (blast && blast.size) m.scale.setScalar((boom ? 1.7 : 1) * blast.size);
@@ -20000,20 +20312,22 @@ class Component extends DCLogic {
         const out = Math.abs(m.position.x) > half || Math.abs(m.position.z) > half
           || m.position.y < gy + 0.05 || m.position.y > gy + 14;
         if (u.life <= 0 || out || this.shotBlocked(m.position.x, m.position.z, n, m.position.y)) {
-          if (u.boom) this.nadeBoom(m.position.x, m.position.y, m.position.z, n);
+          if (u.boom) this.nadeBoom(m.position.x, m.position.y, m.position.z, n, u.kb, u.hero, u.dmg);
           gone.push(m); dead = true; break;
         }
         if (u.hero) {
           const hit = this.foes().find((g) => Math.hypot(g.position.x - m.position.x, g.position.z - m.position.z) < 0.7 * g.userData.scale
             && (!u.dy || Math.abs((g.position.y + 0.9 * g.userData.scale) - m.position.y) < 1.3 * g.userData.scale));
           if (hit) {
-            if (u.boom) this.nadeBoom(m.position.x, m.position.y, m.position.z, n); else this.damage(hit, u.dmg);
+            if (u.boom) this.nadeBoom(m.position.x, m.position.y, m.position.z, n, u.kb, u.hero, u.dmg);
+            else this.damage(hit, u.dmg, null, { x: u.dx, z: u.dz, f: u.kb });
             gone.push(m); dead = true;
           }
         } else if (this.pos && Math.hypot(this.pos.x - m.position.x, this.pos.z - m.position.z) < 0.55
           && (!u.dy || Math.abs((this.py + 0.9) - m.position.y) < 1.2)) {
-          if (u.boom) this.nadeBoom(m.position.x, m.position.y, m.position.z, n);
-          this.hurtHero(u.dmg, 0.2); gone.push(m); dead = true;
+          // the blast is the hit: it lands the weapon's damage itself, so no second hurtHero
+          if (u.boom) { this.nadeBoom(m.position.x, m.position.y, m.position.z, n, u.kb, u.hero, u.dmg); gone.push(m); dead = true; }
+          else { this.hurtHero(u.dmg, 0.2); gone.push(m); dead = true; }
         }
       }
     });
@@ -20021,19 +20335,33 @@ class Component extends DCLogic {
   }
 
   // A thrown grenade is a real object: it arcs, bounces off the ground, then cooks off.
-  throwNade(side, fx, fz, lift) {
+  throwNade(side, fx, fz, lift, kb, org, dmg, spd) {
     const THREE = this.THREE;
     if (!THREE) return;
     if (!this.nadeGroup) { this.nadeGroup = new THREE.Group(); this.worldGroup.add(this.nadeGroup); }
     if (this.nadeGroup.children.length >= 12) this.killNade(this.nadeGroup.children[0]);
     const g = this.buildWeapon("GRENADE");
     g.scale.set(0.8, 0.8, 0.8);
-    const hand = this.hands && this.hands[side];
     const from = new THREE.Vector3();
-    if (hand && hand.group) { this.rig.updateMatrixWorld(true); hand.group.getWorldPosition(from); }
-    else from.set(this.pos.x + fx * 0.5, this.py + 1.1, this.pos.z + fz * 0.5);
+    // org = an explicit throwing point (an enemy's weapon hand); no org means the hero's own.
+    if (org) from.set(org.x, org.y, org.z);
+    else {
+      const hand = this.hands && this.hands[side];
+      if (hand && hand.group) { this.rig.updateMatrixWorld(true); hand.group.getWorldPosition(from); }
+      else from.set(this.pos.x + fx * 0.5, this.py + 1.1, this.pos.z + fz * 0.5);
+    }
     g.position.copy(from);
-    g.userData = { vx: fx * 8.5, vy: 5.2 + Math.max(-3, Math.min(6, (lift || 0) * 7)), vz: fz * 8.5, fuse: 1.5, spin: 6 + Math.random() * 4 };
+    const vy0 = 5.2 + Math.max(-3, Math.min(6, (lift || 0) * 7));
+    const hs = spd == null ? 8.5 : Math.max(2, Math.min(16, spd));
+    // Up and back down under stepNades' 18 u/s²: a thrown grenade goes off where it lands
+    // instead of bouncing on past the target for the rest of a fixed fuse.
+    const flight = (2 * vy0) / 18;
+    g.userData = {
+      vx: fx * hs, vy: vy0, vz: fz * hs,
+      fuse: org ? Math.max(0.45, flight + 0.15) : 1.5,
+      spin: 6 + Math.random() * 4, kb: kb || 0,
+      hero: !org, dmg: dmg,          // whose blast it is when the fuse runs out
+    };
     this.nadeGroup.add(g);
     this.sfx("attack");
   }
@@ -20056,16 +20384,31 @@ class Component extends DCLogic {
     this.nadeGroup.add(m);
   }
 
-  nadeBoom(x, y, z, n) {
+  nadeBoom(x, y, z, n, kb, fromHero, dmg) {
     const THREE = this.THREE;
     if (!this.nadeGroup && THREE) { this.nadeGroup = new THREE.Group(); this.worldGroup.add(this.nadeGroup); }
     this.sfx("boom");
+    const mine = fromHero !== false;                 // undefined = the hero's, as it always was
+    const peak = dmg == null ? 70 : Math.max(1, dmg * 2);
+    // Friendly fire is off: an enemy's own blast shoves other bodies but does not cut them down,
+    // or a squad handed grenades kills itself before it reaches you.
     this.foes().forEach((f) => {
       if (f.userData.dead) return;
       const d = Math.hypot(f.position.x - x, f.position.z - z);
-      if (d < 3.2) this.damage(f, Math.round(70 * (1 - d / 4)));   // lethal at the centre, chips at the rim
+      if (d >= 3.2) return;
+      const fall = 1 - d / 4;
+      // lethal at the centre, chips at the rim — and the shove falls off on the same curve
+      const kbv = { x: f.position.x - x, z: f.position.z - z, f: (kb || 0) * fall };
+      if (mine) this.damage(f, Math.round(peak * fall), null, kbv);
+      else this.knock(f, kbv.x, kbv.z, kbv.f);
     });
-    if (this.pos && Math.hypot(this.pos.x - x, this.pos.z - z) < 1.8) this.hurtHero(8, 0.4);
+    // An enemy blast lands the WEAPON's damage, and the caller's own hit is what arms heroCool —
+    // a flat 8 here used to consume the invulnerability window and eat the real hit.
+    if (this.pos && Math.hypot(this.pos.x - x, this.pos.z - z) < 1.8) {
+      const d = Math.hypot(this.pos.x - x, this.pos.z - z);
+      const fall = Math.max(0.25, 1 - d / 2.4);
+      this.hurtHero(mine ? Math.max(1, Math.round(4 * fall)) : Math.round((dmg == null ? 20 : dmg) * fall), 0.4);
+    }
     this.blastFlash(x, y + 0.2, z, 0.5);
   }
 
@@ -20096,7 +20439,7 @@ class Component extends DCLogic {
       const half = n / 2 + 1;
       u.fuse -= dt;
       if (u.fuse <= 0 || Math.abs(g.position.x) > half || Math.abs(g.position.z) > half) {
-        this.nadeBoom(g.position.x, g.position.y, g.position.z, n);
+        this.nadeBoom(g.position.x, g.position.y, g.position.z, n, u.kb, u.hero !== false, u.dmg);
         gone.push(g);
       }
     });
@@ -20113,9 +20456,37 @@ class Component extends DCLogic {
 
   // by = who dealt it. Everything an ally does still scores for the player — it is the
   // player's run — but a kill the pet finished is counted as an assist, not a solo hit.
-  damage(g, amt, by) {
+  // Knockback rides on the body as a decaying velocity rather than a teleport, so a shoved
+  // enemy slides out through the same collision every other move uses — walls stop it, and a
+  // hit into a corner does not push anything through geometry.
+  KB_DECAY = 6;
+  knock(g, dx, dz, force) {
+    const u = g && g.userData;
+    if (!u || !force || u.dead) return;
+    const d = Math.hypot(dx, dz) || 1;
+    // A big body takes less of it: the same hit moves a slime further than a brute.
+    const mass = Math.max(0.35, u.scale || 1);
+    const f = force / mass;
+    u.kbx = (dx / d) * f;
+    u.kbz = (dz / d) * f;
+    u.kbT = 1;
+  }
+  stepKnock(g, u, dt, n) {
+    if (!u.kbT || u.kbT <= 0) return false;
+    u.kbT = Math.max(0, u.kbT - dt * this.KB_DECAY);
+    // noTurn: the shove points away from whoever landed the hit, so letting moveActor steer
+    // would spin the body ~180° off its target and fight the brain's own turnTo every frame —
+    // with rapid low-knockback fire (an MGUN re-arms faster than the decay drains) that pinned
+    // an enemy's facing away from the player for as long as the trigger was held. It would also
+    // play the walk cycle while sliding. Being punched does not rotate you.
+    this.moveActor(g, u.kbx * u.kbT, u.kbz * u.kbT, dt, n, true, true);
+    return true;
+  }
+
+  damage(g, amt, by, kb) {
     const u = g.userData;
     if (!u || u.dead) return;
+    if (kb && kb.f) this.knock(g, kb.x, kb.z, kb.f);
     u.hp -= amt; u.hurt = 0.18;
     // Every source of harm to an actor lands here, so this is the one place hits and damage
     // dealt are counted — melee, bullets, blasts and scripted damage all included.
@@ -20128,10 +20499,17 @@ class Component extends DCLogic {
     u.dead = true; u.live = false;
     this.bump("kills");
     if (by === "ally") this.bump("assists");
-    u.dying = 1;                                   // a beat of blown-apart parts before it clears
+    const A = (u.def && u.def.anim) || null;
+    const die = A && A.clips ? A.clips.DIE : null;
+    u.dieClip = !!(die && this.clipKeysCached(die).length);
+    u.dieSide = Math.random() < 0.5 ? -1 : 1;      // tips left or right, so a row of them differs
+    u.dieY = g.position.y;
+    u.dieT = this.DEATH_HOLD;
+    u.dying = this.DEATH_HOLD;
     this._dyingN = null;                           // wake the death-beat pass
-    if (this.THREE) this.blastFlash(g.position.x, g.position.y + 0.6, g.position.z, 0.7);
-    this.sfx("boom");
+    this.reapCorpses();
+    if (this.THREE) this.blastFlash(g.position.x, g.position.y + 0.4, g.position.z, 0.45);
+    this.sfx("defeat");
     this.dropActorCache();
     if (u.boss) {
       this.say(u.def.name, (u.def.lines || {}).outro || "…", u.def.color);
@@ -20145,7 +20523,38 @@ class Component extends DCLogic {
     if (!this.foes().some((g) => !g.userData.boss)) this.fireEvent("all_enemies");
   }
 
+  HERO_DEATH = 1.2;
+
+  // Death is no longer instant for the hero: it plays DIE (or keels over), THEN respawns. The
+  // pending spawn cell is resolved now, while lives and the checkpoint still read as they did
+  // at the moment of the hit, and spent when the beat ends.
+  heroRespawn() {
+    const n = this.worldDim();
+    const sp = this._deadTo != null ? this._deadTo : this.state.world.spawn;
+    this._deadTo = null;
+    this.heroDying = 0;
+    if (this.rig) this.rig.rotation.z = 0;
+    this.pos = { x: (sp % n) - n / 2 + 0.5, z: Math.floor(sp / n) - n / 2 + 0.5 };
+    this.py = this.groundAt(this.pos.x, this.pos.z, n);
+    this._distFrom = null;               // a respawn jump is not ground covered
+    this.vy = 0;
+    this.hp = this.maxHp || this.stats.health;
+    if (this.inv.lives <= 0) { this.inv = { lives: 3, keys: 0, coins: 0, ammo: 0 }; this.checkpoint = null; this.rebuildProps(); }
+  }
+
+  // The hero's own keel-over, for a body with no DIE clip keyed — same tip the corpses do.
+  stepHeroDeath(dt) {
+    this.heroDying = Math.max(0, (this.heroDying || 0) - dt);
+    if (!this._deadClip) {
+      const fall = Math.min(1, (this.HERO_DEATH - this.heroDying) / 0.4);
+      const ease = fall * fall * (3 - 2 * fall);
+      this.rig.rotation.z = ease * Math.PI * 0.5;
+    }
+    if (this.heroDying <= 0) this.heroRespawn();
+  }
+
   hurtHero(amt, cool) {
+    if (this.heroDying > 0) return;      // already down; nothing can hit you again mid-beat
     if (this.heroCool > 0) return;
     this.heroCool = cool || 0.5;
     this.hurtT = 0.34;                   // drives the HIT clip
@@ -20158,12 +20567,12 @@ class Component extends DCLogic {
     this.bump("lives_lost");
     this.inv.lives = Math.max(0, this.inv.lives - 1);
     this.push(this.inv.lives > 0 ? "You died — " + this.inv.lives + " lives left." : "Out of lives — back to the start.", "rose");
-    const n = this.worldDim(), sp = this.checkpoint != null && this.inv.lives > 0 ? this.checkpoint : this.state.world.spawn;
-    this.pos = { x: (sp % n) - n / 2 + 0.5, z: Math.floor(sp / n) - n / 2 + 0.5 };
-    this.py = this.groundAt(this.pos.x, this.pos.z, n);
-    this._distFrom = null;               // a respawn jump is not ground covered
-    this.hp = this.maxHp || this.stats.health;
-    if (this.inv.lives <= 0) { this.inv = { lives: 3, keys: 0, coins: 0, ammo: 0 }; this.checkpoint = null; this.rebuildProps(); }
+    this._deadTo = this.checkpoint != null && this.inv.lives > 0 ? this.checkpoint : this.state.world.spawn;
+    const A = this.clipCfg();
+    const die = A && A.clips ? A.clips.DIE : null;
+    this._deadClip = !!(die && this.clipKeysCached(die).length);
+    this.heroDying = this.HERO_DEATH;
+    this.sfx("lose");
   }
 
   // A swing hits everything in a forward arc; a shot leaves the muzzle as a real projectile.
@@ -20187,7 +20596,7 @@ class Component extends DCLogic {
         const ca = Math.cos(off), sa = Math.sin(off);
         const dx = aim.dx * ca - aim.dz * sa, dz = aim.dx * sa + aim.dz * ca;
         this.spawnShot(org.x, org.y, org.z, dx, dz, B.color, a.dmg == null ? 16 : a.dmg,
-          true, B.life, !!B.boom, (aim.dy || 0) + (B.arc ? -B.arc * 0.2 : 0), B);
+          true, B.life, !!B.boom, (aim.dy || 0) + (B.arc ? -B.arc * 0.2 : 0), B, a.kb || 0);
       }
       this.sfx("shoot");
       return;
@@ -20231,7 +20640,7 @@ class Component extends DCLogic {
       this.bump("shots");
       const t = this.aimDir(null);
       if (t) this.facing = Math.atan2(t.dx, t.dz);
-      this.throwNade(side, Math.sin(this.facing), Math.cos(this.facing), t ? t.dy : 0);
+      this.throwNade(side, Math.sin(this.facing), Math.cos(this.facing), t ? t.dy : 0, a.kb || 0);
       return;
     }
     if (a.type === "SHOOT") {
@@ -20243,11 +20652,11 @@ class Component extends DCLogic {
       const aim = this.aimDir(org);         // mouse crosshair wins; pad/keys aim down the view
       if (aim) {
         this.facing = Math.atan2(aim.dx, aim.dz);   // turn to the crosshair as you fire
-        this.spawnShot(org.x, org.y, org.z, aim.dx, aim.dz, col, dmg, true, null, rk, aim.dy);
+        this.spawnShot(org.x, org.y, org.z, aim.dx, aim.dz, col, dmg, true, null, rk, aim.dy, null, a.kb || 0);
         return;
       }
-      if (m) this.spawnShot(m.x, m.y, m.z, m.dx, m.dz, col, dmg, true, null, rk, m.dy);
-      else this.spawnShot(this.pos.x + fx * 0.5, this.py + 1.05, this.pos.z + fz * 0.5, fx, fz, col, dmg, true, null, rk);
+      if (m) this.spawnShot(m.x, m.y, m.z, m.dx, m.dz, col, dmg, true, null, rk, m.dy, null, a.kb || 0);
+      else this.spawnShot(this.pos.x + fx * 0.5, this.py + 1.05, this.pos.z + fz * 0.5, fx, fz, col, dmg, true, null, rk, null, null, a.kb || 0);
       return;
     }
     this.foes().forEach((g) => {
@@ -20255,7 +20664,9 @@ class Component extends DCLogic {
       const d = Math.hypot(dx, dz);
       if (d > 2.3 * g.userData.scale) return;
       if ((dx / d) * fx + (dz / d) * fz < 0.25) return;
-      this.damage(g, 12);
+      // Shoved along the swing, not along the line to the body: a sword sends things the way
+      // the arm was travelling, which is what reads as a hit landing.
+      this.damage(g, a.dmg == null ? 12 : a.dmg, null, { x: fx, z: fz, f: a.kb || 0 });
     });
     this.smashGlass(fx, fz);
   }
@@ -20286,11 +20697,13 @@ class Component extends DCLogic {
     const hand = this.hands && this.hands[side];
     const held = hand && hand.weapons[side === "R" ? this.state.heldR : this.state.heldL];
     const tip = held && held.userData && held.userData.muzzle;
-    if (!THREE || !tip) return null;
+    const src = tip || (held && hand.group.visible ? held : null);
+    if (!THREE || !src) return null;
     this.rig.updateMatrixWorld(true);
-    const p = tip.getWorldPosition(new THREE.Vector3());
+    const p = src.getWorldPosition(new THREE.Vector3());
     const axis = held.userData.muzzleAxis || (held.userData.muzzleAxis = new THREE.Vector3());
     axis.set(0, 0, 1).applyQuaternion(held.getWorldQuaternion(new THREE.Quaternion()));
+    if (!tip) { p.x += axis.x * 0.35; p.y += axis.y * 0.35; p.z += axis.z * 0.35; }   // clear of the hand
     let dx = axis.x, dz = axis.z, dy = axis.y;
     let len = Math.hypot(dx, dz);
     if (len < 0.02) {                    // barrel is straight up/down: shoot along it
@@ -24554,6 +24967,7 @@ class Component extends DCLogic {
     const A = this.clipCfg();
     if (A.game === false) return null;
     if ((S || this.subject()).gait === "HOVER") return null;
+    if ((this.heroDying || 0) > 0) return "DIE";
     if ((this.hurtT || 0) > 0) return "HIT";
     // The held item declares its action and the action names the clip: a gun fires SHOOT, and
     // everything that arcs — sword, axe, wand, grenade, hook — swings the arm that holds it.
@@ -24609,9 +25023,13 @@ class Component extends DCLogic {
 
   clipPose(S) {
     const A = this.clipCfg();
-    // ANIM SPEED governs the preview too — without this the inspector plays every clip at
-    // 1x no matter what the slider says, so a boss reads as frantic and the fix looks dead.
-    const rate = (() => { const r = this.animCfg().rate; return r == null ? 1 : r; })();
+    // Both rates govern the preview — without this the inspector plays every clip at 1x no
+    // matter what the sliders say, so a boss reads as frantic and the fix looks dead.
+    const rate = (() => {
+      const r = this.animCfg().rate;
+      const st = ((S || this.subject()).stats || {}).animRate;
+      return (r == null ? 1 : r) * (st == null ? 1 : st);
+    })();
     const auto = this.gameClipId(S);
     if (auto) {
       if (this._autoId !== auto) { this._autoId = auto; this._autoT0 = this.t; }
@@ -26291,19 +26709,30 @@ class Component extends DCLogic {
 
   // A panel's ? reads its description over the viewport instead of as a native tooltip:
   // the OS tooltip renders at the pointer and its own cursor covers the first few words.
-  showInfo(id, el) {
+  showInfo(id, el, pin) {
     if (!SEC_TIP[id]) return;
+    clearTimeout(this._tipT);
+    this._tipT = null;
     // the header's label sits right before the ? — no second table to keep in sync
     let label = "";
     const t = el && el.previousElementSibling;
     if (t) label = (t.textContent || "").trim();
-    this.setState({ infoTip: { id, label } });
+    const was = this.state.infoTip;
+    this.setState({ infoTip: { id, label, pinned: !!pin || !!(was && was.id === id && was.pinned) } });
   }
   hideInfo(id) {
     const cur = this.state.infoTip;
     if (cur && cur.id !== id) return;   // a stale leave must not close a card just opened
-    this.setState({ infoTip: null });
+    if (cur && cur.pinned) return;      // pinned stays until it is dismissed
+    clearTimeout(this._tipT);
+    // 600ms: long enough to cross from the inspector rail to a card centred in the viewport,
+    // which is a few hundred pixels at any human pointer speed.
+    this._tipT = setTimeout(() => { this._tipT = null; this.setState({ infoTip: null }); }, 600);
   }
+  // Entering the card cancels the pending close; leaving it goes back through the SAME timer, so
+  // slipping a pixel off the edge mid-scroll does not snatch the text away.
+  holdInfo() { clearTimeout(this._tipT); this._tipT = null; }
+  dropInfo() { clearTimeout(this._tipT); this._tipT = null; this.setState({ infoTip: null }); }
   infoTipVals() {
     const t = this.state.infoTip;
     if (!t || !SEC_TIP[t.id]) return null;
@@ -26313,14 +26742,30 @@ class Component extends DCLogic {
       card: {
         // an explicit measure, not fit-content: a one-line tip and a four-line one get the
         // same comfortable column instead of the card snapping to the text's own width
-        width: "min(620px, 100%)", maxHeight: "100%", overflow: "hidden",
+        width: "min(620px, 100%)", maxHeight: "100%", minHeight: 0, overflow: "hidden", pointerEvents: "auto",
         boxSizing: "border-box", padding: "22px 26px", display: "flex", flexDirection: "column", gap: 12, textAlign: "center",
-        background: "rgba(11,14,26,.96)", border: "1px solid " + accent + "88",
+        background: "rgba(11,14,26,.96)", border: "1px solid " + accent + (t.pinned ? "" : "88"),
         boxShadow: "0 0 60px " + accent + "26, 0 22px 70px rgba(0,0,0,.62)",
       },
       title: {
         fontFamily: "'Silkscreen', monospace", fontSize: 16, letterSpacing: "2px", color: accent,
-        textShadow: "0 0 12px " + accent + "66",
+        textShadow: "0 0 12px " + accent + "66", flex: "0 0 auto",
+      },
+      pinned: !!t.pinned,
+      hint: {
+        fontFamily: "'Silkscreen', monospace", fontSize: 8, letterSpacing: "2px",
+        color: accent, opacity: 0.75, flex: "0 0 auto", cursor: "pointer",
+      },
+      onEnter: () => this.holdInfo(),
+      onLeave: () => this.hideInfo(t.id),
+      onClick: () => this.dropInfo(),   // a pinned card is dismissed by clicking it
+      // The scroller: min-height 0 is what lets a flex child shrink below its content and
+      // actually scroll. Pointer events are on for the whole card, so the trip from the ? to the
+      // scrollbar keeps it alive and the wheel lands here rather than on the panel behind.
+      body: {
+        fontFamily: "'JetBrains Mono', monospace", fontSize: 16, lineHeight: 1.65, color: "#d7dbef",
+        textWrap: "pretty", flex: "1 1 auto", minHeight: 0, overflowY: "auto",
+        pointerEvents: "auto", scrollbarWidth: "thin", overscrollBehavior: "contain",
       },
     };
   }
@@ -26364,6 +26809,7 @@ class Component extends DCLogic {
       help: { fontSize: 9, color: "#3f4460", cursor: "help", flex: "0 0 auto", display: SEC_TIP[id] ? "inline" : "none" },
       // the description draws centred over the viewport, not as a native tooltip under the cursor
       onHelpIn: (e) => this.showInfo(id, e && e.currentTarget),
+      onHelpPin: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.showInfo(id, e && e.currentTarget, true); },
       onHelpOut: () => this.hideInfo(id),
       meta: { fontSize: 8, letterSpacing: "1px", color: "#5b6079", flex: "1 1 auto", minWidth: 34, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "right" },
       btn: Object.assign({}, btn, { flex: "0 0 13px" }),
@@ -27160,6 +27606,7 @@ class Component extends DCLogic {
         const lib = this.charLibrary();
         if (lib.length < 2) { this.push("That is the last character — make another before deleting this one.", "warn"); return; }
         const i = this.state.charSel;
+        if (i == null || !lib[i]) { this.push("Nothing selected — tap a character in PLAYERS first.", "muted"); return; }
         const gone = lib[i].name;
         lib.splice(i, 1);
         this.charLoad(Math.max(0, i - 1), false);
@@ -28537,6 +28984,8 @@ class Component extends DCLogic {
           this.sliderRow("brain", "leash", "LEASH", 1, 12, 0.5, b.leash, "u"),
           this.sliderRow("brain", "hit", "CONTACT HIT", 1, 30, 1, b.hit, "hp"),
           this.sliderRow("brain", "cool", "HIT GAP", 0.2, 3, 0.1, b.cool, "s"),
+          this.sliderRow("brain", "arm", "ARMED", 0, 100, 5, b.arm == null ? 0 : b.arm, "%"),
+          this.sliderRow("brain", "dual", "TWO HANDS", 0, 100, 5, b.dual == null ? 0 : b.dual, "%"),
         ];
       })(),
       onBrainAll: () => {
@@ -30319,7 +30768,10 @@ class Component extends DCLogic {
           fontSize: 8, letterSpacing: "2px", color: this.state.gripHand === h.side ? "#f8d66d" : "#5b6079", cursor: "pointer",
         },
         onFocus: () => this.setState({ gripHand: h.side }),
-        options: ["NONE"].concat(WEAPON_NAMES).map((w) => ({
+        options: ["NONE"].concat(WEAPON_NAMES.filter((w) => {
+          if (!S.enemy && !S.boss && !S.npc && !S.pet) return true;      // the hero keeps it
+          return (this.attackOf(w).type || "") !== "HOOK";
+        })).map((w) => ({
           name: w,
           onClick: () => S.setHeld(h.side, w),
           style: this.pill(h.held === w, "#f8d66d"),
@@ -30343,7 +30795,7 @@ class Component extends DCLogic {
         : s)),
       ...this.clipVals(),
       ...this.animStudioVals(),
-      animRate: this.sliderRow("anim", "rate", "ANIM SPEED", 0, 2, 0.05, this.animCfg().rate == null ? 1 : this.animCfg().rate, "×"),
+      animRate: this.sliderRow("anim", "rate", "CLIP RATE", 0, 2, 0.05, this.animCfg().rate == null ? 1 : this.animCfg().rate, "×"),
     }));
   }
 }
