@@ -10780,7 +10780,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.7";
+  ENGINE = "bloom3d/0.3.8";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -11069,6 +11069,7 @@ class Component extends DCLogic {
     this.outcome = null; this.evtDepth = 0; this.loopWarned = false;
     this.actGen = (this.actGen || 0) + 1; this.boost = null;
     this.spawnAlly();
+    this.warmShaders();
     this.scenePage = null;
     this._seenPages = {};                       // a fresh run replays every FIRST VISIT page
     setTimeout(() => { this.fireEvent("game_start"); this.showScenePages(this.state.roomIndex || 0); }, 0);
@@ -12019,6 +12020,52 @@ class Component extends DCLogic {
       const p = this.renderer && this.renderer.info ? this.renderer.info.programs : null;
       if (p) this._progWas = p.length;
     } catch (e) {}
+  }
+  // Shader warm-up. three.js compiles a program the first time a material/light combination is
+  // DRAWN, and that compile is synchronous — which is exactly what the 603ms frame was:
+  // `gl 601ms, prog 17 (+2 COMPILED)`, paid mid-play the moment a spawner released a body the
+  // room had not shown yet. The cost cannot be removed, only moved: build one of everything the
+  // room can spawn, hand it to the renderer to compile, throw it away. compile() walks the whole
+  // graph and only its LIGHT pass reads visibility, so the warm bodies compile without ever
+  // being drawn.
+  warmShaders() {
+    const THREE = this.THREE, R = this.renderer;
+    if (!THREE || !R || !this.scene || !this.cam) return;
+    // Programs live as long as the renderer does, so this only needs redoing when the cast or
+    // the lighting changes — a restart of the same room is already warm.
+    const sky = this.state.world.sky || {};
+    const sig = (this.state.roomIndex || 0) + "|" + (this.enemyLib || []).length
+      + "|" + (this.bossLib || []).length + "|" + (sky.lit == null ? 1 : sky.lit)
+      + "|" + (this.state.settings.textures === "OFF" ? 0 : 1);
+    if (this._warmSig === sig) return;
+    this._warmSig = sig;
+    const bag = new THREE.Group();
+    bag.visible = false;
+    let n = 0;
+    try {
+      // Every path that spawns a body — spawner pads, a logic SPAWN, a boss SUMMON — draws
+      // from the same two libraries, so warming both covers all of them without having to ask
+      // the pads what they are holding.
+      (this.enemyLib || []).forEach((_, i) => { const g = this.buildActor(i); if (g) { bag.add(g); n++; } });
+      (this.bossLib || []).forEach((b) => { const g = this.buildActor(-1, b); if (g) { bag.add(g); n++; } });
+    } catch (e) {}
+    if (!n) return;
+    this.scene.add(bag);
+    const drop = () => {
+      bag.traverse((o) => {
+        this.matDispose(o);
+        if (o.geometry) { try { o.geometry.dispose(); } catch (e) {} }
+      });
+      this.scene.remove(bag);
+    };
+    // compileAsync uses KHR_parallel_shader_compile where the driver has it, which takes the
+    // work off the main thread entirely; compile() is the synchronous fallback. Either way it
+    // lands at the start of a run instead of the middle of one.
+    if (R.compileAsync) {
+      try { R.compileAsync(this.scene, this.cam).then(drop, drop); return; } catch (e) {}
+    }
+    try { R.compile(this.scene, this.cam); } catch (e) {}
+    drop();
   }
 
   componentDidMount() {
@@ -20358,6 +20405,7 @@ class Component extends DCLogic {
       this.checkpoint = null;
       // every pad in the destination starts latched, so landing next to a door can't bounce
       if (this.propGroup) this.propGroup.children.forEach((p) => { if (p.userData) p.userData.onPad = true; });
+      this.warmShaders();   // the new room has its own cast and its own lighting to compile for
       this.fireEvent("enter_room", { filter: r.name });
       this.showScenePages(i);
     });
