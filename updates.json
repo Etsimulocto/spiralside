@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "version": "v0.9.75",
+      "date": "2026-08-19",
+      "title": "Enemies Fight Back",
+      "notes": [
+        "Armed enemies now shoot, throw, swing and rocket on their own - they aim, lead their shots and back off when crowded",
+        "Knockback on every weapon, death animations, and an animation speed control per actor",
+        "Switches, gates and keys - doors and chests can need a key, and switches on a channel drive gates for multi-step puzzles",
+        "Boost pads, custom crosshairs, grip offsets, mirrored drawing in Textures, and Face Paint",
+        "BLOOM3D parts unlock - buy once, keep forever, every pack plus everything added later",
+        "Big fights hold a steady frame rate now, and rocket and grenade kills no longer hitch",
+        "Fixed: RESET and RANDOMIZE could overwrite a saved character. They no longer touch your saved players."
+      ]
+    },
+    {
       "version": "v0.9.74",
       "date": "2026-08-18",
       "title": "BLOOM3D and a New Color Picker",
