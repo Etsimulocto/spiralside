@@ -10780,7 +10780,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.8";
+  ENGINE = "bloom3d/0.3.9";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -12048,6 +12048,13 @@ class Component extends DCLogic {
       // the pads what they are holding.
       (this.enemyLib || []).forEach((_, i) => { const g = this.buildActor(i); if (g) { bag.add(g); n++; } });
       (this.bossLib || []).forEach((b) => { const g = this.buildActor(-1, b); if (g) { bag.add(g); n++; } });
+      // Shots, muzzle flashes and blast flashes are basic materials, opaque and see-through,
+      // and each is its own program. One of each, so the first rocket of a session does not
+      // pay for them mid-flight.
+      const fxGeo = new THREE.SphereGeometry(0.2, 8, 6);
+      bag.add(new THREE.Mesh(fxGeo, new THREE.MeshBasicMaterial({ color: 0xffffff })));
+      bag.add(new THREE.Mesh(fxGeo, new THREE.MeshBasicMaterial({ color: 0xffb44a, transparent: true, opacity: 0.85 })));
+      n += 2;
     } catch (e) {}
     if (!n) return;
     this.scene.add(bag);
@@ -12058,13 +12065,31 @@ class Component extends DCLogic {
       });
       this.scene.remove(bag);
     };
+    // TWO passes, because `transparent` is part of three.js's program cache key: an opaque
+    // material and the same material flipped see-through are two different compiles. A corpse
+    // flips exactly that way when its fade starts (stepDying clones then sets transparent), so
+    // warming bodies opaque left the fade variant to compile during play — which is why a
+    // rocket or a grenade pile still hitched after 0.3.8 and single kills did not. One kill
+    // fades alone; a pile fades on the same frame, and reapCorpses pushes the overflow of a
+    // big kill straight into fade, so the compiles land together.
+    const flip = () => {
+      bag.traverse((o) => {
+        if (!o.isMesh) return;
+        this.matEach(o, (m) => { m.transparent = true; m.depthWrite = false; m.opacity = 0.5; m.needsUpdate = true; });
+      });
+    };
     // compileAsync uses KHR_parallel_shader_compile where the driver has it, which takes the
     // work off the main thread entirely; compile() is the synchronous fallback. Either way it
     // lands at the start of a run instead of the middle of one.
     if (R.compileAsync) {
-      try { R.compileAsync(this.scene, this.cam).then(drop, drop); return; } catch (e) {}
+      try {
+        R.compileAsync(this.scene, this.cam)
+          .then(() => { flip(); return R.compileAsync(this.scene, this.cam); })
+          .then(drop, drop);
+        return;
+      } catch (e) {}
     }
-    try { R.compile(this.scene, this.cam); } catch (e) {}
+    try { R.compile(this.scene, this.cam); flip(); R.compile(this.scene, this.cam); } catch (e) {}
     drop();
   }
 
