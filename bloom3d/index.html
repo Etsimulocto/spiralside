@@ -2898,107 +2898,69 @@
               </div>
               </sc-if>
 
-              <sc-if value="{{ hostMode }}" hint-placeholder-val="{{ false }}">
-              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:10px">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                  <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5;flex:1 1 auto">SERVER</div>
-                  <div style="{{ hostDotStyle }}"></div>
-                  <div style="{{ hostStateStyle }}">{{ hostStateLabel }}</div>
-                </div>
-                <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">{{ hostBlurb }}</div>
-                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
-                  <div style="{{ hostGoStyle }}" onClick="{{ onHostGo }}" title="Look for the server on this port — or shut the running one down">{{ hostGoLabel }}</div>
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <span style="font-size:8px;letter-spacing:2px;color:#5b6079">PORT</span>
-                    <input name="bloom-host-port" autocomplete="off" value="{{ hostPortVal }}" onchange="{{ onHostPort }}" style="width:74px;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;outline:none">
-                  </div>
-                  <div style="flex:1"></div>
-                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:#59e391">{{ hostUptimeLabel }}</span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:6px;padding-top:9px;border-top:1px solid #1b1f36">
-                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">SERVER KIT</span>
-                  <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">A browser tab cannot open a port, so the studio drives a small server instead. Put SERVE.JS in a folder with your exported build named index.html, run the command there, then CONNECT.</div>
-                  <div style="{{ hostCmdStyle }}">{{ hostCommandText }}</div>
-                  <div style="display:flex;flex-wrap:wrap;gap:5px">
-                    <div style="{{ hostKitStyle }}" onClick="{{ onHostKit }}" title="Download serve.js — no dependencies, needs node">⇧ SERVE.JS</div>
-                    <div style="{{ hostCmdCopyStyle }}" onClick="{{ onHostCmdCopy }}" title="Copy the command to run">⧉ COPY COMMAND</div>
-                  </div>
-                </div>
-              </div>
-
-              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:8px">
-                <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5">ADDRESS</div>
-                <sc-for list="{{ hostAddrs }}" as="a" hint-placeholder-count="2">
-                  <div style="{{ a.rowStyle }}">
-                    <span style="flex:0 0 92px;font-size:8px;letter-spacing:2px;color:#5b6079">{{ a.label }}</span>
-                    <span style="{{ a.urlStyle }}">{{ a.text }}</span>
-                    <div style="{{ a.copyStyle }}" onClick="{{ a.onCopy }}" title="Copy this address">COPY</div>
-                    <div style="{{ a.openStyle }}" onClick="{{ a.onOpen }}" title="Open the game in a new tab">OPEN</div>
-                  </div>
-                </sc-for>
-                <div style="font-size:8px;line-height:1.6;color:#3f4460;text-wrap:pretty">{{ hostAddrNote }}</div>
-              </div>
-
-              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:9px">
-                <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5">SERVING</div>
-                <div style="display:flex;flex-wrap:wrap;gap:5px">
-                  <sc-for list="{{ hostServeChips }}" as="s" hint-placeholder-count="2">
-                    <div style="{{ s.style }}" onClick="{{ s.onClick }}">{{ s.name }}</div>
-                  </sc-for>
-                </div>
-                <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">{{ hostServeNote }}</div>
-                <sc-if value="{{ hostPushOn }}" hint-placeholder-val="{{ false }}">
-                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:7px">
-                    <div style="{{ hostPushStyle }}" onClick="{{ onHostPush }}" title="Send the project to the server right now">⇧ PUSH NOW</div>
-                    <span style="font-size:8px;color:#3f4460">{{ hostPushNote }}</span>
-                  </div>
-                </sc-if>
-              </div>
-
-              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:9px">
-                <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5">ACCESS</div>
-                <div style="display:flex;flex-wrap:wrap;gap:5px">
-                  <sc-for list="{{ hostBindChips }}" as="b" hint-placeholder-count="2">
-                    <div style="{{ b.style }}" onClick="{{ b.onClick }}">{{ b.name }}</div>
-                  </sc-for>
-                </div>
-                <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">{{ hostBindNote }}</div>
-                <div style="display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #1b1f36">
-                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">JOIN CODE</span>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-                    <input name="bloom-host-code" autocomplete="off" value="{{ hostCode }}" onchange="{{ onHostCode }}" placeholder="no code" style="flex:1 1 140px;min-width:0;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;outline:none">
-                    <div style="{{ hostRollStyle }}" onClick="{{ onHostRoll }}" title="Roll a fresh four-character code">↻ ROLL</div>
-                  </div>
-                  <div style="font-size:8px;color:#3f4460;line-height:1.6;text-wrap:pretty">{{ hostCodeNote }}</div>
-                  <sc-if value="{{ hostCodeWarn }}" hint-placeholder-val="{{ false }}">
-                    <div style="{{ hostWarnStyle }}">{{ hostCodeWarnNote }}</div>
-                  </sc-if>
-                </div>
-              </div>
-
-              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:9px">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-                  <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5;flex:1 1 auto">CONNECTIONS</div>
-                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#7a7f9c">{{ hostVisCount }}</span>
-                  <div style="{{ hostRefreshStyle }}" onClick="{{ onHostRefresh }}" title="Ask the server who is on right now">↻</div>
-                </div>
-                <sc-if value="{{ hostVisEmpty }}" hint-placeholder-val="{{ true }}">
-                  <div style="padding:15px 10px;border:1px dashed #1b1f36;font-size:9px;color:#3f4460;text-align:center">{{ hostVisEmptyNote }}</div>
-                </sc-if>
-                <sc-for list="{{ hostList }}" as="v" hint-placeholder-count="0">
-                  <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid #1b1f36">
-                    <span style="{{ v.dot }}"></span>
-                    <span style="flex:1 1 90px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e7e2f5">{{ v.who }}</span>
-                    <span style="font-size:9px;color:#5b6079">{{ v.where }}</span>
-                  </div>
-                </sc-for>
-                <div style="font-size:8px;line-height:1.6;color:#3f4460;text-wrap:pretty">{{ hostVisNote }}</div>
-              </div>
-              </sc-if>
-
               <div style="font-size:9px;color:#3f4460;line-height:1.7">
                 <div>THEME · BLOOM NEON · locked to the studio palette</div>
                 <div>STORAGE · SPIRALSIDE · project storage shared with the 2D studio</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hostMode }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:0;top:0;right:0;bottom:0;background:#0b0e1a;z-index:16;display:flex;flex-direction:column;min-height:0;min-width:0;overflow:hidden;box-sizing:border-box">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 13px;border-bottom:1px solid #1b1f36;flex:0 0 auto;min-width:0">
+              <span style="font-family:'Silkscreen',monospace;font-size:10px;color:#37d0ff;letter-spacing:2px;white-space:nowrap">LINK TEST</span>
+              <span style="font-size:9px;color:#5b6079;white-space:nowrap">two squares · one box</span>
+              <div style="flex:1"></div>
+              <span style="font-size:8px;letter-spacing:2px;color:#5b6079">CODE</span>
+              <input name="bloom-net-code" autocomplete="off" spellcheck="false" value="{{ netCodeVal }}" onChange="{{ onNetCode }}" style="{{ netCodeField }}" />
+              <div style="{{ netHostStyle }}" onClick="{{ onNetHost }}" title="Own the session — both squares are moved on this machine">HOST</div>
+              <div style="{{ netJoinStyle }}" onClick="{{ onNetJoin }}" title="Join the session on this code — you send keys, the host moves the squares">JOIN</div>
+              <sc-if value="{{ netRunning }}" hint-placeholder-val="{{ false }}">
+                <div style="{{ netStopStyle }}" onClick="{{ onNetStop }}" title="Leave the session">STOP</div>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;flex-wrap:wrap;gap:7px 18px;padding:8px 13px;border-bottom:1px solid #1b1f36;flex:0 0 auto">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:8px;letter-spacing:2px;color:#5b6079">ROLE</span>
+                <span style="{{ netRoleStyle }}">{{ netRoleText }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:8px;letter-spacing:2px;color:#5b6079">CODE</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:#e7e2f5">{{ netCodeText }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:8px;letter-spacing:2px;color:#5b6079">LINK</span>
+                <span style="{{ netLinkStyle }}">{{ netLinkText }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px" title="{{ netRttTitle }}">
+                <span style="font-size:8px;letter-spacing:2px;color:#5b6079">{{ netRttLabel }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#8be0ff">{{ netRttText }}</span>
+              </div>
+              <sc-if value="{{ netExpiryOn }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:6px" title="Guest input older than this stops that square where it is. Three missed keepalives plus the measured round trip.">
+                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">EXPIRY</span>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#f8d66d">{{ netExpiryText }}</span>
+                </div>
+              </sc-if>
+              <div style="flex:1"></div>
+              <span style="font-size:8px;letter-spacing:2px;color:#3f4460;white-space:nowrap">{{ netWhoLabel }}</span>
+            </div>
+            <div style="flex:1 1 auto;min-height:0;min-width:0;display:flex;flex-direction:column;gap:10px;padding:13px;box-sizing:border-box;overflow:auto">
+              <div ref="{{ netBoxRef }}" style="{{ netBoxStyle }}">
+                <div ref="{{ netARef }}" style="{{ netAStyle }}"></div>
+                <div ref="{{ netBRef }}" style="{{ netBStyle }}"></div>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;flex:0 0 auto">
+                <div style="display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:5px;flex:0 0 auto">
+                  <sc-for list="{{ netPad }}" as="p" hint-placeholder-count="4">
+                    <div style="{{ p.style }}" onPointerDown="{{ p.onDown }}" onPointerUp="{{ p.onUp }}" onPointerCancel="{{ p.onUp }}" onLostPointerCapture="{{ p.onUp }}">{{ p.glyph }}</div>
+                  </sc-for>
+                </div>
+                <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:6px">
+                  <div style="font-size:9px;line-height:1.7;color:#7a7f9c;text-wrap:pretty">{{ netNote }}</div>
+                  <div style="font-size:8px;line-height:1.6;color:#3f4460;text-wrap:pretty">{{ netStepNote }}</div>
+                </div>
               </div>
             </div>
           </div>
@@ -6937,32 +6899,28 @@
               </sc-if>
             </div>
 
-            <div style="{{ secLobbyCerts.card }}">
-              <div style="{{ secLobbyCerts.header }}">
-                <span style="{{ secLobbyCerts.dot }}"></span>
-                <span style="{{ secLobbyCerts.title }}">CERT WALL</span>
-                <span data-info="1" style="{{ secLobbyCerts.help }}" onMouseEnter="{{ secLobbyCerts.onHelpIn }}" onMouseLeave="{{ secLobbyCerts.onHelpOut }}" onClick="{{ secLobbyCerts.onHelpPin }}">?</span>
-                <span style="{{ secLobbyCerts.meta }}">{{ secLobbyCerts.metaText }}</span>
+            <div style="{{ secLobbyShow.card }}">
+              <div style="{{ secLobbyShow.header }}">
+                <span style="{{ secLobbyShow.dot }}"></span>
+                <span style="{{ secLobbyShow.title }}">SHOWCASE</span>
+                <span data-info="1" style="{{ secLobbyShow.help }}" onMouseEnter="{{ secLobbyShow.onHelpIn }}" onMouseLeave="{{ secLobbyShow.onHelpOut }}" onClick="{{ secLobbyShow.onHelpPin }}">?</span>
+                <span style="{{ secLobbyShow.meta }}">{{ secLobbyShow.metaText }}</span>
                 <div style="flex:1"></div>
                 <div style="display:flex;gap:1px;flex:0 0 auto">
-                  <div style="{{ secLobbyCerts.btn }}" onClick="{{ secLobbyCerts.onUp }}">▲</div>
-                  <div style="{{ secLobbyCerts.btn }}" onClick="{{ secLobbyCerts.onDown }}">▼</div>
-                  <div style="{{ secLobbyCerts.accentBtn }}" onClick="{{ secLobbyCerts.onAccent }}">◉</div>
-                  <div style="{{ secLobbyCerts.btn }}" onClick="{{ secLobbyCerts.onToggle }}">{{ secLobbyCerts.caret }}</div>
+                  <div style="{{ secLobbyShow.btn }}" onClick="{{ secLobbyShow.onUp }}">▲</div>
+                  <div style="{{ secLobbyShow.btn }}" onClick="{{ secLobbyShow.onDown }}">▼</div>
+                  <div style="{{ secLobbyShow.accentBtn }}" onClick="{{ secLobbyShow.onAccent }}">◉</div>
+                  <div style="{{ secLobbyShow.btn }}" onClick="{{ secLobbyShow.onToggle }}">{{ secLobbyShow.caret }}</div>
                 </div>
               </div>
-              <sc-if value="{{ secLobbyCerts.open }}" hint-placeholder-val="{{ true }}">
+              <sc-if value="{{ secLobbyShow.open }}" hint-placeholder-val="{{ true }}">
                 <div style="padding:8px;display:flex;flex-direction:column;gap:7px">
+                  <div style="font-size:9px;font-family:'JetBrains Mono',monospace;color:#59e391">{{ lobbyShowLine }}</div>
                   <div style="display:flex;flex-wrap:wrap;gap:4px">
-                    <div style="{{ lobbyCertsStyle }}" onClick="{{ onLobbyCerts }}">{{ lobbyCertsLabel }}</div>
-                    <div style="{{ lobbySerialsStyle }}" onClick="{{ onLobbySerials }}">{{ lobbySerialsLabel }}</div>
+                    <div style="{{ lobbyShowStyle }}" onClick="{{ onLobbyShowcase }}">⬢ BUILD SHOWCASE</div>
+                    <div style="{{ lobbyShowClearStyle }}" onClick="{{ onLobbyShowClear }}">✕ CLEAR</div>
                   </div>
-                  <div style="display:flex;align-items:center;gap:4px">
-                    <span style="flex:1 1 auto;font-size:9px;font-family:'JetBrains Mono',monospace;color:#7a7f9c">{{ lobbyCertColsLabel }}</span>
-                    <span style="{{ lobbyRowsBtn }}" onClick="{{ onLobbyCertColsDown }}">−</span>
-                    <span style="{{ lobbyRowsBtn }}" onClick="{{ onLobbyCertColsUp }}">＋</span>
-                  </div>
-                  <div style="font-size:9px;line-height:1.6;color:#7a7f9c">{{ lobbyCertNote }}</div>
+                  <div style="font-size:9px;line-height:1.6;color:#7a7f9c">{{ lobbyShowNote }}</div>
                 </div>
               </sc-if>
             </div>
@@ -7001,6 +6959,106 @@
               </sc-if>
             </div>
 
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hostMode }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5;flex:1 1 auto">SERVER</div>
+                  <div style="{{ hostDotStyle }}"></div>
+                  <div style="{{ hostStateStyle }}">{{ hostStateLabel }}</div>
+                </div>
+                <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">{{ hostBlurb }}</div>
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+                  <div style="{{ hostGoStyle }}" onClick="{{ onHostGo }}" title="Look for the server on this port — or shut the running one down">{{ hostGoLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span style="font-size:8px;letter-spacing:2px;color:#5b6079">PORT</span>
+                    <input name="bloom-host-port" autocomplete="off" value="{{ hostPortVal }}" onchange="{{ onHostPort }}" style="width:74px;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;outline:none">
+                  </div>
+                  <div style="flex:1"></div>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:#59e391">{{ hostUptimeLabel }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;padding-top:9px;border-top:1px solid #1b1f36">
+                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">SERVER KIT</span>
+                  <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">A browser tab cannot open a port, so the studio drives a small server instead. Put SERVE.JS in a folder with your exported build named index.html, run the command there, then CONNECT.</div>
+                  <div style="{{ hostCmdStyle }}">{{ hostCommandText }}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:5px">
+                    <div style="{{ hostKitStyle }}" onClick="{{ onHostKit }}" title="Download serve.js — no dependencies, needs node">⇧ SERVE.JS</div>
+                    <div style="{{ hostCmdCopyStyle }}" onClick="{{ onHostCmdCopy }}" title="Copy the command to run">⧉ COPY COMMAND</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:8px">
+                <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5">ADDRESS</div>
+                <sc-for list="{{ hostAddrs }}" as="a" hint-placeholder-count="2">
+                  <div style="{{ a.rowStyle }}">
+                    <span style="flex:0 0 92px;font-size:8px;letter-spacing:2px;color:#5b6079">{{ a.label }}</span>
+                    <span style="{{ a.urlStyle }}">{{ a.text }}</span>
+                    <div style="{{ a.copyStyle }}" onClick="{{ a.onCopy }}" title="Copy this address">COPY</div>
+                    <div style="{{ a.openStyle }}" onClick="{{ a.onOpen }}" title="Open the game in a new tab">OPEN</div>
+                  </div>
+                </sc-for>
+                <div style="font-size:8px;line-height:1.6;color:#3f4460;text-wrap:pretty">{{ hostAddrNote }}</div>
+              </div>
+
+              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:9px">
+                <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5">SERVING</div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px">
+                  <sc-for list="{{ hostServeChips }}" as="s" hint-placeholder-count="2">
+                    <div style="{{ s.style }}" onClick="{{ s.onClick }}">{{ s.name }}</div>
+                  </sc-for>
+                </div>
+                <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">{{ hostServeNote }}</div>
+                <sc-if value="{{ hostPushOn }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:7px">
+                    <div style="{{ hostPushStyle }}" onClick="{{ onHostPush }}" title="Send the project to the server right now">⇧ PUSH NOW</div>
+                    <span style="font-size:8px;color:#3f4460">{{ hostPushNote }}</span>
+                  </div>
+                </sc-if>
+              </div>
+
+              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:9px">
+                <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5">ACCESS</div>
+                <div style="display:flex;flex-wrap:wrap;gap:5px">
+                  <sc-for list="{{ hostBindChips }}" as="b" hint-placeholder-count="2">
+                    <div style="{{ b.style }}" onClick="{{ b.onClick }}">{{ b.name }}</div>
+                  </sc-for>
+                </div>
+                <div style="font-size:9px;color:#5b6079;line-height:1.7;text-wrap:pretty">{{ hostBindNote }}</div>
+                <div style="display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px solid #1b1f36">
+                  <span style="font-size:8px;letter-spacing:2px;color:#5b6079">JOIN CODE</span>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                    <input name="bloom-host-code" autocomplete="off" value="{{ hostCode }}" onchange="{{ onHostCode }}" placeholder="no code" style="flex:1 1 140px;min-width:0;box-sizing:border-box;padding:6px 8px;background:#151a30;border:1px solid #2b3150;color:#f7f3ff;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;outline:none">
+                    <div style="{{ hostRollStyle }}" onClick="{{ onHostRoll }}" title="Roll a fresh four-character code">↻ ROLL</div>
+                  </div>
+                  <div style="font-size:8px;color:#3f4460;line-height:1.6;text-wrap:pretty">{{ hostCodeNote }}</div>
+                  <sc-if value="{{ hostCodeWarn }}" hint-placeholder-val="{{ false }}">
+                    <div style="{{ hostWarnStyle }}">{{ hostCodeWarnNote }}</div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <div style="background:#0b0e1a;border:1px solid #2b3150;padding:12px;display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <div style="font-family:'Silkscreen',monospace;font-size:10px;color:#e7e2f5;flex:1 1 auto">CONNECTIONS</div>
+                  <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#7a7f9c">{{ hostVisCount }}</span>
+                  <div style="{{ hostRefreshStyle }}" onClick="{{ onHostRefresh }}" title="Ask the server who is on right now">↻</div>
+                </div>
+                <sc-if value="{{ hostVisEmpty }}" hint-placeholder-val="{{ true }}">
+                  <div style="padding:15px 10px;border:1px dashed #1b1f36;font-size:9px;color:#3f4460;text-align:center">{{ hostVisEmptyNote }}</div>
+                </sc-if>
+                <sc-for list="{{ hostList }}" as="v" hint-placeholder-count="0">
+                  <div style="display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid #1b1f36">
+                    <span style="{{ v.dot }}"></span>
+                    <span style="flex:1 1 90px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:#e7e2f5">{{ v.who }}</span>
+                    <span style="font-size:9px;color:#5b6079">{{ v.where }}</span>
+                  </div>
+                </sc-for>
+                <div style="font-size:8px;line-height:1.6;color:#3f4460;text-wrap:pretty">{{ hostVisNote }}</div>
+              </div>
           </div>
         </sc-if>
 
@@ -8548,7 +8606,8 @@ const MANUAL = [
     ["SLOTS", "Saved faces. Slots are shared across every character, so a face made once can be worn by anyone."],
     ["+ MORE", "Opens the decal library \u2014 160 decals across nine feature families, filtered by seven chips: ALL, CLASSIC (the 60 built-ins, the first four of each family free), CREATURE (23), CUTE (26), FREE, ROBOT (28) and SPOOKY (23). The grid holds 167 tiles because seven families also carry a NONE. Locked packs redeem with a code in PROJECT or EXPORT."],
   ]],
-  ["Host", "Local hosting. A browser tab cannot open a port, so this tool drives a small server instead: SERVE.JS sits in a folder with your exported build, and the studio finds it, reads the real addresses off it and feeds it the project. A full page in the viewport rather than inspector panels.", [
+  ["Host", "Local hosting and a live link test. A browser tab cannot open a port, so this tool drives a small server instead: SERVE.JS sits in a folder with your exported build, and the studio finds it, reads the real addresses off it and feeds it the project. The server's settings are inspector panels; the viewport is the LINK TEST, which talks to another studio over a relay instead of your own network.", [
+    ["LINK TEST", "The viewport, not a panel: two squares in one box, shared with whoever is on the same CODE. HOST owns the truth and moves both squares twenty times a second; JOIN sends only its held keys and draws what it is told. ROLE, CODE, LINK and ROUND TRIP read the session \u2014 round trip as a median of the last few samples, so one slow reply cannot make a good link look ragged \u2014 plus EXPIRY while you host. Arrow keys or the on-screen pad drive your square, STOP leaves. Positions travel as fractions of the box, so a phone and a desktop agree without correcting each other. It fails loudly rather than plausibly: guest input older than EXPIRY \u2014 three missed keepalives plus the link's own round trip, never under half a second, shown live so you can read it rather than infer it \u2014 stops the guest's square where it is, a host that leaves reads HOST GONE and the guest stops publishing, and every way out \u2014 STOP, closing the tool, alt-tab, a hidden tab, unmount \u2014 flushes the held keys and sends one zeroed frame. A session that loses its network says so and rebuilds itself \u2014 LINK DROPPED, then back in as the same role with your square where it stopped, which is what a phone moving between wi-fi and cellular does unprompted. The two failure labels mean different things: TRANSPORT BLOCKED is the relay library never loading (no network, or a blocker stopped it), CHANNEL FAILED is it loading and the channel not opening. On the host side a guest who goes reads GUEST LEFT, and her rejoin is taken on the next frame she sends \u2014 the label is not a latch. A probe for the transport, not a game mode \u2014 nothing about it is in the exported build."],
     ["SERVER", "CONNECT looks for a server on the chosen port and STOP shuts the running one down. Also holds the kit: download SERVE.JS, copy the command to run it. A busy port is walked up automatically, so the port shown may not be the port answering."],
     ["ADDRESS", "The addresses the running server reports \u2014 localhost plus every network address the machine actually has, read off it rather than guessed. COPY takes one; OPEN loads it with ?play, which is what puts a visitor in the game instead of the studio."],
     ["SERVING", "What a visitor gets. LIVE writes the project beside the build on every save, so their next reload has your fix; BUILD leaves the folder alone. PUSH NOW sends it immediately."],
@@ -8567,7 +8626,7 @@ const MANUAL = [
   ]],
   ["Lobby", "Your room — the hub you spawn into. It is an ordinary BLOOM3D world with a spawn point and four fixtures, so you decorate it with the same WORLD tools you build levels with.", [
     ["HUB ROOM", "The hub world itself: which room it is, its size, and a jump into the WORLD tools to edit it."],
-    ["CERT WALL", "Renders the packs this profile owns as their actual serialized cards, so visitors can see them."],
+    ["SHOWCASE", "Lays every object in the library out in the hub as a walkable gallery, A\u2013Z, each one with its name hanging over it \u2014 switches wired to their gates, keys beside their locks, pickups that come back. BUILD again to pick up objects added since; CLEAR takes only the gallery out."],
     ["GAME DOOR", "The portal out of the hub into the game's first room, and the sign above it."],
   ]],
   ["Logic", "Visual scripting, read as sentences: WHEN something happens, IF these hold, THEN do this. Also the home of the end screen.", [
@@ -8655,7 +8714,7 @@ const MANUAL = [
 ].sort(azId);
 // ── THE LOBBY (your room) ────────────────────────────────────────────────
 // The hub is just a world, so this tool is composition, not engine: which fixtures the
-// room ships with, what the leaderboard shows, how the cert wall renders, where the door goes.
+// room ships with, what the leaderboard shows, what is on show in it, where the door goes.
 // A stat is only a named counter a game increments — the pool is the menu creators pick from.
 const STAT_POOL = [
   "accuracy", "assists", "best_combo", "best_time", "blocks", "bosses_felled", "chests", "coins",
@@ -8722,10 +8781,39 @@ const LOBBY_DEF = {
   spawnHere: true,
   fixtures: { BAND: true, COUCH: true, DANCEFLOOR: true, TOYS: true },
   board: { style: "WALL", cols: ["score", "best_time", "wins"], sort: "score", dir: "DESC", rows: 10, text: 1, scale: 1, scores: [] },
-  certs: { on: true, cols: 4, serials: true },
   door: { room: 0, label: "ENTER GAME" },
   visitors: true,
 };
+// ── THE SHOWCASE ─────────────────────────────────────────────────────────
+// The hub's gallery: every object in the library, one per slot, in walkable aisles, so a
+// first-timer can see the whole catalogue and touch all of it without building anything.
+// Alphabetical like every other list here, reading left to right from the spawn and away
+// toward the board. It writes ORDINARY placements — nothing about the gallery is a runtime
+// special case, so any piece of it can be picked in PROPERTIES and changed.
+const SHOWCASE = { cols: 8, pitch: 4, front: 4, skip: ["LEADERBOARD"] };
+// Demo settings for the pieces that need a gentler number to be walked into by a beginner,
+// or a partner to do anything at all. Sorted A-Z at the source.
+const SHOWCASE_TUNE = {
+  "BOOST PAD": { amt: 2, gap: 3 },
+  CHEST: { lock: 1 },
+  CONVEYOR: { amt: 3 },
+  FIREBAR: { amt: 6, gap: 1.6, rng: 1.2 },
+  GATE: { amt: 1, gap: 0.6 },
+  JUMPPAD: { amt: 9 },
+  PLATFORM: { dist: 2, mv: "Y", spd: 1 },
+  SPIKES: { amt: 6, gap: 2 },
+  "SWING DOOR": { amt: 90, gap: 0.5, lock: 1 },
+  SWITCH: { amt: 1, gap: 1 },
+  TORCH: { flick: 1, lrad: 7 },
+  TURRET: { amt: 4, gap: 1.4, rng: 5 },
+};
+// A piece that needs a second piece stands next to it: the switch its gate listens to on
+// channel 1, the key its lock spends. Both halves are in the gallery in their own right —
+// this is the copy that makes the pair demonstrable where you are standing.
+const SHOWCASE_PAIR = { CHEST: "KEY", DOOR: "KEY", GATE: "SWITCH", "SWING DOOR": "KEY", SWITCH: "GATE" };
+// How long a gallery pickup stays gone. The library ships pickups at respawn 0 — taken once
+// and gone for the run — which would leave the showcase stripped after one lap.
+const SHOWCASE_BACK = 6;
 // ── LOCAL HOSTING ────────────────────────────────────────────────────────
 // Serving the build off this machine. Everything here is small text config that
 // saves with the project; whether the server is UP is session state and is
@@ -8905,10 +8993,10 @@ const TOOLS = [
   ["Bosses", "Boss fights · phases & dialogue", null],
   ["NPCs", "Townsfolk, quest givers & signs", null],
   ["Dialogue", "What everybody says", null],
-  ["Host", "Serve this build on your network", null],
+  ["Host", "Serve this build · network & link test", null],
   ["HUD", "Readout badges, zones & theme", null],
   ["Leaderboard", "The board in your room · columns, sort & look", null],
-  ["Lobby", "Your room · hub, wall & door", null],
+  ["Lobby", "Your room · hub, showcase & door", null],
   ["Music", "Chiptune 4-track sequencer", [["Tracks", "6"], ["Steps", "32"], ["Kit", "12-piece"]]],
   ["Brain", "Input · AI · remote drivers", [["Drivers", "input · ai"], ["Bound", "hero → input"], ["Net", "off"]]],
   ["Logic", "Visual scripting & actions", [["Graphs", "1"], ["Nodes", "8"], ["Triggers", "on_hit"]]],
@@ -10117,7 +10205,7 @@ const SETTING_DEF = [
   { key: "chat", label: "CHAT", desc: "Chat in play — the keyboard, the quick-chat wheel, the preset lines and the 💬 button. OFF removes every way in, including the HUD's CHAT badge", opts: ["ON", "OFF"] },
   { key: "chatPresets", label: "CHAT PRESETS ONLY", desc: "Drops the letter keys, the emoji page and free typing: players can only send the fifty preset lines. What a public build ships with when you do not want to moderate typed chat", opts: ["OFF", "ON"] },
   { key: "scanlines", label: "CRT SCANLINES", desc: "Cabinet overlay across the whole studio", opts: ["ON", "OFF"] },
-  { key: "doorSigns", label: "DOOR SIGNS", desc: "Hang the destination room name over every door", opts: ["ON", "OFF"] },
+  { key: "doorSigns", label: "DOOR SIGNS", desc: "Hang the destination room name over every door \u2014 and the name plate over any placement that carries one, like the hub's showcase", opts: ["ON", "OFF"] },
   { key: "grid", label: "GROUND GRID", desc: "Reference grid under the actor", opts: ["ON", "OFF"] },
   { key: "disc", label: "SPAWN DISC", desc: "Magenta pad marking the actor origin", opts: ["ON", "OFF"] },
   { key: "spin", label: "AUTO SPIN", desc: "Idle turntable in orbit camera", opts: ["ON", "OFF"] },
@@ -10210,9 +10298,9 @@ const SEC_TIP = {
   ifs: "Conditions that must hold for the rule to fire. Empty means always.",
   lines: "What the boss says at the start, on each phase, and on death",
   lobbyBoard: "What THIS game's board shows. Pick stats to be columns, in order, and choose which one sorts. Tiny data — it lives in the world's save file.",
-  lobbyCerts: "The certificate wall renders the packs this profile owns as their actual serialized cards, so visitors can see them. Reads entitlements — no new data.",
   lobbyDoor: "The portal out of the hub and into the game's first room. Hub and game are separate worlds on purpose: the hub stays chill.",
   lobbyRoom: "The hub world you spawn into: a normal BLOOM3D world with a spawn point and the four fixtures placed in it. Decorate and paint it with the same world tools you build levels with.",
+  lobbyShow: "One of every object in the library, laid out in the hub in aisles with its name over it, so a first-timer can walk the whole catalogue and play with it. Ordinary placements — edit or delete any of them in the World tools.",
   lobbyStats: "The stat pool: every named counter a game can increment. Tap one to add it as a board column.",
   logicjson: "The raw rule graph, for reading and pasting. Edit the text, then APPLY to load it back.",
   npcFace: "This NPC's face slots, with a jump into the FACE tool and a reset to default.",
@@ -10282,7 +10370,7 @@ class Component extends DCLogic {
     askOpen: false, askLabel: "", askVal: "", askShift: false, askRow: 1, askCol: 0, askPage: "abc", menuSel: 0, outSel: 0,
     settings: { chat: "ON", chatPresets: "OFF", perf: "OFF", fpsCap: "60", textures: "ON", doorSigns: "ON", scanlines: "ON", grid: "ON", disc: "ON", spin: "ON", selBox: "ON", quality: "HIGH", defaultCam: "DRONE", input: "BOTH", invertY: "OFF", uiScale: "M", sound: "ON", volume: "50", xhairSize: "M", xhairColor: "#59e391", xhairTex: null },
     secOpen: { npcList: true, npcSay: true, npcQuest: true, dlgList: true, dlgWho: true, dlgLines: true, dlgLook: false, dlgPort: false, dlgBack: false, dlgFeel: false, dlgImg: false, pages: true, pageLook: false, faceSlots: true, enemyFace: true, bossFace: true, npcFace: true, texTile: true, texFill: true, behave: true, presets: true, sockets: true, holding: true, part: true, grip: true, stats: true, overrides: true, room: true, tiles: true, roomTools: true, camera: true, weapon: true, piece: true, attack: true, object: true, place: true, enemies: true, blueprint: true, boss: true, phases: true, lines: true, hud: true, zones: true, badge: true },
-    secOrder: ["boss", "blueprint", "cast", "blast", "presets", "sockets", "attach", "holding", "grip", "companion", "stats", "overrides", "camera", "room", "placed", "sky", "pages", "pageLook", "tiles", "roomTools", "object", "behave", "weapon", "attack", "piece", "place", "loot", "enemies", "spawners", "phases", "lines", "hud", "zones", "badge", "npcList", "npcSay", "npcQuest", "dlgList", "dlgWho", "dlgLines", "dlgLook", "dlgPort", "dlgBack", "dlgFeel", "dlgImg", "npcFace", "enemyFace", "bossFace", "faceSlots", "faceEyes", "faceBrows", "faceMouth", "faceGear", "faceExtra", "texTile", "texFill", "texMine", "touchLayout", "touchPads", "lobbyRoom", "boardPreview", "lobbyBoard", "lobbyStats", "lobbyCerts", "lobbyDoor", "driver", "ai", "ally", "rules", "rule", "ifs", "then", "logicjson", "endLook", "endText"],
+    secOrder: ["boss", "blueprint", "cast", "blast", "presets", "sockets", "attach", "holding", "grip", "companion", "stats", "overrides", "camera", "room", "placed", "sky", "pages", "pageLook", "tiles", "roomTools", "object", "behave", "weapon", "attack", "piece", "place", "loot", "enemies", "spawners", "phases", "lines", "hud", "zones", "badge", "npcList", "npcSay", "npcQuest", "dlgList", "dlgWho", "dlgLines", "dlgLook", "dlgPort", "dlgBack", "dlgFeel", "dlgImg", "npcFace", "enemyFace", "bossFace", "faceSlots", "faceEyes", "faceBrows", "faceMouth", "faceGear", "faceExtra", "texTile", "texFill", "texMine", "touchLayout", "touchPads", "lobbyRoom", "lobbyShow", "boardPreview", "lobbyBoard", "lobbyStats", "lobbyDoor", "driver", "ai", "ally", "rules", "rule", "ifs", "then", "logicjson", "endLook", "endText"],
     lobby: clone(LOBBY_DEF), lobbyFind: "",
     host: clone(HOST_DEF), hostLive: false, hostBusy: false, hostInfo: null, hostPushedAt: 0,
     secAccent: { sky: 2, companion: 1, presets: 0, sockets: 1, dlgLook: 0, dlgPort: 1, dlgBack: 2, dlgFeel: 3, dlgImg: 1, pages: 0, pageLook: 2, holding: 3, grip: 3, stats: 1, overrides: 2, room: 2, tiles: 0, roomTools: 1, camera: 2, weapon: 3, piece: 0, attack: 1, object: 1, behave: 3, place: 1, loot: 2, touchLayout: 3, touchPads: 1, enemies: 3, blueprint: 3, boss: 0, phases: 1, lines: 2, hud: 0, zones: 2, badge: 3 },
@@ -10734,7 +10822,6 @@ class Component extends DCLogic {
         const out = Object.assign(d, l);
         out.fixtures = Object.assign(clone(LOBBY_DEF.fixtures), l.fixtures || {});
         out.board = Object.assign(clone(LOBBY_DEF.board), l.board || {});
-        out.certs = Object.assign(clone(LOBBY_DEF.certs), l.certs || {});
         out.door = Object.assign(clone(LOBBY_DEF.door), l.door || {});
         return out;
       })(),
@@ -10780,7 +10867,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.9";
+  ENGINE = "bloom3d/0.3.19";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -12486,6 +12573,8 @@ class Component extends DCLogic {
     }
   }
   componentWillUnmount() {
+    this.netStop(true);
+    this.netUnwatch();
     if (this._unlockMsg) window.removeEventListener("message", this._unlockMsg);
     clearTimeout(this._unlockTid);
     clearTimeout(this.hostTid);
@@ -23384,6 +23473,17 @@ class Component extends DCLogic {
         hung.position.set(0, 1.55, 0);
         g.add(hung);
       }
+      // Any placement can carry a name plate. The hub's showcase hangs one over every object
+      // in it so a first-timer can read what they are looking at — the same bake, cache and
+      // setting as a door sign, just parked above the object's own top instead of a frame.
+      const plate = isUnder ? "" : this.propProp(i, "sign", "");
+      if (plate && this.state.settings.doorSigns !== "OFF") {
+        const src = this.doorSign(String(plate));
+        const tag = src.clone();
+        tag.material = src.material;
+        tag.position.set(0, this.objTop(name) + 0.55, 0);
+        g.add(tag);
+      }
       // a ring under the placement PROPERTIES is pointed at, so you can see what you're editing
       if (!this.state.running && this.state.propSel === i) {
         const THREE = this.THREE;
@@ -24798,7 +24898,10 @@ class Component extends DCLogic {
       return true;
     }
     g.visible = false;
-    u.taken = m.respawn > 0 ? m.respawn : 1e9;
+    // A placement may carry its own respawn gap on top of the library's: the hub showcase
+    // sets one so the gallery is not stripped bare by the first visitor who walks it.
+    const back = +this.propOwn(u, u.cell, "gap", m.respawn || 0);
+    u.taken = back > 0 ? back : 1e9;
     this.evt({ coin: "coin", key: "key", heal: "heal", maxhp: "heal", life: "life" }[m.effect] || "pickup");
     this.fireEvent("pickup", { filter: u.obj });
     const evt = { coin: "collect_coin", key: "collect_key", ammo: "collect_ammo", heal: "heal" }[m.effect];
@@ -25720,7 +25823,7 @@ class Component extends DCLogic {
 
   // ── THE LOBBY ────────────────────────────────────────────────────────
   // Rough-in. Everything here is CONFIG over systems that already exist: the hub is a world,
-  // the cert wall reads entitlements, the board reads a stat list out of the world save file.
+  // the board reads a stat list out of the world save file.
   // Nothing in this panel builds geometry yet — it decides what the hub is made of.
   // ── LOCAL HOSTING ──────────────────────────────────────────────────
   // A browser tab cannot bind a port, so this panel does not pretend to be a
@@ -25871,11 +25974,698 @@ class Component extends DCLogic {
       .catch(fallback);
   }
 
+  // ── LINK TEST (two squares) ──────────────────────────────────────────
+  // The smallest honest multiplayer: one host owning truth, one guest sending held keys,
+  // two squares in a box. A probe for the transport, not a game mode — if these two squares
+  // move together on two machines, the relay, the code and the tick all work.
+  //
+  // Positions on the wire are NORMALISED 0..1, never pixels: a desktop viewport and a phone
+  // do not agree on what x=900 means, so each screen resolves the same fraction to its own
+  // pixels at draw time and the guest never has to correct what the host told it.
+  NET_TICK = 50;          // 20 Hz — the rate the host publishes truth at
+  NET_SPEED = 0.28;       // fraction of the box crossed per second
+  NET_SIZE = 34;          // square, in px — drawing only, never sent
+  NET_TIMEOUT = 2200;     // silence, in ms, before a peer that is still there reads as idle
+  // The host owns the truth of "the guest has stopped telling me anything" too. Guest input
+  // this stale is no input: the square stops where it is, velocity zeroed, position untouched.
+  // Latch, packet loss, a closed tab, a dead relay — all degrade to the same safe stop.
+  NET_EXPIRE = 500;
+  // Which only works against a STEADY stream, so the guest republishes its held set on this
+  // interval as well as on every change. An edge-only guest would expire while standing still.
+  NET_KEEP = 200;
+  NET_GONE = 1500;        // guest: no state frame for this long and the host is gone
+  NET_TRIES = 10;         // placement retries before we stop polling and wait for the tab
+  // Keyboard watchdog, and it is only ARMED once a repeat has proved this machine sends them:
+  // on a box with key repeat switched off, an unconditional watchdog would release a key the
+  // player is still holding.
+  NET_REPEAT = 4000;
+  NET_URL = "https://qfawusrelwthxabfbglg.supabase.co";
+  // Public anon key, the same one every Spiralside page ships by design. It authorises
+  // nothing but the broadcast channel this test talks on.
+  NET_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E";
+  // Pinned to an exact release, never to a range: an unpinned CDN URL lets the transport change
+  // between two sessions of the same build, and an export is meant to behave the same way in a
+  // year as it does today. (It wants vendoring into the export eventually — same argument as
+  // same-origin storage — but that is a size decision, not a pin.)
+  NET_LIB = "https://unpkg.com/@supabase/supabase-js@2.112.3";
+
+  netCfg() {
+    if (!this._net) this._net = {
+      role: null, client: null, chan: null, peer: false, everRx: false,
+      lastRx: 0, lastTick: 0, startedAt: 0, rtt: null,
+      id: Math.random().toString(36).slice(2, 8),
+      held: { up: false, down: false, left: false, right: false },
+      guest: { up: false, down: false, left: false, right: false },
+      a: { x: 0.1, y: 0.15 }, b: { x: 0.7, y: 0.6 },
+      timer: null, ping: null, onKey: null, onBlur: null, onHide: null,
+      // A channel EXISTS from the moment it is created and does not carry traffic until it is
+      // joined. Sending in between is not an error — the client silently posts over REST instead
+      // of the socket — so the send gate is "joined", never "exists". On a long link that window
+      // is hundreds of ms of state frames going out the slow way.
+      joined: false,
+      // rxAt: the last guest KEY frame the host took, stateAt: the last host STATE frame the
+      // guest took, txAt: the last frame this guest published. Separate clocks on purpose —
+      // lastRx conflates the two directions and cannot expire either one.
+      rxAt: 0, stateAt: 0, txAt: 0, rxKeys: false, hostGone: false,
+      keyAt: {}, repeatSeen: false, padId: {}, rttLog: [], rttLast: null,
+      pingAt: 0, pongAt: 0,
+    };
+    return this._net;
+  }
+
+  // What feeds the expiry has to track the link as it DEGRADES, not hold the last clean sample.
+  // A spiking link loses pongs; an estimate frozen at the last good one would NARROW the window
+  // exactly when it should widen, and false-fire when the link is at its worst. So an
+  // unanswered ping counts: it is evidence about the link now, and the only kind available while
+  // things are going wrong. Capped, because a peer that simply left also stops answering and
+  // would otherwise widen the window forever (presence-leave and GUEST LEFT own that case).
+  NET_RTT_CAP = 2000;
+  // How long the teardown waits before pulling the socket out from under the last send. It was
+  // 80 — a guess with margin, sitting next to a window we had just done the work to DERIVE, which
+  // is the worst of both. Same measured link as the expiry: half a round trip for the frame to
+  // leave, plus a floor for the send queue itself. LAN stays 80; a 180ms link gets 130. The frame
+  // it protects is the zeroed key set, the single most important message in the protocol.
+  NET_TEARDOWN_MIN = 80;
+  netTeardownMs() {
+    return Math.max(this.NET_TEARDOWN_MIN, Math.round(this.netRttEst() / 2) + 40);
+  }
+
+  netRttEst() {
+    const n = this.netCfg();
+    const base = n.rtt == null ? 0 : n.rtt;
+    const waiting = n.pingAt && (!n.pongAt || n.pingAt > n.pongAt) ? performance.now() - n.pingAt : 0;
+    return Math.min(this.NET_RTT_CAP, Math.max(base, waiting));
+  }
+
+  // DERIVED, not tuned: three missed keepalives plus the link's own latency, floored at
+  // NET_EXPIRE. On a LAN that is ~600ms; across the Atlantic with a 180ms round trip ~780ms,
+  // and wider still while the link is misbehaving. A flat 500 against a 200ms keepalive is 2.5
+  // frames of margin — fine for one dropped frame, not for two in a row, and consecutive loss
+  // on a real long link is not exotic.
+  netExpiry() {
+    return Math.max(this.NET_EXPIRE, this.NET_KEEP * 3 + this.netRttEst());
+  }
+
+  netHeldAny() {
+    const h = this.netCfg().held;
+    return !!(h.up || h.down || h.left || h.right);
+  }
+
+  // Every exit path lands here. Stopping LISTENING is not the same as clearing: if the tool
+  // closes on a held key, the last frame on the wire says "held" and nothing ever corrects it.
+  // So the set is zeroed and — as a guest — one final zeroed frame is published.
+  netFlush(publish) {
+    const n = this.netCfg();
+    const was = this.netHeldAny();
+    ["up", "down", "left", "right"].forEach((k) => { n.held[k] = false; });
+    n.keyAt = {}; n.padId = {};
+    if (publish && n.role === "guest" && n.chan) {
+      n.txAt = performance.now();
+      this.netSend({ type: "keys", up: false, down: false, left: false, right: false });
+    }
+    return was;
+  }
+
+  // The channel name IS the code, so two studios meet by typing the same word. Falls back to
+  // the server's own JOIN CODE when one is set — the code you have already shared.
+  netCode() {
+    const raw = this.state.netCode == null ? ((this.state.host || {}).code || "BLOOM") : this.state.netCode;
+    return String(raw).toUpperCase().replace(/[^A-Z0-9_-]/g, "").slice(0, 12);
+  }
+
+  // Fetched on demand and never at boot: the studio opens with no network, and none of the
+  // transport is in our source — which is also what keeps the ship gate's message listener
+  // count at one.
+  netLib() {
+    if (window.supabase && window.supabase.createClient) return Promise.resolve(window.supabase);
+    if (this._netLibP) return this._netLibP;
+    this._netLibP = new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = this.NET_LIB;
+      s.onload = () => (window.supabase ? res(window.supabase) : rej(new Error("no global")));
+      s.onerror = () => { this._netLibP = null; rej(new Error("blocked")); };
+      document.head.appendChild(s);
+    });
+    return this._netLibP;
+  }
+
+  // ONE client per studio, not one per press. createClient stands up an auth client bound to a
+  // storage key, and there is no dispose call for it — so a client per session leaks one on every
+  // HOST/JOIN, and the library itself warns that several sharing a storage key is undefined
+  // behaviour. The CHANNEL is the per-session object: created on start, unsubscribed on stop.
+  // A cached client holds a SOCKET, and a phone changes networks mid-session — wifi to cellular,
+  // lock screen, app backgrounded. A client can present as alive with a dead socket underneath,
+  // and a channel subscribed onto nothing looks exactly like a transport failure while being
+  // nothing of the kind. So: tested on reuse, and watched while a session is live.
+  netSocketLive() {
+    const c = this._netClient;
+    if (!c) return false;
+    const rt = c.realtime;
+    if (!rt || typeof rt.isConnected !== "function") return true;   // nothing to ask
+    try { return !!rt.isConnected(); } catch (e) { return false; }
+  }
+
+  netClient(lib) {
+    if (this._netClient && !this.netSocketLive()) {
+      // dead socket under a live-looking client: discard it whole rather than subscribe a
+      // channel onto nothing. This is the one place removeAllChannels is right — the client
+      // itself is being thrown away.
+      try { this._netClient.removeAllChannels(); } catch (e) {}
+      this._netClient = null;
+    }
+    if (!this._netClient) {
+      this._netClient = lib.createClient(this.NET_URL, this.NET_KEY, {
+        // persistSession:false — no auth happens here, and it stops the client writing to
+        // storage, which is what trips tracking-prevention warnings in some browsers
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+    }
+    return this._netClient;
+  }
+
+  netLink(text, good) {
+    if (this._netLink === text && this._netGood === good) return;
+    this._netLink = text; this._netGood = good;
+    this.forceUpdate();
+  }
+
+  netStart(role) {
+    const n = this.netCfg();
+    if (n.role) this.netStop(true);
+    const code = this.netCode();
+    if (!code) { this.push("Type a code both machines can use.", "warn"); return; }
+    n.role = role;
+    n.startedAt = performance.now(); n.lastTick = performance.now();
+    n.lastRx = 0; n.everRx = false; n.peer = false; n.rtt = null; n.joined = false;
+    ["up", "down", "left", "right"].forEach((k) => { n.held[k] = false; n.guest[k] = false; });
+    n.a = { x: 0.1, y: 0.15 }; n.b = { x: 0.7, y: 0.6 };
+    this.netKeysOn();
+    this.netLink("OPENING\u2026", false);
+    this.push("Link test \u00b7 " + role + " on " + code, "info");
+    n.timer = setInterval(() => this.netTick(), this.NET_TICK);
+    // Two failures, two labels. Everything after the library is loaded used to land in the same
+    // catch and report TRANSPORT BLOCKED — a lie that would have sent a session hunting the CDN
+    // while the actual fault was ours.
+    const QUIET = {};
+    this.netLib().catch((e) => {
+      this.netLink("TRANSPORT BLOCKED", false);
+      this.push("Link test could not load its transport \u2014 no network, or a blocker stopped it.", "warn");
+      throw QUIET;
+    }).then((lib) => {
+      // wait out any teardown still pending, or we ask for a topic whose channel is mid-death
+      return (this._netTeardown || Promise.resolve()).then(() => lib);
+    }).then((lib) => {
+      if (this._net.role !== role) return;                 // stopped while we waited
+      const client = this.netClient(lib);
+      n.client = client;
+      const chan = client.channel("bloom3d-link-" + code, {
+        // self:false, or the host hears its own broadcasts and plays against itself
+        config: { broadcast: { self: false }, presence: { key: role } },
+      });
+      n.chan = chan;
+      chan.on("broadcast", { event: "net" }, (m) => this.netRx(m && m.payload));
+      // PING/PONG measures the real round trip. Age-of-last-message cannot: it conflates
+      // network lag with a peer that simply has nothing to say.
+      chan.on("broadcast", { event: "ping" }, (m) => {
+        const p = (m && m.payload) || {};
+        if (p.id === n.id || !n.chan) return;
+        n.chan.send({ type: "broadcast", event: "pong", payload: { toId: p.id, t0: p.t0 } });
+      });
+      chan.on("broadcast", { event: "pong" }, (m) => {
+        const p = (m && m.payload) || {};
+        if (p.toId !== n.id) return;
+        // MEDIAN of the last five, not the last sample. One late pong on a transatlantic link
+        // spikes a last-sample readout, and a jumpy number during a stutter hunt is a false
+        // lead you then have to chase. The median ignores a single outlier by construction.
+        n.pongAt = performance.now();
+        n.rttLast = Math.round(n.pongAt - p.t0);
+        n.rttLog.push(n.rttLast);
+        if (n.rttLog.length > 5) n.rttLog.shift();
+        const s = n.rttLog.slice().sort((a, b) => a - b);
+        n.rtt = s[Math.floor(s.length / 2)];
+      });
+      // Presence answers what the message stream cannot: a peer holding still and a peer who
+      // closed the tab both send nothing.
+      chan.on("presence", { event: "join" }, (e) => {
+        if (!e || e.key === role) return;
+        n.peer = true;
+        this.netLink("CONNECTED", true);
+      });
+      chan.on("presence", { event: "leave" }, (e) => {
+        if (!e || e.key === role) return;
+        n.peer = false;
+        if (role === "host") {
+          // the guest is gone: its last held frame dies with it, not after it
+          ["up", "down", "left", "right"].forEach((k) => { n.guest[k] = false; });
+          this.netLink("GUEST LEFT", false);
+        } else {
+          n.hostGone = true;
+          this.netFlush(false);              // stop publishing into nothing
+          this.netLink("HOST GONE", false);
+        }
+      });
+      chan.subscribe((status) => {
+        if (this._net.role !== role) return;
+        if (status === "SUBSCRIBED") {
+          n.joined = true;                  // the socket is carrying traffic — sends may go now
+          chan.track({ role: role, at: Date.now() });
+          this.netLink(role === "host" ? "WAITING FOR GUEST" : "LOOKING FOR HOST", false);
+          if (role === "guest") this.netSendKeys();
+          n.ping = setInterval(() => {
+            if (!n.chan) return;
+            n.pingAt = performance.now();      // an unanswered one widens the expiry, see netRttEst
+            n.chan.send({ type: "broadcast", event: "ping", payload: { id: n.id, t0: n.pingAt } });
+          }, 1000);
+        } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+          n.joined = false;
+          if (status !== "CLOSED") this.netLink("CONNECTION PROBLEM", false);
+        }
+      });
+    }).catch((err) => {
+      if (err === QUIET) return;                           // already reported, and truthfully
+      this.netLink("CHANNEL FAILED", false);
+      this.push("Link test loaded but could not open the channel \u2014 " + ((err && err.message) || "unknown") + ".", "warn");
+    });
+    this.forceUpdate();
+  }
+
+  netStop(quiet) {
+    const n = this.netCfg();
+    // One zeroed frame BEFORE the channel goes, or the last thing the host ever heard from this
+    // guest is a held key. Order matters twice over: `joined` is still true here, so this send
+    // takes the socket rather than the REST fallback, and the teardown below is delayed so the
+    // send is not cancelled underneath it.
+    this.netFlush(true);
+    if (n.timer) clearInterval(n.timer);
+    if (n.ping) clearInterval(n.ping);
+    n.timer = null; n.ping = null;
+    this.netKeysOff();
+    // The zeroed frame above is an async send. Tearing the channel down in the same turn can
+    // drop it on the floor, which is exactly the message that must not be lost — so the socket
+    // is closed a beat later, off the local objects we have already released.
+    // The channel is the session; the cached client outlives it. But `client.channel(topic)` is a
+    // REGISTRY LOOKUP, not a factory: while this channel is still registered, asking for the same
+    // topic hands back this very object — the one about to be unsubscribed. So the teardown also
+    // drops it from the registry, and it is kept as a PROMISE the next start waits on. The topic
+    // is the meeting point between two machines and cannot be made unique to dodge this.
+    const chan = n.chan, client = this._netClient;
+    this._netTeardown = new Promise((res) => setTimeout(() => {
+      try { if (chan) chan.unsubscribe(); } catch (e) {}
+      try { if (client && chan && client.removeChannel) client.removeChannel(chan); } catch (e) {}
+      res();
+    }, this.netTeardownMs()));
+    const was = n.role;
+    n.chan = null; n.client = null; n.role = null;
+    n.peer = false; n.rtt = null; n.everRx = false;
+    n.rxKeys = false; n.hostGone = false; n.rxAt = 0; n.stateAt = 0; n.txAt = 0; n.joined = false;
+    n.keyAt = {}; n.padId = {};
+    n.rttLog = []; n.rttLast = null; n.pingAt = 0; n.pongAt = 0;
+    ["up", "down", "left", "right"].forEach((k) => { n.guest[k] = false; });
+    this._netLink = "DISCONNECTED"; this._netGood = false; this._netRtt = null;
+    if (!quiet) {
+      if (was) this.push("Link test stopped.", "muted");
+      this.forceUpdate();
+    }
+  }
+
+  netRx(msg) {
+    const n = this.netCfg();
+    if (!msg || (msg.type !== "keys" && msg.type !== "state")) return;
+    n.lastRx = performance.now(); n.everRx = true;
+    if (n.role === "host" && msg.type === "keys") {
+      n.guest.up = !!msg.up; n.guest.down = !!msg.down;
+      n.guest.left = !!msg.left; n.guest.right = !!msg.right;
+      n.rxAt = n.lastRx; n.rxKeys = true;      // the clock the 500ms expiry runs against
+      this.netLink("CONNECTED", true);
+    }
+    if (n.role === "guest" && msg.type === "state") {
+      n.stateAt = n.lastRx;
+      if (n.hostGone) { n.hostGone = false; this.push("Host is back.", "success"); }
+      // Take what we are told — no clamping, no correcting, no arguing. The host owns truth,
+      // and normalised values mean nothing here can be out of range for us.
+      const f = (v, d) => (Number.isFinite(v) ? v : d);
+      n.a = { x: f(msg.a && msg.a.x, n.a.x), y: f(msg.a && msg.a.y, n.a.y) };
+      n.b = { x: f(msg.b && msg.b.x, n.b.x), y: f(msg.b && msg.b.y, n.b.y) };
+      this.netDraw();
+      this.netLink("CONNECTED", true);
+    }
+  }
+
+  netSend(msg) {
+    const n = this.netCfg();
+    if (!n.chan || !n.joined) return;      // pre-join frames take the REST path — drop them
+    try { n.chan.send({ type: "broadcast", event: "net", payload: msg }); } catch (e) {}
+  }
+
+  netSendKeys() {
+    const n = this.netCfg();
+    if (n.role !== "guest") return;
+    n.txAt = performance.now();
+    this.netSend({ type: "keys", up: n.held.up, down: n.held.down, left: n.held.left, right: n.held.right });
+  }
+
+  netHold(k, v) {
+    const n = this.netCfg();
+    if (!n.role || n.held[k] === v) return;
+    n.held[k] = v;
+    if (n.role === "guest") this.netSendKeys();
+  }
+
+  // The guest's held set is a NETWORK object: a latched key does not stick a local square, it
+  // publishes "right: held" at 20 Hz forever and the host correctly does what it is told. That
+  // reads as broken netcode and is not. Four layers, none of them sufficient alone.
+  netKeysOn() {
+    const n = this.netCfg();
+    if (n.onKey) return;
+    const map = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
+    n.onKey = (e) => {
+      const k = map[e.key];
+      // only while the test is running AND its tool is open, so the arrows never steal a
+      // keystroke from the rest of the studio
+      if (!k || !this._net.role || this.state.tool !== "Host") return;
+      // LAYER 1 — nothing synthetic moves a square. A dispatched event is not a finger.
+      if (!e.isTrusted) return;
+      e.preventDefault();
+      const down = e.type === "keydown";
+      // LAYER 2 — the repeat stream is also the proof the key is STILL down, so it is recorded
+      // rather than trusted: the watchdog below releases a key whose repeats stopped arriving.
+      if (down) {
+        if (e.repeat) n.repeatSeen = true;
+        n.keyAt[k] = performance.now();
+      } else {
+        delete n.keyAt[k];
+      }
+      this.netHold(k, down);
+    };
+    // LAYER 4 — real alt-tab: the keyup lands on the desktop, not on the page. Same for a tab
+    // going hidden, which never sends a blur at all on some platforms.
+    n.onBlur = () => { if (this.netFlush(true)) this.forceUpdate(); };
+    n.onHide = () => {
+      if (document.visibilityState === "hidden") {
+        if (this.netFlush(true)) this.forceUpdate();
+        return;
+      }
+      // coming BACK is when a phone reveals what the network did while it was away
+      this.netCheckLink();
+    };
+    // and an explicit network transition says so without waiting to be looked at
+    n.onNet = () => this.netCheckLink();
+    window.addEventListener("keydown", n.onKey, { passive: false });
+    window.addEventListener("keyup", n.onKey, { passive: false });
+    window.addEventListener("blur", n.onBlur);
+    document.addEventListener("visibilitychange", n.onHide);
+    window.addEventListener("online", n.onNet);
+    window.addEventListener("offline", n.onNet);
+  }
+
+  netKeysOff() {
+    const n = this.netCfg();
+    if (n.onKey) {
+      window.removeEventListener("keydown", n.onKey);
+      window.removeEventListener("keyup", n.onKey);
+    }
+    if (n.onBlur) window.removeEventListener("blur", n.onBlur);
+    if (n.onHide) document.removeEventListener("visibilitychange", n.onHide);
+    if (n.onNet) {
+      window.removeEventListener("online", n.onNet);
+      window.removeEventListener("offline", n.onNet);
+    }
+    n.onKey = null; n.onBlur = null; n.onHide = null; n.onNet = null;
+  }
+
+  // Called when the phone comes back or the network changes under a live session. A joined
+  // session whose socket has died is not a session — say so, and rebuild it rather than sit
+  // there looking connected.
+  netCheckLink() {
+    const n = this.netCfg();
+    if (!n.role || !n.joined) return;
+    if (this.netSocketLive()) return;
+    const role = n.role;
+    this.push("The network moved under the session \u2014 rejoining as " + role + ".", "warn");
+    this.netStop(true);
+    // AFTER the stop, or netStop's own "DISCONNECTED" overwrites the one label that explains why
+    this.netLink("LINK DROPPED", false);
+    setTimeout(() => { if (!this.netCfg().role) this.netStart(role); }, 140);
+  }
+
+  netMove(p, keys, sec) {
+    const h = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
+    const v = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+    const diag = h && v ? Math.SQRT1_2 : 1;
+    // clamped in NORMALISED space, and only by the host — it owns truth
+    p.x = Math.max(0, Math.min(1, p.x + h * this.NET_SPEED * diag * sec));
+    p.y = Math.max(0, Math.min(1, p.y + v * this.NET_SPEED * diag * sec));
+  }
+
+  // The box is WATCHED, not guessed at. An idle stage draws once and then never again until
+  // something re-renders, so a mount that measures before layout settles — or any later resize
+  // (rail collapsed, window dragged, inspector toggled) — used to leave both squares stacked in
+  // the corner with stale pixels. A ResizeObserver redraws on every size change instead, and
+  // re-observes when the stage remounts with a fresh node.
+  netWatch() {
+    const box = this.netBoxRef && this.netBoxRef.current;
+    if (!box || !window.ResizeObserver) return;
+    if (this._netRONode === box) return;
+    if (this._netRO) this._netRO.disconnect();
+    this._netRO = new ResizeObserver(() => this.netDraw());
+    this._netRO.observe(box);
+    this._netRONode = box;
+  }
+
+  netUnwatch() {
+    if (this._netRO) this._netRO.disconnect();
+    this._netRO = null; this._netRONode = null;
+    if (this._netVis) document.removeEventListener("visibilitychange", this._netVis);
+    this._netVis = null;
+    clearTimeout(this._netDrawTid); clearTimeout(this._netMountTid);
+  }
+
+  // Gave up measuring a box that has no size yet — a hidden tab. One listener, and the next
+  // time this document is visible the placement runs again from a clean try count.
+  netVisArm() {
+    if (this._netVis) return;
+    this._netVis = () => {
+      if (document.visibilityState !== "visible") return;
+      this._netDrawTry = 0;
+      this.netDraw();
+    };
+    document.addEventListener("visibilitychange", this._netVis);
+  }
+
+  // Fractions to local pixels, straight onto the node: at 20 Hz this must never be a render.
+  netDraw() {
+    const box = this.netBoxRef && this.netBoxRef.current;
+    const A = this.netARef && this.netARef.current;
+    const B = this.netBRef && this.netBRef.current;
+    if (!box || !A || !B) return;
+    const n = this.netCfg();
+    const mx = Math.max(0, box.clientWidth - this.NET_SIZE);
+    const my = Math.max(0, box.clientHeight - this.NET_SIZE);
+    // measured before layout settled: try again next frame rather than writing 0,0
+    if (!mx && !my) {
+      // A timer, not a frame: a studio in a background tab is painted no frames at all — which
+      // is also why the ResizeObserver cannot cover this case, its callbacks land at frame end.
+      // The polling RESTS after a handful of tries and re-arms when the tab comes back, rather
+      // than ticking for an hour behind another window.
+      if ((this._netDrawTry || 0) < this.NET_TRIES) {
+        this._netDrawTry = (this._netDrawTry || 0) + 1;
+        clearTimeout(this._netDrawTid);
+        this._netDrawTid = setTimeout(() => this.netDraw(), 32);
+      } else {
+        this.netVisArm();
+      }
+      return;
+    }
+    this._netDrawTry = 0;
+    A.style.transform = "translate3d(" + (n.a.x * mx).toFixed(1) + "px," + (n.a.y * my).toFixed(1) + "px,0)";
+    B.style.transform = "translate3d(" + (n.b.x * mx).toFixed(1) + "px," + (n.b.y * my).toFixed(1) + "px,0)";
+  }
+
+  netTick() {
+    const n = this.netCfg();
+    if (!n.role) return;
+    const now = performance.now();
+    const sec = Math.min(150, now - (n.lastTick || now)) / 1000;
+    n.lastTick = now;
+    // LAYER 3 — the view moved off the tool with a key down. Listening already stopped; the SET
+    // is what has to be cleared, and the wire told one last time.
+    if (this.state.tool !== "Host" && this.netHeldAny()) {
+      this.netFlush(true);
+      this.forceUpdate();
+    }
+    // LAYER 2, the watchdog half: repeats prove a key is still held, so a key whose repeats
+    // stopped is a key nobody is holding. Only armed on a machine that sends repeats at all.
+    if (n.repeatSeen) {
+      ["up", "down", "left", "right"].forEach((k) => {
+        if (n.held[k] && now - (n.keyAt[k] || now) > this.NET_REPEAT) {
+          delete n.keyAt[k];
+          this.netHold(k, false);
+        }
+      });
+    }
+    if (n.role === "guest") {
+      // keepalive: the host's 500ms expiry needs a stream, not edges
+      if (now - (n.txAt || 0) >= this.NET_KEEP && !n.hostGone) this.netSendKeys();
+      // Mirror of the host's expiry, other direction. A host that leaves looks exactly like a
+      // host standing still, so say it out loud and stop publishing into nothing.
+      const quiet = n.stateAt ? now - n.stateAt : now - n.startedAt;
+      if (n.everRx && quiet > this.NET_GONE && !n.hostGone) {
+        n.hostGone = true;
+        this.netFlush(false);
+        this.netLink("HOST GONE", false);
+      }
+    }
+    if (n.role === "host") {
+      // LT-2: guest input has a shelf life. Zero the VELOCITY, never the position — the square
+      // stops where it is instead of sliding into a wall or snapping home.
+      if (n.rxKeys && now - (n.rxAt || 0) > this.netExpiry()) {
+        const moving = n.guest.up || n.guest.down || n.guest.left || n.guest.right;
+        ["up", "down", "left", "right"].forEach((k) => { n.guest[k] = false; });
+        if (moving) this.netLink(n.peer ? "GUEST IDLE" : "GUEST GONE", false);
+      }
+      this.netMove(n.a, n.held, sec);
+      this.netMove(n.b, n.guest, sec);
+      this.netDraw();
+      this.netSend({
+        type: "state",
+        // four decimals is sub-pixel on any screen and keeps the packet small
+        a: { x: +n.a.x.toFixed(4), y: +n.a.y.toFixed(4) },
+        b: { x: +n.b.x.toFixed(4), y: +n.b.y.toFixed(4) },
+      });
+    }
+    // Presence is the authority on whether anyone is there; message age only downgrades a
+    // peer that is still present.
+    if (n.peer && n.everRx && now - n.lastRx > this.NET_TIMEOUT) {
+      this.netLink(n.role === "host" ? "GUEST IDLE" : "HOST STALLED", false);
+    }
+    if (this._netRtt !== n.rtt) { this._netRtt = n.rtt; this.forceUpdate(); }
+  }
+
+  netVals() {
+    const n = this.netCfg();
+    const running = !!n.role;
+    const good = !!this._netGood;
+    this.netBoxRef = this.netBoxRef || React.createRef();
+    this.netARef = this.netARef || React.createRef();
+    this.netBRef = this.netBRef || React.createRef();
+    const btn = (on, hue) => ({
+      display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
+      padding: "7px 12px", fontSize: 10, cursor: "pointer", whiteSpace: "nowrap",
+      fontFamily: "'Silkscreen', monospace", letterSpacing: "1px",
+      color: on ? "#0b0e1a" : hue, background: on ? hue : "#0e1120",
+      border: "1px solid " + hue,
+    });
+    // No transform in here on purpose. netDraw() writes the transform imperatively, and a style
+    // object that also carried one would have React reset both squares to the corner on the next
+    // render — invisible while the 20 Hz tick is running, permanent on an idle stage.
+    const square = (hue) => ({
+      position: "absolute", left: 0, top: 0, width: this.NET_SIZE, height: this.NET_SIZE,
+      background: hue, boxShadow: "0 0 14px " + hue + "88", willChange: "transform",
+    });
+    const glyph = { up: "\u2191", left: "\u2190", down: "\u2193", right: "\u2192" };
+    // An idle stage still has to place its squares: the tick only draws while a role is live,
+    // and two untouched squares would sit on top of each other in the corner. The observer is
+    // what keeps them right afterwards — this is only the first placement.
+    if (this.state.tool === "Host") {
+      clearTimeout(this._netMountTid);
+      this._netMountTid = setTimeout(() => { this.netWatch(); this.netDraw(); }, 0);
+    }
+    return {
+      netRunning: running,
+      netIdle: !running,
+      netRoleText: running ? n.role.toUpperCase() : "NOT STARTED",
+      netRoleStyle: {
+        fontFamily: "'Silkscreen', monospace", fontSize: 10, letterSpacing: "2px",
+        color: running ? (n.role === "host" ? "#37d0ff" : "#ff6f91") : "#5b6079",
+      },
+      netCodeText: this.netCode() || "\u2014",
+      netCodeVal: this.state.netCode == null ? this.netCode() : this.state.netCode,
+      onNetCode: (e) => this.setState({ netCode: e.target.value }),
+      netCodeField: {
+        width: 120, boxSizing: "border-box", padding: "6px 8px", background: "#151a30",
+        border: "1px solid #2b3150", color: "#f7f3ff", fontFamily: "'JetBrains Mono', monospace",
+        fontSize: 10, letterSpacing: "3px", textTransform: "uppercase", outline: "none",
+      },
+      netLinkText: this._netLink || "DISCONNECTED",
+      netLinkStyle: {
+        fontFamily: "'JetBrains Mono', monospace", fontSize: 10, letterSpacing: "1px",
+        color: good ? "#59e391" : running ? "#f8d66d" : "#7a7f9c",
+      },
+      // a reading with a pong outstanding longer than itself is STALE, and says so rather than
+      // presenting the last clean sample as if it were current
+      netRttText: n.rtt == null
+        ? "\u2014 ms"
+        : n.rtt + " ms" + (this.netRttEst() > n.rtt ? " \u2026" : ""),
+      // the readout says median so nobody reads it as an instant sample mid-stutter-hunt
+      netRttLabel: n.rttLog.length > 1 ? "ROUND TRIP \u00b7 MED" + n.rttLog.length : "ROUND TRIP",
+      netRttTitle: n.rttLast == null ? "" : "last sample " + n.rttLast + " ms \u00b7 median of the last " + n.rttLog.length,
+      // what the host is actually holding guest input to, on this link, right now
+      netExpiryOn: n.role === "host",
+      netExpiryText: Math.round(this.netExpiry()) + " ms",
+      netHostStyle: btn(n.role === "host", "#37d0ff"),
+      netJoinStyle: btn(n.role === "guest", "#ff6f91"),
+      netStopStyle: btn(false, "#7a7f9c"),
+      onNetHost: () => this.netStart("host"),
+      onNetJoin: () => this.netStart("guest"),
+      onNetStop: () => this.netStop(false),
+      netBoxRef: this.netBoxRef,
+      netARef: this.netARef,
+      netBRef: this.netBRef,
+      netBoxStyle: {
+        // never allowed to collapse: at a narrow window the header rows and the pad eat the
+        // column, and a flex:auto box with min-height 0 would flatten to a line
+        position: "relative", flex: "1 1 auto", minHeight: 140, minWidth: 0, overflow: "hidden",
+        border: "1px solid #2b3150", background: "#080a12", touchAction: "none",
+        backgroundImage: "linear-gradient(#12172b 1px, transparent 1px), linear-gradient(90deg, #12172b 1px, transparent 1px)",
+        backgroundSize: "34px 34px",
+      },
+      netAStyle: square("#37d0ff"),
+      netBStyle: square("#ff6f91"),
+      netPad: ["down", "left", "right", "up"].map((k) => ({
+        glyph: glyph[k],
+        style: {
+          gridArea: k === "up" ? "1 / 2" : k === "left" ? "2 / 1" : k === "down" ? "2 / 2" : "2 / 3",
+          width: 46, height: 46, display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 16, cursor: "pointer", userSelect: "none", touchAction: "none",
+          color: "#e7e2f5", background: "#151a30", border: "1px solid #2b3150",
+        },
+        // LAYER 2, the pad half: the release is matched to the POINTER that pressed. A button
+        // that captured the pointer and then lost it off-element never fires pointerup on
+        // itself — that is the exact path that latched before, and a finger dragged off a
+        // d-pad key on a phone is how a player finds it.
+        onDown: (e) => {
+          if (!e || !e.isTrusted) return;
+          e.preventDefault();
+          n.padId[k] = e.pointerId;
+          if (e.currentTarget && e.currentTarget.setPointerCapture) {
+            try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+          }
+          this.netHold(k, true);
+        },
+        onUp: (e) => {
+          if (!e) return;
+          e.preventDefault();
+          if (n.padId[k] != null && e.pointerId != null && e.pointerId !== n.padId[k]) return;
+          delete n.padId[k];
+          this.netHold(k, false);
+        },
+      })),
+      netWhoLabel: running
+        ? (n.role === "host" ? "BLUE IS YOU \u00b7 PINK IS THE GUEST" : "PINK IS YOU \u00b7 BLUE IS THE HOST")
+        : "BLUE IS THE HOST \u00b7 PINK IS THE GUEST",
+      netNote: running
+        ? (n.role === "host"
+          ? "You own the truth: both squares are moved here twenty times a second and published as fractions of the box. Arrow keys or the pad drive blue."
+          : "You send held keys only \u2014 the host moves both squares and tells you where they are. Arrow keys or the pad drive pink.")
+        : "Two studios on the same code, one on HOST and one on JOIN, share one box with two squares in it. A probe for the relay, not a game mode: if these move together, a real session can.",
+      netStepNote: "Same code on both machines, and HOST goes first \u2014 a guest needs someone to find.",
+    };
+  }
+
   hostVals() {
     const H = this.hostCfg();
     const live = !!this.state.hostLive, busy = !!this.state.hostBusy;
-    const info = this.hostInfo() || {};
-    const vis = (info.visitors || []).filter((v) => !v.self);
+    const info = this.hostInfo() || {};    const vis = (info.visitors || []).filter((v) => !v.self);
     const chip = (on, hue) => ({
       display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
       padding: "5px 9px", fontSize: 9, cursor: "pointer", whiteSpace: "nowrap",
@@ -26158,13 +26948,128 @@ class Component extends DCLogic {
       props: { 2048: { n: "LEADERBOARD", r: 0, l: 0 } }, enemies: {}, pets: {}, npcs: {}, bosses: {}, spawners: {},
       pages: [], wpos: null,
     });
+    // a hub you walk into for the first time already has the gallery standing in it, and
+    // its doorway leads where the game door will: every other room is about to shift by one
+    const shown = this.showcaseInto(hub, 0, Math.min(list.length, ((this.lobbyCfg().door || {}).room || 0) + 1));
     list.unshift(hub);
     const l = clone(this.lobbyCfg());
     l.door.room = Math.min(list.length - 1, (l.door.room || 0) + 1);
     this.setState({ rooms: list, roomIndex: (this.state.roomIndex || 0) + 1, lobby: l }, () => {
       this.touched = true; this.queueSave();
     });
-    this.push("Hub room created · " + LOBBY_ROOM + " · 100 × 100.", "success");
+    this.push("Hub room created · " + LOBBY_ROOM + " · 100 × 100 · " + shown + " objects on show.", "success");
+  }
+
+  // ── THE SHOWCASE ──────────────────────────────────────────────────────
+  // Where each object stands: one slot per object, alphabetical, across a row from the
+  // spawn's left and then the next row further away, so reading order and walking order
+  // are the same order.
+  showcaseSlots(n) {
+    const names = this.objectNames().filter((k) => SHOWCASE.skip.indexOf(k) < 0);
+    const cols = SHOWCASE.cols, pitch = SHOWCASE.pitch;
+    const mid = Math.floor(n / 2);
+    const x0 = mid - Math.floor(((cols - 1) * pitch) / 2);
+    const z0 = mid - SHOWCASE.front;
+    return names.map((name, k) => ({
+      name, x: x0 + (k % cols) * pitch, z: z0 - Math.floor(k / cols) * pitch,
+    }));
+  }
+
+  // Writes the gallery into a room record — or into the live world, which is the same
+  // shape. Returns how many placements it made. Its own placements are dropped first, so
+  // BUILD is idempotent and a second press picks up objects added to the library since.
+  showcaseInto(w, hubIdx, outIdx) {
+    const n = (ROOM_SIZES.find((s) => s[0] === w.size) || ROOM_SIZES[1])[1];
+    if (!w.tiles || w.tiles.length !== n * n) {
+      // the same ground ensureTiles() lays: a padded floor with the spawn in the middle
+      const a = new Array(n * n).fill(0);
+      const pad = Math.max(2, Math.round(n * 0.12));
+      for (let z = pad; z < n - pad; z++) for (let x = pad; x < n - pad; x++) a[z * n + x] = 1;
+      w.spawn = Math.floor(n / 2) * n + Math.floor(n / 2);
+      a[w.spawn] = 7;
+      w.tiles = a;
+    } else w.tiles = w.tiles.slice();
+    const props = {};
+    for (const k in (w.props || {})) if (!(w.props[k] && w.props[k].sc)) props[k] = w.props[k];
+    let made = 0;
+    const put = (x, z, name, tune) => {
+      if (x < 1 || z < 1 || x > n - 2 || z > n - 2) return;
+      const cell = z * n + x;
+      if (cell === w.spawn) return;
+      if (w.tiles[cell] === 0) w.tiles[cell] = 1;      // never leave the gallery over the void
+      props[cell] = { n: name, r: 0, l: 0, p: Object.assign({ sign: name }, tune || {}), sc: 1 };
+      made++;
+    };
+    const tuneFor = (name) => {
+      const m = this.meta(name) || {};
+      const t = Object.assign({}, SHOWCASE_TUNE[name] || {});
+      if (m.type === "PICKUP") t.gap = SHOWCASE_BACK;         // it comes back after you take it
+      if (m.effect === "warp") {
+        // A door is only a door if it goes somewhere, and a same-room warp does nothing at
+        // all: the gallery's leads where the hub's GAME DOOR leads, and asks for a key first
+        // so a visitor reading the plates is never teleported out of the room by accident.
+        if (outIdx != null && outIdx !== hubIdx) t.to = outIdx;
+        t.lock = 1;
+      }
+      return t;
+    };
+    this.showcaseSlots(n).forEach((s) => {
+      put(s.x, s.z, s.name, tuneFor(s.name));
+      const mate = SHOWCASE_PAIR[s.name];
+      if (!mate || !(this.objectDefs || OBJECT_DEFS)[mate]) return;
+      const wide = Math.max(1, Math.round((this.meta(s.name) || {}).wide || 1));
+      put(s.x + wide, s.z, mate, tuneFor(mate));
+    });
+    w.props = props;
+    return made;
+  }
+
+  showcaseCount() {
+    const i = this.lobbyIndex();
+    if (i < 0) return 0;
+    const r = i === this.state.roomIndex ? this.state.world : (this.rooms()[i] || {});
+    const p = r.props || {};
+    let k = 0;
+    for (const c in p) if (p[c] && p[c].sc) k++;
+    return k;
+  }
+
+  // BUILD and CLEAR both work on the hub as the LIVE room: the gallery is something you
+  // are meant to look at straight away, so both walk you into it and leave you in World.
+  showcaseBuild() {
+    const i = this.lobbyIndex();
+    if (i < 0) { this.ensureLobbyRoom(); return; }
+    this.gotoRoom(i, () => {
+      const w = Object.assign({}, this.state.world);
+      const made = this.showcaseInto(w, i, Math.max(0, Math.min(this.rooms().length - 1, ((this.lobbyCfg().door || {}).room || 0))));
+      this.setState({ world: w, tool: "World", propSel: null }, () => {
+        this.ensureTiles(this.worldDim());
+        this.buildWorldMeshes(); this.rebuildProps(); this.frameWorldContent();
+        this.touched = true; this.queueSave();
+      });
+      this.push("Showcase built · " + made + " objects in " + LOBBY_ROOM + " · RUN to play with them.", "success");
+    });
+  }
+
+  showcaseClear() {
+    const i = this.lobbyIndex();
+    if (i < 0) return;
+    this.gotoRoom(i, () => {
+      const w = Object.assign({}, this.state.world);
+      const props = {};
+      let gone = 0;
+      for (const k in (w.props || {})) {
+        if (w.props[k] && w.props[k].sc) gone++; else props[k] = w.props[k];
+      }
+      w.props = props;
+      this.setState({ world: w, propSel: null }, () => {
+        this.buildWorldMeshes(); this.rebuildProps();
+        this.touched = true; this.queueSave();
+      });
+      this.push(gone
+        ? "Showcase cleared · " + gone + " placements out of " + LOBBY_ROOM + "."
+        : "No showcase placements in the hub — nothing to clear.", gone ? "warn" : "muted");
+    });
   }
 
   // Play begins in the Room. Same machinery as a warp, just run before the first frame.
@@ -26724,7 +27629,7 @@ class Component extends DCLogic {
 
   lobbyVals() {
     const L = this.lobbyCfg();
-    const B = L.board, C = L.certs, D = L.door;
+    const B = L.board, D = L.door;
     const rooms = this.rooms();
     const chip = (on, hue) => ({
       display: "flex", alignItems: "center", justifyContent: "center", gap: 4,
@@ -26745,6 +27650,7 @@ class Component extends DCLogic {
     };
     const find = (this.state.lobbyFind || "").trim().toLowerCase();
     const hubI = this.lobbyIndex();
+    const showN = this.showcaseCount();
     const moveCol = (i, d) => () => this.lobbyEdit((l) => {
       const c = l.board.cols, j = i + d;
       if (j < 0 || j >= c.length) return;
@@ -26759,13 +27665,22 @@ class Component extends DCLogic {
       lobbySpawnLabel: L.spawnHere ? "SPAWN HERE" : "SPAWN IN GAME",
       onLobbySpawn: () => this.lobbyEdit((l) => { l.spawnHere = !l.spawnHere; }),
       secLobbyRoom: this.sec("lobbyRoom", hubI >= 0 ? "100 × 100" : "MISSING"),
+      // showcase -------------------------------------------------------
+      secLobbyShow: this.sec("lobbyShow", showN ? showN + " PLACED" : "EMPTY"),
+      lobbyShowLine: showN
+        ? showN + " placements · one of every object, A–Z, name over each"
+        : "nothing on show yet · BUILD lays the whole library out in aisles",
+      lobbyShowNote: "Walk the aisles and use all of it: switches open the gates beside them, every lock — chest, swing door, doorway — has its key lying next to it, and pickups come back a few seconds after you take them. The DOOR is a real exit: spend a key and it takes you where the GAME DOOR goes, into the game's first room. Ordinary placements — pick any of them in PROPERTIES and change it.",
+      lobbyShowStyle: chip(false, "#59e391"),
+      lobbyShowClearStyle: chip(false, "#ff6f91"),
+      onLobbyShowcase: () => this.showcaseBuild(),
+      onLobbyShowClear: () => this.showcaseClear(),
       secLobbyBoard: this.sec("lobbyBoard", B.cols.length + " COLS · " + B.style),
       secBoardPreview: this.sec("boardPreview", B.style),
       ...this.boardPreviewVals(B),
       lobbyBoardJumpStyle: chip(false, "#d85cff"),
       onLobbyBoardJump: () => this.setState({ tool: "Leaderboard" }),
       secLobbyStats: this.sec("lobbyStats", STAT_POOL.length + " IN POOL"),
-      secLobbyCerts: this.sec("lobbyCerts", C.on ? C.cols + " WIDE" : "OFF"),
       secLobbyDoor: this.sec("lobbyDoor", (rooms[D.room] || rooms[0] || {}).name || "—"),
       lobbyField: field,
       lobbyFixtures: LOBBY_FIXTURES.map((f) => ({
@@ -26855,17 +27770,6 @@ class Component extends DCLogic {
         };
       }),
       lobbyStatNote: "A stat is just a named counter a game increments. Curated pool now; custom stats come later.",
-      // certificate wall ---------------------------------------------------
-      lobbyCertsStyle: chip(!!C.on, "#f8d66d"),
-      lobbyCertsLabel: C.on ? "WALL ON" : "WALL OFF",
-      onLobbyCerts: () => this.lobbyEdit((l) => { l.certs.on = !l.certs.on; }),
-      lobbySerialsStyle: chip(!!C.serials, "#f8d66d"),
-      lobbySerialsLabel: C.serials ? "SERIALS SHOWN" : "SERIALS HIDDEN",
-      onLobbySerials: () => this.lobbyEdit((l) => { l.certs.serials = !l.certs.serials; }),
-      lobbyCertColsLabel: C.cols + " TILES WIDE",
-      onLobbyCertColsUp: () => this.lobbyEdit((l) => { l.certs.cols = Math.min(8, l.certs.cols + 1); }),
-      onLobbyCertColsDown: () => this.lobbyEdit((l) => { l.certs.cols = Math.max(2, l.certs.cols - 1); }),
-      lobbyCertNote: "Reads entitlements — free packs from signed profile certs, paid from the server ledger. The wall only renders what is already owned.",
       // door ---------------------------------------------------------------
       lobbyDoorRoom: String(D.room),
       // the door leads OUT of the hub, so the hub itself is never a target
@@ -30379,9 +31283,10 @@ class Component extends DCLogic {
       onTexCopy: () => this.texCopyFace(),
       onTexClear: () => this.texClear(),
       texNote: "Each face paints on its own: TOP is the +Y lid, BOTTOM the underside, SIDE the four walls. The slot you pick is also the seed's main colour, and its partner is the slot nine along — outlined in the grid while you have its mate selected. That makes slot ORDER functional: move a colour to a different slot and it pairs with something else. FILL WITH lays the motif down at the OPQ opacity — 100% for a solid fill. TOP paints the +Y face (what you walk on), SIDE paints the other five. A tile with no texture renders as its flat colour, so an untextured pack costs nothing.",
-      settingsMode: tool === "Settings" || tool === "Export" || tool === "Project" || tool === "Host",
+      settingsMode: tool === "Settings" || tool === "Export" || tool === "Project",
       hostMode: tool === "Host",
       ...this.hostVals(),
+      ...this.netVals(),
       projectMode: tool === "Project",
       tweakMode: tool === "Settings",
       profHandle: this.profile().handle,
