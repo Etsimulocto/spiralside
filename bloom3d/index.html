@@ -2954,7 +2954,7 @@
               <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;flex:0 0 auto">
                 <div style="display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(2,46px);gap:5px;flex:0 0 auto">
                   <sc-for list="{{ netPad }}" as="p" hint-placeholder-count="4">
-                    <div style="{{ p.style }}" onPointerDown="{{ p.onDown }}" onPointerUp="{{ p.onUp }}" onPointerCancel="{{ p.onUp }}" onLostPointerCapture="{{ p.onUp }}">{{ p.glyph }}</div>
+                    <div style="{{ p.style }}" onPointerDown="{{ p.onDown }}" onPointerUp="{{ p.onUp }}" onPointerCancel="{{ p.onUp }}" onPointerLeave="{{ p.onUp }}" onLostPointerCapture="{{ p.onUp }}">{{ p.glyph }}</div>
                   </sc-for>
                 </div>
                 <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:6px">
@@ -10867,7 +10867,7 @@ class Component extends DCLogic {
 
   // Ship gate reads the version from HERE, not the filename. Bump on every export that
   // changes anything — two distinct builds must never claim the same version.
-  ENGINE = "bloom3d/0.3.19";
+  ENGINE = "bloom3d/0.3.20";
   FORMAT = "bloom3d/project-web-v1";
 
   parseVer(v) {
@@ -26296,6 +26296,10 @@ class Component extends DCLogic {
       n.guest.up = !!msg.up; n.guest.down = !!msg.down;
       n.guest.left = !!msg.left; n.guest.right = !!msg.right;
       n.rxAt = n.lastRx; n.rxKeys = true;      // the clock the 500ms expiry runs against
+      // Input arriving IS presence. A rejoin onto a stale server-side presence entry may never
+      // re-fire JOIN, which used to leave peer false while everything else worked — and the GUEST
+      // IDLE downgrade reads peer, so the readout lied about a session that was fine.
+      n.peer = true;
       this.netLink("CONNECTED", true);
     }
     if (n.role === "guest" && msg.type === "state") {
@@ -26370,12 +26374,31 @@ class Component extends DCLogic {
     };
     // and an explicit network transition says so without waiting to be looked at
     n.onNet = () => this.netCheckLink();
+    // LAYER 5 — the pad's release is not guaranteed to land on the button it started on. A finger
+    // that slides off an uncaptured 46px pad lifts over the document instead, and no release of
+    // any kind reaches the pad: not up, not cancel, not lostpointercapture. A touch screen sends
+    // no key repeats either, so LAYER 2 is inert there — the latch is permanent and the 200ms
+    // keepalive refreshes it forever, which is the England wall stick. So watch the WHOLE window
+    // for the lift, keyed on the same pointerId the pad recorded. Deliberately not a timeout: a
+    // finger genuinely still down sends nothing either, exactly like a key with repeat switched
+    // off, and a watchdog cannot tell those apart. A lift is an event; absence is not.
+    n.onPtrUp = (e) => {
+      const id = e && e.pointerId;
+      if (id == null) return;
+      let hit = false;
+      ["up", "down", "left", "right"].forEach((k) => {
+        if (n.padId[k] === id) { delete n.padId[k]; this.netHold(k, false); hit = true; }
+      });
+      if (hit) this.forceUpdate();
+    };
     window.addEventListener("keydown", n.onKey, { passive: false });
     window.addEventListener("keyup", n.onKey, { passive: false });
     window.addEventListener("blur", n.onBlur);
     document.addEventListener("visibilitychange", n.onHide);
     window.addEventListener("online", n.onNet);
     window.addEventListener("offline", n.onNet);
+    window.addEventListener("pointerup", n.onPtrUp);
+    window.addEventListener("pointercancel", n.onPtrUp);
   }
 
   netKeysOff() {
@@ -26390,7 +26413,11 @@ class Component extends DCLogic {
       window.removeEventListener("online", n.onNet);
       window.removeEventListener("offline", n.onNet);
     }
-    n.onKey = null; n.onBlur = null; n.onHide = null; n.onNet = null;
+    if (n.onPtrUp) {
+      window.removeEventListener("pointerup", n.onPtrUp);
+      window.removeEventListener("pointercancel", n.onPtrUp);
+    }
+    n.onKey = null; n.onBlur = null; n.onHide = null; n.onNet = null; n.onPtrUp = null;
   }
 
   // Called when the phone comes back or the network changes under a live session. A joined
