@@ -8,7 +8,7 @@
 import { state } from './state.js';
 
 const SUPA_URL = 'https://qfawusrelwthxabfbglg.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E';
+const SUPA_KEY = 'sb_publishable_K4gWB2MTrt7y8sypQ7VZdg__8wxn049';
 const STORAGE_BUCKET = 'user-assets';
 
 // ── IMAGE STRIP ───────────────────────────────────────────────

@@ -4,7 +4,7 @@
 import urllib.request, json, subprocess, os, re
 
 SUPA_URL = 'https://qfawusrelwthxabfbglg.supabase.co/rest/v1/handoff_docs?key=eq.spiral_js&select=content'
-SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E'
+SUPA_KEY = 'sb_publishable_K4gWB2MTrt7y8sypQ7VZdg__8wxn049'
 
 def read(p): 
     with open(p,'r',encoding='utf-8') as f: return f.read()
@@ -18,7 +18,7 @@ def run(cmd):
     return r.returncode
 
 print('[1] Fetching spiral.js from Supabase...')
-req=urllib.request.Request(SUPA_URL,headers={'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY})
+req=urllib.request.Request(SUPA_URL,headers={'apikey':SUPA_KEY})
 data=json.loads(urllib.request.urlopen(req).read())
 # Content has '' as escaped single quotes -- unescape
 js_content = data[0]['content'].replace("''","'")

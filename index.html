@@ -1944,7 +1944,7 @@
           <button id="sidebar-toggle" title="hide sidebar" onclick="window._toggleSidebar()">‹ tabs</button>
           <button id="tab-split" onclick="window.toggleSplitMode()" title="split screen — view two tabs side by side"><svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 14 14"><rect x="1" y="1" width="12" height="12" rx="2"/><line x1="7" y1="1" x2="7" y2="13"/></svg> split</button>
         </div>
-        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.74</div>        <div class="header-right">
+        <div class="version-badge" id="version-badge" onclick="window._toggleUpdateNotes()" title="what’s new" style="cursor:pointer">v0.9.75</div>        <div class="header-right">
           <div class="credits-badge" id="credits-badge" onclick="switchView('store')">∞ free</div>
         </div>
       </div>
@@ -3996,7 +3996,7 @@ async function czDeleteBlock(id, btn) {
   // Supabase endpoint + public anon key. Safe to embed: the
   // feedback table's RLS grants INSERT only, never SELECT.
   var SUPA_URL = 'https://qfawusrelwthxabfbglg.supabase.co';
-  var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E';
+  var SUPA_KEY = 'sb_publishable_K4gWB2MTrt7y8sypQ7VZdg__8wxn049';
 
   window._sendFeedback = function() {
     // ── ELEMENT LOOKUPS ──────────────────────────────────
@@ -4117,7 +4117,7 @@ async function czDeleteBlock(id, btn) {
         'apikey':        SUPA_KEY,
         // Use the user's token when signed in so user_id is trusted
         // server-side; fall back to the anon key when signed out.
-        'Authorization': 'Bearer ' + (token || SUPA_KEY),
+        ...(token ? { 'Authorization': 'Bearer ' + token } : {}),
         'Prefer':        'return=minimal'
       },
       body: JSON.stringify(row)

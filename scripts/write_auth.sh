@@ -23,7 +23,7 @@ import { state } from './state.js';
 const { createClient } = supabase;
 export const sb = createClient(
   'https://qfawusrelwthxabfbglg.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFmYXd1c3JlbHd0aHhhYmZiZ2xnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzc5NzUsImV4cCI6MjA4ODc1Mzk3NX0.XkeFmWq-rOH2whgfkeMylyG7Ct_0u80fMkoJlEQ5K8E',
+  'sb_publishable_K4gWB2MTrt7y8sypQ7VZdg__8wxn049',
   {
     auth: {
       autoRefreshToken:   true,
