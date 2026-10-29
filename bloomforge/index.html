@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BloomForge 0.1.33 · QuarterBitGames</title>
+<style>
+:root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
+body[data-theme=dark]{--bg:#202b35;--panel:#2e3b47;--ink:#eef4f8;--border:#53636d;--canvas:#344452;--grid:#495968}
+body[data-theme=wood]{--bg:#dfceb0;--panel:#f2e4ca;--ink:#4d3827;--border:#bda47d;--canvas:#fff9eb;--grid:#e9dcca}
+button,input,select{font:inherit}button{border:1px solid var(--button-border);background:var(--button-bg);color:var(--button-ink);border-radius:6px;padding:7px 9px;cursor:pointer}button:hover{border-color:var(--accent)}button.active{background:var(--accent);color:var(--panel);border-color:var(--accent)}input,select{max-width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:5px;padding:6px}input[type=number]{width:85px}input[type=checkbox]{accent-color:var(--accent)}label{display:flex;align-items:center;gap:7px}.app{display:grid;grid-template-columns:180px minmax(340px,1fr) 280px;grid-template-rows:54px minmax(0,1fr) 34px;height:100vh;min-height:520px}.top{grid-column:1/4;grid-row:1;display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--border);white-space:nowrap;min-width:0}
+.top .toolbar-scroll{display:flex;align-items:center;gap:8px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:thin}
+.top .toolbar-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.top .toolbar-actions button{padding:6px 8px}
+.top details{position:relative;flex-shrink:0}
+.top summary{cursor:pointer;list-style:none;border:1px solid var(--border);background:var(--panel);border-radius:6px;padding:6px 9px}
+.top summary::-webkit-details-marker{display:none}
+.top .menu{position:fixed;z-index:50;background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 22px #0003;padding:12px;min-width:215px;white-space:normal}
+.top .menu label{margin:8px 0}
+.top .menu .muted{max-width:225px}
+.footerbrand{font-weight:700;color:var(--accent)}
+.brand{font-weight:800;font-size:20px;letter-spacing:.03em}.tag{opacity:.65;font-size:12px}.grow{flex:1} .bench,.right{grid-row:2;background:var(--panel);overflow:auto;padding:12px;border-right:1px solid var(--border)}.right{border-right:0;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:12px}.bench h3,.right h3{margin:6px 0 10px;font-size:13px;letter-spacing:.04em}.muted{opacity:.65;font-size:12px}.template{width:100%;display:flex;align-items:center;justify-content:flex-start;gap:8px;margin:6px 0;text-align:left}.template-icon{width:28px;height:28px;flex-shrink:0;overflow:visible}.template-name{flex:1}.stage{grid-row:2;position:relative;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:14px}.paper{position:relative;max-width:100%;max-height:100%;aspect-ratio:1;width:min(100%,calc(100vh - 135px));border:1px solid var(--border);background:var(--canvas);box-shadow:0 6px 24px #0002}.paper svg{width:100%;height:100%;touch-action:none;user-select:none}.dimensionbar{display:flex;gap:8px;align-items:center;white-space:nowrap;flex-shrink:0}
+.dimensionbar .barfield{display:flex;align-items:center;gap:3px;font-size:12px}
+.dimensionbar .barfield input{width:65px;min-width:60px;padding:5px 5px}
+.dimensionbar .barfield input:disabled{opacity:.4}
+.dimensionbar .barlabel{font-size:11px;font-weight:750;color:var(--accent);letter-spacing:.03em}
+.dimensionbar .units{font-size:10px;opacity:.7}
+.symmetry-options{display:inline-flex;flex-shrink:0;gap:2px}
+.symmetry-options button{font-size:11px;padding:5px 7px;white-space:nowrap}
+.symmetry-options button[aria-pressed=true]{background:var(--accent);color:var(--panel);border-color:var(--accent);font-weight:750}
+.symmetry-options button:disabled{opacity:.45;cursor:default}
+.dimensionbar output{display:inline-block;min-width:62px;font:12px ui-monospace,monospace;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink)}
+.selection-head{font-weight:700;margin-bottom:7px}.subhead{font-size:11px;font-weight:750;letter-spacing:.08em;color:var(--accent);margin:12px 0 7px}.selected-note{font-size:11px;opacity:.7;margin:5px 0 9px}
+.info{grid-column:1/4;grid-row:3;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 12px;border-top:1px solid var(--border);background:var(--panel);font-size:12px}.section{border-bottom:1px solid var(--border);padding-bottom:11px}.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}.right .tools{margin-top:auto}.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.toolgrid button{min-height:38px}.field{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:6px;margin:5px 0}.layer{display:flex;align-items:center;justify-content:space-between;padding:3px 0}.swatch{display:inline-block;width:11px;height:11px;border:1px solid #888;margin-right:5px}.warn{color:#b74b39;font-weight:600}.top #themePopup.theme-popup{width:325px;max-height:min(78vh,680px);overflow-y:auto;overscroll-behavior:contain}
+.theme-popup .theme-title{font-weight:800;font-size:13px;margin:0 0 8px}
+.theme-popup .palette-list{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0 12px}
+.theme-popup .palette-choice{padding:6px 3px;min-width:0;font-size:11px;text-align:center}
+.theme-popup .palette-swatches{display:flex;justify-content:center;gap:2px;margin-bottom:5px}
+.theme-popup .palette-swatches i{display:block;width:15px;height:14px;border:1px solid #0002;border-radius:2px}
+.theme-popup .palette-choice[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:1px}
+.theme-popup .color-settings{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px}
+.theme-popup .color-field{display:flex;flex-direction:column;align-items:stretch;gap:3px;font-size:11px;margin:0}
+.theme-popup .color-input{display:flex;gap:4px;align-items:center}
+.theme-popup .color-input input[type=color]{width:40px;height:30px;padding:2px;flex-shrink:0;cursor:pointer}
+.theme-popup .color-input input[type=text]{width:100%;min-width:0;font-family:monospace;font-size:11px;padding:5px 3px}
+.theme-popup .theme-actions{display:flex;gap:6px;margin:12px 0 4px}
+.theme-popup .theme-actions button{flex:1}
+.theme-popup .hint{font-size:11px;opacity:.75;margin:8px 0 0}
+.layer-color-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:5px 0;font-size:12px}
+.layer-color-row input[type=color]{width:42px;height:27px;padding:2px;flex-shrink:0;cursor:pointer}
+.layer-swatch-picker{width:28px;height:25px;padding:1px;flex-shrink:0;cursor:pointer}
+.layer-reset{font-size:11px;padding:4px 8px}
+.sheet-label{position:absolute;left:10px;bottom:7px;font-size:11px;opacity:.7;pointer-events:none}@media(max-width:850px){.app{grid-template-columns:115px minmax(250px,1fr) 210px}.bench,.right{padding:7px}.tag{display:none}}@media(max-width:640px){.app{grid-template-columns:90px minmax(200px,1fr);grid-template-rows:54px minmax(0,1fr) 210px 34px}.top,.info{grid-column:1/3}.top{grid-row:1}.stage,.bench{grid-row:2}.info{grid-row:4}.right{grid-column:1/3;grid-row:3;overflow:auto}.toolgrid{grid-template-columns:repeat(6,1fr)}}
+</style></head>
+<body data-theme="light"><div class="app">
+<header class="top">
+<span class="symmetry-options" role="group" aria-label="Selected part node editing constraint"><button id="symmetryLock" type="button" title="Resize symmetrically around the part center" disabled>🔒 Symmetry</button><button id="symmetryFree" type="button" title="Move nodes independently" disabled>🔓 Free Nodes</button></span>
+<div class="toolbar-scroll">
+<div class="dimensionbar" id="dimensionBar">
+ <span class="barlabel">PART</span><span id="selectedName" class="muted">No object</span>
+ <span class="barlabel">POSITION</span><label class="barfield">X <input id="topX" type="number" step="0.01" disabled></label><label class="barfield">Y <input id="topY" type="number" step="0.01" disabled></label>
+ <span class="barlabel">SIZE</span><label class="barfield">W <input id="topW" type="number" min="0.001" step="0.01" disabled></label><label class="barfield">H <input id="topH" type="number" min="0.001" step="0.01" disabled></label><span class="units">mm</span>
+ <label class="barfield" title="Rotate selected part around its center, 0–360 degrees">ROT ° <input id="topRotation" type="number" min="0" max="360" step="0.1" value="0" disabled></label>
+ <span class="barlabel" style="border-left:1px solid var(--border);padding-left:9px">CURSOR</span>
+ <span class="barfield">X <output id="cursorX" aria-label="Cursor X in millimeters">—</output></span>
+ <span class="barfield">Y <output id="cursorY" aria-label="Cursor Y in millimeters">—</output></span>
+ <span class="units">mm · actual</span>
+</div>
+</div>
+<div class="toolbar-actions">
+<details id="themeMenu"><summary>🎨 Theme ▾</summary><div class="menu theme-popup" id="themePopup">
+<div class="theme-title">BLOOMFORGE · APPEARANCE</div>
+<div class="muted">Select a palette or customize individual colors.</div>
+<div class="palette-list" id="themePalettes"></div>
+<div class="theme-title">CUSTOM COLORS</div>
+<div class="color-settings" id="themeColors"></div>
+<div class="theme-actions"><button type="button" id="themeReset">Reset Colors</button><button type="button" id="themeSave">Save as My Theme</button></div>
+<div class="theme-title" style="margin-top:12px">FOUR LAYER DISPLAY COLORS</div>
+<div class="muted">Preview colors only. SVG exports keep their laser layer colors.</div>
+<div id="themeLayerColors"></div>
+<button id="layerColorReset" type="button" class="layer-reset">Reset layer display colors</button>
+<div class="hint">Themes affect the editor. Fabrication/export colors stay Black, Red, Green and Cyan.</div>
+</div></details>
+<details id="exportMenu"><summary>Export Settings ▾</summary><div class="menu" id="exportPopup">
+<label><input type="checkbox" id="exportRed" checked> Include red Score/Etch</label>
+<label><input type="checkbox" id="exportGuides"> Include green/cyan guides</label>
+<div class="muted">SVG uses mm. Confirm Cut/Score operations in xTool before cutting.</div></div></details>
+<button id="new">New</button><button id="save">Save Project</button><button id="open">Open Project</button><button id="export">Export SVG</button><input id="file" type="file" accept=".json,application/json" hidden>
+</div></header>
+<aside class="bench"><h3>PARTS BENCH</h3><div class="muted">Click a template to place a copy on the sheet.</div><div id="templates"></div><hr><div class="muted">Canvas: 12 × 12 in nominal<br>Sheet: 11.75 × 11.75 in<br>Material: 3 mm plywood</div></aside>
+<main class="stage" id="canvasStage"><div class="paper"><svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-label="Precision drawing canvas">
+<defs><pattern id="grid" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M 3 0 H 0 V 3" fill="none" stroke="var(--grid)" stroke-width=".23"/></pattern>
+<pattern id="legoGrid" x="10" y="10" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="2.4" fill="none" stroke="var(--selection)" stroke-opacity=".55" stroke-width=".35"/><circle cx="4" cy="4" r=".35" fill="var(--selection)" fill-opacity=".65"/></pattern></defs>
+<rect width="320" height="320" fill="var(--canvas)"/><rect x="10" y="10" width="298.45" height="298.45" fill="url(#grid)" stroke="var(--canvas-frame)" stroke-width=".7" pointer-events="none"/>
+<rect id="legoOverlay" x="10" y="10" width="298.45" height="298.45" fill="url(#legoGrid)" pointer-events="none" style="display:none"/>
+<g id="ticks"></g><g id="objects"></g><g id="draft"></g></svg><span class="sheet-label">Cyan: 11.75 × 11.75 in wood · x/y in mm</span><div id="zoomHud" aria-live="polite" style="position:absolute;top:9px;right:9px;pointer-events:none;background:var(--panel);border:1px solid var(--border);padding:5px 8px;border-radius:6px;color:var(--ink);font-weight:700">CANVAS 100%</div></div></main>
+<aside class="right">
+<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option><option value="custom">Custom</option><option value="free">Free</option></select></label><label>Custom <input type="number" id="customStep" min="0.01" max="1000" step="0.01" value="3.00" style="width:81px" title="Enter grid spacing in millimeters, 0.01 to 1000"></label><span class="muted">mm</span></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label>
+<div class="subhead">LEGO · SECONDARY GRID</div><label><input id="legoGridToggle" type="checkbox"> Show 8 mm stud grid</label>
+<div class="muted">Pink rings = 4.8 mm holes at 8 mm centers. Overlay is a guide only; it never exports.</div>
+<div class="row"><button id="legoPlaceMode" type="button">Place / Remove Holes</button></div>
+<div class="muted">In hole mode, click a pink location to place a Black Cut circle; click it again to remove it. Existing 3 mm grid stays independent.</div></section>
+<section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
+<section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
+
+<section class="section"><h3>PRECISION GEOMETRY</h3>
+<div class="row"><label>Angle ° <input id="precisionAngle" type="number" value="17" step="0.1" min="-360" max="360" style="width:76px"></label><label>Length mm <input id="precisionLength" type="number" value="30" min="0.01" step="0.01" style="width:81px"></label></div>
+<div class="row"><button id="precisionApplyLine" title="Set the selected line's angle and length, keeping its start fixed">Apply to selected line</button></div>
+<div class="row"><label>Fillet radius mm <input id="precisionRadius" type="number" value="3" min="0.01" step="0.01" style="width:81px"></label><button id="precisionFillet">Round selected node</button></div>
+<div class="muted">Angle: 0° right, 90° up. Angle Line: click to place. Fillet: select a vector's corner node with Nodes, then enter radius. Snap is bypassed for calculated endpoints.</div>
+</section><section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button><button data-tool="cut-line" title="Select a vector and click a line segment or node to remove it">✂ Cut Line</button><button data-tool="angle-line" title="Click canvas to place a line at an exact angle and length">📐 Angle Line</button></div></section>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.33 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+<script>
+'use strict';
+const NS='http://www.w3.org/2000/svg', SHEET=298.45;
+const colors={black:'#222222',red:'#d74141',green:'#269b4d',cyan:'#02a7c3'};
+const names={black:'Black · Cut',red:'Red · Score/Etch',green:'Green · Ruler/Snap',cyan:'Cyan · Alt/Framing'};
+// Display layer swatches are separate from fabrication/export colors.
+const DARK_THEMES=new Set(['dark','midnight','blueprint']);
+function displayLayerColor(key){
+ const custom=state.layerColors?.[key];
+ if(typeof custom==='string'&&/^#[0-9a-fA-F]{6}$/.test(custom))return custom;
+ if(key==='black'&&DARK_THEMES.has(state.theme))return '#f4f7fb';
+ // A customized dark drawing-paper color should also have legible black cuts.
+ if(key==='black'&&state.theme==='custom'){
+  const c=state.themeColors?.canvas;
+  if(typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c)){
+   const rgb=[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)/255);
+   const lin=v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4;
+   if(.2126*lin(rgb[0])+.7152*lin(rgb[1])+.0722*lin(rgb[2])<.22)return '#f4f7fb';
+  }
+ }
+ return colors[key]||colors.black;
+}
+function refreshLayerColorPickers(){
+ for(const key of Object.keys(colors)){
+  const value=displayLayerColor(key);
+  for(const picker of document.querySelectorAll('[data-layer-color="'+key+'"]'))picker.value=value;
+ }
+ // Parts Bench previews use the same display palette as the canvas.
+ for(const button of $('templates').querySelectorAll('[data-preview-layer]')){
+  const stroke=displayLayerColor(button.dataset.previewLayer);
+  const outline=button.querySelector('.template-icon > *');
+  if(outline)outline.setAttribute('stroke',stroke);
+ }
+}
+function changeLayerDisplayColor(key,value){
+ if(!Object.hasOwn(colors,key)||!/^#[0-9a-fA-F]{6}$/.test(value))return;
+ state.layerColors={...state.layerColors,[key]:value.toLowerCase()};
+ refreshLayerColorPickers();render();
+}
+const $=id=>document.getElementById(id);
+const svg=$('drawing'), objects=$('objects'), drafts=$('draft');
+let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light',themeColors:null,layerColors:null,legoGridVisible:false};
+let drag=null,history=[],future=[],spaceHeld=false,vectorDraft=null,activeNode=null;
+const BASE_VIEW={x:0,y:0,w:320,h:320};
+let view={...BASE_VIEW};
+const MIN_ZOOM=0.2, MAX_ZOOM=20;
+function zoomRatio(){return BASE_VIEW.w/view.w}
+function setView(next){view=next;svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);const pct=Math.round(zoomRatio()*100)+'%';$('zoomLabel').textContent=pct;$('zoomHud').textContent='CANVAS '+pct;$('zoomReset').textContent='Fit'}
+function rawPoint(ev){const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;const m=svg.getScreenCTM();if(!m)return{x:0,y:0};const t=p.matrixTransform(m.inverse());return{x:t.x,y:t.y}}
+function zoomAt(factor,clientX,clientY){const before=rawPoint({clientX,clientY});const newW=Math.min(BASE_VIEW.w/MIN_ZOOM,Math.max(BASE_VIEW.w/MAX_ZOOM,view.w/factor));const scale=newW/view.w;const next={x:before.x-(before.x-view.x)*scale,y:before.y-(before.y-view.y)*scale,w:newW,h:view.h*scale};setView(next)}
+function zoomCenter(factor){const r=svg.getBoundingClientRect();zoomAt(factor,r.left+r.width/2,r.top+r.height/2)}
+function resetZoom(){setView({...BASE_VIEW})}
+function panPixels(dx,dy){const r=svg.getBoundingClientRect();if(!r.width||!r.height)return;setView({...view,x:view.x-dx*view.w/r.width,y:view.y-dy*view.h/r.height})}
+
+const copy=o=>JSON.parse(JSON.stringify(o));const uid=()=>Math.random().toString(36).slice(2,11);
+const round=n=>Math.round(n*1000)/1000;
+const snap=n=>round(state.snap&&state.gridMode!=='free'?Math.round(n/state.step)*state.step:n);
+const valid=n=>Number.isFinite(n)&&Math.abs(n)<1e6;
+function remember(){history.push(copy(state.shapes));if(history.length>100)history.shift();future=[]}
+function point(ev){const p=rawPoint(ev);return{x:snap(p.x),y:snap(p.y)}}
+function updateCursor(ev){const p=rawPoint(ev);$('cursorX').textContent=Number.isFinite(p.x)?p.x.toFixed(2):'—';$('cursorY').textContent=Number.isFinite(p.y)?p.y.toFixed(2):'—'}
+function clearCursor(){$('cursorX').textContent='—';$('cursorY').textContent='—'}
+svg.addEventListener('pointermove',updateCursor);
+svg.addEventListener('pointerleave',clearCursor);
+function el(name,attrs={}){let e=document.createElementNS(NS,name);for(let [k,v] of Object.entries(attrs))e.setAttribute(k,v);return e}
+function attrShape(s,forExport=false){const a={fill:'none',stroke:forExport?(colors[s.layer]||colors.black):displayLayerColor(s.layer),'stroke-width':'.55','vector-effect':'non-scaling-stroke','data-id':s.id};let k=s.kind;
+ if(k==='rect')return el('rect',{...a,x:s.x,y:s.y,width:s.w,height:s.h});
+ if(k==='circle')return el('circle',{...a,cx:s.x,cy:s.y,r:s.r});
+ if(k==='line')return el('line',{...a,x1:s.x,y1:s.y,x2:s.x2,y2:s.y2});
+ if(k==='slot')return el('rect',{...a,x:s.x,y:s.y,width:s.w,height:s.h,rx:Math.min(s.h/2,s.w/2),ry:Math.min(s.h/2,s.w/2)});
+ if(k==='vector')return el('path',{...a,d:vectorPath(s)});
+ if(k==='arc'){let r=Math.max(.01,Math.hypot(s.x2-s.x,s.y2-s.y)/1.41421356);let d=`M ${s.x} ${s.y2} A ${r} ${r} 0 0 1 ${s.x2} ${s.y}`;return el('path',{...a,d})}
+ return el('g');
+}
+// Rotation remains an explicit per-object value in project JSON and exported SVG.
+function rotationDeg(s){return Number.isFinite(s.rotation)?s.rotation:0}
+function shapeCenter(s){
+ // LEGO corner pieces rotate about the stud center, not their bounding-box middle.
+ if(['corner-cutout','lego-end-corner','lego-corner-2x2'].includes(s.profile)&&s.studPivot)return s.studPivot;
+ if(s.kind==='circle')return{x:s.x,y:s.y};
+ if(s.kind==='line'||s.kind==='arc')return{x:(s.x+s.x2)/2,y:(s.y+s.y2)/2};
+ const d=dimensions(s);return{x:d.x+d.w/2,y:d.y+d.h/2};
+}
+function rotateCoord(p,s,inverse=false){
+ const deg=rotationDeg(s);if(!deg)return{x:p.x,y:p.y};
+ const c=shapeCenter(s),angle=(inverse?-deg:deg)*Math.PI/180,co=Math.cos(angle),si=Math.sin(angle);
+ const dx=p.x-c.x,dy=p.y-c.y;
+ return{x:c.x+dx*co-dy*si,y:c.y+dx*si+dy*co};
+}
+function applyRotation(node,s){
+ const deg=rotationDeg(s);
+ if(deg){const c=shapeCenter(s);node.setAttribute('transform',`rotate(${deg} ${c.x} ${c.y})`)}
+ return node;
+}
+function setRotation(raw){
+ const shape=state.shapes.find(s=>s.id===state.selected);
+ const value=Number(raw);
+ if(!shape||String(raw).trim()===''||!Number.isFinite(value)||value<0||value>360){render();return}
+ remember();shape.rotation=round(value===360?0:value);render();
+}
+$('topRotation').addEventListener('change',e=>setRotation(e.target.value));
+function render(){
+ $('legoOverlay').style.display=state.legoGridVisible?'':'none';
+ $('legoGridToggle').checked=!!state.legoGridVisible;
+ $('legoPlaceMode').classList.toggle('active',state.tool==='lego-hole');
+ objects.replaceChildren();for(const s of state.shapes){if(!state.visible[s.layer])continue;
+  const e=applyRotation(attrShape(s),s);e.setAttribute('stroke-width','1.1');e.setAttribute('pointer-events','none');if(s.id===state.selected){e.setAttribute('stroke-width','2.6');e.setAttribute('stroke','var(--selection)');e.setAttribute('stroke-dasharray','2 1')}objects.append(e);
+  // A wide transparent hit shape is independent of the fabrication geometry.
+  // 14 screen pixels of clickable stroke, plus the interior for closed shapes.
+  const hitArea=applyRotation(attrShape(s),s);hitArea.setAttribute('stroke','transparent');hitArea.setAttribute('stroke-width','14');hitArea.setAttribute('vector-effect','non-scaling-stroke');hitArea.setAttribute('pointer-events',s.kind==='rect'||s.kind==='slot'||s.kind==='circle'?'all':'stroke');
+  if(['rect','slot','circle'].includes(s.kind))hitArea.setAttribute('fill','transparent');
+  hitArea.style.cursor='grab';objects.append(hitArea);
+ }if(state.tool==='cut-line')renderCutSegments();
+ if(state.tool==='nodes'||state.tool==='select'||state.tool==='cut-line')renderNodeHandles();
+ renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.gridMode==='free'?'FREE drawing':state.step+' mm grid'} · ${state.snap&&state.gridMode!=='free'?'snap ON':'snap OFF'}`;}
+// Normalize the editor's X/Y/W/H fields for every primitive.
+ // Circles use center X/Y and diameter W/H. Lines/arcs use start X/Y and absolute width/height.
+function dimensions(s){
+ if(s.kind==='vector'){
+  const pts=s.subpaths.flatMap(sub=>sub.points.flatMap(p=>[p,...(p.inX!=null?[{x:p.inX,y:p.inY}]:[]),...(p.outX!=null?[{x:p.outX,y:p.outY}]:[])]));
+  if(!pts.length)return{x:0,y:0,w:0,h:0};
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x=Math.min(...xs),y=Math.min(...ys);
+  return{x:round(x),y:round(y),w:round(Math.max(...xs)-x),h:round(Math.max(...ys)-y)};
+ }
+
+ if(s.kind==='circle')return{x:s.x,y:s.y,w:round(s.r*2),h:round(s.r*2)};
+ if(s.kind==='line'||s.kind==='arc')return{x:s.x,y:s.y,w:round(Math.abs(s.x2-s.x)),h:round(Math.abs(s.y2-s.y))};
+ return{x:s.x,y:s.y,w:s.w,h:s.h};
+}
+function updateDimension(id,field,value){
+ const s=state.shapes.find(q=>q.id===id);if(!s||!Number.isFinite(value)||Math.abs(value)>1e6)return false;
+ if(['w','h'].includes(field)&&value<=0)return false;
+ // A 2x2 stud plate must retain 8 mm stud pitch and 4.8 mm hole diameter.
+ // Individual nodes are still editable when a customized shape is needed.
+ if(s.profile==='lego-corner-2x2'&&['w','h'].includes(field))return false;
+ remember();value=round(value);
+ if(s.kind==='vector'){
+  // The photographic LEGO corner keeps its radius fixed as its two legs stretch.
+  if(s.profile==='lego-end-corner'&&['w','h'].includes(field)){
+   // Changing the overall reach keeps the stud arc and 45-degree miter exact.
+   const d=dimensions(s),w=field==='w'?value:d.w,h=field==='h'?value:d.h;
+   if(w<4||h<4){history.pop();return false}
+   const pivot=s.studPivot||{x:d.x,y:d.y};
+   s.subpaths[0].points=legoEndCornerPoints(pivot.x,pivot.y,w,h,s.cornerRadius||2.4,s.mitre||1);
+   render();return true;
+  }
+  if(['corner-cutout','lego-end-corner','lego-corner-2x2'].includes(s.profile)){
+   const d=dimensions(s);
+   const pivot=s.studPivot||{x:d.x,y:d.y};
+   if(['w','h'].includes(field)){
+    const w=field==='w'?value:d.w,h=field==='h'?value:d.h;
+    if(w<2.4||h<2.4){history.pop();return false}
+    s.subpaths[0].points=cornerCutoutPoints(pivot.x,pivot.y,w,h,s.cornerRadius||2.4);
+   }else{
+    // X/Y position controls also anchor to the LEGO stud centers.
+    const newPivot={...pivot,[field]:14+Math.round((value-14)/8)*8};
+    const dx=newPivot.x-pivot.x,dy=newPivot.y-pivot.y;
+    for(const sub of s.subpaths)for(const p of sub.points){
+     p.x=round(p.x+dx);p.y=round(p.y+dy);
+     for(const h of ['in','out'])if(p[h+'X']!=null){
+      p[h+'X']=round(p[h+'X']+dx);p[h+'Y']=round(p[h+'Y']+dy);
+     }
+    }
+    s.studPivot=newPivot;
+   }
+   render();return true;
+  }
+  const dim=dimensions(s),source=field==='x'?dim.x:field==='y'?dim.y:field==='w'?dim.w:dim.h;
+  if(['w','h'].includes(field)&&source<=0){history.pop();return false}
+  const transform=(p)=>{
+   if(field==='x')p.x=round(p.x+value-source);
+   if(field==='y')p.y=round(p.y+value-source);
+   if(field==='w')p.x=round(dim.x+(p.x-dim.x)*value/source);
+   if(field==='h')p.y=round(dim.y+(p.y-dim.y)*value/source);
+  };
+  for(const sub of s.subpaths)for(const p of sub.points){
+   transform(p);
+   if(p.inX!=null){const q={x:p.inX,y:p.inY};transform(q);p.inX=q.x;p.inY=q.y}
+   if(p.outX!=null){const q={x:p.outX,y:p.outY};transform(q);p.outX=q.x;p.outY=q.y}
+  }
+  render();return true;
+ }
+ if(s.kind==='circle'){
+  if(field==='w'||field==='h')s.r=round(value/2);
+  else s[field]=value;
+ }else if(s.kind==='line'||s.kind==='arc'){
+  if(field==='x'){s.x2=round(s.x2+(value-s.x));s.x=value}
+  else if(field==='y'){s.y2=round(s.y2+(value-s.y));s.y=value}
+  else if(field==='w')s.x2=round(s.x+(Math.sign(s.x2-s.x)||1)*value);
+  else if(field==='h')s.y2=round(s.y+(Math.sign(s.y2-s.y)||1)*value);
+ }else s[field]=value;
+ render();return true;
+}
+function numericField(id,field,label){
+ const row=document.createElement('label');row.className='field';
+ const txt=document.createElement('span');txt.textContent=label;
+ const input=document.createElement('input');input.type='number';input.step='0.01';input.value=dimensions(state.shapes.find(x=>x.id===id))[field];
+ input.disabled=state.shapes.find(x=>x.id===id)?.profile==='lego-corner-2x2'&&['w','h'].includes(field);input.min=['w','h'].includes(field)?'0.001':'';
+ input.addEventListener('change',()=>{if(!updateDimension(id,field,Number(input.value)))render()});
+ row.append(txt,input);return row;
+}
+// Symmetry is a per-part edit constraint, not a global SVG export option.
+// Unlocking a primitive converts it to an editable vector while preserving its outline.
+function isSymmetryLocked(shape){return shape.symmetryLocked!==undefined?!!shape.symmetryLocked:shape.kind!=='vector'}
+function primitiveToVector(shape){
+ const x=shape.x,y=shape.y;
+ const p=(x,y,extra={})=>({x:round(x),y:round(y),...extra});
+ let points=[],closed=false;
+ if(shape.kind==='rect'){
+  points=[p(x,y),p(x+shape.w,y),p(x+shape.w,y+shape.h),p(x,y+shape.h)];closed=true;
+ }else if(shape.kind==='circle'){
+  const r=shape.r,k=0.5522847498307936*r;
+  points=[
+   p(x+r,y,{inX:round(x+r),inY:round(y-k),outX:round(x+r),outY:round(y+k)}),
+   p(x,y+r,{inX:round(x+k),inY:round(y+r),outX:round(x-k),outY:round(y+r)}),
+   p(x-r,y,{inX:round(x-r),inY:round(y+k),outX:round(x-r),outY:round(y-k)}),
+   p(x,y-r,{inX:round(x-k),inY:round(y-r),outX:round(x+k),outY:round(y-r)})
+  ];closed=true;
+ }else if(shape.kind==='slot'){
+  const w=shape.w,h=shape.h,r=Math.min(w,h)/2,k=0.5522847498307936*r;
+  // Rounded-rectangle contour in clockwise order, with cubic corner joins.
+  points=[
+   p(x+r,y,{inX:round(x+r-k),inY:round(y),outX:round(x+r),outY:round(y)}),
+   p(x+w-r,y,{inX:round(x+w-r),inY:round(y),outX:round(x+w-r+k),outY:round(y)}),
+   p(x+w,y+r,{inX:round(x+w),inY:round(y+r-k),outX:round(x+w),outY:round(y+r)}),
+   p(x+w,y+h-r,{inX:round(x+w),inY:round(y+h-r),outX:round(x+w),outY:round(y+h-r+k)}),
+   p(x+w-r,y+h,{inX:round(x+w-r+k),inY:round(y+h),outX:round(x+w-r),outY:round(y+h)}),
+   p(x+r,y+h,{inX:round(x+r),inY:round(y+h),outX:round(x+r-k),outY:round(y+h)}),
+   p(x,y+h-r,{inX:round(x),inY:round(y+h-r+k),outX:round(x),outY:round(y+h-r)}),
+   p(x,y+r,{inX:round(x),inY:round(y+r),outX:round(x),outY:round(y+r-k)})
+  ];closed=true;
+ }else if(shape.kind==='line'){
+  points=[p(x,y),p(shape.x2,shape.y2)];
+ }else if(shape.kind==='arc'){
+  // Legacy arc is itself an SVG A segment. Keep its original representation when unlocking.
+  return false;
+ }else return false;
+ for(const key of ['x','y','w','h','x2','y2','r'])delete shape[key];
+ shape.kind='vector';shape.subpaths=[{closed,points}];return true;
+}
+function setSymmetryMode(locked){
+ const shape=state.shapes.find(s=>s.id===state.selected);
+ if(!shape)return;
+ if(isSymmetryLocked(shape)===locked){renderTopBar();return}
+ remember();
+ if(!locked&&shape.kind!=='vector')primitiveToVector(shape);
+ shape.symmetryLocked=locked;
+ $('interactionStatus').textContent=locked?'Symmetry ON · drag a node to resize':'Free Nodes ON · drag any node';
+ activeNode=null;
+ render();
+}
+$('symmetryLock').addEventListener('click',event=>{event.preventDefault();setSymmetryMode(true)});
+$('symmetryFree').addEventListener('click',event=>{event.preventDefault();setSymmetryMode(false)});
+function mirroredNodeIndex(sub,index){
+ if(!sub?.closed||sub.points.length<4||sub.points.length%2)return -1;
+ return (index+sub.points.length/2)%sub.points.length;
+}
+function renderTopBar(){
+ const s=state.shapes.find(q=>q.id===state.selected);$('selectedName').textContent=s?s.kind.toUpperCase()+' · '+s.layer:'No object';
+ const d=s?dimensions(s):null;
+ const lock=$('symmetryLock'),free=$('symmetryFree');
+ lock.disabled=!s;free.disabled=!s;
+ const locked=s?isSymmetryLocked(s):false;
+ lock.setAttribute('aria-pressed',String(!!s&&locked));
+ free.setAttribute('aria-pressed',String(!!s&&!locked));
+ $('symmetryState').textContent=s?(locked?'LOCKED · symmetric resize':'FREE · individual nodes'):'SELECT A PART';
+ for(let field of ['x','y','w','h']){const input=$('top'+field.toUpperCase());input.disabled=!s||(s.profile==='lego-corner-2x2'&&['w','h'].includes(field));input.value=s?d[field]:''}
+ $('topRotation').disabled=!s;$('topRotation').value=s?rotationDeg(s):0;
+}
+for(const field of ['x','y','w','h']){const input=$('top'+field.toUpperCase());input.addEventListener('change',()=>{
+ const id=state.selected;if(!id)return;if(!updateDimension(id,field,Number(input.value)))render();
+ });}
+function renderProperties(){
+ const s=state.shapes.find(x=>x.id===state.selected);const c=$('properties');c.replaceChildren();
+ if(!s){c.textContent='Click a shape or its edge to select. Its dimensions appear here and in the top bar.';return}
+ const head=document.createElement('div');head.className='selection-head';head.textContent=s.kind.toUpperCase()+' · '+s.layer.toUpperCase();c.append(head);
+ const note=document.createElement('div');note.className='selected-note';note.textContent=s.kind==='vector'?'X/Y = vector bounding-box corner · W/H = bounding-box size':s.kind==='circle'?'X/Y = center · W/H = diameter':(s.kind==='line'||s.kind==='arc'?'X/Y = start point · W/H = span':'X/Y = top-left corner');c.append(note);
+ const a=document.createElement('div');a.className='subhead';a.textContent='POSITION · mm';c.append(a);
+ c.append(numericField(s.id,'x','X (mm)'),numericField(s.id,'y','Y (mm)'));
+ const b=document.createElement('div');b.className='subhead';b.textContent='DIMENSIONS · mm';c.append(b);
+ c.append(numericField(s.id,'w',s.kind==='circle'?'Diameter (mm)':'Width (mm)'),numericField(s.id,'h',s.kind==='circle'?'Diameter (linked)':'Height (mm)'));
+ const row=document.createElement('label');row.className='field';row.textContent='Layer';const sel=document.createElement('select');
+ for(const key of Object.keys(colors)){const o=document.createElement('option');o.value=key;o.textContent=names[key];o.selected=s.layer===key;sel.append(o)}
+ sel.onchange=()=>{remember();s.layer=sel.value;render()};row.append(sel);c.append(row);
+ if(s.kind==='vector'){
+  const sub=document.createElement('div');sub.className='subhead';sub.textContent='COMPOUND VECTOR · PATHS';c.append(sub);
+  const desc=document.createElement('div');desc.className='selected-note';desc.textContent=s.subpaths.length+' contours · '+s.subpaths.reduce((n,a)=>n+a.points.length,0)+' nodes. Use Nodes tool to drag points and Bézier handles.';c.append(desc);
+  const actions=document.createElement('div');actions.className='row';
+  const add=document.createElement('button');add.textContent='+ New contour';add.onclick=()=>{remember();let d=dimensions(s);s.subpaths.push({closed:false,points:[{x:round(d.x+6),y:round(d.y+6)},{x:round(d.x+24),y:round(d.y+6)}]});activeNode={sub:s.subpaths.length-1,index:1};setTool('nodes')};
+  const close=document.createElement('button');close.textContent='Toggle closed';close.onclick=()=>{const subIndex=activeNode?.sub??0;const subp=s.subpaths[subIndex];if(!subp)return;remember();subp.closed=!subp.closed;render()};
+  const curve=document.createElement('button');curve.textContent='Curve node';curve.onclick=()=>{const loc=activeNode||{sub:0,index:0},p=s.subpaths[loc.sub]?.points[loc.index];if(!p)return;remember();if(p.inX!=null){delete p.inX;delete p.inY;delete p.outX;delete p.outY}else{p.inX=round(p.x-6);p.inY=p.y;p.outX=round(p.x+6);p.outY=p.y}render()};
+  const insert=document.createElement('button');insert.textContent='+ Next node';insert.onclick=()=>{const loc=activeNode||{sub:0,index:0},subp=s.subpaths[loc.sub];if(!subp)return;const p=subp.points[loc.index],next=subp.points[loc.index+1]||{x:p.x+12,y:p.y+12};remember();subp.points.splice(loc.index+1,0,{x:round((p.x+next.x)/2),y:round((p.y+next.y)/2)});activeNode={sub:loc.sub,index:loc.index+1};render()};
+  const del=document.createElement('button');del.textContent='Delete node';del.onclick=()=>{const loc=activeNode,subp=loc&&s.subpaths[loc.sub];if(!subp||subp.points.length<=2)return;remember();subp.points.splice(loc.index,1);activeNode={sub:loc.sub,index:Math.max(0,loc.index-1)};render()};
+  actions.append(add,close,curve,insert,del);c.append(actions);
+ }
+}
+function setTool(t){if(state.tool==='vector'&&t!=='vector'&&vectorDraft)finishVector();state.tool=t;
+ if(t==='lego-hole')state.legoGridVisible=true;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
+// Numeric precision tools use millimeter coordinates; angles follow CAD convention
+// (0° right, positive angles counterclockwise / upward on the screen).
+function exactLineEnd(start,angleDeg,length){
+ const a=angleDeg*Math.PI/180;
+ return{x:round(start.x+length*Math.cos(a)),y:round(start.y-length*Math.sin(a))};
+}
+function precisionInputs(){
+ const angle=Number($('precisionAngle').value),length=Number($('precisionLength').value);
+ if(!Number.isFinite(angle)||Math.abs(angle)>360||!Number.isFinite(length)||length<=0||length>100000){
+  alert('Use an angle from -360° to 360° and a positive line length in mm.');return null;
+ }
+ return {angle,length};
+}
+$('precisionApplyLine').onclick=()=>{
+ const s=state.shapes.find(q=>q.id===state.selected),v=precisionInputs();
+ if(!v)return;
+ if(!s||s.kind!=='line'){alert('Select an ordinary Line first, or use Angle Line to create one.');return}
+ remember();const end=exactLineEnd({x:s.x,y:s.y},v.angle,v.length);s.x2=end.x;s.y2=end.y;
+ render();$('interactionStatus').textContent='ANGLE '+v.angle+'° · '+v.length+' mm';
+};
+// Round ONE chosen vector corner with a true circular arc approximated by cubic Bézier.
+// Adjacent segments must be straight and the radius must fit on both legs.
+function filletVectorNode(shape,si,ni,radius){
+ const sub=shape.subpaths[si],pts=sub?.points,n=pts?.length||0;
+ if(n<3||(!sub.closed&&(ni===0||ni===n-1)))return false;
+ const prev=pts[(ni-1+n)%n],corner=pts[ni],next=pts[(ni+1)%n];
+ if(prev.outX!=null||corner.inX!=null||corner.outX!=null||next.inX!=null)return false;
+ const lenA=Math.hypot(prev.x-corner.x,prev.y-corner.y),lenB=Math.hypot(next.x-corner.x,next.y-corner.y);
+ if(lenA<.001||lenB<.001)return false;
+ const u={x:(prev.x-corner.x)/lenA,y:(prev.y-corner.y)/lenA};
+ const v={x:(next.x-corner.x)/lenB,y:(next.y-corner.y)/lenB};
+ const cos=Math.max(-1,Math.min(1,u.x*v.x+u.y*v.y));
+ const theta=Math.acos(cos);
+ if(theta<.01||Math.PI-theta<.01)return false;
+ const dist=radius/Math.tan(theta/2);
+ if(dist>=Math.min(lenA,lenB)-.001)return false;
+ const t1={x:corner.x+u.x*dist,y:corner.y+u.y*dist};
+ const t2={x:corner.x+v.x*dist,y:corner.y+v.y*dist};
+ // Cubic arc control distance: 4/3 tan(sweep/4) * radius, sweep=PI-theta.
+ const ctrl=4/3*Math.tan((Math.PI-theta)/4)*radius;
+ const p1={x:round(t1.x),y:round(t1.y),outX:round(t1.x-u.x*ctrl),outY:round(t1.y-u.y*ctrl)};
+ const p2={x:round(t2.x),y:round(t2.y),inX:round(t2.x-v.x*ctrl),inY:round(t2.y-v.y*ctrl)};
+ pts.splice(ni,1,p1,p2);
+ return true;
+}
+$('precisionFillet').onclick=()=>{
+ const shape=state.shapes.find(q=>q.id===state.selected);
+ const radius=Number($('precisionRadius').value);
+ if(!shape||shape.kind!=='vector'||!activeNode){alert('Use Nodes to select a vector corner first.');return}
+ if(!Number.isFinite(radius)||radius<=0){alert('Enter a positive fillet radius in mm.');return}
+ const baseline=copy(shape);
+ if(!filletVectorNode(shape,activeNode.sub,activeNode.index,radius)){
+  alert('Fillet needs two straight edges at the selected node, with enough space for that radius.');return;
+ }
+ history.push(copy(state.shapes.map(s=>s.id===shape.id?baseline:s)));if(history.length>100)history.shift();future=[];
+ activeNode=null;render();$('interactionStatus').textContent='FILLET R'+radius+' mm applied';
+};
+function shapeBetween(a,b,kind,layer=state.layer){let x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.max(state.step,Math.abs(b.x-a.x)),h=Math.max(state.step,Math.abs(b.y-a.y));if(kind==='circle')return{id:uid(),kind,layer,x:a.x,y:a.y,r:Math.max(.5,Math.hypot(b.x-a.x,b.y-a.y))};if(kind==='line'||kind==='arc')return{id:uid(),kind,layer,x:a.x,y:a.y,x2:b.x,y2:b.y};return{id:uid(),kind,layer,x,y,w,h}}
+
+function vectorPath(s){
+ const chunks=[];
+ for(const sub of s.subpaths){
+  if(!sub.points.length)continue;
+  const pts=sub.points;chunks.push('M '+pts[0].x+' '+pts[0].y);
+  for(let i=1;i<pts.length+(sub.closed?1:0);i++){
+   const prev=pts[(i-1)%pts.length],p=pts[i%pts.length];
+   if(prev.outX!=null||p.inX!=null){
+    const a=prev.outX!=null?[prev.outX,prev.outY]:[prev.x,prev.y];
+    const b=p.inX!=null?[p.inX,p.inY]:[p.x,p.y];
+    chunks.push('C '+a.join(' ')+' '+b.join(' ')+' '+p.x+' '+p.y);
+   }else chunks.push('L '+p.x+' '+p.y);
+  }
+  if(sub.closed)chunks.push('Z');
+ }
+ return chunks.join(' ');
+}
+// Visible points are precisely 0.5 mm across in SVG model units.
+// The separate, transparent 12 px stroke gives each point an easy mouse target.
+function appendNodeMarker(parent,x,y,kind,si,ni,selected=false,objectId=null,primitiveKey=null){
+ const visible=el('circle',{cx:x,cy:y,r:'0.25',fill:kind==='node'?(selected?'var(--selection)':'var(--accent)'):'var(--selection)','pointer-events':'none'});
+ parent.append(visible);
+ if(si==null)return;
+ const hit=el('circle',{cx:x,cy:y,r:'0.25',fill:'transparent',stroke:'transparent','stroke-width':'12','vector-effect':'non-scaling-stroke','pointer-events':'all','data-handle':kind,'data-sub':si,'data-node':ni,...(objectId?{'data-id':objectId,'data-primitive':primitiveKey}:{})});
+ hit.style.cursor=kind==='node'?'move':'crosshair';
+ parent.append(hit);
+}
+// Editable points for primitives. Keep their original SVG geometry intact.
+function primitiveHandles(s){
+ if(s.kind==='rect'||s.kind==='slot')return [
+  {key:'tl',x:s.x,y:s.y},{key:'tr',x:s.x+s.w,y:s.y},
+  {key:'br',x:s.x+s.w,y:s.y+s.h},{key:'bl',x:s.x,y:s.y+s.h}];
+ if(s.kind==='circle')return [
+  {key:'center',x:s.x,y:s.y},{key:'east',x:s.x+s.r,y:s.y},
+  {key:'west',x:s.x-s.r,y:s.y},{key:'north',x:s.x,y:s.y-s.r},
+  {key:'south',x:s.x,y:s.y+s.r}];
+ if(s.kind==='line')return [{key:'start',x:s.x,y:s.y},{key:'end',x:s.x2,y:s.y2}];
+ if(s.kind==='arc')return [
+  {key:'start',x:s.x,y:s.y2},{key:'end',x:s.x2,y:s.y}];
+ return [];
+}
+function renderPrimitiveHandles(s){
+ for(const local of primitiveHandles(s)){
+  const p=rotateCoord(local,s);
+  // The dot is 0.5 mm in model units, with a separate 12px hit target.
+  appendNodeMarker(objects,p.x,p.y,'node',0,0,false,s.id,p.key);
+ }
+}
+function editPrimitiveHandle(s,original,key,p){
+ const o=original;
+ if(s.kind==='rect'||s.kind==='slot'){
+  const right=o.x+o.w,bottom=o.y+o.h;
+  let left=o.x,top=o.y,r=right,b=bottom;
+  if(key==='tl'){left=p.x;top=p.y}
+  if(key==='tr'){r=p.x;top=p.y}
+  if(key==='br'){r=p.x;b=p.y}
+  if(key==='bl'){left=p.x;b=p.y}
+  if(isSymmetryLocked(s)){
+   const cx=o.x+o.w/2,cy=o.y+o.h/2;
+   const targetX=(key==='tl'||key==='bl')?left:r;
+   const targetY=(key==='tl'||key==='tr')?top:b;
+   const hw=Math.max(.0005,Math.abs(targetX-cx)),hh=Math.max(.0005,Math.abs(targetY-cy));
+   left=cx-hw;r=cx+hw;top=cy-hh;b=cy+hh;
+  }
+  s.x=round(Math.min(left,r));s.y=round(Math.min(top,b));
+  s.w=Math.max(.001,round(Math.abs(r-left)));
+  s.h=Math.max(.001,round(Math.abs(b-top)));
+  return;
+ }
+ if(s.kind==='circle'){
+  if(key==='center'){s.x=p.x;s.y=p.y}
+  else s.r=round(Math.max(.001,Math.hypot(p.x-o.x,p.y-o.y)));
+  return;
+ }
+ if(s.kind==='line'){
+  if(key==='start'){s.x=p.x;s.y=p.y}
+  else{s.x2=p.x;s.y2=p.y}
+ }
+ if(s.kind==='arc'){
+  // Current arc is defined by opposite bounding corners: start=(x,y2), end=(x2,y).
+  if(key==='start'){s.x=p.x;s.y2=p.y}
+  else{s.x2=p.x;s.y=p.y}
+ }
+}
+
+ // Immutable mouse-down geometry drives each drag update, even when a shape is rotated.
+ // In locked mode the paired point moves by the negative displacement of the grabbed point.
+ // This works after arbitrary Free Nodes edits; relocking never jumps a point across the part.
+function applyVectorNodeDrag(shape,baseline,subIndex,nodeIndex,mode,position){
+ const sourceSub=baseline?.subpaths[subIndex],targetSub=shape?.subpaths[subIndex];
+ const base=sourceSub?.points[nodeIndex],node=targetSub?.points[nodeIndex];
+ if(!node||!base)return false;
+ const otherIndex=isSymmetryLocked(shape)?mirroredNodeIndex(sourceSub,nodeIndex):-1;
+ const opposite=otherIndex>=0?targetSub.points[otherIndex]:null,
+       oldOpposite=otherIndex>=0?sourceSub.points[otherIndex]:null;
+ if(mode==='node'){
+  const dx=position.x-base.x,dy=position.y-base.y;
+  node.x=round(position.x);node.y=round(position.y);
+  for(const h of ['in','out'])if(base[h+'X']!=null){
+   node[h+'X']=round(base[h+'X']+dx);node[h+'Y']=round(base[h+'Y']+dy);
+  }
+  if(opposite&&oldOpposite){
+   opposite.x=round(oldOpposite.x-dx);opposite.y=round(oldOpposite.y-dy);
+   for(const h of ['in','out'])if(oldOpposite[h+'X']!=null){
+    opposite[h+'X']=round(oldOpposite[h+'X']-dx);
+    opposite[h+'Y']=round(oldOpposite[h+'Y']-dy);
+   }
+  }
+ }else{
+  const xkey=mode+'X',ykey=mode+'Y';
+  if(base[xkey]==null)return false;
+  const dx=position.x-base[xkey],dy=position.y-base[ykey];
+  node[xkey]=round(position.x);node[ykey]=round(position.y);
+  if(opposite&&oldOpposite){
+   const oppositeHandle=mode==='in'?'out':'in';
+   if(oldOpposite[oppositeHandle+'X']!=null){
+    opposite[oppositeHandle+'X']=round(oldOpposite[oppositeHandle+'X']-dx);
+    opposite[oppositeHandle+'Y']=round(oldOpposite[oppositeHandle+'Y']-dy);
+   }
+  }
+ }
+ return true;
+}
+function renderNodeHandles(){
+ const s=state.shapes.find(v=>v.id===state.selected);
+ if(!s)return;
+ if(s.kind!=='vector'){if(state.tool!=='cut-line')renderPrimitiveHandles(s);return}
+ for(let si=0;si<s.subpaths.length;si++){
+  const sub=s.subpaths[si];
+  for(let ni=0;ni<sub.points.length;ni++){
+   const p=sub.points[ni],selected=activeNode?.sub===si&&activeNode?.index===ni;
+   for(const mode of (state.tool==='cut-line'?[]:['in','out'])){
+    const x=p[mode+'X'],y=p[mode+'Y'];if(x==null)continue;
+    const anchor=rotateCoord(p,s),control=rotateCoord({x,y},s);
+    objects.append(el('line',{x1:anchor.x,y1:anchor.y,x2:control.x,y2:control.y,stroke:'var(--selection)','stroke-width':'.15','pointer-events':'none'}));
+    appendNodeMarker(objects,control.x,control.y,mode,si,ni);
+   }
+   const display=rotateCoord(p,s);appendNodeMarker(objects,display.x,display.y,'node',si,ni,selected);
+  }
+ }
+}
+// Cut Line operates on individual real SVG segments, including cubic curves.
+// It never changes an adjacent hole contour when cutting another contour.
+function renderCutSegments(){
+ const s=state.shapes.find(q=>q.id===state.selected);
+ if(!s||s.kind!=='vector')return;
+ for(let si=0;si<s.subpaths.length;si++){
+  const sub=s.subpaths[si],n=sub.points.length;
+  for(let i=0;i<(sub.closed?n:n-1);i++){
+   const a=sub.points[i],b=sub.points[(i+1)%n];
+   const a0=rotateCoord(a,s),b0=rotateCoord(b,s);
+   let d='M '+a0.x+' '+a0.y+' ';
+   if(a.outX!=null||b.inX!=null){
+    const c1=rotateCoord(a.outX!=null?{x:a.outX,y:a.outY}:a,s);
+    const c2=rotateCoord(b.inX!=null?{x:b.inX,y:b.inY}:b,s);
+    d+='C '+c1.x+' '+c1.y+' '+c2.x+' '+c2.y+' '+b0.x+' '+b0.y;
+   }else d+='L '+b0.x+' '+b0.y;
+   const line=el('path',{d,fill:'none',stroke:'transparent','stroke-width':'16',
+    'vector-effect':'non-scaling-stroke','pointer-events':'stroke',
+    'data-cut-sub':si,'data-cut-edge':i});
+   line.style.cursor='crosshair';objects.append(line);
+  }
+ }
+}
+// A closed ring cut at edge i becomes an open ring starting at node i+1.
+// An open line cut at edge i becomes two open lines, never a bridge across the gap.
+function cutVectorSegment(shape,si,i){
+ const sub=shape.subpaths[si];if(!sub)return false;
+ const n=sub.points.length;if(i<0||i>=(sub.closed?n:n-1))return false;
+ const p=copy(sub.points);
+ if(sub.closed){
+  const ordered=p.slice(i+1).concat(p.slice(0,i+1));
+  // Remove the incoming/outgoing control handles of the now-open endpoints.
+  delete ordered[0].inX;delete ordered[0].inY;
+  delete ordered[ordered.length-1].outX;delete ordered[ordered.length-1].outY;
+  shape.subpaths[si]={closed:false,points:ordered};
+ }else{
+  const left=p.slice(0,i+1),right=p.slice(i+1);
+  const end=left[left.length-1],start=right[0];
+  delete end.outX;delete end.outY;delete start.inX;delete start.inY;
+  shape.subpaths.splice(si,1,{closed:false,points:left},{closed:false,points:right});
+ }
+ return true;
+}
+function cutVectorNode(shape,si,ni){
+ const sub=shape.subpaths[si];if(!sub||ni<0||ni>=sub.points.length)return false;
+ if(sub.points.length<=2){shape.subpaths.splice(si,1);return true}
+ const p=sub.points;
+ // Removing a node reconnects its neighbors with a straight join.
+ const prev=p[(ni-1+p.length)%p.length],next=p[(ni+1)%p.length];
+ delete prev.outX;delete prev.outY;delete next.inX;delete next.inY;
+ p.splice(ni,1);
+ if(sub.closed&&p.length<3)sub.closed=false;
+ return true;
+}
+function performCut(subIndex,index,mode){
+ const shape=state.shapes.find(s=>s.id===state.selected);
+ if(!shape||shape.kind!=='vector')return;
+ remember();
+ const worked=mode==='node'?cutVectorNode(shape,subIndex,index):cutVectorSegment(shape,subIndex,index);
+ if(!worked){history.pop();return}
+ shape.subpaths=shape.subpaths.filter(sub=>sub.points.length>=2);
+ if(!shape.subpaths.length){state.shapes=state.shapes.filter(s=>s.id!==shape.id);state.selected=null}
+ activeNode=null;render();
+ $('interactionStatus').textContent=mode==='node'?'CUT · node removed':'CUT · line segment removed';
+}
+function finishVector(){
+ if(!vectorDraft)return;
+ if(vectorDraft.points.length>=2){remember();const s={id:uid(),kind:'vector',layer:state.layer,subpaths:[{closed:false,points:vectorDraft.points}]};state.shapes.push(s);state.selected=s.id;activeNode={sub:0,index:vectorDraft.points.length-1};}
+ vectorDraft=null;drafts.replaceChildren();setTool('nodes');
+}
+function draftVector(){
+ drafts.replaceChildren();if(!vectorDraft)return;
+ const p=el('path',{d:vectorPath({subpaths:[{points:vectorDraft.points,closed:false}]}),stroke:'var(--selection)','stroke-width':'2',fill:'none','pointer-events':'none'});drafts.append(p);
+ for(const n of vectorDraft.points)appendNodeMarker(drafts,n.x,n.y,'draft',null,null);
+}
+// Determine the nearest visible corner in screen pixels, independent of SVG hit testing.
+// Chromium can target a stroke/overlay instead of a tiny point; the geometry is still editable.
+function nearbyPrimitiveCorner(ev){
+ const shape=state.shapes.find(s=>s.id===state.selected);
+ if(!shape||!['rect','slot'].includes(shape.kind))return null;
+ const matrix=svg.getScreenCTM();if(!matrix)return null;
+ let best=null,bestDist=13*13;
+ for(const h of primitiveHandles(shape)){
+  const q=rotateCoord(h,shape),screen=svg.createSVGPoint();
+  screen.x=q.x;screen.y=q.y;
+  const pos=screen.matrixTransform(matrix);
+  const dist=(pos.x-ev.clientX)**2+(pos.y-ev.clientY)**2;
+  if(dist<bestDist){bestDist=dist;best=h}
+ }
+ return best;
+}
+function beginPrimitiveDrag(ev,shape,key,source){
+ state.selected=shape.id;remember();
+ drag={kind:'primitive-node',id:shape.id,key,original:copy(shape)};
+ $('interactionStatus').textContent='GRAB '+shape.kind.toUpperCase()+' '+key+' · '+(isSymmetryLocked(shape)?'LOCKED':'FREE')+' · '+source;
+ svg.setPointerCapture(ev.pointerId);ev.preventDefault();
+}
+// LEGO stud centers are fixed to the physical sheet origin, not to the 3 mm woodworking grid.
+const LEGO_PITCH=8,LEGO_DIAMETER=4.8,LEGO_ORIGIN=14;
+function nearestLegoCenter(p){
+ const ix=Math.round((p.x-LEGO_ORIGIN)/LEGO_PITCH),iy=Math.round((p.y-LEGO_ORIGIN)/LEGO_PITCH);
+ const x=LEGO_ORIGIN+ix*LEGO_PITCH,y=LEGO_ORIGIN+iy*LEGO_PITCH;
+ if(x-LEGO_DIAMETER/2<10||x+LEGO_DIAMETER/2>10+SHEET||
+    y-LEGO_DIAMETER/2<10||y+LEGO_DIAMETER/2>10+SHEET)return null;
+ return{x,y};
+}
+function toggleLegoHole(p){
+ const c=nearestLegoCenter(p);if(!c)return false;
+ const found=state.shapes.find(q=>q.kind==='circle'&&q.layer==='black'&&Math.abs(q.x-c.x)<.01&&Math.abs(q.y-c.y)<.01&&Math.abs(q.r-LEGO_DIAMETER/2)<.01);
+ remember();
+ if(found){state.shapes=state.shapes.filter(q=>q.id!==found.id);if(state.selected===found.id)state.selected=null}
+ else{const hole={id:uid(),kind:'circle',layer:'black',x:c.x,y:c.y,r:LEGO_DIAMETER/2};state.shapes.push(hole);state.selected=hole.id}
+ render();return true;
+}
+$('legoGridToggle').addEventListener('change',e=>{state.legoGridVisible=e.target.checked;render()});
+$('legoPlaceMode').addEventListener('click',()=>setTool(state.tool==='lego-hole'?'select':'lego-hole'));
+function hit(ev){return ev.target.closest('[data-id]')?.getAttribute('data-id')}
+svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceHeld)){drag={kind:'pan',lastX:ev.clientX,lastY:ev.clientY};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}if(ev.button!==0)return;
+ if(state.tool==='angle-line'){
+  const v=precisionInputs();if(!v)return;
+  const start=point(ev),end=exactLineEnd(start,v.angle,v.length);
+  remember();const shape={id:uid(),kind:'line',layer:state.layer,x:start.x,y:start.y,x2:end.x,y2:end.y};
+  state.shapes.push(shape);state.selected=shape.id;render();
+  $('interactionStatus').textContent='ANGLE '+v.angle+'° · '+v.length+' mm placed';
+  ev.preventDefault();return;
+ }
+ if(state.tool==='cut-line'){
+   const node=ev.target.closest('[data-handle="node"]');
+   const segment=ev.target.closest('[data-cut-edge]');
+   if(node&&state.selected){
+    performCut(Number(node.getAttribute('data-sub')),Number(node.getAttribute('data-node')),'node');
+   }else if(segment&&state.selected){
+    performCut(Number(segment.getAttribute('data-cut-sub')),Number(segment.getAttribute('data-cut-edge')),'edge');
+   }else{
+    const id=hit(ev);state.selected=id||null;render();
+    $('interactionStatus').textContent='CUT LINE · select vector, then click a segment or node';
+   }
+   ev.preventDefault();return;
+ }
+ if(state.tool==='lego-hole'){
+   const placed=toggleLegoHole(rawPoint(ev));
+   $('interactionStatus').textContent=placed?'LEGO · 4.8 mm cut hole toggled':'LEGO · outside 8 mm hole grid';
+   ev.preventDefault();return;
+ }
+ if(state.tool==='vector'){const p=point(ev);if(!vectorDraft)vectorDraft={points:[]};vectorDraft.points.push({x:p.x,y:p.y});draftVector();ev.preventDefault();return}
+ if(state.tool==='nodes'||state.tool==='select'){
+  const near=nearbyPrimitiveCorner(ev);
+  if(near){const part=state.shapes.find(s=>s.id===state.selected);beginPrimitiveDrag(ev,part,near.key,'proximity');return}
+  const nodeTarget=ev.target.closest('[data-handle]');
+  if(nodeTarget){
+   const si=Number(nodeTarget.getAttribute('data-sub')),ni=Number(nodeTarget.getAttribute('data-node')),mode=nodeTarget.getAttribute('data-handle');
+   const primitive=nodeTarget.getAttribute('data-primitive');
+   if(primitive){
+    const id=nodeTarget.getAttribute('data-id'),shape=state.shapes.find(q=>q.id===id);
+    if(!shape)return;
+    beginPrimitiveDrag(ev,shape,primitive,'SVG hit');return;
+   }else{
+    activeNode={sub:si,index:ni};remember();
+    const shape=state.shapes.find(q=>q.id===state.selected);
+    drag={kind:'node',id:state.selected,sub:si,index:ni,mode,original:copy(shape)};
+    $('interactionStatus').textContent='Grabbed vector node '+ni+' · '+(isSymmetryLocked(shape)?'SYMMETRY':'FREE');
+   }
+   svg.setPointerCapture(ev.pointerId);ev.preventDefault();return;
+  }
+ }
+ const p=point(ev),id=hit(ev);if(state.tool==='select'||state.tool==='nodes'){state.selected=id||null;if(id){let s=state.shapes.find(q=>q.id===id);if(state.tool==='select'){remember();drag={kind:'move',start:p,startRaw:rawPoint(ev),original:copy(s),id}}else drag=null;}else drag=null;render()}else{drag={kind:'draw',start:p,current:p};drafts.replaceChildren();}svg.setPointerCapture(ev.pointerId)});
+svg.addEventListener('pointermove',ev=>{if(drag?.kind==='pan'){panPixels(ev.clientX-drag.lastX,ev.clientY-drag.lastY);drag.lastX=ev.clientX;drag.lastY=ev.clientY;return}
+ if(drag?.kind==='primitive-node'){
+  const s=state.shapes.find(q=>q.id===drag.id);
+  if(s){editPrimitiveHandle(s,drag.original,drag.key,rotateCoord(point(ev),drag.original,true));render();$('interactionStatus').textContent=(isSymmetryLocked(s)?'LOCKED':'FREE')+' '+s.kind.toUpperCase()+' '+drag.key+' · '+s.w?.toFixed(2)+' × '+s.h?.toFixed(2)+' mm'}
+  return;
+ }
+
+
+ if(drag?.kind==='node'){
+  const shape=state.shapes.find(q=>q.id===drag.id);
+  if(shape&&drag.original){
+   const p=rotateCoord(point(ev),drag.original,true);
+   if(applyVectorNodeDrag(shape,drag.original,drag.sub,drag.index,drag.mode,p)){render();$('interactionStatus').textContent=(isSymmetryLocked(shape)?'SYMMETRY':'FREE')+' drag · vector node '+drag.index}
+  }
+  return;
+ }
+ const p=point(ev);if(!drag)return;if(drag.kind==='move'){const s=state.shapes.find(q=>q.id===drag.id);if(!s)return;const dx=p.x-drag.start.x,dy=p.y-drag.start.y;
+ if(s.kind==='vector'){
+  let moveX=dx,moveY=dy;
+  if(['corner-cutout','lego-end-corner','lego-corner-2x2'].includes(s.profile)&&drag.original.studPivot){
+   const current=rawPoint(ev),pivot=drag.original.studPivot;
+   const nextX=pivot.x+current.x-drag.startRaw.x,nextY=pivot.y+current.y-drag.startRaw.y;
+   const snappedX=14+8*Math.round((nextX-14)/8),snappedY=14+8*Math.round((nextY-14)/8);
+   moveX=round(snappedX-pivot.x);moveY=round(snappedY-pivot.y);
+   s.studPivot={x:snappedX,y:snappedY};
+  }
+  s.subpaths=copy(drag.original.subpaths);
+  for(const sub of s.subpaths)for(const n of sub.points){
+   n.x=round(n.x+moveX);n.y=round(n.y+moveY);
+   for(const h of ['in','out'])if(n[h+'X']!=null){
+    n[h+'X']=round(n[h+'X']+moveX);n[h+'Y']=round(n[h+'Y']+moveY);
+   }
+  }
+ }
+ else{s.x=round(drag.original.x+dx);s.y=round(drag.original.y+dy);if('x2'in s){s.x2=round(drag.original.x2+dx);s.y2=round(drag.original.y2+dy)}}render()}else{drag.current=p;drafts.replaceChildren(attrShape(shapeBetween(drag.start,p,state.tool)));drafts.firstElementChild?.setAttribute('stroke-width','1.1')}});
+svg.addEventListener('pointerup',ev=>{if(!drag)return;if(drag.kind==='pan'){drag=null;return}if(drag.kind==='draw'){const p=point(ev),dist=Math.hypot(p.x-drag.start.x,p.y-drag.start.y);if(dist>=.4){remember();let s=shapeBetween(drag.start,p,state.tool);state.shapes.push(s);state.selected=s.id}drafts.replaceChildren();}drag=null;render()});
+svg.addEventListener('pointercancel',()=>{drag=null;drafts.replaceChildren();render()});
+svg.addEventListener('dblclick',e=>{if(state.tool==='vector'){e.preventDefault();finishVector()}});
+
+svg.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault()});
+svg.addEventListener('contextmenu',e=>{if(spaceHeld)e.preventDefault()});
+// Handle wheel at the whole central viewport, not just the SVG child.
+ // This captures Ctrl+wheel before Chromium's page-zoom default can run.
+ $('canvasStage').addEventListener('wheel',e=>{
+   e.preventDefault();e.stopPropagation();
+   if(e.shiftKey&&!e.ctrlKey&&!e.metaKey){panPixels(-e.deltaY,0);return}
+   const delta=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*120:e.deltaY;
+   const factor=Math.exp(-Math.max(-150,Math.min(150,delta))*0.002);
+   zoomAt(factor,e.clientX,e.clientY);
+ },{passive:false,capture:true});
+$('zoomIn').onclick=()=>zoomCenter(1.25);
+$('zoomOut').onclick=()=>zoomCenter(1/1.25);
+$('zoomReset').onclick=resetZoom;
+window.addEventListener('blur',()=>spaceHeld=false);
+document.addEventListener('keyup',e=>{if(e.code==='Space')spaceHeld=false});
+// Castle corner with a 3 mm LEFT vertical connector in the SAME open vector.
+// Start at bottom-left, go up 3 mm, then follow the four 3 mm castle runs.
+// Both endpoints lie on the bottom baseline, ready for joining into a panel.
+function castleEdgePoints(x=0,y=0){
+ return [[0,3],[0,0],[3,0],[3,3],[6,3],[6,0],[9,0],[9,3],[12,3]]
+  .map(([dx,dy])=>({x:round(x+dx),y:round(y+dy)}));
+}
+// LEGO stud-corner RELIEF TILE, not a rounded square.
+// One 8x8 mm grid cell bounded by four STUD CENTERS; the material is relieved
+// at each stud center by a concave QUARTER-CIRCLE of radius 2.4 mm.
+// Four straight linking edges + four inward quarter-arcs = a single closed path.
+// Eight anchor nodes (two per notch), each independently editable.
+function legoInnerCornerPoints(x=30,y=30){
+ const side=8,r=LEGO_DIAMETER/2,k=0.5522847498307936*r;
+ const p=(dx,dy,extra={})=>({x:round(x+dx),y:round(y+dy),
+   ...Object.fromEntries(Object.entries(extra).map(([key,val])=>[key,round(val)]))});
+ return [
+  p(r,0,{inX:x+r,inY:y+k}),
+  p(side-r,0,{outX:x+side-r,outY:y+k}),
+  p(side,r,{inX:x+side-k,inY:y+r}),
+  p(side,side-r,{outX:x+side-k,outY:y+side-r}),
+  p(side-r,side,{inX:x+side-r,inY:y+side-k}),
+  p(r,side,{outX:x+r,outY:y+side-k}),
+  p(0,side-r,{inX:x+k,inY:y+side-r}),
+  p(0,r,{outX:x+k,outY:y+r})
+ ];
+}
+function legoInnerCornerPart(x=30,y=30,layer='black'){
+ return{id:uid(),kind:'vector',layer,subpaths:[{closed:true,points:legoInnerCornerPoints(x,y)}],symmetryLocked:false,rotation:0};
+}
+// Open, stretchable stepped corner from the photographed LEGO bar.
+// The bend is a quarter-round with a fixed 2.4 mm radius (4.8 mm stud reference).
+// It is an EDGE section, not a full plate or a closed shape.
+// One 90-degree 4.8 mm STUD RELIEF. Open profile, four editable anchor nodes.
+// The two OUTER endpoints are exactly 4 mm from the stud center: halfway to
+// the next stud on the fixed 8 mm LEGO grid. Four 90-degree rotations join
+// at those midpoints without stretching the circular relief.
+function cornerCutoutPoints(x=30,y=30,w=4,h=4,r=2.4){
+ const radius=Math.min(r,w,h),k=0.5522847498307936*radius;
+ return [
+  {x:round(x),y:round(y+h)},
+  {x:round(x),y:round(y+radius),outX:round(x+k),outY:round(y+radius)},
+  {x:round(x+radius),y:round(y),inX:round(x+radius),inY:round(y+k)},
+  {x:round(x+w),y:round(y)}
+ ];
+}
+function cornerCutoutPart(x=30,y=30,w=4,h=4,layer='black'){
+ return {id:uid(),kind:'vector',layer,profile:'corner-cutout',cornerRadius:2.4,
+  studPivot:{x,y},subpaths:[{closed:false,points:cornerCutoutPoints(x,y,w,h)}],
+  symmetryLocked:false,rotation:0};
+}
+// LEGO end-cap corner: start with the proven 4.8 mm stud relief; run the
+// horizontal arm to the full 8 mm stud pitch, clip its outside corner with
+// a 1x1 mm 45-degree miter, and return down the outside edge.
+// It is a single OPEN cut-path section, not a full fabricated bracket.
+function legoEndCornerPoints(x=30,y=30,w=8,h=8,r=2.4,mitre=1){
+ const radius=Math.min(r,w,h),m=Math.min(mitre,w-radius,h/2);
+ const k=0.5522847498307936*radius;
+ return [
+  {x:round(x),y:round(y+4)},
+  {x:round(x),y:round(y+radius),outX:round(x+k),outY:round(y+radius)},
+  {x:round(x+radius),y:round(y),inX:round(x+radius),inY:round(y+k)},
+  {x:round(x+w-m),y:round(y)},
+  {x:round(x+w),y:round(y+m)},
+  {x:round(x+w),y:round(y+h)},
+  {x:round(x+w-4),y:round(y+h)}
+ ];
+}
+function legoEndCornerPart(x=30,y=30,layer='black'){
+ return{id:uid(),kind:'vector',layer,profile:'lego-end-corner',
+  cornerRadius:2.4,mitre:1,studPivot:{x,y},
+  symmetryLocked:false,rotation:0,
+  subpaths:[{closed:false,points:legoEndCornerPoints(x,y)}]};
+}
+// A complete 2x2 LEGO corner, as seen at the end of the reference wood bar.
+// The MISSING upper-right stud is replaced by an 8x8 stepped cutout with a
+// quarter-circle inside transition. The other three studs have 4.8 mm holes.
+// All FOUR contours live in ONE compound vector for direct SVG laser export.
+function legoCorner2x2Part(x=26,y=26,layer='black'){
+ const r=2.4,ka=0.5522847498307936*r;
+ const p=(dx,dy,extra={})=>({x:round(x+dx),y:round(y+dy),...extra});
+ const perimeter=[
+  p(0,0),p(8,0),p(8,8-r,{outX:round(x+8),outY:round(y+8-r+ka)}),
+  p(8+r,8,{inX:round(x+8+r-ka),inY:round(y+8)}),
+  p(16,8),p(16,16)
+ ];
+ const hole=(cx,cy)=>{
+  const h=(dx,dy,ix,iy,ox,oy)=>({
+   x:round(x+cx+dx),y:round(y+cy+dy),
+   inX:round(x+cx+ix),inY:round(y+cy+iy),
+   outX:round(x+cx+ox),outY:round(y+cy+oy)
+  });
+  return {closed:true,points:[
+   h(r,0,r,-ka,r,ka),
+   h(0,r,ka,r,-ka,r),
+   h(-r,0,-r,ka,-r,-ka),
+   h(0,-r,-ka,-r,ka,-r)
+  ]};
+ };
+ return {id:uid(),kind:'vector',layer,profile:'lego-corner-2x2',
+  rotation:0,symmetryLocked:false,studPivot:{x:round(x+4),y:round(y+4)},
+  subpaths:[{closed:false,points:perimeter},hole(4,4),hole(4,12),hole(12,12)]};
+}
+function place(kind,w,h,layer='black'){
+ remember();let s;
+ if(kind==='lego-2x2-corner')s=legoCorner2x2Part(26,26,layer);
+ else if(kind==='corner-cutout')s=cornerCutoutPart(30,30,w,h,layer);
+ else if(kind==='lego-inner-corner')s=legoInnerCornerPart(30,30,layer);
+ else if(kind==='castle-edge')s={id:uid(),kind:'vector',layer,subpaths:[{closed:false,points:castleEdgePoints(30,30)}],symmetryLocked:false,rotation:0};
+ else if(kind==='circle')s={id:uid(),kind,layer,x:45,y:45,r:w/2};
+ else s={id:uid(),kind,layer,x:30,y:30,w,h};
+ state.shapes.push(s);state.selected=s.id;setTool('select');
+}
+const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO stud relief · 8×8','lego-inner-corner',8,8],['LEGO corner notch · 4 mm arms','corner-cutout',4,4],['LEGO 2×2 corner · 3 holes','lego-2x2-corner',16,16],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
+// The Parts Bench has its own visible, double-weight SVG geometry previews.
+// These are UI thumbnails only; placement and fabrication/export dimensions remain unchanged.
+function benchIcon(kind,w,h,layer){
+ const preview=el('svg',{viewBox:'0 0 32 32',class:'template-icon','aria-hidden':'true'});
+ const stroke=displayLayerColor(layer||'black');
+ const scale=Math.min(22/Math.max(w,.01),22/Math.max(h,.01));
+ const sw=Math.max(3,Math.min(22,w*scale)),sh=Math.max(3,Math.min(22,h*scale));
+ let shape;
+ if(kind==='lego-2x2-corner'){
+  shape=el('path',{d:vectorPath(legoCorner2x2Part(0,0)),transform:'translate(5 5) scale(1.375)'});
+ }
+ else if(kind==='corner-cutout'){
+  shape=el('path',{d:vectorPath({subpaths:[{closed:false,points:cornerCutoutPoints(0,0,4,4)}]}),transform:'translate(5 5) scale(5.5)'});
+ }
+ else if(kind==='lego-inner-corner'){
+  const temporary={subpaths:[{closed:true,points:legoInnerCornerPoints(0,0)}]};
+  shape=el('path',{d:vectorPath(temporary),transform:'translate(5 5) scale(2.75)'});
+ }
+ else if(kind==='castle-edge'){
+  // Same geometry as the placed vector, fitted into the bench icon.
+  const pts=castleEdgePoints();
+  const d=pts.map((p,i)=>(i?'L ':'M ')+(16-sw/2+p.x*sw/12)+' '+(16-sh/2+p.y*sh/3)).join(' ');
+  shape=el('path',{d});
+ }
+ else if(kind==='circle')shape=el('circle',{cx:16,cy:16,r:Math.min(sw,sh)/2});
+ else if(kind==='slot')shape=el('rect',{x:16-sw/2,y:16-sh/2,width:sw,height:sh,rx:Math.min(sw,sh)/2});
+ else shape=el('rect',{x:16-sw/2,y:16-sh/2,width:sw,height:sh});
+ shape.setAttribute('fill','none');shape.setAttribute('stroke',stroke);shape.setAttribute('stroke-width','2.2');
+ shape.setAttribute('vector-effect','non-scaling-stroke');preview.append(shape);
+ return preview;
+}
+for(const [title,kind,w,h,layer] of templates){
+ const b=document.createElement('button');b.className='template';b.dataset.previewLayer=layer||'black';
+ b.append(benchIcon(kind,w,h,layer));
+ const label=document.createElement('span');label.className='template-name';label.textContent=title;b.append(label);
+ b.onclick=()=>place(kind,w,h,layer);$('templates').append(b);
+}
+for(let key of Object.keys(colors)){let row=document.createElement('div');row.className='layer';let label=document.createElement('label');let check=document.createElement('input');check.type='checkbox';check.checked=true;check.onchange=()=>{state.visible[key]=check.checked;render()};const picker=document.createElement('input');picker.type='color';picker.className='layer-swatch-picker';
+ picker.dataset.layerColor=key;picker.title='On-screen '+names[key]+' color (SVG export unchanged)';
+ picker.value=displayLayerColor(key);picker.addEventListener('input',e=>changeLayerDisplayColor(key,e.target.value));
+ label.append(check,document.createTextNode(names[key]));row.append(label,picker);let radio=document.createElement('input');radio.type='radio';radio.name='activeLayer';radio.title='Active drawing layer';radio.checked=key==='black';radio.onchange=()=>state.layer=key;row.append(radio);$('layers').append(row)}
+for(let b of document.querySelectorAll('[data-tool]'))b.onclick=()=>setTool(b.dataset.tool);
+function refreshGrid(){
+ const val=state.step;
+ $('grid').setAttribute('width',val);$('grid').setAttribute('height',val);
+ $('grid').firstElementChild.setAttribute('d',`M ${val} 0 H 0 V ${val}`);
+ $('step').value=state.gridMode;
+ $('customStep').value=Number(state.customStep).toFixed(2);
+ $('snap').checked=state.snap&&state.gridMode!=='free';
+ $('snap').disabled=state.gridMode==='free';
+ render();
+}
+$('step').onchange=e=>{
+ const mode=e.target.value;
+ if(mode==='custom'){
+   const val=Number($('customStep').value);
+   if(!Number.isFinite(val)||val<0.01||val>1000){alert('Custom spacing must be between 0.01 and 1000 mm.');refreshGrid();return}
+   state.customStep=round(val);state.step=state.customStep;
+ }else if(mode!=='free'){
+   state.step=Number(mode);
+ }
+ state.gridMode=mode;
+ if(mode!=='free')state.snap=true;
+ refreshGrid();
+};
+$('customStep').addEventListener('change',()=>{
+ const val=Number($('customStep').value);
+ if(!Number.isFinite(val)||val<0.01||val>1000){alert('Enter a spacing from 0.01 to 1000 mm.');refreshGrid();return}
+ state.customStep=round(val);state.step=state.customStep;state.gridMode='custom';state.snap=true;refreshGrid();
+});
+$('snap').onchange=e=>{state.snap=state.gridMode!=='free'&&e.target.checked;refreshGrid()};
+// Theme colors are UI-only CSS variables, independent of Cut/Score/Guide layers.
+const THEME_KEYS={
+ bg:'Workspace',panel:'Sidebars / bars',ink:'Text',border:'Panel borders',
+ accent:'Accent / active',canvas:'Drawing paper',grid:'Measurement grid',
+ 'button-bg':'Tool buttons','button-ink':'Button text','button-border':'Button outlines',
+ 'guide-label':'Ruler numbers',selection:'Selection', 'canvas-frame':'Sheet frame'
+};
+const THEME_PRESETS={
+ light:{bg:'#eaf0f2',panel:'#ffffff',ink:'#243441',border:'#cbd5dd',accent:'#0297a6',canvas:'#ffffff',grid:'#dfe7e9','button-bg':'#ffffff','button-ink':'#243441','button-border':'#cbd5dd','guide-label':'#667785',selection:'#ea5b9f','canvas-frame':'#02a7c3'},
+ dark:{bg:'#202b35',panel:'#2e3b47',ink:'#eef4f8',border:'#53636d',accent:'#0fbed0',canvas:'#344452',grid:'#495968','button-bg':'#354652','button-ink':'#eef4f8','button-border':'#607583','guide-label':'#c0cdd5',selection:'#ff80ba','canvas-frame':'#3cd0df'},
+ wood:{bg:'#dfceb0',panel:'#f2e4ca',ink:'#4d3827',border:'#bda47d',accent:'#a35c31',canvas:'#fff9eb',grid:'#e9dcca','button-bg':'#f9ead0','button-ink':'#4d3827','button-border':'#baa079','guide-label':'#80684d',selection:'#a23875','canvas-frame':'#148f9b'},
+ bloom:{bg:'#e5f8f5',panel:'#f8fffe',ink:'#164744',border:'#9ccfc8',accent:'#c83d92',canvas:'#ffffff',grid:'#cce9e4','button-bg':'#eafff8','button-ink':'#164744','button-border':'#95cfc6','guide-label':'#357b74',selection:'#e1569e','canvas-frame':'#00b4b8'},
+ midnight:{bg:'#100f24',panel:'#1d1a37',ink:'#f0eaff',border:'#554779',accent:'#a88cff',canvas:'#25203f',grid:'#4e436e','button-bg':'#342c55','button-ink':'#f0eaff','button-border':'#6b568e','guide-label':'#c4b8e9',selection:'#ff70a8','canvas-frame':'#55d7e4'},
+ blueprint:{bg:'#092d43',panel:'#123d55',ink:'#e0f6ff',border:'#41718b',accent:'#ffd66b',canvas:'#0b3c59',grid:'#315c77','button-bg':'#15516a','button-ink':'#e0f6ff','button-border':'#568199','guide-label':'#b1dff3',selection:'#ff9c60','canvas-frame':'#56c8eb'}
+};
+function isHex(v){return typeof v==='string'&&/^#[0-9a-fA-F]{6}$/.test(v)}
+function safeColors(input,base=THEME_PRESETS.light){const result={...base};if(input&&typeof input==='object'){for(const key of Object.keys(THEME_KEYS)){if(isHex(input[key]))result[key]=input[key]}}return result}
+function applyColors(paletteName,colorsOverride=null){
+ const base=THEME_PRESETS[paletteName]||THEME_PRESETS.light;
+ const result=safeColors(colorsOverride,base);
+ state.theme=paletteName in THEME_PRESETS?paletteName:'custom';
+ state.themeColors=result;
+ document.body.dataset.theme='custom';
+ for(const [name,color] of Object.entries(result))document.documentElement.style.setProperty('--'+name,color);
+ renderThemeControls();
+ refreshLayerColorPickers();render(); 
+}
+function renderThemeControls(){
+ for(const btn of $('themePalettes').querySelectorAll('[data-palette]'))btn.setAttribute('aria-pressed',String(state.theme===btn.dataset.palette));
+ for(const [key,color] of Object.entries(state.themeColors||THEME_PRESETS.light)){
+  const field=document.getElementById('color-'+key);if(!field)continue;
+  field.querySelector('[type=color]').value=color;field.querySelector('[type=text]').value=color;
+ }
+}
+// Mirror all four editable swatches inside the Theme dropdown.
+for(const key of Object.keys(colors)){
+ const row=document.createElement('label');row.className='layer-color-row';
+ const name=document.createElement('span');name.textContent=names[key];
+ const picker=document.createElement('input');picker.type='color';picker.dataset.layerColor=key;
+ picker.setAttribute('aria-label',names[key]+' display color');
+ picker.value=displayLayerColor(key);
+ picker.addEventListener('input',e=>changeLayerDisplayColor(key,e.target.value));
+ row.append(name,picker);$('themeLayerColors').append(row);
+}
+$('layerColorReset').onclick=()=>{state.layerColors=null;refreshLayerColorPickers();render()};
+for(const [name,palette] of Object.entries(THEME_PRESETS)){
+ const button=document.createElement('button');button.type='button';button.className='palette-choice';button.dataset.palette=name;
+ const swatches=document.createElement('span');swatches.className='palette-swatches';
+ for(const key of ['bg','panel','canvas','accent']){const chip=document.createElement('i');chip.style.background=palette[key];swatches.append(chip)}
+ const title=document.createElement('span');title.textContent=name.charAt(0).toUpperCase()+name.slice(1);
+ button.append(swatches,title);button.onclick=()=>applyColors(name);$('themePalettes').append(button);
+}
+for(const [key,label] of Object.entries(THEME_KEYS)){
+ const row=document.createElement('label');row.className='color-field';row.id='color-'+key;
+ const name=document.createElement('span');name.textContent=label;
+ const pair=document.createElement('div');pair.className='color-input';
+ const picker=document.createElement('input');picker.type='color';picker.setAttribute('aria-label',label+' color');
+ const value=document.createElement('input');value.type='text';value.maxLength=7;value.setAttribute('aria-label',label+' hex value');
+ function update(val){if(!isHex(val)){value.value=state.themeColors[key];return}applyColors('custom',{...state.themeColors,[key]:val.toLowerCase()})}
+ picker.addEventListener('input',()=>update(picker.value));
+ value.addEventListener('change',()=>update(value.value.trim()));
+ pair.append(picker,value);row.append(name,pair);$('themeColors').append(row);
+}
+$('themeReset').onclick=()=>applyColors('light');
+function addMyTheme(saved){
+ if(!saved||!Object.keys(THEME_KEYS).every(k=>isHex(saved[k])))return;
+ let button=$('themePalettes').querySelector('[data-palette=mine]');
+ if(!button){button=document.createElement('button');button.type='button';button.className='palette-choice';button.dataset.palette='mine';$('themePalettes').append(button)}
+ button.textContent='★ My Theme';button.onclick=()=>applyColors('custom',saved);
+}
+$('themeSave').onclick=()=>{
+ try{
+  const saved={...state.themeColors};
+  localStorage.setItem('bloomforge-user-theme-v1',JSON.stringify(saved));
+  addMyTheme(saved);$('themeSave').textContent='Saved ✓';
+ }catch(err){alert('Browser could not store your theme: '+err.message)}
+};
+function restoreTheme(){
+ let saved=null;try{saved=JSON.parse(localStorage.getItem('bloomforge-user-theme-v1')||'null')}catch(_){}
+ addMyTheme(saved);applyColors(state.theme,state.themeColors);
+}
+
+$('guides').onchange=e=>{svg.querySelector('rect[fill="url(#grid)"]').style.display=e.target.checked?'':'none';$('ticks').style.display=e.target.checked?'':'none'};
+$('delete').onclick=()=>{if(!state.selected)return;remember();state.shapes=state.shapes.filter(x=>x.id!==state.selected);state.selected=null;render()};
+$('duplicate').onclick=()=>{
+ let s=state.shapes.find(x=>x.id===state.selected);if(!s)return;
+ remember();let t=copy(s);t.id=uid();const offset=['corner-cutout','lego-end-corner','lego-corner-2x2'].includes(s.profile)?8:(state.gridMode==='free'?3:state.step);
+ if(t.kind==='vector'){
+  if(['corner-cutout','lego-end-corner','lego-corner-2x2'].includes(t.profile)&&t.studPivot)t.studPivot={x:round(t.studPivot.x+offset),y:round(t.studPivot.y+offset)};
+  for(const sub of t.subpaths)for(const p of sub.points){
+   p.x=round(p.x+offset);p.y=round(p.y+offset);
+   for(const h of ['in','out'])if(p[h+'X']!=null){p[h+'X']=round(p[h+'X']+offset);p[h+'Y']=round(p[h+'Y']+offset)}
+  }
+ }else{
+  t.x=round(t.x+offset);t.y=round(t.y+offset);
+  if('x2'in t){t.x2=round(t.x2+offset);t.y2=round(t.y2+offset)}
+ }
+ state.shapes.push(t);state.selected=t.id;render();
+};
+function undo(){if(history.length){future.push(copy(state.shapes));state.shapes=history.pop();state.selected=null;render()}}function redo(){if(future.length){history.push(copy(state.shapes));state.shapes=future.pop();state.selected=null;render()}}
+$('undo').onclick=undo;$('redo').onclick=redo;
+window.addEventListener('keydown',e=>{
+ // Capture at window level so Chromium never scales the entire BloomForge UI.
+ // Preserve typing in editable fields and browser shortcuts unrelated to canvas navigation.
+ if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;
+if(state.tool==='vector'&&e.key==='Enter'){e.preventDefault();finishVector();return}
+if(state.tool==='vector'&&e.key==='Escape'){e.preventDefault();vectorDraft=null;drafts.replaceChildren();setTool('select');return}
+if(e.code==='Space'&&!e.ctrlKey&&!e.metaKey){spaceHeld=true;e.preventDefault();return}
+if(e.ctrlKey||e.metaKey){
+ const isPlus=e.code==='Equal'||e.code==='NumpadAdd'||['+','=','Add'].includes(e.key);
+ const isMinus=e.code==='Minus'||e.code==='NumpadSubtract'||['-','_','Subtract'].includes(e.key);
+ if(isPlus){e.preventDefault();e.stopPropagation();zoomCenter(1.25);return}
+ if(isMinus){e.preventDefault();e.stopPropagation();zoomCenter(1/1.25);return}
+ if(e.code==='Digit0'||e.key==='0'){e.preventDefault();e.stopPropagation();resetZoom();return}
+ if(e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
+}
+if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()},{capture:true});
+function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+$('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
+$('open').onclick=()=>$('file').click();
+$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc','vector'].includes(s.kind)||!colors[s.layer]||(s.kind==='vector'&&(!Array.isArray(s.subpaths)||!s.subpaths.every(sub=>Array.isArray(sub.points)&&sub.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))))))throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};
+ state.layerColors=state.layerColors&&typeof state.layerColors==='object'?Object.fromEntries(Object.entries(state.layerColors).filter(([k,v])=>Object.hasOwn(colors,k)&&isHex(v))):null;
+ state.legoGridVisible=!!state.legoGridVisible;state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
+$('new').onclick=()=>{if(state.shapes.length&&!confirm('Start a new blank project? Unsaved geometry will be lost.'))return;remember();state.shapes=[];state.selected=null;render()};
+$('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(applyRotation(attrShape(s,true),s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
+const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--guide-label)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
+// Position top-bar menus under their buttons while keeping them visible above the canvas.
+for(const [menu,popup] of [['themeMenu','themePopup'],['exportMenu','exportPopup']]){
+ const d=$(menu),p=$(popup);
+ d.addEventListener('toggle',()=>{if(d.open){const r=d.getBoundingClientRect();p.style.top=(r.bottom+4)+'px';p.style.left=Math.max(6,Math.min(r.left,window.innerWidth-250))+'px'}});
+}
+document.addEventListener('pointerdown',e=>{for(const id of ['themeMenu','exportMenu']){const d=$(id);if(d.open&&!d.contains(e.target))d.open=false}},true);
+restoreTheme();setTool('select');refreshGrid();resetZoom();
+</script></body></html>

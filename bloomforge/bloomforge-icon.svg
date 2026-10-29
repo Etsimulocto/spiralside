@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+<defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#1ee0eb"/><stop offset="1" stop-color="#f54d9e"/></linearGradient></defs>
+<rect x="3" y="3" width="250" height="250" rx="52" fill="#142233" stroke="url(#g)" stroke-width="6"/>
+<g stroke="#245267" stroke-width="2" opacity=".8"><path d="M40 70H215M40 105H215M40 140H215M40 175H215M65 35V220M100 35V220M135 35V220M170 35V220M205 35V220"/></g>
+<path d="M128 197C95 169 77 140 91 109C104 112 118 129 128 143C138 129 152 112 165 109C179 140 161 169 128 197Z" fill="#f1ae72" stroke="#ffd7a8" stroke-width="5"/>
+<path d="M128 160C95 145 70 127 53 100C86 91 113 110 128 131C143 110 170 91 203 100C186 127 161 145 128 160Z" fill="#21d5e2" stroke="#f6b887" stroke-width="6"/>
+<path d="M128 133C112 108 113 77 128 53C143 77 144 108 128 133Z" fill="#ff77b0" stroke="#ffe1a4" stroke-width="6"/>
+<path d="M128 49V25" stroke="#ffefc2" stroke-width="5"/><circle cx="128" cy="23" r="5" fill="#ffebb7"/>
+<text x="128" y="229" font-family="sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#faf4ff">BloomForge</text>
+</svg>
