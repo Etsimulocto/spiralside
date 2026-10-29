@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BloomCircuit</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>BloomCircuit</h1>
+      <p>Visual wiring maps → laser-ready SVG</p>
+    </div>
+    <label class="project-name">Project
+      <input id="projectName" value="Happy Jarz Circuit">
+    </label>
+  </header>
+
+  <main class="app-shell">
+    <aside class="sidebar">
+      <section>
+        <div class="section-head">
+          <h2>Component Library</h2>
+          <span id="libraryCount" class="count-badge"></span>
+        </div>
+        <input id="componentSearch" type="search" placeholder="Search parts…">
+        <select id="categoryFilter" aria-label="Component category">
+          <option value="ALL">All categories</option>
+        </select>
+        <div id="palette" class="palette"></div>
+        <p id="paletteEmpty" class="hint" hidden>No matching components.</p>
+      </section>
+
+      <section>
+        <h2>Patch Library</h2>
+        <div class="button-stack">
+          <button id="newComponentBtn" type="button">+ New custom component</button>
+          <button id="importPackBtn" type="button">Import component pack</button>
+          <input id="packInput" type="file" accept=".json,application/json" hidden>
+          <button id="exportPackBtn" type="button">Export component pack</button>
+        </div>
+        <p class="hint">Component packs are JSON. Import a new part as we discover it, or make one here and export the library for GitHub.</p>
+      </section>
+
+      <section>
+        <h2>Wire</h2>
+        <label>Net type
+          <select id="netType">
+            <option value="DATA">DATA</option>
+            <option value="5V">5V</option>
+            <option value="3V3">3V3</option>
+            <option value="GND">GND</option>
+            <option value="OTHER">OTHER</option>
+          </select>
+        </label>
+        <p class="hint">Click one pin, then another. Press Esc to cancel.</p>
+      </section>
+
+      <section>
+        <h2>Project</h2>
+        <div class="button-stack">
+          <button id="happyJarzBtn" type="button">Load Happy Jarz template</button>
+          <button id="saveBtn" type="button">Save project JSON</button>
+          <button id="loadBtn" type="button">Load project JSON</button>
+          <input id="loadInput" type="file" accept=".json,application/json" hidden>
+          <button id="exportBtn" type="button">Export SVG</button>
+          <button id="deleteBtn" type="button">Delete selected</button>
+          <button id="clearBtn" type="button" class="danger">Clear canvas</button>
+        </div>
+        <label class="check-row">
+          <input id="etchMode" type="checkbox">
+          Etch view
+        </label>
+      </section>
+
+      <section>
+        <h2>Scale</h2>
+        <p class="hint"><strong>10 px = 2.54 mm</strong><br>Snap grid matches common 0.1 inch breadboard/header pitch.</p>
+      </section>
+    </aside>
+
+    <section class="workspace-panel">
+      <div class="status-row">
+        <span id="status">Ready.</span>
+        <span id="warning" class="warning" aria-live="polite"></span>
+      </div>
+      <div class="workspace-scroll">
+        <svg id="canvas" viewBox="0 0 3000 1800" role="img" aria-label="BloomCircuit wiring workspace">
+          <defs>
+            <pattern id="minorGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+              <path d="M 10 0 L 0 0 0 10" class="minor-grid-line"/>
+            </pattern>
+            <pattern id="majorGrid" width="50" height="50" patternUnits="userSpaceOnUse">
+              <rect width="50" height="50" fill="url(#minorGrid)"/>
+              <path d="M 50 0 L 0 0 0 50" class="major-grid-line"/>
+            </pattern>
+          </defs>
+          <rect id="grid-bg" x="0" y="0" width="3000" height="1800" fill="url(#majorGrid)"/>
+          <g id="boardsLayer"></g>
+          <g id="wiresLayer"></g>
+          <g id="componentsLayer"></g>
+        </svg>
+      </div>
+    </section>
+
+    <aside class="editor-sidebar" aria-label="Editor tools">
+      <section>
+        <div class="section-head">
+          <h2>Editor</h2>
+          <span id="selectionKind" class="count-badge">Canvas</span>
+        </div>
+        <p id="selectionName" class="selection-name">Nothing selected</p>
+      </section>
+
+      <section>
+        <h2>Breadboard maker</h2>
+        <label>Board type
+          <select id="boardType">
+            <option value="perf">Square grid / perfboard</option>
+            <option value="strip">Stripboard / rails</option>
+            <option value="breadboard">Breadboard / center slot</option>
+            <option value="breadboardRails">Breadboard + power rails</option>
+          </select>
+        </label>
+        <div class="xy-row">
+          <label>Holes X
+            <input id="boardHolesX" type="number" min="2" max="120" step="1" value="30">
+          </label>
+          <label>Holes Y
+            <input id="boardHolesY" type="number" min="2" max="80" step="1" value="10">
+          </label>
+        </div>
+        <button id="addBoardBtn" type="button">+ Add board underlay</button>
+        <p class="hint">2.54 mm hole pitch. Boards live under the circuit so components and wires stay on top.</p>
+      </section>
+
+      <section id="boardTools" hidden>
+        <h2>Board underlay</h2>
+        <label>Type
+          <select id="selectedBoardType">
+            <option value="perf">Square grid / perfboard</option>
+            <option value="strip">Stripboard / rails</option>
+            <option value="breadboard">Breadboard / center slot</option>
+            <option value="breadboardRails">Breadboard + power rails</option>
+          </select>
+        </label>
+        <div class="xy-row">
+          <label>Holes X
+            <input id="selectedBoardHolesX" type="number" min="2" max="120" step="1">
+          </label>
+          <label>Holes Y
+            <input id="selectedBoardHolesY" type="number" min="2" max="80" step="1">
+          </label>
+        </div>
+        <div class="tool-row">
+          <button id="boardRotateLeftBtn" type="button" title="Rotate board left 90 degrees">↶ 90°</button>
+          <button id="boardRotateRightBtn" type="button" title="Rotate board right 90 degrees">↷ 90°</button>
+        </div>
+        <label>Scale %
+          <div class="number-stepper">
+            <button id="boardScaleDown" type="button" aria-label="Decrease board scale">−</button>
+            <input id="boardScale" type="number" min="10" max="1000" step="1" value="100" inputmode="numeric">
+            <button id="boardScaleUp" type="button" aria-label="Increase board scale">+</button>
+          </div>
+        </label>
+        <label>Board color
+          <input id="boardColor" type="color" value="#d9e4c7">
+        </label>
+        <label>Hole color
+          <input id="boardHoleColor" type="color" value="#3c4248">
+        </label>
+        <button id="deleteBoardBtn" type="button" class="danger">Delete board</button>
+      </section>
+
+      <section id="componentTools" hidden>
+        <h2>Component</h2>
+        <label>Display name
+          <input id="componentTitle" type="text" maxlength="120" placeholder="Use library name">
+        </label>
+        <label>Value / note
+          <input id="componentValue" type="text" maxlength="160" placeholder="220Ω, LED #1, etc.">
+        </label>
+        <label>Pin label overrides
+          <textarea id="componentPinLabels" rows="5" spellcheck="false" placeholder="p1 = GPIO1&#10;p2 = GPIO2&#10;p14 = 3V3"></textarea>
+        </label>
+        <p class="hint">Optional. One pin per line as <code>pin-id = label</code>. This changes only this placed component.</p>
+        <div class="tool-row">
+          <button id="rotateLeftBtn" type="button" title="Rotate left 90 degrees">↶ 90°</button>
+          <button id="rotateRightBtn" type="button" title="Rotate right 90 degrees">↷ 90°</button>
+        </div>
+        <label>Fill color
+          <input id="componentColor" type="color" value="#f4f0e7">
+        </label>
+        <label>Text color
+          <input id="componentTextColor" type="color" value="#191d20">
+        </label>
+        <label>Scale %
+          <div class="number-stepper">
+            <button id="componentScaleDown" type="button" aria-label="Decrease component scale">−</button>
+            <input id="componentScale" type="number" min="10" max="1000" step="1" value="100" inputmode="numeric">
+            <button id="componentScaleUp" type="button" aria-label="Increase component scale">+</button>
+          </div>
+        </label>
+        <label>Font size
+          <div class="range-row">
+            <input id="componentFontSize" type="range" min="7" max="28" step="1" value="12">
+            <output id="componentFontSizeOut">12 px</output>
+          </div>
+        </label>
+        <button id="resetComponentStyleBtn" type="button">Reset component style</button>
+      </section>
+
+      <section id="wireTools" hidden>
+        <h2>Wire</h2>
+        <label>Net type
+          <select id="wireNetType">
+            <option value="DATA">DATA</option>
+            <option value="5V">5V</option>
+            <option value="3V3">3V3</option>
+            <option value="GND">GND</option>
+            <option value="OTHER">OTHER</option>
+          </select>
+        </label>
+        <label>Wire color
+          <input id="wireColor" type="color" value="#6cb6ff">
+        </label>
+        <label>Wire width
+          <div class="range-row">
+            <input id="wireWidth" type="range" min="1" max="12" step="1" value="4">
+            <output id="wireWidthOut">4 px</output>
+          </div>
+        </label>
+        <button id="resetWireStyleBtn" type="button">Reset wire style</button>
+        <p class="hint">Select a wire, then click the little + at either end to add voltage, scope, waveform, signal, or test notes.</p>
+      </section>
+
+      <section id="wireNoteTools" hidden>
+        <h2>Endpoint note</h2>
+        <label>Text / measurement
+          <textarea id="wireNoteText" rows="4" placeholder="3.3V&#10;CH1: 8 MHz&#10;50% duty"></textarea>
+        </label>
+        <label>Text color
+          <input id="wireNoteColor" type="color" value="#24282c">
+        </label>
+        <label>Font size
+          <div class="range-row">
+            <input id="wireNoteFontSize" type="range" min="6" max="30" step="1" value="10">
+            <output id="wireNoteFontSizeOut">10 px</output>
+          </div>
+        </label>
+        <button id="clearWireNoteBtn" type="button">Clear note</button>
+      </section>
+
+      <section>
+        <h2>Canvas</h2>
+        <label>Background
+          <input id="canvasBgColor" type="color" value="#f8f5ed">
+        </label>
+        <label>Minor grid
+          <input id="minorGridColor" type="color" value="#d9d5cc">
+        </label>
+        <label>Major grid
+          <input id="majorGridColor" type="color" value="#b9b4aa">
+        </label>
+        <label>Pin label size
+          <div class="range-row">
+            <input id="pinFontSize" type="range" min="5" max="18" step="1" value="8">
+            <output id="pinFontSizeOut">8 px</output>
+          </div>
+        </label>
+        <button id="resetCanvasStyleBtn" type="button">Reset canvas colors</button>
+      </section>
+
+      <section>
+        <h2>Zoom</h2>
+        <div class="zoom-row">
+          <button id="zoomOutBtn" type="button" aria-label="Zoom out">−</button>
+          <output id="zoomOut">100%</output>
+          <button id="zoomInBtn" type="button" aria-label="Zoom in">+</button>
+        </div>
+        <input id="zoomRange" type="range" min="25" max="200" step="5" value="100" aria-label="Canvas zoom">
+        <button id="zoomResetBtn" type="button">Reset 100%</button>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    Click a library part to add it. Drag to move. Select a component to edit its name, value, pin labels, style, scale, or rotation. Click pins to wire.
+  </footer>
+
+  <dialog id="componentDialog" class="component-maker-dialog">
+    <form id="componentForm" method="dialog">
+      <div class="dialog-head">
+        <div>
+          <h2>Component Maker</h2>
+          <p>Drop a real component image on a 2.54 mm breadboard grid, then place pins exactly where they belong.</p>
+        </div>
+        <button id="closeComponentDialog" type="button" class="icon-btn" aria-label="Close">×</button>
+      </div>
+
+      <div class="maker-meta-grid">
+        <label>Component ID
+          <input id="customId" required placeholder="my_sensor">
+        </label>
+        <label>Name
+          <input id="customTitle" required placeholder="My Sensor">
+        </label>
+        <label>Category
+          <input id="customCategory" value="Custom" placeholder="Sensors & Modules">
+        </label>
+        <label>Shape fallback
+          <select id="customKind">
+            <option value="rect">Rectangle/module</option>
+            <option value="dip">DIP chip</option>
+            <option value="led">LED</option>
+            <option value="resistor">Resistor</option>
+            <option value="capacitor">Capacitor</option>
+            <option value="node">Node</option>
+          </select>
+        </label>
+        <label>Grid X (holes)
+          <input id="customWidth" type="number" min="2" max="80" step="1" value="16">
+        </label>
+        <label>Grid Y (holes)
+          <input id="customHeight" type="number" min="2" max="60" step="1" value="10">
+        </label>
+      </div>
+
+      <label>Subtitle / note
+        <input id="customSubtitle" placeholder="Optional description">
+      </label>
+
+      <div class="maker-image-row">
+        <label class="maker-image-picker">Component image
+          <input id="customImageInput" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+        <button id="clearCustomImageBtn" type="button">Clear image</button>
+        <span class="hint">Image is embedded into the component pack. Grid pitch is 2.54 mm.</span>
+      </div>
+
+      <div class="maker-layout">
+        <section class="maker-preview-panel">
+          <div class="section-head">
+            <h3>Footprint / pin placement</h3>
+            <span id="customMakerSize" class="count-badge">16 × 10</span>
+          </div>
+          <div class="maker-preview-toolbar">
+            <button id="makerZoomDown" type="button" aria-label="Zoom footprint out">−</button>
+            <input id="makerZoomValue" type="number" min="25" max="800" step="1" value="100" aria-label="Footprint zoom percent">
+            <button id="makerZoomUp" type="button" aria-label="Zoom footprint in">+</button>
+            <button id="makerZoomFit" type="button">Fit</button>
+          </div>
+          <p class="hint">Click a grid intersection to add a pin. Drag a pin to move it. Everything snaps to the same grid as the breadboard.</p>
+          <div class="maker-preview-scroll" id="makerPreviewScroll">
+            <svg id="customFootprintPreview" viewBox="0 0 160 100" aria-label="Custom component footprint editor">
+              <defs>
+                <pattern id="makerGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                  <circle cx="0" cy="0" r="1.8" class="maker-grid-hole"/>
+                </pattern>
+              </defs>
+              <rect id="customMakerGridBg" x="0" y="0" width="160" height="100" fill="url(#makerGrid)"/>
+              <image id="customFootprintImage" x="0" y="0" width="160" height="100" preserveAspectRatio="none" opacity="0.82"/>
+              <rect id="customCutoutOutline" x="1" y="1" width="158" height="98" rx="2" class="maker-cutout-outline"/>
+              <g id="customFootprintPins"></g>
+            </svg>
+          </div>
+        </section>
+
+        <section class="maker-pin-panel">
+          <h3>Selected pin</h3>
+          <p id="customPinEmpty" class="hint">Click the grid to add/select a pin.</p>
+          <div id="customPinEditor" hidden>
+            <label>Pin ID
+              <input id="customPinId" placeholder="din">
+            </label>
+            <label>Label
+              <input id="customPinLabel" placeholder="DIN">
+            </label>
+            <label>Role
+              <select id="customPinRole">
+                <option value="passive">passive</option>
+                <option value="power">power</option>
+                <option value="5v">5V</option>
+                <option value="3v3">3V3</option>
+                <option value="gnd">GND</option>
+                <option value="gpio">GPIO</option>
+                <option value="input">input</option>
+                <option value="output">output</option>
+                <option value="control">control</option>
+                <option value="analog">analog</option>
+                <option value="i2c">I2C</option>
+                <option value="spi">SPI</option>
+                <option value="uart">UART</option>
+                <option value="pwm">PWM</option>
+                <option value="nc">NC</option>
+              </select>
+            </label>
+            <div class="xy-row">
+              <label>Grid X
+                <input id="customPinX" type="number" min="0" step="1">
+              </label>
+              <label>Grid Y
+                <input id="customPinY" type="number" min="0" step="1">
+              </label>
+            </div>
+            <button id="deleteCustomPinBtn" type="button" class="danger">Delete pin</button>
+          </div>
+
+          <h3>Pin list</h3>
+          <div id="customPinList" class="custom-pin-list"></div>
+        </section>
+      </div>
+
+      <textarea id="customPins" hidden></textarea>
+
+      <div class="dialog-actions">
+        <button id="createComponentBtn" type="submit">Add to library</button>
+        <button id="cancelComponentBtn" type="button">Cancel</button>
+      </div>
+      <p id="componentFormError" class="form-error" aria-live="polite"></p>
+    </form>
+  </dialog>
+
+  <script src="components.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
