@@ -56,6 +56,14 @@ export const GAMES = [
     thumb: '/games/spiral-city-run/art/thumb.jpg',
     tag: 'gamepad',
   },
+  {
+    id: 'form27',
+    name: 'form 27-b/6',
+    blurb: 'a rainy day, a desk, coffee, and very important forms about puddles.',
+    href: '/games/form-27-b-6/',
+    thumb: '/games/form-27-b-6/art/thumb.jpg',
+    tag: 'idle',
+  },
 ];
 
 // ── STYLES ─────────────────────────────────────────────────

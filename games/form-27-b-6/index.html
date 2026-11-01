@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Form 27-B/6</title>
+<link rel="icon" type="image/png" href="art/icon-64.png">
+<link rel="apple-touch-icon" href="art/icon-256.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Caveat:wght@500;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   FORM 27-B/6 - a cozy, pointless, complicated idle game about paperwork
+   Layout: top nameplate bar / three columns: window+coffee | desk | trays
+   ===================================================================== */
+:root {
+  --wall: #34424a;          /* rainy-day wall */
+  --wall2: #2a353c;
+  --wood: #7a4f33;          /* desk */
+  --wood2: #6a432b;
+  --paper: #f3ead3;         /* forms */
+  --paper2: #e9dec2;
+  --ink: #23306e;           /* blue pen ink */
+  --type: #2b2a26;          /* typewriter text */
+  --red: #b8322a;           /* stamps / returned slips */
+  --teal: #00F6D6;          /* Spiralside accents, used sparingly */
+  --pink: #FF4BCB;
+  --yellow: #FFD93D;
+  --soft: #c9d3d8;
+  --type-font: 'Special Elite', 'Courier New', Courier, monospace;
+  --hand-font: 'Caveat', 'Segoe Print', 'Bradley Hand', cursive;
+  --pix-font: 'VT323', 'Courier New', monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #1d2428; color: var(--soft); overflow: hidden; }
+body { font-family: var(--type-font); -webkit-tap-highlight-color: transparent; }
+button { font-family: inherit; cursor: pointer; }
+.hidden { display: none !important; }
+
+/* ---------- top nameplate bar ---------- */
+#top {
+  height: 54px; display: flex; align-items: center; gap: 14px; padding: 0 14px;
+  background: linear-gradient(#4a3424, #3a281b); border-bottom: 3px solid #241810;
+  box-shadow: 0 2px 10px rgba(0,0,0,.4); position: relative; z-index: 5;
+}
+.plate {                    /* brass desk nameplate */
+  background: linear-gradient(#d9b45a, #b48a35); color: #3a2a10; padding: 4px 12px; border-radius: 3px;
+  box-shadow: inset 0 1px 0 #f3d98a, 0 1px 2px rgba(0,0,0,.5); line-height: 1.05; white-space: nowrap;
+}
+.plate b { display: block; font-size: 11px; letter-spacing: .12em; }
+.plate span { font-size: 15px; }
+.stats { display: flex; align-items: center; gap: 14px; flex: 1; flex-wrap: nowrap; overflow: hidden; }
+.stat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #e8dcc0; white-space: nowrap; }
+.stat b { font-size: 18px; color: #fff3d0; }
+.stat small { color: #b9a988; font-size: 12px; }
+.bar { width: 74px; height: 9px; background: #241810; border: 1px solid #1a110b; border-radius: 5px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 50%; background: #5d7bd6; transition: width .4s; }
+.bar.calm i { background: #7fbf8e; }
+.clock { margin-left: auto; font-family: var(--pix-font); font-size: 20px; color: #ffd98a; white-space: nowrap; }
+#sndBtn { background: #2a1d14; color: #e8dcc0; border: 1px solid #5a4030; border-radius: 4px; padding: 3px 8px; font-size: 13px; }
+
+/* ---------- the office: three columns ---------- */
+#office {
+  height: calc(100% - 54px); display: grid;
+  grid-template-columns: minmax(230px, 24%) 1fr minmax(210px, 21%);
+  background: linear-gradient(var(--wall), var(--wall2));
+}
+#left, #right { position: relative; padding: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+
+/* window with rain */
+#window {
+  position: relative; border: 10px solid #5b4636; border-radius: 3px; background: #46525a;
+  box-shadow: inset 0 0 0 2px #2c221a, 0 4px 14px rgba(0,0,0,.4); aspect-ratio: 4 / 3; cursor: pointer; flex-shrink: 0;
+}
+#window::after {            /* window cross bars */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent calc(50% - 3px), #5b4636 calc(50% - 3px), #5b4636 calc(50% + 3px), transparent calc(50% + 3px)),
+              linear-gradient(transparent calc(50% - 3px), #5b4636 calc(50% - 3px), #5b4636 calc(50% + 3px), transparent calc(50% + 3px));
+}
+#rain { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+#sill { position: absolute; left: -10px; right: -10px; bottom: -18px; height: 10px; background: #6b5240; border-radius: 2px; box-shadow: 0 3px 4px rgba(0,0,0,.4); }
+#plantCv { position: absolute; left: 16px; bottom: 8px; width: 48px; height: 64px; image-rendering: pixelated; }
+.hint { font-size: 11px; color: #8fa0a8; text-align: center; margin-top: 10px; }
+
+/* coffee station */
+#coffee {
+  background: rgba(0,0,0,.18); border-radius: 6px; padding: 10px; display: grid; grid-template-columns: 72px 1fr; gap: 10px; align-items: center;
+}
+#mugCv { width: 72px; height: 72px; image-rendering: pixelated; cursor: pointer; }
+#coffeeTxt { font-size: 13px; color: #e6d9bd; min-height: 34px; }
+.btnrow { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.btn {
+  background: #e9dec2; color: #2b2a26; border: 1px solid #8a7a5a; border-bottom-width: 3px; border-radius: 4px;
+  padding: 4px 9px; font-size: 13px;
+}
+.btn:active { transform: translateY(1px); border-bottom-width: 2px; }
+.btn[disabled] { opacity: .45; cursor: default; }
+.btn.red { background: #f0c9c0; border-color: #8a3a30; }
+.btn.go { background: #cfe6c8; border-color: #4f7a46; }
+#cork {                    /* corkboard with a pinned Bylaw of the Day */
+  flex: 1; min-height: 120px; border: 6px solid #6b5240; border-radius: 3px; padding: 14px; display: flex; align-items: flex-start; justify-content: center;
+  background: radial-gradient(#b08a5a 1px, transparent 1.5px) 0 0 / 6px 6px, #a07a4a; box-shadow: 0 4px 10px rgba(0,0,0,.35); overflow: hidden;
+}
+#cork .note { background: #fff6a8; color: #3a3420; padding: 10px 12px 12px; font-size: 13px; line-height: 1.35; transform: rotate(1.5deg); box-shadow: 2px 3px 6px rgba(0,0,0,.3); position: relative; max-width: 100%; }
+#cork .note::before { content: ''; position: absolute; top: -6px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: #c0392b; box-shadow: 0 2px 2px rgba(0,0,0,.4); }
+#cork .note b { display: block; font-size: 11px; letter-spacing: .14em; margin-bottom: 4px; }
+#radiator {
+  height: 70px; border-radius: 6px; cursor: pointer; position: relative; margin-top: auto;
+  background: repeating-linear-gradient(90deg, #8b8f93 0 12px, #6c7074 12px 15px); box-shadow: inset 0 -6px 0 #55595d, 0 3px 8px rgba(0,0,0,.35);
+}
+#radiator::after { content: 'radiator'; position: absolute; left: 8px; bottom: 8px; font-size: 11px; color: #e3e6e8; opacity: .7; }
+#knob { position: absolute; right: 8px; top: 8px; width: 16px; height: 16px; border-radius: 50%; background: #b8322a; box-shadow: 0 0 0 2px #55595d; }
+
+/* ---------- the desk with the paper ---------- */
+#deskArea {
+  position: relative; min-height: 0; overflow: hidden;
+  background:
+    repeating-linear-gradient(178deg, rgba(0,0,0,.05) 0 2px, transparent 2px 9px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.03) 0 1px, transparent 1px 37px),
+    linear-gradient(var(--wood), var(--wood2));
+  border-left: 4px solid #4e3221; border-right: 4px solid #4e3221;
+}
+#paperWrap { position: absolute; inset: 14px 14px 64px 14px; overflow-y: auto; overflow-x: hidden; display: flex; justify-content: center; scrollbar-width: thin; }
+.paper {
+  width: min(620px, 100%); background: var(--paper); color: var(--type); padding: 26px 30px 30px; margin: 0 auto 30px;
+  box-shadow: 0 2px 0 var(--paper2), 0 4px 0 #d8cba9, 0 10px 24px rgba(0,0,0,.45);
+  background-image: repeating-linear-gradient(transparent 0 27px, rgba(80,110,160,.12) 27px 28px);
+  position: relative; transform: rotate(-.4deg); align-self: flex-start; font-size: 15px; line-height: 1.45;
+}
+.paper.slide { animation: slideIn .35s ease-out; }
+@keyframes slideIn { from { transform: translateY(40px) rotate(2deg); opacity: 0; } to { transform: rotate(-.4deg); opacity: 1; } }
+.paper .dept { font-size: 11px; letter-spacing: .16em; color: #6b6355; display: flex; justify-content: space-between; border-bottom: 2px solid #2b2a26; padding-bottom: 4px; }
+.paper .code { font-size: 13px; }
+.paper h2 { margin: 12px 0 2px; font-size: 22px; font-weight: normal; letter-spacing: .02em; }
+.paper .sub { font-size: 12px; color: #6b6355; margin-bottom: 10px; }
+.paper .intro { font-size: 13px; margin: 8px 0 12px; }
+.paper .fine { font-size: 10.5px; color: #6b6355; line-height: 1.35; margin-top: 14px; border-top: 1px dashed #b9ad90; padding-top: 8px; }
+.paper .fine p { margin: 0 0 5px; }
+.field { display: grid; grid-template-columns: 26px 1fr; gap: 4px 6px; padding: 7px 0; border-bottom: 1px dotted #c9bd9f; align-items: start; }
+.field .no { font-size: 13px; color: #6b6355; padding-top: 2px; }
+.field .lbl { font-size: 14px; }
+.field .ctl { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; min-height: 30px; }
+.hand { font-family: var(--hand-font); color: var(--ink); font-size: 24px; line-height: 1; }
+.chk { background: none; border: none; font-size: 22px; color: var(--type); padding: 0 4px; line-height: 1; }
+.chk.on { color: var(--ink); }
+.opt { position: relative; background: none; border: none; font-size: 14px; color: var(--type); padding: 3px 8px; border-radius: 50%; }
+.opt.on::before {           /* hand-drawn circle around the chosen option */
+  content: ''; position: absolute; inset: -2px -6px; border: 2px solid var(--ink); border-radius: 50% 45% 55% 48%;
+  transform: rotate(-4deg);
+}
+.opt.pip.on::before { border-color: #3a9a8a; border-style: dashed; }
+.txt { font-family: var(--hand-font); font-size: 24px; color: var(--ink); background: transparent; border: none; border-bottom: 1px solid #8a7e64; width: min(320px, 70%); padding: 0 4px; outline: none; }
+.txt::placeholder { color: #b5aa8e; font-size: 18px; }
+.txt.write { animation: inkIn .7s steps(14); }   /* the pen writing left to right */
+@keyframes inkIn { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.pen { background: none; border: 1px solid #b9ad90; border-radius: 4px; font-size: 13px; padding: 2px 7px; color: #6b6355; }
+.num { display: inline-flex; align-items: center; gap: 8px; }
+.num button { width: 26px; height: 26px; border: 1px solid #8a7e64; background: #efe5ca; border-radius: 4px; font-size: 16px; color: var(--type); }
+.num .val { min-width: 36px; text-align: center; }
+.inits { display: flex; gap: 10px; }
+.ibox { width: 46px; height: 36px; border: 1.5px solid #6b6355; background: transparent; display: flex; align-items: center; justify-content: center; }
+.ibox small { font-size: 9px; color: #9a8f74; font-family: var(--type-font); }
+.sigline { min-width: 220px; border-bottom: 1px solid #2b2a26; height: 38px; display: flex; align-items: flex-end; padding: 0 6px 2px; cursor: pointer; }
+.sigline .hand { font-size: 30px; transform: rotate(-3deg); display: inline-block; }
+.sigline.empty::before { content: 'x  sign here'; color: #9a8f74; font-size: 13px; }
+.stampbox { width: 190px; height: 70px; border: 1.5px dashed #8a7e64; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+.stampbox.empty::before { content: '[ office stamp ]'; color: #9a8f74; font-size: 12px; }
+.imprint {
+  font-family: var(--type-font); font-size: 19px; letter-spacing: .08em; color: var(--red); border: 3px double var(--red);
+  padding: 4px 10px; transform: rotate(-7deg); opacity: .85; mix-blend-mode: multiply; white-space: nowrap;
+}
+.imprint.thunk { animation: thunk .25s ease-out; }
+@keyframes thunk { from { transform: scale(1.6) rotate(-14deg); opacity: 0; } to { transform: rotate(-7deg); opacity: .85; } }
+.stamps { display: flex; flex-wrap: wrap; gap: 6px; }
+.stamps button { background: #efe5ca; border: 1px solid #8a7e64; color: var(--red); font-size: 12px; padding: 3px 7px; border-radius: 3px; }
+.attach { display: flex; align-items: center; gap: 10px; }
+.clip { font-size: 13px; padding: 4px 8px; border: 1px solid #8a7e64; background: #fffaf0; transform: rotate(1deg); }
+.clip.done { border-color: #4f7a46; color: #2f5a28; }
+.officeuse { margin-top: 12px; font-size: 11px; color: #6b6355; border: 1px solid #c9bd9f; padding: 6px 8px; display: flex; gap: 10px; align-items: center; }
+.officeuse button { background: none; border: 1px solid #9a8f74; width: 18px; height: 18px; font-size: 12px; line-height: 1; padding: 0; color: var(--ink); }
+.filebar { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+.returned {
+  background: #fde3dc; border: 2px solid var(--red); color: #7a2018; padding: 8px 10px; font-size: 13px; margin: 8px 0 4px;
+  transform: rotate(.6deg); box-shadow: 2px 2px 0 rgba(0,0,0,.1);
+}
+.returned b { letter-spacing: .1em; }
+.empty-desk { color: #e8dcc0; text-align: center; margin: auto; padding: 40px 20px; font-size: 16px; opacity: .85; }
+.empty-desk .big { font-size: 22px; margin-bottom: 8px; }
+
+/* pip the desk bot + the cat + speech */
+#pip { position: absolute; bottom: 8px; left: 70%; width: 72px; transition: left 1.4s ease-in-out; z-index: 4; cursor: pointer; }
+#pipCv { width: 72px; height: 72px; image-rendering: pixelated; display: block; }
+.bubble {
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: 4px; width: max-content; max-width: 230px;
+  background: #fffaf0; color: #23303a; border: 2px solid #23303a; border-radius: 8px; padding: 5px 9px;
+  font-family: var(--pix-font); font-size: 18px; line-height: 1.05; box-shadow: 2px 2px 0 rgba(0,0,0,.25);
+  opacity: 0; transition: opacity .25s; pointer-events: none;
+}
+.bubble.show { opacity: 1; }
+.bubble::after { content: ''; position: absolute; top: 100%; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: #23303a; }
+#cat { position: absolute; bottom: 30%; left: -140px; width: 128px; z-index: 6; cursor: pointer; transition: left 3s linear; }
+#catCv { width: 128px; height: 80px; image-rendering: pixelated; display: block; }
+#cat.bedded { position: absolute; }
+
+/* trays + drawers */
+.tray {
+  background: linear-gradient(#8a6a4a, #6e5238); border-radius: 4px; padding: 8px 10px 10px; position: relative; cursor: pointer;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 4px 10px rgba(0,0,0,.35); min-height: 96px;
+}
+.trayLabel { font-size: 12px; letter-spacing: .2em; color: #f3e3c2; }
+.stack { position: relative; height: 56px; margin-top: 4px; }
+.stack i { position: absolute; left: 6%; right: 6%; height: 7px; background: var(--paper); border: 1px solid #c9bd9f; border-radius: 1px; box-shadow: 0 1px 0 rgba(0,0,0,.2); }
+.stack i.ret { background: #f6d6cc; }
+.trayCount { position: absolute; right: 10px; top: 6px; font-size: 13px; color: #fff3d0; }
+#inbox:hover { filter: brightness(1.08); }
+#drawers { display: flex; flex-direction: column; gap: 6px; }
+#drawers button {
+  text-align: left; background: linear-gradient(#7a5a3e, #634830); color: #f3e3c2; border: 1px solid #3a281b; border-radius: 3px; padding: 7px 10px; font-size: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+}
+#drawers button::before { content: '▭ '; color: #d9b45a; }
+.badge { background: var(--red); color: #fff; border-radius: 9px; padding: 0 6px; font-size: 11px; margin-left: 4px; }
+#catbedCv { width: 96px; height: 48px; image-rendering: pixelated; align-self: center; cursor: pointer; }
+#rug { position: absolute; left: 50%; bottom: -30px; width: 60%; height: 40px; transform: translateX(-50%); border-radius: 50%;
+  background: repeating-radial-gradient(#7a3a4a 0 6px, #8a4a5a 6px 12px); opacity: .7; }
+#coat { position: absolute; right: 12px; top: 12px; font-size: 40px; }
+
+/* drawer panel (bylaws, memos, catalog, requisitions, log) */
+#drawer {
+  position: fixed; top: 54px; right: 0; bottom: 0; width: min(520px, 100%); background: #efe5ca; color: var(--type); z-index: 20;
+  box-shadow: -8px 0 24px rgba(0,0,0,.5); display: flex; flex-direction: column; animation: drawerIn .25s ease-out;
+}
+@keyframes drawerIn { from { transform: translateX(40px); opacity: 0; } }
+.drawerHead { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #d9caa3; border-bottom: 2px solid #8a7e64; font-size: 18px; }
+.tabs { display: flex; gap: 4px; padding: 6px 10px 0; background: #d9caa3; flex-wrap: wrap; }
+.tabs button { border: 1px solid #8a7e64; border-bottom: none; background: #e6d8b4; padding: 4px 9px; font-size: 13px; border-radius: 4px 4px 0 0; }
+.tabs button.on { background: #efe5ca; }
+#drawerBody { overflow-y: auto; padding: 14px 18px 30px; font-size: 14px; line-height: 1.5; }
+.law { margin-bottom: 10px; }
+.law b { display: inline-block; min-width: 70px; }
+.law.live b { color: var(--red); }
+.memo { border: 1px solid #c9bd9f; background: #fffaf0; padding: 9px 11px; margin-bottom: 10px; }
+.memo .mh { font-size: 12px; color: #6b6355; border-bottom: 1px dashed #c9bd9f; margin-bottom: 6px; padding-bottom: 4px; }
+.memo.new { border-color: var(--red); }
+.cat-row, .req-row { display: grid; grid-template-columns: 70px 1fr auto; gap: 8px; padding: 7px 0; border-bottom: 1px dotted #c9bd9f; align-items: center; }
+.req-row .d { font-size: 12px; color: #6b6355; }
+.owned { color: #2f5a28; font-size: 12px; }
+.logline { font-family: var(--pix-font); font-size: 18px; color: #2a3a40; }
+
+/* modal for attached sub-forms and requisitions */
+#modal { position: fixed; inset: 54px 0 0 0; background: rgba(10,14,16,.55); z-index: 15; overflow-y: auto; padding: 24px 10px; }
+#modal .paper { transform: rotate(.5deg); }
+#toasts { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 30; display: flex; flex-direction: column; gap: 6px; align-items: center; pointer-events: none; }
+.toast { background: #fffaf0; color: #2b2a26; border: 2px solid #2b2a26; padding: 6px 12px; font-size: 14px; box-shadow: 3px 3px 0 rgba(0,0,0,.3); animation: toastIn .3s ease-out; max-width: 90vw; }
+@keyframes toastIn { from { transform: translateY(12px); opacity: 0; } }
+#cert { position: fixed; inset: 0; z-index: 40; background: rgba(10,14,16,.7); display: flex; align-items: center; justify-content: center; padding: 20px; }
+#cert .paper { text-align: center; max-width: 520px; border: 8px double #b48a35; }
+
+/* ---------- phones / narrow screens: stack everything ---------- */
+@media (max-width: 860px) {
+  html, body { overflow: auto; }
+  #top { height: auto; flex-wrap: wrap; padding: 8px; gap: 8px; }
+  .stats { flex-wrap: wrap; gap: 8px 12px; flex-basis: 100%; }
+  .clock { margin-left: 0; }
+  #office { display: flex; flex-direction: column; height: auto; }
+  #left { order: 1; } #right { order: 2; } #deskArea { order: 3; }   /* trays above the desk on phones */
+  #cork { display: none; }
+  #left { flex-direction: row; flex-wrap: wrap; }
+  #window { width: 46%; }
+  #coffee { flex: 1; min-width: 200px; }
+  #radiator { display: none; }
+  #deskArea { min-height: 78vh; }
+  #right { flex-direction: row; flex-wrap: wrap; }
+  .tray { flex: 1; min-width: 140px; }
+  #drawers { flex-direction: row; flex-wrap: wrap; width: 100%; }
+  #drawer, #modal { top: 0; inset: 0; }
+}
+</style>
+</head>
+<body>
+<header id="top">
+  <div class="plate"><b>DEPT. OF MINOR AFFAIRS &middot; DESK 27</b><span id="rankName">Visiting Intern</span></div>
+  <div class="stats">
+    <div class="stat" title="Stamps: the Department's only currency"><span style="color:#f08a7a">&#10022;</span><b id="stStamps">0</b><small>stamps</small></div>
+    <div class="stat" title="Ink in your pen"><small>ink</small><div class="bar"><i id="inkBar"></i></div></div>
+    <div class="stat" title="How calm you feel"><small>calm</small><div class="bar calm"><i id="calmBar"></i></div><small id="calmWord">cozy</small></div>
+    <div class="stat" title="Forms filed, ever"><small>filed</small><b id="stFiled">0</b></div>
+    <div class="clock" id="clock">Tuesday-ish</div>
+    <button id="sndBtn" title="Sound (M)">&#9835; on</button>
+  </div>
+</header>
+<main id="office">
+  <section id="left">
+    <div id="window" title="Watch the rain">
+      <canvas id="rain" width="160" height="120"></canvas>
+      <canvas id="plantCv" width="12" height="16" class="hidden"></canvas>
+      <div id="sill"></div>
+    </div>
+    <div class="hint">click the window to watch the rain</div>
+    <div id="coffee">
+      <canvas id="mugCv" width="24" height="24" title="Your coffee. Click to sip."></canvas>
+      <div>
+        <div id="coffeeTxt">A cup of coffee. Hot.</div>
+        <div class="btnrow">
+          <button class="btn" id="sipBtn">sip</button>
+          <button class="btn" id="brewBtn">brew a fresh cup</button>
+        </div>
+      </div>
+    </div>
+    <div id="cork" title="The corkboard"><div class="note" id="corkNote"></div></div>
+    <div id="radiator" title="The radiator. It has a changelog."><div id="knob" class="hidden"></div></div>
+  </section>
+  <section id="deskArea">
+    <div id="paperWrap"></div>
+    <div id="rug" class="hidden"></div>
+    <div id="pip" title="Pip, the desk bot">
+      <div class="bubble" id="pipBubble"></div>
+      <canvas id="pipCv" width="24" height="24"></canvas>
+    </div>
+    <div id="cat" class="hidden" title="The office cat">
+      <div class="bubble" id="catBubble"></div>
+      <canvas id="catCv" width="32" height="20"></canvas>
+    </div>
+  </section>
+  <section id="right">
+    <div class="tray" id="inbox" title="Inbox: click to take the next form">
+      <div class="trayLabel">IN</div><div class="trayCount" id="inCount">0</div>
+      <div class="stack" id="inStack"></div>
+    </div>
+    <div class="tray" id="outbox" title="Outbox: forms you have filed">
+      <div class="trayLabel">OUT</div><div class="trayCount" id="outCount">0</div>
+      <div class="stack" id="outStack"></div>
+    </div>
+    <div id="drawers">
+      <button data-tab="bylaws">Bylaws</button>
+      <button data-tab="memos">Memos <span id="memoBadge"></span></button>
+      <button data-tab="catalog">Form Catalog</button>
+      <button data-tab="req">Requisitions</button>
+      <button data-tab="log">Pip's Log</button>
+    </div>
+    <canvas id="catbedCv" width="32" height="16" class="hidden" title="The cat bed"></canvas>
+  </section>
+</main>
+<div id="drawer" class="hidden">
+  <div class="drawerHead"><span id="drawerTitle">Drawer</span><button class="btn" id="drawerClose">close</button></div>
+  <div class="tabs" id="drawerTabs"></div>
+  <div id="drawerBody"></div>
+</div>
+<div id="modal" class="hidden"></div>
+<div id="toasts"></div>
+<script>
+'use strict';
+// =====================================================================
+//  FORM 27-B/6  -  a QuarterbitGames original
+//  A rainy day. A desk. A cup of coffee. A small helpful robot named Pip.
+//  Fill out forms about very small things. Earn stamps. Requisition a
+//  second stapler. Nothing you do matters, and that is the point.
+//
+//  Sections: 1. content (forms, bylaws, memos, lines)  2. state + save
+//  3. form logic (fields, bylaw checks)  4. desk rendering  5. Pip
+//  6. cat  7. coffee, ink, calm, rain  8. drawers  9. sound  10. loop
+// =====================================================================
+
+// ---------------------------------------------------------------------
+// 1. CONTENT
+// ---------------------------------------------------------------------
+// Field shorthand used in the form list:
+//   ['check', label]            a box to tick
+//   ['choice', label, options]  circle one
+//   ['text', label, ideas]      write something (or let the pen suggest)
+//   ['num', label]              a number (see Bylaw 23)
+//   ['feel']                    how do you feel? (see Bylaw 12)
+//   ['date']                    office calendar date (see Bylaw 7)
+//   ['init']                    initial three boxes (see Bylaw 31(c)(ii))
+//   ['attach', code]            attach a filled sub-form
+//   ['sign']                    signature (see Bylaw 15)
+//   ['stamp']                   office stamp (see Bylaws 1, 4, 19, 38, 40)
+// tags decide the correct stamp: weather -> NOTED, soup -> RECEIVED,
+// cat -> APPROVED (always), stop -> NOTED.
+const FORMS = [
+  { code: '00-1', title: 'Clerk Onboarding Questionnaire', rank: -1, reward: 5, tags: [],
+    intro: "Welcome to the Department of Minor Affairs. Before you may fill out forms, you must fill out this form, which is the form that lets you fill out forms. You may fill out this form without a form. This is the only exception, and we are a little embarrassed about it.",
+    fields: [['name', 'Your full name, as you would like it to appear on everything forever'], ['choice', 'Preferred pen color', ['Blue', 'Black', 'Other Blue']], ['check', 'I understand that this is a real job, in a sense'], ['feel'], ['sign'], ['stamp']] },
+  { code: '3-P', title: 'Application to Name a Puddle', rank: 0, reward: 4, tags: [],
+    intro: "The applicant wishes to bestow a name upon a puddle. The Department reminds applicants that puddles are temporary and names are forever, a mismatch the Department has decided not to think about.",
+    fields: [['text', 'Proposed name of the puddle', ['Gerald', 'Small Lake', 'The Big One', 'Puddington', 'Sir Splash', 'Doug', 'Lake Tuesday']], ['text', 'Location of the puddle', ['by the bench', 'outside, probably', 'next to the other puddle', 'under a cloud', 'where my shoe was']], ['num', 'Depth of the puddle (in thumbs)'], ['feel'], ['sign'], ['stamp']] },
+  { code: '11-W', title: 'Permit to Whistle Indoors', rank: 0, reward: 4, tags: [],
+    intro: "Indoor whistling is permitted only with a permit. This is that permit. Applicants are reminded that the hallway carries sound and that Brenda in Accounts can hear everything.",
+    fields: [['choice', 'Key of the whistle', ['C major', 'A minor', 'Whatever comes out']], ['num', 'Estimated whistles per hour'], ['check', 'I will not whistle the same tune twice in a row'], ['init'], ['date'], ['sign'], ['stamp']] },
+  { code: '4-S', title: 'Declaration of Sandwich Ownership', rank: 0, reward: 4, tags: [],
+    intro: "For sandwiches placed in the shared office refrigerator. A declared sandwich is a protected sandwich. An undeclared sandwich is, legally speaking, a rumor.",
+    fields: [['text', 'Describe the sandwich', ['ham, with intent', 'cheese, mostly', 'a regular sandwich', 'triangular', 'it has a pickle on the side']], ['choice', 'Type of bread', ['White', 'Wheat', 'It is a wrap, I am sorry']], ['check', 'This sandwich is mine'], ['check', 'I understand the fridge is a lawless place'], ['sign'], ['stamp']] },
+  { code: '1-N', title: 'Notice of Intent to Sneeze', rank: 0, reward: 3, tags: [],
+    intro: "Sneezes must be declared in advance where possible. Undeclared sneezes are forgiven but recorded. The Department has recorded four thousand sneezes and forgiven all of them.",
+    fields: [['choice', 'Expected sneeze volume', ['Polite', 'Standard', 'Disruptive', 'Seismic']], ['num', 'Sneezes planned'], ['check', 'I will say excuse me'], ['date'], ['sign'], ['stamp']] },
+  { code: '6-R', title: 'License to Own a Rock (Decorative)', rank: 1, reward: 5, tags: [],
+    intro: "Decorative rocks kept on Department desks must be licensed. Structural rocks are covered by Form 6-R(s) and load-bearing rocks are not our department.",
+    fields: [['text', 'Name of the rock', ['Rocky', 'Steve', 'The Pebble', 'Granite Hill', 'Mr. Stone', 'Small Mountain']], ['choice', 'Rock personality', ['Stoic', 'Very Stoic', 'Pebble-ish']], ['num', 'Weight of the rock (in sandwiches)'], ['check', 'The rock will not be thrown'], ['init'], ['sign'], ['stamp']] },
+  { code: '8-C', title: 'Complaint Regarding the Shape of a Cloud', rank: 1, reward: 5, tags: ['weather'],
+    intro: "The Department takes cloud complaints very seriously, and then does nothing, because clouds are weather and weather is not ours (see Bylaw 4).",
+    fields: [['text', 'The cloud looked like', ['a disappointed duck', 'my uncle', 'a slightly worse cloud', 'nothing, which is the problem', 'a sock']], ['choice', 'Severity', ['Mild', 'Moderate', 'Cumulus']], ['check', 'I have not complained about this cloud before'], ['date'], ['sign'], ['stamp']] },
+  { code: '2-K', title: 'Request for Additional Elbow Room', rank: 1, reward: 5, tags: [],
+    intro: "Each clerk is issued a standard allotment of elbow room. Additional elbow room may be requested here, and will be taken from the elbow room of a nearby clerk, who will be informed by memo.",
+    fields: [['num', 'Elbow room requested (in elbows)'], ['choice', 'Which elbow', ['Left', 'Right', 'Both', 'Undecided']], ['text', 'Justification', ['I gesture a lot', 'my elbows are expanding', 'general reasons', 'I just want it']], ['attach', '9-A'], ['feel'], ['sign'], ['stamp']] },
+  { code: '5-U', title: 'Registration of an Umbrella', rank: 2, reward: 5, tags: [],
+    intro: "All umbrellas entering the building must be registered at the desk, dried at the door, and spoken to kindly. Unregistered umbrellas will be held in the Umbrella Room, which is just a closet.",
+    fields: [['choice', 'Umbrella color', ['Black', 'Navy', 'Polka Dot', 'Inside Out']], ['num', 'Number of ribs'], ['check', 'This umbrella has attended at least one meeting'], ['text', 'Name of the umbrella (optional, but required)', ['Brolly', 'Big Blue', 'The Dome', 'Mister Dry', 'Shelter']], ['sign'], ['stamp']] },
+  { code: '12-S', title: 'Soup Approval Request', rank: 2, reward: 6, tags: ['soup'],
+    intro: "Soup brought onto Department premises must be submitted for approval. Please note that soup is never approved, only received (see Bylaw 19). This form remains called the Soup Approval Request for historical reasons.",
+    fields: [['choice', 'Type of soup', ['Tomato', 'Chicken Noodle', 'Mystery', 'Leftover Mystery']], ['num', 'Ladles'], ['feel'], ['check', 'The soup is warm'], ['sign'], ['stamp']] },
+  { code: '14-C', title: 'Request to Feed the Office Cat', rank: 2, reward: 6, tags: ['cat'],
+    intro: "The office cat may be fed only with a filed request. The cat will tell you it has not been fed. The cat has always been fed. File the request anyway. Requests involving the cat are always approved (see Bylaw 38).",
+    fields: [['choice', 'Meal', ['Kibble', 'Wet Food', 'A Treat (Small)', 'A Treat (Medium)']], ['num', 'Number of treats'], ['check', 'I acknowledge that the cat already ate'], ['check', 'I acknowledge that the cat says it did not'], ['sign'], ['stamp']] },
+  { code: '7-T', title: 'Petition to Reclassify Tuesday', rank: 3, reward: 6, tags: [],
+    intro: "Tuesday has been under review since the Department was founded. Petitions are welcome. None have been read, but they are stored in a very nice drawer.",
+    fields: [['choice', 'Reclassify Tuesday as', ['A Monday', 'A Small Wednesday', 'A Weekend (Bonus)', 'Fine as it is']], ['text', 'Reason', ['it feels long', 'it knows what it did', 'for the vibes', 'nobody likes it']], ['num', 'Number of co-signers'], ['date'], ['init'], ['sign'], ['stamp']] },
+  { code: '9-B', title: 'Application for a Second Opinion on a Sock', rank: 3, reward: 6, tags: [],
+    intro: "If you have received an opinion on a sock and would like another, the Department will provide one from its panel of sock experts, who are all Gary.",
+    fields: [['text', 'First opinion received', ['it is fine', 'it is a sock', 'the heel is in the wrong place', 'it is inside out']], ['choice', 'Status of the sock', ['Pair', 'Single', 'Widowed', 'Unknown']], ['attach', '9-A'], ['sign'], ['stamp']] },
+  { code: '3-W', title: 'Weather Adjustment Suggestion', rank: 3, reward: 5, tags: ['weather'],
+    intro: "Suggestions for the weather may be submitted here and will be forwarded to the window. The Department cannot approve weather (see Bylaw 4), but it can notice it.",
+    fields: [['choice', 'Desired weather', ['Less Rain', 'More Rain', 'Rain, But Cozier', 'Sun (Controversial)']], ['text', 'Suggestion', ['make it gentler', 'one rainbow, small', 'keep the sound, lose the wet', 'more like this']], ['date'], ['sign'], ['stamp']] },
+  { code: '10-P', title: 'Formal Apology to a Plant', rank: 4, reward: 6, tags: [],
+    intro: "Plants on Department windowsills are entitled to formal apologies when wronged. Apologies must be filed in triplicate. This is one of the three.",
+    fields: [['text', 'What happened', ['I forgot to water it', 'I said it looked tired', 'I moved it to the other window', 'I talked about cactuses']], ['choice', 'Tone of apology', ['Sincere', 'Very Sincere', 'Leafy']], ['check', 'I will water it on Tuesdays (pending review)'], ['init'], ['sign'], ['stamp']] },
+  { code: '0-0', title: 'Form to Request a Form', rank: 4, reward: 6, tags: [],
+    intro: "If the form you need does not exist, use this form to request it. If this form does not exist, please request it using this form.",
+    fields: [['text', 'The form you would like', ['a nicer one', 'the blue one', 'the one Brenda had', 'a shorter form']], ['num', 'Copies'], ['attach', '2-C'], ['sign'], ['stamp']] },
+  { code: '15-H', title: 'Hat Indoors Waiver', rank: 4, reward: 5, tags: [],
+    intro: "Hats are not to be worn indoors without a signed waiver, except by Pip, whose hat is considered a part of Pip.",
+    fields: [['choice', 'Type of hat', ['Beanie', 'Bucket', 'Tiny (Pip-sized)', 'Ceremonial']], ['check', 'I accept that the hat is indoors'], ['feel'], ['sign'], ['stamp']] },
+  { code: '16-D', title: 'Notice of Doodle in a Margin', rank: 5, reward: 5, tags: [],
+    intro: "Doodles in margins are permitted but must be declared. Undeclared doodles will be framed and hung in the hallway without the artist's permission.",
+    fields: [['text', 'Describe the doodle', ['a cat, probably', 'a spiral', 'a better form', 'a little house', 'Pip']], ['choice', 'Which margin', ['Left', 'Right', 'Top', 'The Forbidden One']], ['init'], ['sign'], ['stamp']] },
+  { code: '17-Y', title: 'Yawn Disclosure Statement', rank: 5, reward: 5, tags: [],
+    intro: "Clerks must disclose yawns that occur during working hours. Yawning during the reading of this form is expected and need not be disclosed.",
+    fields: [['num', 'Yawns today'], ['choice', 'Type of yawn', ['Polite', 'Jaw-Cracking', 'Contagious']], ['check', 'I did not yawn in a meeting (again)'], ['date'], ['sign'], ['stamp']] },
+  { code: '18-M', title: 'Mug Custody Agreement', rank: 5, reward: 6, tags: [],
+    intro: "Shared mugs must be assigned a legal guardian. The Department recognizes full, joint and weekend custody. The Department does not recognize the mug that says LIVE LAUGH LOITER.",
+    fields: [['text', 'Description of the mug', ['blue, chipped, loved', "says WORLD'S OKAYEST CLERK", 'plain and judging', 'has a little duck on it']], ['choice', 'Custody arrangement', ['Full', 'Joint', 'Weekends']], ['num', 'Coffee rings permitted on desk'], ['sign'], ['stamp']] },
+  { code: '19-F', title: 'Request to Feel a Feeling at Work', rank: 6, reward: 7, tags: [],
+    intro: "Clerks wishing to feel a feeling during working hours must request it in advance. All feelings must still be reported as Fine on paper (see Bylaw 12), which the Department admits is a bit much.",
+    fields: [['text', 'Feeling requested', ['mild delight', 'calm', 'the Sunday feeling, on purpose', 'a small amount of joy']], ['num', 'Duration (in minutes)'], ['feel'], ['date'], ['sign'], ['stamp']] },
+  { code: '20-E', title: 'Stairwell Echo Registration', rank: 6, reward: 5, tags: [],
+    intro: "The stairwell echo must be registered annually. The echo has registered itself every year by saying its own name back to the clerk.",
+    fields: [['text', 'Word spoken into the stairwell', ['hello', 'hello?', 'HELLO', 'is anyone there']], ['num', 'Times it came back'], ['check', 'The echo was polite'], ['sign'], ['stamp']] },
+  { code: '21-G', title: 'Report of a Lost Pen (Again)', rank: 6, reward: 6, tags: [],
+    intro: "The pen is behind your ear. If the pen is not behind your ear, fill out this form, and then check behind your ear again.",
+    fields: [['choice', 'Color of the lost pen', ['Blue', 'Black', 'Other Blue']], ['text', 'Last seen', ['behind my ear', "in Pip's tray", 'in my hand, just now', 'in a meeting']], ['check', 'I have checked behind my ear'], ['attach', 'P-0'], ['sign'], ['stamp']] },
+  { code: '22-R', title: 'Raindrop Count Verification', rank: 7, reward: 6, tags: ['weather'],
+    intro: "The Department keeps an approximate count of today's raindrops. Your count will be added to the total, which is currently a very large number that nobody has checked.",
+    fields: [['num', 'Raindrops counted (approximate, in hundreds)'], ['choice', 'Counting method', ['By eye', 'By ear', 'By feel', 'Guessed']], ['check', 'I counted each drop only once'], ['date'], ['sign'], ['stamp']] },
+  { code: '23-B', title: 'Bench Sitting Reservation', rank: 7, reward: 5, tags: [],
+    intro: "The bench outside the Department may be reserved in fifteen-minute blocks. Pigeons do not need to reserve the bench. Pigeons have a separate arrangement.",
+    fields: [['choice', 'Which end of the bench', ['Left', 'Right', 'The Middle (Bold)']], ['num', 'Minutes requested'], ['check', 'I will share with pigeons if asked'], ['init'], ['sign'], ['stamp']] },
+  { code: '24-K', title: 'Kettle Whistle Complaint', rank: 7, reward: 6, tags: [],
+    intro: "The break room kettle whistles. The kettle has always whistled. Complaints about the kettle are filed here and then read aloud to the kettle, which does not care.",
+    fields: [['choice', 'Pitch of the whistle', ['High', 'Higher', 'Only Dogs Can Hear It']], ['num', 'Whistles endured'], ['feel'], ['sign'], ['stamp']] },
+  { code: '25-O', title: 'Official Nap Pre-Approval', rank: 8, reward: 7, tags: [],
+    intro: "Naps of up to eleven minutes may be pre-approved. Naps of twelve minutes are also fine (see Bylaw 23). Naps of thirteen minutes are a vacation and require Form 88-V.",
+    fields: [['num', 'Length of nap (in minutes)'], ['choice', 'Nap surface', ['Desk', 'Chair', 'Pile of Forms', 'Floor (Brave)']], ['check', 'I will wake up eventually'], ['date'], ['init'], ['sign'], ['stamp']] },
+  { code: '26-Z', title: 'Zipper Incident Report', rank: 8, reward: 6, tags: [],
+    intro: "Zipper incidents happen to all of us. Please describe the incident in as little detail as possible.",
+    fields: [['choice', 'Status of the zipper', ['Stuck', 'Very Stuck', 'Free At Last']], ['text', 'What happened', ['it just stopped', 'a sleeve was involved', 'I would rather not say', 'it was the coat']], ['feel'], ['sign'], ['stamp']] },
+  { code: '13-Q', title: 'Soup Line Queue Reservation', rank: 8, reward: 7, tags: ['soup'],
+    intro: "Reserve a place in the Thursday soup line. Note: the soup line is on Thursday, but forms may not be dated Thursday (see Bylaw 7). The Department is aware.",
+    fields: [['num', 'Desired position in line'], ['choice', 'Soup preference', ['Whatever is first', 'Tomato', 'The good one']], ['check', 'I will stand still'], ['date'], ['sign'], ['stamp']] },
+  { code: '27-B/6', title: 'Request to Be Excused From Further Forms', rank: 99, reward: 27, tags: ['stop'],
+    intro: "A clerk who has filed a great many forms may request to be excused from filing any more. This request must be filed on the proper form. This is the proper form. It requires a copy of itself.",
+    fields: [['check', 'I would like to stop filling out forms'], ['feel'], ['attach', '27-B/6'], ['sign'], ['stamp']] },
+];
+// Small forms that get clipped to bigger ones
+const SUBFORMS = {
+  '9-A': { code: '9-A', title: 'Acknowledgment That Chairs Exist', intro: "Before requesting anything involving your body, please acknowledge chairs.", fields: [['check', 'I acknowledge chairs'], ['choice', 'Favorite chair', ['Mine', 'The Spinny One', 'The Good One']], ['sign']] },
+  '2-C': { code: '2-C', title: 'Statement of Having a Statement', intro: "Please state that you have a statement.", fields: [['text', 'My statement is', ['that I have one', 'this', 'to be continued', 'mostly true']], ['sign']] },
+  'P-0': { code: 'P-0', title: 'Pen Usage Declaration', intro: "Declare the pen you are using to report the pen you lost.", fields: [['choice', 'Color of the pen in use', ['Blue', 'Black', 'Other Blue']], ['check', 'This pen is not lost right now'], ['sign']] },
+};
+// Things you can requisition. Each one is bought by filing a requisition form.
+const UPGRADES = [
+  { key: 'hat', code: 'R-4', name: 'Tiny Hat for Pip', cost: 8, desc: 'Does nothing. Pip will be extremely happy.' },
+  { key: 'rug', code: 'R-12', name: 'A Rug', cost: 10, desc: 'For under the desk. Your feet will notice.' },
+  { key: 'plant', code: 'R-5', name: 'A Plant', cost: 12, desc: 'Lives on the windowsill. Grows in real time. Needs nothing from you.' },
+  { key: 'glasses', code: 'R-1', name: 'Reading Glasses for Pip', cost: 16, desc: 'Pip fills fields correctly much more often.' },
+  { key: 'mug', code: 'R-3', name: 'A Bigger Mug', cost: 18, desc: 'More coffee per cup. Stays warm longer.' },
+  { key: 'pen', code: 'R-2', name: 'A Fountain Pen', cost: 20, desc: 'Holds twice the ink and refills faster.' },
+  { key: 'catbed', code: 'R-8', name: 'A Cat Bed', cost: 22, desc: 'The cat naps in it instead of on your forms. Mostly.' },
+  { key: 'knob', code: 'R-7', name: 'A Radiator Knob', cost: 25, desc: 'Turn it up. Calm comes back on its own.' },
+  { key: 'firmware', code: 'R-6', name: 'Pip Firmware 2.0 (Patience Edition)', cost: 30, desc: 'Pip helps about twice as often.' },
+  { key: 'tray', code: 'R-10', name: 'A Taller Inbox', cost: 35, desc: 'Holds more forms. Forms arrive faster. Is this good? Unclear.' },
+  { key: 'stapler', code: 'R-9', name: 'A Second Stapler', cost: 40, desc: '+2 stamps for every form filed. The first stapler is jealous.' },
+  { key: 'night', code: 'R-11', name: 'Pip Night Shift', cost: 60, desc: 'Pip files forms while you are away. Pip will try its best.' },
+];
+// Office ranks by forms filed
+const RANKS = [[0, 'Visiting Intern'], [3, 'Intern (Paid in Stamps)'], [8, 'Junior Clerk'], [16, 'Clerk'], [28, 'Senior Clerk'],
+  [45, 'Head Clerk of Drawer Three'], [70, 'Deputy Assistant to the Assistant Deputy'], [100, 'Clerk Emeritus'], [150, 'Clerk of the Endless Drawer']];
+const STAMP_TYPES = ['APPROVED', 'DENIED', 'NOTED', 'RECEIVED', 'FILED (EMOTIONALLY)'];
+const FEELINGS = ['Fine', 'Great', 'Damp', 'Conflicted', 'Peckish'];
+const DATES = ['Monday-ish', 'Tuesday (Under Review)', 'Thursday', 'The 5th of Rain', 'Later'];
+
+// The Bylaws. Entries marked live:true are actually checked when you file.
+const BYLAWS = [
+  ['1', true, "Unless another Bylaw objects, every request shall be stamped APPROVED, because it is nice to be approved."],
+  ['2', true, "The DENIED stamp is decorative and shall not be used. It is kept on the rack for morale."],
+  ['3', false, "Forms shall be filled out in the order in which they are filled out."],
+  ['4', true, "The Department has no authority over weather. Requests concerning weather shall be stamped NOTED, never APPROVED. See also Bylaw 22, which is about something else."],
+  ['5', false, "A form left on the desk overnight is still a form in the morning. It has not changed. You have."],
+  ['6', false, "Paperclips are communal. Binder clips are personal. Bulldog clips are a matter for the courts."],
+  ['7', true, "No form may be dated Thursday. Thursday is under review pending the review of Tuesday."],
+  ['8', false, "The phrase 'as per my last memo' may be used no more than once per memo, and never in a memo to the cat."],
+  ['9', false, "Clerks may hum. Clerks may not hum harmonies with other clerks without forming a committee."],
+  ['10', false, "The window may be looked out of for any length of time. This is the most generous Bylaw and it is not up for discussion."],
+  ['11', false, "Coffee belongs to the person who made it, then to the person holding it, then briefly to Pip."],
+  ['12', true, "Under the Feelings Accord, any field asking how the applicant feels shall be answered 'Fine'. Other feelings may be felt, but not written down."],
+  ['13', false, "The stapler is to be returned to the desk it was borrowed from. The stapler knows the way."],
+  ['14', false, "Forms must be filled out in pen. Pencil is permitted for forms about pencils."],
+  ['15', true, "Signatures must be in the clerk's own name. Signatures by robots are accepted warmly, but count as decoration, not signature."],
+  ['16', false, "If a form asks you to see another Bylaw, you must see it. You do not have to agree with it."],
+  ['17', false, "The radiator may clank. The radiator may not be asked why."],
+  ['18', false, "Rain is not a reason to go home. Rain is a reason to have a second coffee."],
+  ['19', true, "Soup cannot be approved, only received. All requests involving soup shall be stamped RECEIVED."],
+  ['20', false, "Office plants are colleagues and shall be greeted on arrival."],
+  ['21', false, "There is no Bylaw 21. If you have seen Bylaw 21, please report it on Form 21-X, which also does not exist."],
+  ['22', false, "Clouds are weather (see Bylaw 4). Fog is weather that has come inside. Steam from coffee is not weather and may be approved."],
+  ['23', true, "Numbers written on forms shall not exceed eleven (11), unless they are twelve (12), which is allowed because it is a dozen and dozens are tidy."],
+  ['24', false, "Clerks shall not alphabetize the cat."],
+  ['25', false, "All memos are to be read eventually. 'Eventually' is defined in Bylaw 25, which is this one."],
+  ['26', false, "The coffee machine may be thanked but not tipped."],
+  ['27', false, "Form 27-B/6 shall be the last form. There will always be forms after it."],
+  ['28', false, "A clerk may request more elbow room. A clerk may not take elbow room from a sleeping clerk."],
+  ['29', false, "Umbrellas shall be left to dry with their mouths open, so they can breathe."],
+  ['30', false, "When in doubt, stamp it. When in more doubt, see Bylaw 1."],
+  ['31(c)(ii)', true, "Initials shall be applied to boxes in the order printed, from left to right. Initials applied out of order are considered surnames and void the form."],
+  ['32', false, "The Department's motto, 'Nothing Is Urgent', shall be displayed on no wall, because that would be urgent."],
+  ['33', true, "The FILED (EMOTIONALLY) stamp is reserved for use by the office cat and is not valid on any form."],
+  ['34', false, "Pip may borrow coffee. Pip may not borrow the whole coffee."],
+  ['35', false, "Doodles of the Bylaws are allowed. Doodles of Bylaw 35 create a loop and should be avoided."],
+  ['36', false, "If a form is returned, it is not a failure. It is a second chance to circle something."],
+  ['37', false, "Meetings shall end when the biscuits end."],
+  ['38', true, "All requests involving the office cat shall be APPROVED, regardless of any other Bylaw. The cat outranks the Bylaws."],
+  ['39', false, "On rainy days, the Department shall run at the speed of rain."],
+  ['40', true, "Requests to stop filling out forms shall be stamped NOTED and placed at the bottom of the inbox, where they will be very comfortable."],
+];
+
+// Memos arrive slowly. 'at' = forms filed before it can arrive.
+const MEMOS = [
+  [0, 'Management', 'Welcome', "Welcome to Desk 27. Your predecessor left a cardigan on the chair and a sense of calm in the drawer. Please keep both."],
+  [1, 'Facilities', 'Re: the rain', "It is raining. We have checked. It is going to keep raining. Please plan accordingly, which is to say, do not plan."],
+  [2, 'Brenda (Accounts)', 'Whistling', "To whoever has been whistling in A minor: I have filed a complaint, and also, it was lovely. Please file a permit and continue."],
+  [3, 'Management', 'Pip', "The desk bot has been assigned to you. It is called Pip. It is eager. It is wrong about thirty percent of things. So are we."],
+  [4, 'Facilities', 'Re: Re: the radiator', "The radiator is not broken. The radiator is expressing itself. Please do not file Form 30-R against the radiator again."],
+  [5, 'Gary (Sock Panel)', 'Second opinions', "I have reviewed the sock. The sock is fine. I would like this to be my last sock this week."],
+  [6, 'Management', 'Fwd: Fwd: Fwd: the stapler', "Has anyone seen the stapler. Not the second stapler. The first one. The real one. It knows what it did."],
+  [8, 'The Cat', '(no subject)', "mrrp"],
+  [9, 'Management', 'Tuesday', "We have received your petition regarding Tuesday. It has been placed in the very nice drawer. Thank you."],
+  [10, 'Facilities', 'The window', "A reminder that the window may be looked out of for any length of time (Bylaw 10). We are proud of Bylaw 10."],
+  [12, 'Brenda (Accounts)', 'Sandwich', "Someone has declared ownership of my sandwich. I have counter-declared. We will see you in sandwich court."],
+  [14, 'Management', 'Doodles', "The hallway is filling with framed margin doodles. They are very good. Please keep declaring them anyway."],
+  [16, 'Pip', 'i learned email', "hello. this is pip. i found the email. i have sent you this email. i am going to go sit down now. -pip"],
+  [18, 'Facilities', 'Re: puddles', "Several puddles have now been named. Gerald is the deepest. Please do not stand in Gerald."],
+  [20, 'Management', 'Soup', "Soup cannot be approved. Soup can only be received. We know. We wrote the Bylaw. We also wish it were different."],
+  [23, 'The Cat', 're: (no subject)', "mrrp mrrrp. (The Department's translator was unavailable. We assume it is about treats.)"],
+  [26, 'Management', 'Morale', "Morale is up. Nobody knows why. Please do not investigate, it may go back down."],
+  [30, 'Gary (Sock Panel)', 'Second opinions, again', "Another sock. I said this week. It is still this week. The sock is fine."],
+  [34, 'Facilities', 'The echo', "The stairwell echo has asked us to stop saying hello. It says hello back every time and it is getting tired."],
+  [38, 'Brenda (Accounts)', 'Re: Sandwich', "Sandwich court has ruled. The sandwich was split. Nobody is happy. It was a good sandwich."],
+  [42, 'Management', 'A form is coming', "You have filed a great many forms. A special form has been routed to your desk. You will know it when you see it. It knows you too."],
+  [50, 'Pip', 'thoughts', "i have been thinking about the forms. i think the forms are thinking about us. that is all. -pip"],
+  [60, 'Management', 'Thank you', "Thank you for your work. We could not have done it without you, partly because nobody else wanted to."],
+  [75, 'Facilities', 'Rain update', "Still raining. Day unknown. The plants are thriving. The umbrellas have formed a union."],
+  [90, 'The Cat', 'meeting', "The cat has called a meeting. The meeting is in your chair. You are not invited."],
+  [120, 'Management', 'Legacy', "Your forms have been filed in the very nice drawer. The very nice drawer is now full. We have ordered a very nice second drawer."],
+];
+
+// Pip's lines, by situation
+const PIP = {
+  idle: ["i alphabetized the paperclips.", "the rain is doing a good job today.", "is 'tuesday' a number?", "i counted the forms. there are forms.",
+    "i like the sound of the stapler. it sounds sure of itself.", "do you think the radiator likes me", "beep. (that was on purpose)",
+    "i have filed my feelings under F.", "i tried to read bylaw 21. it was not there.", "the coffee smells like productivity.",
+    "i am helping. this is helping.", "brenda waved at me. or at the wall. i waved back at both.", "nothing is urgent. that is my favorite bylaw.",
+    "i found a staple. i will keep it forever.", "the window is very good at being a window.", "do you need anything? i cannot get it. but do you?",
+    "i am 87% sure i am a desk bot.", "drip. drip. drip. i am doing the rain.", "today is a good day for forms. so was yesterday."],
+  help: ["let me get that one.", "i will circle something!", "ooh, a checkbox.", "helping!", "i know this one. i think.", "allow me.",
+    "i read the bylaws for this. some of them.", "filling. filling. filled.", "i did my best letters."],
+  wrongish: ["that looks right. probably.", "i am fairly confident.", "if this is wrong it was the cat.", "it felt right in my heart chip."],
+  noSign: ["i am not allowed to sign. bylaw 15. i checked.", "my signature is just decoration. you do it.", "i could sign... no. no, you sign."],
+  pipSign: ["i signed it! pip :)", "look, i signed! is that ok?"],
+  noAttach: ["i cannot open drawers. my arms are mostly decorative.", "that needs another form. forms inside forms. hm."],
+  sleepy: ["low battery... going to rest my optics...", "zzz... beep... zzz"],
+  coffee: ["*sips your coffee* ...thank you. i am awake.", "i borrowed some coffee. bylaw 34 says it is fine.", "coffee acquired. pip online."],
+  filed: ["filed! the outbox is so proud.", "another one for the very nice drawer.", "good form. good form.", "you did it! (we did it?)"],
+  returned: ["oh no. it came back.", "returned! a second chance to circle something. bylaw 36.", "i think we upset a bylaw."],
+  cat: ["the cat is here. we are not working now.", "hello cat. i am pip. the cat does not care.", "the cat is on the form. the form is the cat's now."],
+  hat: ["i love my hat.", "do you like my hat? i like my hat.", "hat status: on.", "i am a very professional robot. look at my hat."],
+  pet: ["beep!", "hehe.", "boop.", "that tickles my sensors."],
+};
+// Watching the rain
+const RAIN_LINES = ["You watch a raindrop lose a race to another raindrop.", "The rain finds a rhythm. You find it too.", "Someone outside runs past with a newspaper on their head.",
+  "A car goes by and makes the sound tires make on wet roads.", "The window fogs a little. You draw a small spiral in it.", "Two drops join and become one confident drop.",
+  "You think about nothing for a while. It is nice.", "The gutter outside is having the best day of its life.", "The streetlights blur into soft circles.",
+  "A pigeon waits under the bench. It has a reservation.", "Far off, the spiral tower is just a grey shape in the rain.", "The rain gets louder, then softer, like it changed its mind."];
+// The radiator's changelog
+const RADIATOR = ["v3.1.4 - Fixed: clank on Tuesdays now also clanks on Mondays.", "v3.1.3 - Improved warmth near ankles.", "v3.1.2 - Removed a hiss nobody liked.",
+  "v3.1.1 - Added a new clank. It is a good clank.", "v3.0.9 - Known issue: sometimes sounds like a small orchestra tuning.", "v3.0.8 - Paint flaking reduced by 2%.",
+  "v3.0.5 - Warmth now spreads out instead of up. Experimental.", "v2.9.0 - Deprecated: the old knob.", "v2.4.1 - Fixed: radiator occasionally believed it was a piano.",
+  "v1.0.0 - Initial radiator."];
+const FINE_PRINT = ["This form must be filled out in full, except where it does not need to be, which will be made clear later, possibly.",
+  "Do not write in the margins. If you have already written in the margins, see Form 16-D.", "Copies of this form are not to be copied.",
+  "The Department is not responsible for paper cuts, minor or emotional.", "Please allow 6 to 8 rainy days for processing.",
+  "By signing this form you agree that you have signed this form.", "If you are reading this, you have read the fine print. Thank you. Very few people do.",
+  "Errors on this form will be returned to you with love and a red stamp.", "Forms filed during a thunderstorm are filed with extra feeling.",
+  "This form was printed on recycled forms.", "Any resemblance to a previous form is intentional. All forms are related.",
+  "Please do not fold, spindle or mutilate this form. Gentle creasing is permitted on Fridays.", "The Department thanks you for your patience, and for your other qualities.",
+  "This page intentionally contains words.", "Ink must be blue, black or Other Blue (see Form P-0).", "Forms returned more than three times are entitled to a cup of tea."];
+const WARM_SIPS = ["Warm coffee. Everything is a little bit fine.", "You sip. The rain sounds nicer now.", "Good coffee. Focused, but cozy about it.", "A sip of something warm on a wet day."];
+const COLD_SIPS = ["Cold coffee. You drink it anyway, like a professional.", "It has gone cold. So it goes.", "Room temperature coffee. The room is not warm."];
+
+// ---------------------------------------------------------------------
+// 2. STATE + SAVING
+// ---------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const rand = (a, b) => a + Math.random() * (b - a);
+const randi = (a, b) => Math.floor(rand(a, b + 1));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const SAVE_KEY = 'f27_save_v1';
+function fresh() {
+  return {
+    v: 1, name: '', stamps: 0, ink: 20, calm: 70, filed: 0, returned: 0, out: 0,
+    coffee: { lvl: 100, temp: 100 }, brewEnd: 0, focus: 0,
+    up: {}, inbox: [], cur: null, subs: [],          // subs = stack of forms open in the modal
+    catalog: {}, memos: [], memoNext: 0, log: [],
+    plantT: 0, lastSeen: Date.now(), pipBat: 100, endSent: false, endDone: false, sound: true,
+    nextForm: 30, nextMemo: 20, nextCat: 160, id: 1, rank: 0,
+  };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) { S = null; }
+const firstRun = !S || S.v !== 1;
+if (firstRun) S = fresh();
+function save() {
+  S.lastSeen = Date.now();
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {}
+}
+// Template lookup: main forms, attachments, or a requisition
+function getTpl(code) {
+  const f = FORMS.find(x => x.code === code);
+  if (f) return f;
+  if (SUBFORMS[code]) return SUBFORMS[code];
+  const u = UPGRADES.find(x => x.code === code);
+  if (u) return {
+    code: u.code, title: 'Requisition: ' + u.name, reward: 0, tags: [], req: u.key,
+    intro: "To requisition an item, describe your need for the item, then explain why you need to describe your need. Cost: " + u.cost + " stamps, deducted on filing. " + u.desc,
+    fields: [['check', 'I require this item'], ['choice', 'Urgency', ['Low', 'Lower', 'Whenever']], ['text', 'Justification', ['for morale', 'Pip asked', 'it would be nice', 'see attached feelings']], ['sign'], ['stamp']],
+  };
+  return null;
+}
+// A fresh copy of a form, ready to be filled
+function newInst(code, extra) {
+  const ix = [];
+  while (ix.length < 3) { const n = randi(0, FINE_PRINT.length - 1); if (!ix.includes(n)) ix.push(n); }
+  return Object.assign({ id: S.id++, code, vals: {}, ret: null, depth: 0, fine: ix, skip: [], office: 0 }, extra || {});
+}
+const rankIdx = () => { let r = 0; RANKS.forEach(([n], i) => { if (S.filed >= n) r = i; }); return r; };
+function randomForm() {
+  const r = rankIdx();
+  const pool = FORMS.filter(f => f.rank >= 0 && f.rank <= r);
+  return newInst(pick(pool).code);
+}
+function logPip(s) {
+  const d = new Date();
+  S.log.unshift({ t: d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'), s });
+  if (S.log.length > 80) S.log.length = 80;
+}
+
+// ---------------------------------------------------------------------
+// 3. FORM LOGIC: what counts as filled, which stamp, which Bylaw
+// ---------------------------------------------------------------------
+const kindOf = f => f[0];
+function labelOf(f) {
+  switch (f[0]) {
+    case 'feel': return 'How do you feel about this request? (circle one)';
+    case 'date': return 'Date of request (Office Calendar)';
+    case 'init': return 'Initial here, here and here';
+    case 'sign': return 'Signature of applicant';
+    case 'stamp': return 'Office stamp (office use only, but you are the office)';
+    case 'attach': return 'Attach Form ' + f[1] + ' (' + getTpl(f[1]).title + ')';
+    default: return f[1];
+  }
+}
+const optsOf = f => f[0] === 'feel' ? FEELINGS : f[0] === 'date' ? DATES : f[2];
+function requiredStamp(tpl) {
+  const t = tpl.tags || [];
+  if (t.includes('cat')) return ['APPROVED', '38'];
+  if (t.includes('stop')) return ['NOTED', '40'];
+  if (t.includes('soup')) return ['RECEIVED', '19'];
+  if (t.includes('weather')) return ['NOTED', '4'];
+  return ['APPROVED', '1'];
+}
+// The name a signature must match (onboarding uses the name you just wrote)
+function expectedName(inst, tpl) {
+  const ni = tpl.fields.findIndex(f => f[0] === 'name');
+  return ni >= 0 ? (inst.vals[ni] || '').trim() : S.name;
+}
+function isFilled(inst, f, i) {
+  const v = inst.vals[i];
+  switch (f[0]) {
+    case 'check': case 'attach': return v === true;
+    case 'num': return typeof v === 'number';
+    case 'init': return Array.isArray(v) && v.length === 3;
+    case 'text': case 'name': return typeof v === 'string' && v.trim().length > 0;
+    default: return v != null && v !== '';
+  }
+}
+// Returns null if the form is acceptable, otherwise the reason it comes back
+function checkForm(inst) {
+  const tpl = getTpl(inst.code), v = inst.vals;
+  for (let i = 0; i < tpl.fields.length; i++) {
+    if (!isFilled(inst, tpl.fields[i], i)) return 'Field ' + (i + 1) + ' is blank. Blank fields are considered shy, and the Department cannot process shyness.';
+  }
+  for (let i = 0; i < tpl.fields.length; i++) {
+    const f = tpl.fields[i], n = 'Field ' + (i + 1) + ': ';
+    if (f[0] === 'feel' && v[i] !== 'Fine') return n + "feelings must be written down as 'Fine' under the Feelings Accord (Bylaw 12). You may still feel " + v[i].toLowerCase() + ', privately.';
+    if (f[0] === 'date' && v[i] === 'Thursday') return n + 'forms may not be dated Thursday. Thursday is under review (Bylaw 7).';
+    if (f[0] === 'num' && v[i] > 11 && v[i] !== 12) return n + v[i] + ' is more than eleven and is not twelve (Bylaw 23).';
+    if (f[0] === 'init' && v[i].join('') !== '012') return n + 'initials were applied out of order and are now considered surnames (Bylaw 31(c)(ii)).';
+    if (f[0] === 'sign' && v[i] !== expectedName(inst, tpl)) {
+      return v[i] === 'pip :)' ? n + 'signed by a robot. Lovely, but decorative (Bylaw 15). Please sign it yourself.' : n + 'the signature does not match the clerk (Bylaw 15).';
+    }
+    if (f[0] === 'stamp') {
+      const [need, law] = requiredStamp(tpl);
+      if (v[i] === 'DENIED') return n + 'the DENIED stamp is decorative and must not be used (Bylaw 2).';
+      if (v[i] === 'FILED (EMOTIONALLY)') return n + 'FILED (EMOTIONALLY) is reserved for the office cat (Bylaw 33).';
+      if (v[i] !== need) return n + 'this request must be stamped ' + need + ' (Bylaw ' + law + ').';
+    }
+  }
+  if (tpl.req) {                               // requisitions cost stamps
+    const u = UPGRADES.find(x => x.key === tpl.req);
+    if (S.stamps < u.cost) return 'Insufficient stamps. This requisition costs ' + u.cost + ' and you have ' + S.stamps + '. File more forms and try again.';
+  }
+  return null;
+}
+// What it looks like when a form is filed successfully
+function fileForm(inst, isSub) {
+  const err = checkForm(inst);
+  if (err) {
+    inst.ret = err; S.returned++; S.calm = clamp(S.calm - 6, 0, 100);
+    snd('error'); pipSay(pick(PIP.returned), 'worry'); logPip('form ' + inst.code + ' came back. we will fix it.');
+    renderAll(); return;
+  }
+  const tpl = getTpl(inst.code);
+  S.catalog[inst.code] = (S.catalog[inst.code] || 0) + 1;
+  if (inst.code === '00-1') S.name = expectedName(inst, tpl);
+  if (tpl.req) {                               // a requisition: spend stamps, get the thing
+    const u = UPGRADES.find(x => x.key === tpl.req);
+    S.stamps -= u.cost; S.up[u.key] = true;
+    if (u.key === 'plant') S.plantT = Date.now();
+    S.subs.pop(); snd('file'); toast('Requisition approved: ' + u.name + '.');
+    pipSay(u.key === 'hat' ? 'a HAT? for ME?? i love it.' : 'requisition approved! the stapler is impressed.', 'love');
+    logPip('requisitioned: ' + u.name.toLowerCase() + '.');
+    renderAll(); return;
+  }
+  if (isSub) {                                 // an attachment: clip it to the form underneath
+    S.subs.pop();
+    const parent = S.subs.length ? S.subs[S.subs.length - 1] : S.cur;
+    if (parent) {
+      const ai = getTpl(parent.code).fields.findIndex(f => f[0] === 'attach');
+      parent.vals[ai] = true; parent.ret = null;
+    }
+    snd('paper'); toast('Form ' + inst.code + ' attached with a paperclip.');
+    if (inst.code === '27-B/6') pipSay(inst.depth >= 3 ? 'you found the loophole. bylaw 27 is proud of you.' : 'it needs a copy of itself. it is forms all the way down.', 'worry');
+    renderAll(); return;
+  }
+  // a normal form
+  const reward = tpl.reward + (S.up.stapler ? 2 : 0) + (S.calm >= 70 ? 1 : 0);
+  S.stamps += reward; S.filed++; S.out++;
+  S.calm = clamp(S.calm + 2, 0, 100);
+  S.cur = null;
+  snd('file'); toast('Filed ' + inst.code + '. +' + reward + ' stamps' + (S.calm >= 70 ? ' (calm bonus)' : '') + '.');
+  pipSay(pick(PIP.filed), 'happy'); logPip('filed form ' + inst.code + '. +' + reward + ' stamps.');
+  if (inst.code === '27-B/6') ending();
+  const r = rankIdx();
+  if (r > S.rank) { S.rank = r; snd('rank'); toast('Promoted: ' + RANKS[r][1] + '!'); logPip('you got promoted. i made a little hat out of a memo. for you.'); }
+  renderAll();
+}
+function ending() {
+  S.endDone = true;
+  const c = document.createElement('div'); c.id = 'cert';
+  c.innerHTML = '<div class="paper"><div class="dept"><span>DEPARTMENT OF MINOR AFFAIRS</span><span>CERTIFICATE</span></div>' +
+    '<h2>Certificate of Noted Request</h2><p>This certifies that <span class="hand">' + esc(S.name || 'the clerk') + '</span> has formally requested to be excused from further forms.</p>' +
+    '<p>The request has been <b style="color:var(--red)">NOTED</b> and placed at the bottom of the inbox, where it will be very comfortable (Bylaw 40).</p>' +
+    '<p>The Department thanks you, and asks that you please continue.</p><div class="imprint thunk" style="display:inline-block;margin:10px 0 16px">NOTED</div><br>' +
+    '<button class="btn go" id="certOk">continue filing</button></div>';
+  document.body.appendChild(c);
+  $('certOk').onclick = () => { c.remove(); snd('paper'); };
+  S.memos.unshift({ from: 'Management', sub: 'Your request', body: "We have received Form 27-B/6. It is at the bottom of your inbox, resting. You may keep filling forms while it rests. Most clerks find they don't mind.", t: Date.now(), isNew: true });
+  logPip('you asked to stop. they said NOTED. i think that means keep going. i will keep going with you.');
+}
+
+// ---------------------------------------------------------------------
+// 4. DESK RENDERING
+// ---------------------------------------------------------------------
+function initials() {
+  const p = (S.name || '?').trim().split(/\s+/).map(w => w[0] ? w[0].toUpperCase() : '').join('.');
+  return p.slice(0, 5) + '.';
+}
+function fieldHTML(inst, f, i) {
+  const v = inst.vals[i], k = f[0], pipped = inst.vals['p' + i];
+  const lab = esc(labelOf(f));
+  const pc = pipped ? ' pip' : '';
+  let ctl = '';
+  switch (k) {
+    case 'check':
+      return '<div class="field"><div class="no">' + (i + 1) + '.</div><div class="lbl"><button class="chk' + (v ? ' on' : '') + '" data-act="check" data-i="' + i + '">' + (v ? '&#9745;' : '&#9744;') + '</button> ' + lab + '</div></div>';
+    case 'choice': case 'feel': case 'date':
+      ctl = optsOf(f).map((o, j) => '<button class="opt' + (v === o ? ' on' + pc : '') + '" data-act="pick" data-i="' + i + '" data-j="' + j + '">' + esc(o) + '</button>').join('');
+      break;
+    case 'text': case 'name':
+      ctl = '<input class="txt' + (inst.anim === i ? ' write' : '') + '" data-i="' + i + '" maxlength="40" value="' + esc(v || '') + '" placeholder="' + (k === 'name' ? 'your name' : 'write here') + '" style="' + (pipped ? 'color:#2a7a6a' : '') + '">' +
+        (k === 'text' ? '<button class="pen" data-act="write" data-i="' + i + '" title="Let the pen suggest something (2 ink)">&#9998; suggest</button>' : '');
+      break;
+    case 'num':
+      ctl = '<span class="num"><button data-act="num" data-i="' + i + '" data-d="-1">&minus;</button><span class="val hand"' + (pipped ? ' style="color:#2a7a6a"' : '') + '>' + (typeof v === 'number' ? v : '__') + '</span><button data-act="num" data-i="' + i + '" data-d="1">+</button></span>';
+      break;
+    case 'init': {
+      const order = Array.isArray(v) ? v : [];
+      ctl = '<div class="inits">' + [0, 1, 2].map(b => {
+        const at = order.indexOf(b);
+        return '<button class="ibox" data-act="init" data-i="' + i + '" data-b="' + b + '">' + (at >= 0 ? '<span class="hand" style="font-size:20px' + (pipped ? ';color:#2a7a6a' : '') + '">' + esc(initials()) + '</span>' : '<small>' + 'ABC'[b] + '</small>') + '</button>';
+      }).join('') + '</div>' + (order.length ? '<button class="pen" data-act="initclear" data-i="' + i + '">erase</button>' : '');
+      break;
+    }
+    case 'sign':
+      ctl = '<div class="sigline' + (v ? '' : ' empty') + '" data-act="sign" data-i="' + i + '">' + (v ? '<span class="hand"' + (v === 'pip :)' ? ' style="color:#2a7a6a"' : '') + '>' + esc(v) + '</span>' : '') + '</div>' + (v ? '<button class="pen" data-act="unsign" data-i="' + i + '">cross out</button>' : '');
+      break;
+    case 'stamp':
+      ctl = '<div class="stampbox' + (v ? '' : ' empty') + '" data-act="stampbox" data-i="' + i + '">' + (v ? '<span class="imprint' + (inst.thunk === i ? ' thunk' : '') + '">' + esc(v) + '</span>' : '') + '</div>' +
+        (inst.stampOpen ? '<div class="stamps">' + STAMP_TYPES.map(s => '<button data-act="stamp" data-i="' + i + '" data-s="' + s + '">' + s + '</button>').join('') + '</div>' : '');
+      break;
+    case 'attach': {
+      const loophole = inst.code === '27-B/6' && inst.depth >= 3;   // Bylaw 27's secret
+      if (loophole) {
+        return '<div class="field"><div class="no">' + (i + 1) + '.</div><div class="lbl"><button class="chk' + (v ? ' on' : '') + '" data-act="check" data-i="' + i + '">' + (v ? '&#9745;' : '&#9744;') + '</button> I am tired. <small>(This box replaces the attachment at depth three. See Bylaw 27.)</small></div></div>';
+      }
+      ctl = '<div class="attach"><span class="clip' + (v ? ' done' : '') + '">&#128206; ' + (v ? 'Form ' + esc(f[1]) + ' attached' : 'nothing attached') + '</span>' + (v ? '' : '<button class="btn" data-act="attach" data-i="' + i + '">fill out Form ' + esc(f[1]) + '</button>') + '</div>';
+      break;
+    }
+  }
+  return '<div class="field"><div class="no">' + (i + 1) + '.</div><div class="lbl">' + lab + '</div><div class="ctl">' + ctl + '</div></div>';
+}
+function paperHTML(inst, where) {
+  const tpl = getTpl(inst.code);
+  const isSub = where === 'modal' && !tpl.req;
+  let h = '<div class="dept"><span>DEPARTMENT OF MINOR AFFAIRS</span><span class="code">FORM ' + esc(tpl.code) + (inst.depth ? ' (copy ' + inst.depth + ')' : '') + '</span></div>';
+  h += '<h2>' + esc(tpl.title) + '</h2><div class="sub">' + (tpl.req ? 'Requisition desk &middot; please justify yourself' : isSub ? 'Attachment &middot; clip to the form underneath' : 'Desk 27 &middot; please print clearly, or beautifully') + '</div>';
+  if (inst.ret) h += '<div class="returned"><b>RETURNED.</b> ' + esc(inst.ret) + '</div>';
+  h += '<div class="intro">' + esc(tpl.intro) + '</div>';
+  tpl.fields.forEach((f, i) => { h += fieldHTML(inst, f, i); });
+  h += '<div class="officeuse">FOR OFFICE USE ONLY ' + [0, 1, 2].map(b => '<button data-act="office" data-b="' + b + '">' + (inst.office > b ? '&#10003;' : '') + '</button>').join('') + '</div>';
+  h += '<div class="fine">' + (inst.fine || []).map(n => '<p>' + esc(FINE_PRINT[n]) + '</p>').join('') + '</div>';
+  h += '<div class="filebar">' + (where === 'modal' ? '<button class="btn" data-act="cancel">put it away</button>' : '<button class="btn" data-act="putback">put back in the inbox</button>') +
+    '<button class="btn go" data-act="file">' + (tpl.req ? 'submit requisition' : isSub ? 'clip it on' : 'file it') + '</button></div>';
+  return h;
+}
+function renderDesk() {
+  const wrap = $('paperWrap');
+  if (!S.cur) {
+    wrap.innerHTML = '<div class="empty-desk"><div class="big">The desk is clear.</div>' + (S.inbox.length ? 'Take a form from the inbox. It is waiting.' : 'The inbox is empty. Drink your coffee. Watch the rain. A form will come.') + '</div>';
+    return;
+  }
+  const tpl = getTpl(S.cur.code);
+  wrap.innerHTML = '<div class="paper' + (S.cur.fresh ? ' slide' : '') + '" id="paper">' + paperHTML(S.cur, 'desk') + '</div>';
+  S.cur.fresh = false; S.cur.thunk = -1; S.cur.anim = -1;
+}
+function renderModal() {
+  const m = $('modal');
+  if (!S.subs.length) { m.classList.add('hidden'); m.innerHTML = ''; return; }
+  const inst = S.subs[S.subs.length - 1];
+  m.classList.remove('hidden');
+  m.innerHTML = '<div class="paper' + (inst.fresh ? ' slide' : '') + '" id="subPaper">' + paperHTML(inst, 'modal') + '</div>';
+  inst.thunk = -1; inst.anim = -1; inst.fresh = false;
+}
+function renderTrays() {
+  const n = S.inbox.length, cap = S.up.tray ? 14 : 8;
+  $('inCount').textContent = n + '/' + cap;
+  $('inStack').innerHTML = S.inbox.slice(0, 7).map((f, k) => '<i class="' + (f.ret ? 'ret' : '') + '" style="bottom:' + (k * 7) + 'px;transform:rotate(' + (((f.id * 37) % 7) - 3) * 0.7 + 'deg)"></i>').join('');
+  $('outCount').textContent = S.out;
+  $('outStack').innerHTML = Array.from({ length: Math.min(7, S.out) }, (_, k) => '<i style="bottom:' + (k * 7) + 'px;transform:rotate(' + ((k * 3) % 5 - 2) * 0.8 + 'deg)"></i>').join('');
+}
+const CALM_WORDS = [[85, 'serene'], [70, 'cozy'], [50, 'fine'], [30, 'a bit damp'], [0, 'frazzled']];
+const DAY_WORDS = ['Later', 'Monday-ish', 'Tuesday (Under Review)', 'Wednesday, probably', 'Not Thursday', 'Friday (Damp)', 'The 5th of Rain'];
+function renderTop() {
+  $('rankName').textContent = (S.name ? S.name + ', ' : '') + RANKS[rankIdx()][1];
+  $('stStamps').textContent = S.stamps;
+  $('stFiled').textContent = S.filed;
+  $('inkBar').style.width = (S.ink / inkMax() * 100) + '%';
+  $('calmBar').style.width = S.calm + '%';
+  $('calmWord').textContent = CALM_WORDS.find(([n]) => S.calm >= n)[1];
+  const d = new Date();
+  $('clock').textContent = DAY_WORDS[d.getDay()] + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+  $('sndBtn').innerHTML = S.sound ? '&#9835; on' : '&#9835; off';
+  const unread = S.memos.filter(m => m.isNew).length;
+  $('memoBadge').innerHTML = unread ? '<span class="badge">' + unread + '</span>' : '';
+  $('rug').classList.toggle('hidden', !S.up.rug);
+  $('knob').classList.toggle('hidden', !S.up.knob);
+  $('plantCv').classList.toggle('hidden', !S.up.plant);
+  $('catbedCv').classList.toggle('hidden', !S.up.catbed);
+}
+function renderAll() {
+  // keep the cursor in a text box if the player was typing when something redraws the form
+  const a = document.activeElement, keep = a && a.classList && a.classList.contains('txt') ? { inModal: !!a.closest('#modal'), i: a.dataset.i, s: a.selectionStart } : null;
+  renderTop(); renderTrays(); renderDesk(); renderModal();
+  if (!$('drawer').classList.contains('hidden')) renderDrawer();
+  if (keep) {
+    const el = document.querySelector((keep.inModal ? '#modal' : '#paperWrap') + ' .txt[data-i="' + keep.i + '"]');
+    if (el) { el.focus(); try { el.setSelectionRange(keep.s, keep.s); } catch (e) {} }
+  }
+}
+
+// Which form a click inside a paper belongs to
+function instFor(el) { return el.closest('#modal') ? S.subs[S.subs.length - 1] : S.cur; }
+const inkMax = () => S.up.pen ? 40 : 20;
+function spendInk(n) {
+  if (S.ink < n) { toast('Your pen is dry. Wait a moment, or have some coffee and try again.'); snd('error'); return false; }
+  S.ink -= n; return true;
+}
+// One handler for every click on any paper
+function onPaperClick(e) {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const inst = instFor(b);
+  if (!inst) return;
+  if (cat.state === 'sit' && !b.closest('#modal')) { catSay('mrrp.'); toast('The cat is sitting on this form. Pet the cat.'); return; }
+  const tpl = getTpl(inst.code), i = +b.dataset.i, act = b.dataset.act;
+  audioInit();
+  const touch = () => { delete inst.vals['p' + i]; };
+  switch (act) {
+    case 'check': inst.vals[i] = !inst.vals[i]; touch(); snd('check'); break;
+    case 'pick': inst.vals[i] = optsOf(tpl.fields[i])[+b.dataset.j]; touch(); snd('pen'); break;
+    case 'write': {
+      if (!spendInk(2)) return;
+      const cur = inst.vals[i];
+      let s = pick(tpl.fields[i][2]);
+      if (s === cur) s = pick(tpl.fields[i][2]);
+      inst.vals[i] = s; inst.anim = i; touch(); snd('pen'); break;
+    }
+    case 'num': {
+      const d = +b.dataset.d, cur = inst.vals[i];
+      inst.vals[i] = typeof cur === 'number' ? Math.max(0, cur + d) : (d > 0 ? 1 : 0);
+      touch(); snd('check'); break;
+    }
+    case 'init': {
+      const arr = Array.isArray(inst.vals[i]) ? inst.vals[i] : (inst.vals[i] = []);
+      const bx = +b.dataset.b;
+      if (arr.includes(bx)) return;
+      if (!spendInk(1)) return;
+      arr.push(bx); touch(); snd('pen'); break;
+    }
+    case 'initclear': inst.vals[i] = []; touch(); snd('paper'); break;
+    case 'sign': {
+      if (inst.vals[i]) return;
+      const nm = expectedName(inst, tpl);
+      if (!nm) { toast('Write your name first (field 1). The pen needs to know who you are.'); return; }
+      if (!spendInk(1)) return;
+      inst.vals[i] = nm; touch(); snd('pen'); break;
+    }
+    case 'unsign': inst.vals[i] = ''; touch(); snd('paper'); break;
+    case 'stampbox': inst.stampOpen = !inst.stampOpen; break;
+    case 'stamp': inst.vals[i] = b.dataset.s; inst.stampOpen = false; inst.thunk = i; touch(); snd('stamp'); break;
+    case 'attach': {
+      const code = tpl.fields[i][1];
+      const sub = newInst(code, { depth: (inst.depth || 0) + 1, fresh: true });
+      S.subs.push(sub); snd('drawer');
+      if (code === '27-B/6') pipSay(sub.depth >= 3 ? 'wait. this copy has a different box on it.' : 'a copy of the form, for the form. ok.', 'worry');
+      break;
+    }
+    case 'office': {
+      inst.office = (inst.office || 0) + 1;
+      if (inst.office === 1) toast('That box is for office use only.');
+      else if (inst.office === 2) toast('...but you are the office. Go ahead.');
+      else if (inst.office === 3) { toast('All office boxes ticked. Nothing happens. It feels great.'); S.calm = clamp(S.calm + 2, 0, 100); }
+      else inst.office = 3;
+      snd('check'); break;
+    }
+    case 'file': fileForm(inst, !!b.closest('#modal') && !tpl.req); return;
+    case 'putback':
+      S.inbox.push(S.cur); S.cur = null; snd('paper'); toast('You put the form back. It will wait. Forms are patient.'); break;
+    case 'cancel': S.subs.pop(); snd('paper'); break;
+  }
+  renderAll();
+}
+function onPaperInput(e) {
+  const t = e.target;
+  if (!t.classList.contains('txt')) return;
+  const inst = instFor(t);
+  if (!inst) return;
+  inst.vals[+t.dataset.i] = t.value;
+  delete inst.vals['p' + t.dataset.i];
+  t.style.color = '';
+}
+$('paperWrap').addEventListener('click', onPaperClick);
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') { return; } onPaperClick(e); });
+$('paperWrap').addEventListener('input', onPaperInput);
+$('modal').addEventListener('input', onPaperInput);
+$('inbox').addEventListener('click', () => {
+  audioInit();
+  if (S.cur) { toast('There is already a form on the desk. Finish it, or put it back.'); return; }
+  if (!S.inbox.length) { toast('The inbox is empty. Enjoy it while it lasts.'); return; }
+  S.cur = S.inbox.shift(); S.cur.fresh = true; snd('paper'); renderAll();
+  const tpl = getTpl(S.cur.code);
+  if (tpl.code === '27-B/6') pipSay('oh. it is THAT form.', 'worry');
+});
+$('outbox').addEventListener('click', () => toast(S.out ? 'The outbox holds ' + S.out + ' filed forms. They will be collected eventually (Bylaw 25).' : 'The outbox is empty. It believes in you.'));
+
+// ---------------------------------------------------------------------
+// 5. PIP, the desk bot
+// ---------------------------------------------------------------------
+const pip = { x: 72, face: 'happy', bubbleT: 0, nextIdle: 18, nextHelp: 9, asleep: false, bob: 0, blink: 0 };
+const pipCtx = $('pipCv').getContext('2d');
+function pipSay(s, face) {
+  const b = $('pipBubble');
+  b.textContent = s; b.classList.add('show');
+  pip.bubbleT = 3.8;
+  if (face) pip.face = face;
+  snd(face === 'worry' ? 'boop' : 'beep');
+}
+function pipMove(x) { pip.x = x; $('pip').style.left = x + '%'; }
+function drawPip() {
+  const g = pipCtx, by = Math.round(pip.bob);
+  g.clearRect(0, 0, 24, 24);
+  const P = (c, x, y, w = 1, h = 1) => { g.fillStyle = c; g.fillRect(x, y + by, w, h); };
+  const O = '#23303a', T = '#00F6D6';
+  P(O, 4, 20, 16, 4); P('#55606a', 5, 21, 14, 2); P('#2f3a44', 6, 22, 1, 1); P('#2f3a44', 10, 22, 1, 1); P('#2f3a44', 14, 22, 1, 1); P('#2f3a44', 17, 22, 1, 1);   // treads
+  P(O, 4, 8, 16, 13); P('#a9bcc5', 5, 9, 14, 11); P('#8ea2ab', 5, 17, 14, 3); P('#c9d8de', 5, 9, 14, 1);   // body
+  P(O, 1, 12, 3, 2); P(O, 20, 12, 3, 2); P('#a9bcc5', 1, 12, 2, 1); P('#a9bcc5', 21, 12, 2, 1);           // tiny arms
+  P(O, 7, 10, 10, 7); P('#0f3b3a', 8, 11, 8, 5);                                                         // screen
+  P(O, 12, 3, 1, 5);                                                                                     // antenna
+  P(pip.asleep ? '#5a2a4a' : (Math.floor(Date.now() / 600) % 2 ? '#FF4BCB' : '#a03a80'), 11, 2, 3, 2);
+  const blink = pip.blink > 0;
+  const face = pip.asleep ? 'sleep' : pip.face;
+  if (face === 'sleep' || blink) { P(T, 9, 13, 2, 1); P(T, 13, 13, 2, 1); }
+  else if (face === 'happy') { P(T, 9, 13); P(T, 10, 12); P(T, 11, 13); P(T, 13, 13); P(T, 14, 12); P(T, 15, 13); }
+  else if (face === 'worry') { P(T, 9, 12, 2, 2); P(T, 13, 12, 2, 2); P(T, 11, 15, 2, 1); }
+  else if (face === 'love') { P('#FF4BCB', 9, 12, 2, 1); P('#FF4BCB', 10, 13); P('#FF4BCB', 13, 12, 2, 1); P('#FF4BCB', 13, 13); P(T, 10, 15, 4, 1); }
+  else { P(T, 9, 12, 2, 2); P(T, 13, 12, 2, 2); P(T, 10, 15, 4, 1); }                                   // focus
+  if (S.up.hat) { P(O, 7, 6, 10, 2); P('#FF4BCB', 8, 6, 8, 1); P(O, 9, 2, 6, 4); P('#FF4BCB', 10, 3, 4, 3); P('#FFD93D', 10, 5, 4, 1); }   // the tiny hat
+  if (pip.asleep) { const z = Math.floor(Date.now() / 700) % 3; P('#c9d8de', 19, 4 - z, 2, 1); P('#c9d8de', 20, 5 - z); P('#c9d8de', 19, 6 - z, 2, 1); }
+}
+// Pip tries to fill one field on the form currently on the desk
+function pipHelp() {
+  const inst = S.cur;
+  if (!inst || S.subs.length) return;
+  const tpl = getTpl(inst.code);
+  const focused = document.activeElement && document.activeElement.classList.contains('txt') ? +document.activeElement.dataset.i : -1;
+  const open = tpl.fields.map((f, i) => i).filter(i => !isFilled(inst, tpl.fields[i], i) && !inst.skip.includes(i) && i !== focused && tpl.fields[i][0] !== 'name');
+  if (!open.length) { if (Math.random() < 0.3) pipSay('this one looks done. file it?', 'happy'); return; }
+  const i = open[Math.min(open.length - 1, randi(0, 1))];
+  const f = tpl.fields[i], k = f[0];
+  const acc = (S.up.glasses ? 0.82 : 0.58) + (S.calm - 50) / 500;
+  const good = Math.random() < acc;
+  pipMove(randi(38, 78));
+  let line = pick(PIP.help);
+  switch (k) {
+    case 'check': inst.vals[i] = true; break;
+    case 'choice': inst.vals[i] = pick(f[2]); break;
+    case 'feel': inst.vals[i] = good ? 'Fine' : pick(FEELINGS.slice(1)); if (!good) line = pick(PIP.wrongish); break;
+    case 'date': inst.vals[i] = good ? pick(DATES.filter(d => d !== 'Thursday')) : 'Thursday'; if (!good) line = pick(PIP.wrongish); break;
+    case 'num': inst.vals[i] = good ? (Math.random() < 0.15 ? 12 : randi(0, 11)) : randi(13, 40); if (!good) line = 'i wrote a big number. big numbers are impressive.'; break;
+    case 'text': inst.vals[i] = pick(f[2]); inst.anim = i; break;
+    case 'init': inst.vals[i] = good ? [0, 1, 2] : [2, 0, 1]; if (!good) line = 'i did your initials. in a creative order.'; break;
+    case 'sign':
+      if (good) { inst.skip.push(i); pipSay(pick(PIP.noSign), 'focus'); return; }
+      inst.vals[i] = 'pip :)'; line = pick(PIP.pipSign); break;
+    case 'stamp': {
+      const need = requiredStamp(tpl)[0];
+      inst.vals[i] = good ? need : pick(STAMP_TYPES.filter(s => s !== need)); inst.thunk = i; snd('stamp');
+      line = good ? 'ka-CHUNK. i love stamping.' : 'ka-chunk! (i picked my favorite one)';
+      break;
+    }
+    case 'attach': inst.skip.push(i); pipSay(pick(PIP.noAttach), 'worry'); return;
+  }
+  inst.vals['p' + i] = true;
+  S.pipBat = Math.max(0, S.pipBat - 2.5);
+  pipSay(line, good ? 'focus' : 'happy');
+  logPip('helped with field ' + (i + 1) + ' on form ' + inst.code + '.' + (good ? '' : ' i was creative.'));
+  renderAll();
+}
+$('pip').addEventListener('click', () => {
+  audioInit();
+  if (pip.asleep) {
+    if (S.coffee.lvl >= 8) {
+      S.coffee.lvl -= 12; S.pipBat = 100; pip.asleep = false; snd('sip');
+      pipSay(pick(PIP.coffee), 'love'); logPip('borrowed coffee. bylaw 34. back online.');
+    } else pipSay('zz... no coffee... brew some?', 'sleep');
+  } else {
+    S.calm = clamp(S.calm + 1, 0, 100); S.pipBat = Math.min(100, S.pipBat + 2);
+    pipSay(S.up.hat && Math.random() < 0.4 ? pick(PIP.hat) : pick(PIP.pet), 'love');
+  }
+  renderTop();
+});
+function updatePip(dt) {
+  pip.bob = Math.sin(performance.now() / 300) * (pip.asleep ? 0.2 : 0.6);
+  if (pip.blink > 0) pip.blink -= dt; else if (Math.random() < dt * 0.25) pip.blink = 0.15;
+  if (pip.bubbleT > 0) { pip.bubbleT -= dt; if (pip.bubbleT <= 0) $('pipBubble').classList.remove('show'); }
+  S.pipBat = Math.max(0, S.pipBat - dt * 0.035);
+  if (!pip.asleep && S.pipBat <= 0) { pip.asleep = true; pipSay(pick(PIP.sleepy), 'sleep'); logPip('battery low. resting optics. wake me with coffee.'); }
+  if (pip.asleep) return;
+  pip.nextHelp -= dt;
+  if (pip.nextHelp <= 0) {
+    pip.nextHelp = (S.up.firmware ? 6 : 11) * rand(0.8, 1.25);
+    if (cat.state !== 'sit') pipHelp();
+  }
+  pip.nextIdle -= dt;
+  if (pip.nextIdle <= 0) {
+    pip.nextIdle = rand(26, 48);
+    if (pip.bubbleT <= 0) { pipSay(S.up.hat && Math.random() < 0.25 ? pick(PIP.hat) : pick(PIP.idle), pick(['happy', 'focus'])); if (Math.random() < 0.5) pipMove(randi(20, 82)); }
+  }
+}
+
+// ---------------------------------------------------------------------
+// 6. THE OFFICE CAT
+// ---------------------------------------------------------------------
+const cat = { state: 'away', t: 0, pets: 0, walkF: 0 };
+const catCtx = $('catCv').getContext('2d');
+const bedCtx = $('catbedCv').getContext('2d');
+function drawCatTo(g, ox, oy, pose, frame) {
+  const P = (c, x, y, w = 1, h = 1) => { g.fillStyle = c; g.fillRect(ox + x, oy + y, w, h); };
+  const O = '#23282c', F = '#8d9299', D = '#6b7077', L = '#b5bac0';
+  if (pose === 'sleep') {                      // curled loaf
+    P(O, 4, 8, 22, 9); P(F, 5, 9, 20, 7); P(D, 8, 9, 2, 6); P(D, 13, 9, 2, 6); P(D, 18, 9, 2, 6);
+    P(O, 19, 5, 9, 9); P(F, 20, 6, 7, 7); P(O, 20, 3, 2, 3); P(O, 25, 3, 2, 3); P(L, 21, 4); P(L, 26, 4);
+    P(O, 21, 9, 2, 1); P(O, 24, 9, 2, 1); P('#e88aa0', 23, 11);
+    P(O, 3, 13, 14, 3); P(F, 4, 14, 12, 1);    // tail wrapped around
+    return;
+  }
+  P(O, 5, 8, 17, 9); P(F, 6, 9, 15, 7); P(D, 9, 9, 2, 6); P(D, 13, 9, 2, 6); P(D, 17, 9, 2, 5); P(L, 6, 14, 15, 2);   // body
+  P(O, 19, 3, 10, 10); P(F, 20, 4, 8, 8); P(O, 20, 1, 2, 3); P(O, 26, 1, 2, 3); P('#e88aa0', 21, 2); P('#e88aa0', 27, 2);   // head + ears
+  P('#FFD93D', 21, 6, 2, 2); P('#FFD93D', 25, 6, 2, 2); P(O, 22, 6, 1, 2); P(O, 26, 6, 1, 2);   // eyes
+  P('#e88aa0', 24, 9); P(O, 23, 10, 3, 1);
+  P(O, 1, 4, 2, 6); P(O, 2, 9, 4, 2); P(F, 2, 5, 1, 4);   // tail up
+  if (pose === 'sit') { P(O, 7, 16, 4, 3); P(O, 16, 16, 4, 3); P(L, 8, 17, 2, 1); P(L, 17, 17, 2, 1); }
+  else {                                       // walking legs, two frames
+    const a = frame ? 1 : 0;
+    P(O, 7 + a, 16, 2, 4); P(O, 11 - a, 16, 2, 4); P(O, 15 + a, 16, 2, 4); P(O, 19 - a, 16, 2, 4);
+  }
+}
+function drawCat() {
+  catCtx.clearRect(0, 0, 32, 20);
+  if (cat.state === 'walk' || cat.state === 'leave') drawCatTo(catCtx, 0, 0, 'walk', Math.floor(performance.now() / 220) % 2);
+  else if (cat.state === 'sit') drawCatTo(catCtx, 0, 0, 'sit', 0);
+  if (S.up.catbed) {                           // cat bed in the right column
+    bedCtx.clearRect(0, 0, 32, 16);
+    bedCtx.fillStyle = '#23282c'; bedCtx.fillRect(1, 7, 30, 8);
+    bedCtx.fillStyle = '#9a4a6a'; bedCtx.fillRect(2, 8, 28, 6);
+    bedCtx.fillStyle = '#c96a8a'; bedCtx.fillRect(4, 8, 24, 3);
+    if (cat.state === 'bed') drawCatTo(bedCtx, 2, -4, 'sleep', 0);
+  }
+}
+function catSay(s) { const b = $('catBubble'); b.textContent = s; b.classList.add('show'); clearTimeout(cat.bt); cat.bt = setTimeout(() => b.classList.remove('show'), 2200); }
+function catArrive() {
+  if (S.up.catbed) {
+    cat.state = 'bed'; cat.t = 80; toast('The office cat has arrived and gone straight to its bed.'); snd('meow'); return;
+  }
+  cat.state = 'walk'; cat.t = 3.2; cat.pets = 0;
+  const el = $('cat'); el.classList.remove('hidden'); el.style.transition = 'none'; el.style.left = '-140px';
+  requestAnimationFrame(() => { el.style.transition = 'left 3s linear'; el.style.left = 'calc(50% - 64px)'; });
+  snd('meow'); toast('The office cat is here.');
+  pipSay(pick(PIP.cat), 'worry');
+}
+function catLeave() {
+  cat.state = 'leave'; cat.t = 3.2;
+  const el = $('cat'); el.style.left = '110%';
+}
+$('cat').addEventListener('click', petCat);
+$('catbedCv').addEventListener('click', () => { if (cat.state === 'bed') petCat(); else toast('An empty cat bed. It is waiting, like a form.'); });
+function petCat() {
+  audioInit();
+  if (cat.state !== 'sit' && cat.state !== 'bed') return;
+  cat.pets++; S.calm = clamp(S.calm + 4, 0, 100); snd('purr'); catSay(pick(['prrrr', 'mrrp', 'prr.', '*slow blink*']));
+  if (cat.state === 'sit' && cat.pets >= 3) { toast('The cat accepts your petting and leaves to sit somewhere less useful.'); catLeave(); }
+  renderTop();
+}
+function updateCat(dt) {
+  if (cat.state === 'away') {
+    S.nextCat -= dt;
+    if (S.nextCat <= 0) { S.nextCat = rand(170, 330); catArrive(); }
+    return;
+  }
+  cat.t -= dt;
+  if (cat.state === 'walk' && cat.t <= 0) {
+    cat.state = 'sit'; cat.t = 34;
+    const inst = S.cur;
+    if (inst && Math.random() < 0.35) {          // the cat stamps something (Bylaw 33)
+      const si = getTpl(inst.code).fields.findIndex(f => f[0] === 'stamp');
+      if (si >= 0) { inst.vals[si] = 'FILED (EMOTIONALLY)'; inst.thunk = si; snd('stamp'); toast('The cat sat on the stamp. The form is now FILED (EMOTIONALLY).'); renderDesk(); }
+    }
+    catSay('mrrp');
+  } else if (cat.state === 'sit' && cat.t <= 0) { catLeave(); toast('The cat has somewhere else to be.'); }
+  else if (cat.state === 'leave' && cat.t <= 0) { cat.state = 'away'; $('cat').classList.add('hidden'); }
+  else if (cat.state === 'bed' && cat.t <= 0) { cat.state = 'away'; toast('The cat wakes up, stretches, and leaves the bed warm.'); }
+}
+
+// ---------------------------------------------------------------------
+// 7. COFFEE, INK, CALM, RAIN, RADIATOR, PLANT
+// ---------------------------------------------------------------------
+// The corkboard: one enforced Bylaw at a time, as a gentle hint
+let corkI = 0;
+function corkNext() {
+  const live = BYLAWS.filter(b => b[1]);
+  const [n, , t] = live[corkI++ % live.length];
+  $('corkNote').innerHTML = '<b>BYLAW OF THE DAY &middot; ' + esc(n) + '</b>' + esc(t);
+}
+$('cork').addEventListener('click', () => { corkNext(); snd('paper'); });
+const mugCtx = $('mugCv').getContext('2d');
+function drawMug() {
+  const g = mugCtx; g.clearRect(0, 0, 24, 24);
+  const P = (c, x, y, w = 1, h = 1) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  const O = '#2b2a26', lvl = S.coffee.lvl, hot = S.coffee.temp;
+  if (hot > 35 && lvl > 0) {                   // steam
+    const t = performance.now() / 260;
+    g.globalAlpha = Math.min(1, (hot - 35) / 50);
+    for (let k = 0; k < 2; k++) for (let y = 0; y < 6; y += 2) P('#e8eef0', 8 + k * 4 + Math.round(Math.sin(t + y * 0.7 + k * 2.5)), 1 + y + ((Math.floor(t) + k) % 2), 1, 1);
+    g.globalAlpha = 1;
+  }
+  P(O, 4, 8, 13, 15); P('#eae6dc', 5, 9, 11, 13); P('#d2cdc0', 13, 9, 3, 13);   // mug
+  P(O, 16, 11, 4, 8); P('#eae6dc', 17, 12, 2, 6); P(O, 17, 13, 1, 4);          // handle
+  P(O, 4, 7, 13, 2);                                                              // rim
+  P(lvl > 50 ? '#6a4128' : lvl > 0 ? '#3e2617' : '#8a8478', 5, 8, 11, 1);       // coffee surface
+  P('#FF4BCB', 8, 14, 3, 1); P('#FF4BCB', 10, 15, 1, 2); P('#FF4BCB', 8, 17, 3, 1); P('#FF4BCB', 8, 15, 1, 1);   // tiny spiral logo
+  if (S.brewEnd > Date.now()) { P('#FFD93D', 1, 21, 2, 2); }                    // brewing light
+}
+function coffeeText() {
+  const c = S.coffee, now = Date.now();
+  if (S.brewEnd > now) return 'Brewing... ' + Math.ceil((S.brewEnd - now) / 1000) + 's. The machine gurgles politely.';
+  if (c.lvl <= 0) return 'The cup is empty. A cup should not be empty.';
+  const t = c.temp > 70 ? 'Hot' : c.temp > 45 ? 'Warm' : c.temp > 20 ? 'Lukewarm' : 'Cold';
+  const l = c.lvl > 70 ? 'full' : c.lvl > 35 ? 'half full' : 'nearly gone';
+  return t + ' coffee, ' + l + '.' + (S.focus > 0 ? ' (focused)' : '');
+}
+function sip() {
+  audioInit();
+  if (S.brewEnd > Date.now()) { toast('Still brewing. Patience is also a hot drink.'); return; }
+  if (S.coffee.lvl <= 0) { toast('The cup is empty. Brew a fresh one.'); return; }
+  S.coffee.lvl = Math.max(0, S.coffee.lvl - (S.up.mug ? 7 : 11)); snd('sip');
+  if (S.coffee.temp > 45) { S.focus = 45; S.calm = clamp(S.calm + 3, 0, 100); toast(pick(WARM_SIPS)); }
+  else { S.calm = clamp(S.calm - 1, 0, 100); toast(pick(COLD_SIPS)); }
+  renderTop();
+}
+function brew() {
+  audioInit();
+  if (S.brewEnd > Date.now()) { toast('It is already brewing.'); return; }
+  S.brewEnd = Date.now() + 40000; snd('pour'); toast('You start a fresh pot. It will take a moment. Watch the rain.');
+}
+$('sipBtn').onclick = sip; $('mugCv').onclick = sip; $('brewBtn').onclick = brew;
+let rainCool = 0;
+$('window').addEventListener('click', () => {
+  audioInit();
+  if (rainCool > 0) { toast('You are already watching the rain. Keep watching.'); return; }
+  rainCool = 15; S.calm = clamp(S.calm + 5, 0, 100);
+  toast(pick(RAIN_LINES)); renderTop();
+});
+$('radiator').addEventListener('click', () => { audioInit(); snd('clank'); toast('Radiator changelog: ' + pick(RADIATOR)); });
+
+// rain in the window: distant city, the spiral tower, falling rain, drops on the glass
+const rainCv = $('rain'), rainCtx = rainCv.getContext('2d');
+const RW = 160, RH = 120;
+const skyline = document.createElement('canvas'); skyline.width = RW; skyline.height = RH;
+(() => {
+  const g = skyline.getContext('2d');
+  const grd = g.createLinearGradient(0, 0, 0, RH); grd.addColorStop(0, '#5d6c75'); grd.addColorStop(1, '#7c8a90');
+  g.fillStyle = grd; g.fillRect(0, 0, RW, RH);
+  g.fillStyle = '#6a7880';                     // far buildings
+  for (let x = 0; x < RW; x += 9) { const h = 20 + ((x * 37) % 23); g.fillRect(x, RH - 30 - h, 8, h + 30); }
+  g.fillStyle = '#5a6870';                     // the spiral tower, faint
+  g.fillRect(104, 20, 10, 80); for (let y = 24; y < 100; y += 6) g.fillRect(102 + ((y / 6) % 2) * 2, y, 14, 2);
+  g.fillStyle = '#516068';                     // near buildings
+  for (let x = 0; x < RW; x += 14) { const h = 14 + ((x * 53) % 19); g.fillRect(x, RH - h, 13, h); }
+  g.fillStyle = '#ffd98a';                     // a few lit windows
+  for (let i = 0; i < 26; i++) { const x = (i * 47) % RW, y = RH - 4 - ((i * 13) % 26); g.globalAlpha = 0.5; g.fillRect(x, y, 1, 1); }
+  g.globalAlpha = 1;
+})();
+const streaks = Array.from({ length: 70 }, () => ({ x: rand(0, RW), y: rand(0, RH), v: rand(90, 140) }));
+const glass = Array.from({ length: 22 }, () => ({ x: rand(0, RW), y: rand(0, RH), v: rand(1, 6), r: rand(1, 2.2) }));
+function drawRain(dt) {
+  const g = rainCtx;
+  g.drawImage(skyline, 0, 0);
+  g.fillStyle = 'rgba(210,225,235,0.55)';
+  for (const s of streaks) {
+    s.y += s.v * dt; s.x -= s.v * dt * 0.18;
+    if (s.y > RH) { s.y = -6; s.x = rand(0, RW + 20); }
+    g.fillRect(Math.round(s.x), Math.round(s.y), 1, 4);
+  }
+  for (const d of glass) {                     // drops sliding down the glass
+    d.y += d.v * dt * (Math.random() < 0.02 ? 12 : 1);
+    if (d.y > RH + 3) { d.y = -3; d.x = rand(0, RW); }
+    g.fillStyle = 'rgba(230,240,245,0.75)'; g.fillRect(Math.round(d.x), Math.round(d.y), Math.ceil(d.r), Math.ceil(d.r) + 1);
+    g.fillStyle = 'rgba(230,240,245,0.18)'; g.fillRect(Math.round(d.x), Math.round(d.y) - 6, 1, 6);
+  }
+}
+const plantCtx = $('plantCv').getContext('2d');
+function drawPlant() {
+  if (!S.up.plant) return;
+  const stage = Math.min(6, 1 + Math.floor((Date.now() - S.plantT) / (12 * 60 * 1000)));   // grows every 12 real minutes
+  const g = plantCtx; g.clearRect(0, 0, 12, 16);
+  const P = (c, x, y, w = 1, h = 1) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  P('#23282c', 2, 11, 8, 5); P('#b5603a', 3, 12, 6, 3); P('#d27a4f', 3, 12, 6, 1);
+  for (let s = 0; s < stage; s++) {
+    const y = 10 - s * 1.6 | 0;
+    P('#3c8a4a', 6, y, 1, 2);
+    if (s % 2) { P('#5fb86a', 7, y, 2, 1); } else { P('#5fb86a', 4, y, 2, 1); }
+  }
+  if (stage >= 6) P('#FF4BCB', 6, 0, 1, 1);    // it flowered
+}
+
+// ---------------------------------------------------------------------
+// 8. DRAWERS: bylaws, memos, catalog, requisitions, Pip's log
+// ---------------------------------------------------------------------
+const TABS = [['bylaws', 'Bylaws'], ['memos', 'Memos'], ['catalog', 'Form Catalog'], ['req', 'Requisitions'], ['log', "Pip's Log"]];
+let drawerTab = 'bylaws';
+function openDrawer(tab) { drawerTab = tab; $('drawer').classList.remove('hidden'); snd('drawer'); renderDrawer(); }
+function renderDrawer() {
+  $('drawerTitle').textContent = TABS.find(t => t[0] === drawerTab)[1];
+  $('drawerTabs').innerHTML = TABS.map(([k, n]) => '<button class="' + (k === drawerTab ? 'on' : '') + '" data-tab="' + k + '">' + n + '</button>').join('');
+  let h = '';
+  if (drawerTab === 'bylaws') {
+    h = '<p><i>The Bylaws of the Department of Minor Affairs. The ones marked &#10022; are enforced at the outbox. The others are enforced in spirit.</i></p>' +
+      BYLAWS.map(([n, live, t]) => '<div class="law' + (live ? ' live' : '') + '"><b>' + (live ? '&#10022; ' : '') + esc(n) + '.</b> ' + esc(t) + '</div>').join('');
+  } else if (drawerTab === 'memos') {
+    h = S.memos.length ? S.memos.map(m => '<div class="memo' + (m.isNew ? ' new' : '') + '"><div class="mh">FROM: ' + esc(m.from) + ' &middot; RE: ' + esc(m.sub) + '</div>' + esc(m.body) + '</div>').join('') : '<p>No memos yet. Enjoy the quiet. It will not last.</p>';
+    let got = false;
+    S.memos.forEach(m => { if (m.isNew) { m.isNew = false; got = true; } });
+    if (got) { S.calm = clamp(S.calm + 1, 0, 100); setTimeout(renderTop, 50); }
+  } else if (drawerTab === 'catalog') {
+    const seenAny = c => S.catalog[c] || (S.cur && S.cur.code === c) || S.inbox.some(f => f.code === c);
+    h = '<p><i>Every form the Department has ever sent you, and how many times you have filed it. Forms you have not met yet are shy.</i></p>' +
+      FORMS.concat(Object.values(SUBFORMS)).map(f => seenAny(f.code)
+        ? '<div class="cat-row"><b>' + esc(f.code) + '</b><div><b>' + esc(f.title) + '</b><div class="d" style="font-size:12px;color:#6b6355">' + esc(f.intro) + '</div></div><span>&times;' + (S.catalog[f.code] || 0) + '</span></div>'
+        : '<div class="cat-row"><b>??</b><div style="color:#9a8f74">A form you have not met yet.</div><span></span></div>').join('');
+  } else if (drawerTab === 'req') {
+    h = '<p><i>Spend stamps on improvements to Desk 27. Every purchase is made by filling out a requisition form, naturally. You have ' + S.stamps + ' stamps.</i></p>' +
+      UPGRADES.map(u => '<div class="req-row"><b>' + u.cost + ' &#10022;</b><div><b>' + esc(u.name) + '</b><div class="d">' + esc(u.desc) + '</div></div>' +
+        (S.up[u.key] ? '<span class="owned">issued</span>' : '<button class="btn" data-req="' + u.code + '">requisition</button>') + '</div>').join('');
+  } else if (drawerTab === 'log') {
+    h = S.log.length ? S.log.map(l => '<div class="logline">' + esc(l.t) + ' &mdash; ' + esc(l.s) + '</div>').join('') : '<div class="logline">no entries. pip is warming up.</div>';
+  }
+  $('drawerBody').innerHTML = h;
+}
+$('drawers').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { audioInit(); openDrawer(b.dataset.tab); } });
+$('drawerTabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (b) { drawerTab = b.dataset.tab; snd('check'); renderDrawer(); } });
+$('drawerClose').onclick = () => { $('drawer').classList.add('hidden'); snd('drawer'); };
+$('drawerBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-req]');
+  if (!b) return;
+  if (S.subs.length) { toast('Finish the paperwork already open first.'); return; }
+  S.subs.push(newInst(b.dataset.req, { fresh: true })); $('drawer').classList.add('hidden'); snd('drawer'); renderAll();
+});
+
+// ---------------------------------------------------------------------
+// 9. SOUND (rain bed, pen scratches, stamps, Pip, purring)
+// ---------------------------------------------------------------------
+let AC = null, master = null, noiseBuf = null, brownBuf = null;
+function audioInit() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  const C = window.AudioContext || window.webkitAudioContext;
+  if (!C) return;
+  AC = new C();
+  master = AC.createGain(); master.gain.value = S.sound ? 0.7 : 0; master.connect(AC.destination);
+  const len = AC.sampleRate * 2;
+  noiseBuf = AC.createBuffer(1, len, AC.sampleRate); brownBuf = AC.createBuffer(1, len, AC.sampleRate);
+  const w = noiseBuf.getChannelData(0), br = brownBuf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < len; i++) { w[i] = Math.random() * 2 - 1; last = (last + 0.02 * w[i]) / 1.02; br[i] = last * 3.5; }
+  // the rain: soft brown noise + a little high patter, forever
+  const bed = AC.createBufferSource(); bed.buffer = brownBuf; bed.loop = true;
+  const bl = AC.createBiquadFilter(); bl.type = 'lowpass'; bl.frequency.value = 900;
+  const bg = AC.createGain(); bg.gain.value = 0.32;
+  bed.connect(bl); bl.connect(bg); bg.connect(master); bed.start();
+  const pat = AC.createBufferSource(); pat.buffer = noiseBuf; pat.loop = true;
+  const ph = AC.createBiquadFilter(); ph.type = 'highpass'; ph.frequency.value = 5000;
+  const pg = AC.createGain(); pg.gain.value = 0.025;
+  pat.connect(ph); ph.connect(pg); pg.connect(master); pat.start();
+}
+function tone(type, f, t, dur, vol, slide) {
+  const o = AC.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t);
+  if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+  const g = AC.createGain(); g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.03);
+}
+function nz(t, dur, vol, type, freq, q, sweepTo) {
+  const s = AC.createBufferSource(); s.buffer = noiseBuf;
+  const f = AC.createBiquadFilter(); f.type = type; f.frequency.setValueAtTime(freq, t); if (q) f.Q.value = q;
+  if (sweepTo) f.frequency.exponentialRampToValueAtTime(sweepTo, t + dur);
+  const g = AC.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random()); s.stop(t + dur + 0.02);
+}
+function snd(n) {
+  if (!AC || !S.sound) return;
+  const t = AC.currentTime;
+  switch (n) {
+    case 'stamp': tone('sine', 120, t, 0.18, 0.5, 45); nz(t, 0.09, 0.35, 'lowpass', 600); break;
+    case 'pen': for (let k = 0; k < 4; k++) nz(t + k * 0.055, 0.045, 0.07, 'bandpass', 2800 + Math.random() * 1800, 5); break;
+    case 'check': nz(t, 0.05, 0.1, 'bandpass', 2400, 3); break;
+    case 'paper': nz(t, 0.28, 0.14, 'highpass', 1600); break;
+    case 'file': tone('triangle', 659, t, 0.16, 0.16); tone('triangle', 988, t + 0.12, 0.3, 0.14); nz(t, 0.22, 0.08, 'highpass', 2000); break;
+    case 'error': tone('square', 196, t, 0.14, 0.06); tone('square', 165, t + 0.16, 0.22, 0.06); break;
+    case 'beep': tone('square', 1046, t, 0.05, 0.035); tone('square', 1568, t + 0.06, 0.06, 0.035); break;
+    case 'boop': tone('square', 784, t, 0.07, 0.035); tone('square', 587, t + 0.08, 0.08, 0.035); break;
+    case 'sip': nz(t, 0.2, 0.12, 'lowpass', 700); break;
+    case 'pour': nz(t, 1.8, 0.1, 'bandpass', 500, 2, 1500); break;
+    case 'clank': tone('square', 98, t, 0.08, 0.1); tone('square', 131, t + 0.1, 0.07, 0.08); nz(t, 0.12, 0.12, 'bandpass', 900, 2); break;
+    case 'rank': [523, 659, 784, 1047].forEach((f, k) => tone('triangle', f, t + k * 0.09, 0.22, 0.14)); break;
+    case 'drawer': nz(t, 0.3, 0.12, 'lowpass', 450); tone('sine', 85, t, 0.18, 0.12); break;
+    case 'meow': tone('sine', 620, t, 0.18, 0.1, 820); tone('sine', 820, t + 0.18, 0.25, 0.08, 520); break;
+    case 'tick': nz(t, 0.02, 0.05, 'highpass', 3000); break;
+    case 'purr': {                             // rumbling noise, wobbling ~24 times a second
+      const s = AC.createBufferSource(); s.buffer = brownBuf;
+      const f = AC.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 180;
+      const g = AC.createGain(); g.gain.value = 0;
+      const lfo = AC.createOscillator(); lfo.frequency.value = 24; const lg = AC.createGain(); lg.gain.value = 0.5;
+      lfo.connect(lg); lg.connect(g.gain);
+      const env = AC.createGain(); env.gain.setValueAtTime(0.0001, t); env.gain.exponentialRampToValueAtTime(1, t + 0.15); env.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+      s.connect(f); f.connect(g); g.connect(env); env.connect(master);
+      s.start(t); lfo.start(t); s.stop(t + 1.5); lfo.stop(t + 1.5);
+      break;
+    }
+  }
+}
+function setSound(on) {
+  S.sound = on;
+  if (master) master.gain.setTargetAtTime(on ? 0.7 : 0, AC.currentTime, 0.05);
+  renderTop();
+}
+$('sndBtn').onclick = () => { audioInit(); setSound(!S.sound); };
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'm' || e.key === 'M') { audioInit(); setSound(!S.sound); }
+  if (e.key === 'Escape') { if (!$('drawer').classList.contains('hidden')) $('drawer').classList.add('hidden'); }
+});
+addEventListener('pointerdown', () => audioInit(), { once: true });
+
+// ---------------------------------------------------------------------
+// 10. TIME PASSING (live, and while you were away) + MAIN LOOP
+// ---------------------------------------------------------------------
+function toast(s) {
+  const t = $('toasts');
+  while (t.children.length > 3) t.firstChild.remove();
+  const d = document.createElement('div'); d.className = 'toast'; d.textContent = s;
+  t.appendChild(d); setTimeout(() => d.remove(), 3600);
+}
+const inboxCap = () => S.up.tray ? 14 : 8;
+function deliverForm() {
+  if (S.filed >= 45 && !S.endSent) { S.endSent = true; S.inbox.unshift(newInst('27-B/6')); toast('A special form has arrived: 27-B/6.'); return; }
+  if (S.inbox.length >= inboxCap()) return;
+  S.inbox.push(randomForm()); snd('paper');
+}
+function deliverMemo() {
+  const m = MEMOS[S.memoNext];
+  if (!m || S.filed < m[0]) return;
+  S.memos.unshift({ from: m[1], sub: m[2], body: m[3], t: Date.now(), isNew: true });
+  S.memoNext++; toast('A memo has arrived from ' + m[1] + '.'); snd('paper');
+}
+let tick = 0;
+function update(dt) {
+  const now = Date.now();
+  // forms and memos arrive
+  S.nextForm -= dt;
+  if (S.nextForm <= 0) { S.nextForm = (S.up.tray ? 34 : 52) * rand(0.7, 1.3); deliverForm(); renderTrays(); }
+  S.nextMemo -= dt;
+  if (S.nextMemo <= 0) { S.nextMemo = rand(80, 150); deliverMemo(); renderTop(); }
+  // coffee cools, brewing finishes
+  S.coffee.temp = Math.max(0, S.coffee.temp - dt * (S.up.mug ? 0.17 : 0.26));
+  if (S.brewEnd && S.brewEnd <= now) { S.brewEnd = 0; S.coffee.lvl = 100; S.coffee.temp = 100; toast('Fresh coffee. The whole desk smells better.'); snd('pour'); }
+  if (S.focus > 0) S.focus -= dt;
+  // ink refills, calm drifts
+  S.ink = Math.min(inkMax(), S.ink + dt * (S.up.pen ? 0.5 : 0.25) * (S.focus > 0 ? 2 : 1));
+  const calmTarget = S.up.knob ? 75 : 55;
+  S.calm += (calmTarget - S.calm) * dt * 0.004;
+  if (S.coffee.temp > 45 && S.coffee.lvl > 0) S.calm = Math.min(100, S.calm + dt * 0.02);
+  if (rainCool > 0) rainCool -= dt;
+  updatePip(dt); updateCat(dt);
+  if (Math.random() < dt * 0.02) snd('tick');  // the radiator, ticking
+  // refresh the small things a few times a second
+  tick += dt;
+  if (tick > 0.5) { tick = 0; renderTop(); $('coffeeTxt').textContent = coffeeText(); }
+}
+// Catch up on everything that happened while the page was closed
+function catchUp() {
+  const away = (Date.now() - S.lastSeen) / 1000;
+  if (away < 60) return;
+  const was = { forms: S.inbox.length, filed: S.filed, stamps: S.stamps };
+  const per = S.up.tray ? 34 : 52;
+  const n = Math.min(inboxCap() - S.inbox.length, Math.floor(away / per));
+  for (let i = 0; i < n; i++) S.inbox.push(randomForm());
+  S.coffee.temp = Math.max(0, S.coffee.temp - away * 0.26);
+  S.ink = inkMax();
+  let pipFiled = 0, pipBack = 0;
+  if (S.up.night) {                             // Pip's night shift
+    const jobs = Math.min(S.inbox.length, Math.floor(away / 120));
+    const acc = S.up.glasses ? 0.8 : 0.55;
+    for (let j = 0; j < jobs; j++) {
+      const f = S.inbox.shift();
+      if (Math.random() < acc) {
+        const tpl = getTpl(f.code);
+        S.stamps += Math.ceil(tpl.reward / 2); S.filed++; S.out++; S.catalog[f.code] = (S.catalog[f.code] || 0) + 1; pipFiled++;
+      } else { f.ret = 'Pip filed this one during the night shift. Something is wrong with it. Pip is very sorry and has drawn a small heart on it.'; S.inbox.push(f); pipBack++; }
+    }
+    logPip('night shift: filed ' + pipFiled + ', returned ' + pipBack + '. i did my best. the rain kept me company.');
+  }
+  S.pipBat = Math.max(20, S.pipBat - away / 60);
+  const hrs = away / 3600;
+  const body = 'While you were away (' + (hrs >= 1 ? hrs.toFixed(1) + ' hours' : Math.round(away / 60) + ' minutes') + '): ' + (S.inbox.length - was.forms + pipFiled + pipBack > 0 ? (S.inbox.length - was.forms + pipFiled) + ' forms arrived. ' : 'nothing arrived. ') +
+    (S.up.night ? 'Pip filed ' + pipFiled + ' of them' + (pipBack ? ' and returned ' + pipBack + ' with apologies' : '') + ', earning ' + (S.stamps - was.stamps) + ' stamps. ' : '') + 'Your coffee went cold. The rain did not stop.';
+  S.memos.unshift({ from: 'Desk 27', sub: 'While you were away', body, t: Date.now(), isNew: true });
+  setTimeout(() => toast('Welcome back. There is a memo about while you were away.'), 900);
+}
+function start() {
+  if (firstRun) {                              // day one: onboarding on the desk, two forms waiting
+    S.cur = newInst('00-1', { fresh: true });
+    S.inbox.push(newInst('3-P'), newInst('4-S'));
+    setTimeout(() => pipSay('hello! i am pip. i am your desk bot. fill out this first one, i will help!', 'happy'), 1200);
+    logPip('first day. new clerk. i am going to be so helpful.');
+  } else {
+    catchUp();
+    setTimeout(() => pipSay(S.name ? 'welcome back, ' + S.name.split(' ')[0].toLowerCase() + '. it is still raining.' : 'welcome back!', 'happy'), 1200);
+  }
+  pipMove(72);
+  corkI = randi(0, 10); corkNext(); setInterval(corkNext, 45000);
+  renderAll();
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    update(dt);
+    drawRain(dt); drawPip(); drawCat(); drawMug(); drawPlant();
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  setInterval(() => { if (!document.hidden) save(); }, 5000);   // background tabs keep their 'last seen' time
+  addEventListener('visibilitychange', () => { if (document.hidden) save(); else { catchUp(); renderAll(); } });
+  addEventListener('beforeunload', save);
+}
+start();
+</script>
+</body>
+</html>
