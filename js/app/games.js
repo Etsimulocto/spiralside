@@ -48,6 +48,14 @@ export const GAMES = [
     thumb: '/games/blink/art/thumb.jpg',   // title screen render, made for this menu
     tag: 'gamepad',
   },
+  {
+    id: 'spiralrun',
+    name: 'spiral city run',
+    blurb: '16-bit dash down the spiral to the Core before the clock runs out.',
+    href: '/games/spiral-city-run/',
+    thumb: '/games/spiral-city-run/art/thumb.jpg',
+    tag: 'gamepad',
+  },
 ];
 
 // ── STYLES ─────────────────────────────────────────────────

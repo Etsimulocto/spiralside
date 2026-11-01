@@ -1,0 +1,1739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spiral City Run</title>
+<link rel="icon" type="image/png" href="art/icon-64.png">
+<link rel="apple-touch-icon" href="art/icon-256.png">
+<style>
+  /* Black page, game centered, no scrollbars */
+  html, body { margin:0; height:100%; background:#000; overflow:hidden; }
+  body { display:flex; align-items:center; justify-content:center; touch-action:none; user-select:none; -webkit-user-select:none; }
+  /* The visible canvas. Pixels stay sharp when scaled up */
+  #screen { display:block; image-rendering:pixelated; image-rendering:crisp-edges; outline:none; }
+</style>
+</head>
+<body>
+<canvas id="screen" tabindex="0"></canvas>
+<script>
+'use strict';
+// =====================================================================
+//  SPIRAL CITY RUN  -  a QuarterbitGames original
+//  Top-down 16-bit runner. Spiral City is one road that winds inward to
+//  the Core. The camera turns the city under Sky (like SNES Mode 7) so
+//  she always runs "up" the screen while the turns get tighter.
+//
+//  One file, no build step, no assets required. Everything (map, sprites,
+//  font, music, sound) is generated in code.
+//
+//  Layout of this file:
+//    1. constants + spiral math
+//    2. helpers (colors, hashing, dithering)
+//    3. pixel font
+//    4. sprites (Sky, cars, props)
+//    5. city map generator
+//    6. audio (music sequencer + sound effects)
+//    7. input (keyboard + gamepad)
+//    8. game state, course building, update
+//    9. drawing (world, HUD, screens)
+//   10. main loop + display scaling
+// =====================================================================
+
+// ---------------------------------------------------------------------
+// 1. CONSTANTS + SPIRAL MATH
+// ---------------------------------------------------------------------
+const TAU = Math.PI * 2;                       // a full turn in radians
+const W = 256, H = 224;                        // real SNES resolution
+const R0 = 1060;                               // radius where the road starts (outer edge of the city)
+const PITCH = 176;                             // distance between one lap of road and the next, in pixels
+const B = PITCH / TAU;                         // spiral tightness: radius lost per radian travelled
+const ROAD_HALF = 44;                          // half the road width (road is 88px wide, 4 lanes)
+const SIDEWALK = 8;                            // sidewalk width each side of the road
+const LANES = [-30, -10, 10, 30];              // lane centers. negative = left (oncoming), positive = right
+const SKY_LIMIT = 38;                          // how far Sky can move left/right from the road center
+const R_PLAZA = 150;                           // radius of the Core plaza in the middle of the city
+const THETA_START = -1.4;                      // road begins a bit "before" angle 0 (the bridge in)
+const THETA_END = (R0 - R_PLAZA) / B;          // angle where the road reaches the plaza (about 5.2 laps)
+const THETA_FIN = THETA_END - 0.3;             // the finish line, just before the plaza
+const R_COAST = R0 + 68;                       // the island's shoreline; water outside this
+const MAP = Math.ceil((R_COAST + 200) * 2 / 8) * 8;   // size of the generated city image (square)
+const CX = MAP / 2, CY = MAP / 2;              // city center inside that image
+const SKY_Y = 166;                             // where Sky stands on screen (lower half, so you see ahead)
+const LAPS = Math.ceil(THETA_FIN / TAU);       // number of laps from start to finish (6)
+const DISTRICTS = ['OUTER DOCKS', 'NEON MARKET', 'SIGNAL HEIGHTS', 'BLOOM GARDENS', 'THE COIL', 'THE CORE'];
+
+// Radius of the road's center line at spiral angle th
+const rArm = th => R0 - B * th;
+// Distance along the road (in pixels) from angle 0 to angle th
+const arcLen = th => R0 * th - B * th * th / 2;
+// Inverse of arcLen: which angle is S pixels down the road
+const thetaAt = S => (R0 - Math.sqrt(R0 * R0 - 2 * B * S)) / B;
+// World position (inside the map image) of a point on the road.
+// x is the sideways offset: positive = toward the city center (screen right)
+function worldPoint(th, x) {
+  const r = rArm(th) - x;                      // actual radius of that point
+  return [CX + r * Math.cos(th), CY + r * Math.sin(th)];
+}
+// Which lap (0-based) a road angle belongs to
+const lapOf = th => Math.max(0, Math.min(LAPS - 1, Math.floor(th / TAU)));
+
+// ---------------------------------------------------------------------
+// 2. HELPERS
+// ---------------------------------------------------------------------
+// "#rrggbb" -> one 32-bit pixel value in canvas memory order (ABGR, little endian)
+function px32(hex) {
+  const n = parseInt(hex.slice(1), 16);        // the 24-bit color number
+  const r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+  return (255 << 24 | b << 16 | g << 8 | r) >>> 0;
+}
+// Lighten (+) or darken (-) a "#rrggbb" color by amt (0-255 steps)
+function shadeHex(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = v => Math.max(0, Math.min(255, v + amt));
+  const r = c(n >> 16 & 255), g = c(n >> 8 & 255), b = c(n & 255);
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+// Fast integer hash -> number 0..1. Same input always gives the same output,
+// so the city looks identical every time it is generated.
+function hash(n) {
+  n = (n ^ 61) ^ (n >>> 16);
+  n = (n + (n << 3)) | 0;
+  n = n ^ (n >>> 4);
+  n = Math.imul(n, 0x27d4eb2d);
+  n = n ^ (n >>> 15);
+  return (n >>> 0) / 4294967296;
+}
+// Hash of two integers
+const hash2 = (a, b) => hash(Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663));
+// 4x4 ordered-dither matrix, the classic 16-bit way to fake gradients
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16);
+const bayer = (x, y) => BAYER[(y & 3) * 4 + (x & 3)];
+// Small math helpers
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[(Math.random() * arr.length) | 0];
+
+// Bloomcore palette, used everywhere
+const PAL = {
+  void: '#101014', teal: '#00F6D6', blue: '#4DA3FF', pink: '#FF4BCB',
+  yellow: '#FFD93D', white: '#F3F7FF', purple: '#7B5FFF', red: '#FF4B5C',
+  grey: '#8a86a3', dim: '#5d5a78',
+};
+
+// ---------------------------------------------------------------------
+// 3. PIXEL FONT (5x7, drawn from bits, cached per color)
+// ---------------------------------------------------------------------
+// Each entry: the character, then 7 rows encoded as one base-32 digit each
+// (a 5-bit row). Generated from a readable table; see README.
+const FONT_SRC = "AEHHVHHH|BUHHUHHU|CEHGGGHE|DUHHHHHU|EVGGUGGV|FVGGUGGG|GEHGNHHF|HHHHVHHH|IE44444E|J72222IC|KHIKOKIH|LGGGGGGV|MHRLLHHH|NHHPLJHH|OEHHHHHE|PUHHUGGG|QEHHHLID|RUHHUKIH|SFGGE11U|TV444444|UHHHHHHE|VHHHHHA4|WHHHLLLA|XHHA4AHH|YHHA4444|ZV1248GV|0EHJLPHE|14C4444E|2EH1248V|3V2421HE|426AIV22|5VGU11HE|668GUHHE|7V124888|8EHHEHHE|9EHHF12C|:0CC0CC0|.00000CC|!4444404|?EH12404|-000V000|+044V440|/122488G|'4480000|,0000C48|>8421248|<248G842|x00HA4AH|(2488842|)8422248|*4LEVEL4|=00V0V00|%OP248J3|#AAVAVAA|^4EL4440";
+const B32 = '0123456789ABCDEFGHIJKLMNOPQRSTUV';
+const GLYPHS = {};                             // char -> array of 7 row bitmasks
+const GLYPH_ORDER = [];                        // chars in sheet order
+FONT_SRC.split('|').forEach(e => {
+  GLYPHS[e[0]] = [...e.slice(1)].map(c => B32.indexOf(c));
+  GLYPH_ORDER.push(e[0]);
+});
+const fontCache = {};                          // color -> canvas holding every glyph in that color
+function fontSheet(color) {
+  if (fontCache[color]) return fontCache[color];
+  const c = document.createElement('canvas');
+  c.width = GLYPH_ORDER.length * 6; c.height = 7;
+  const g = c.getContext('2d');
+  g.fillStyle = color;
+  GLYPH_ORDER.forEach((ch, i) => {             // paint each glyph's lit bits
+    GLYPHS[ch].forEach((row, y) => {
+      for (let x = 0; x < 5; x++) if (row & (16 >> x)) g.fillRect(i * 6 + x, y, 1, 1);
+    });
+  });
+  return (fontCache[color] = c);
+}
+// Pixel width of a string at a given scale
+const textW = (s, sc = 1) => s.length * 6 * sc - sc;
+// Draw text. align: 'left' | 'center' | 'right'. shadow: color for a 1px drop shadow,
+// or 'outline' style via outline color (draws all 8 neighbors)
+function text(ctx, s, x, y, color, sc = 1, align = 'left', shadow = PAL.void, outline = null) {
+  s = String(s).toUpperCase().replace(/X(?=\d)/g, 'x');   // keep "x" glyph for counts like x12
+  const w = textW(s, sc);
+  if (align === 'center') x -= w / 2; else if (align === 'right') x -= w;
+  x = Math.round(x); y = Math.round(y);
+  const put = (col, ox, oy) => {               // one pass of the whole string in one color
+    const sheet = fontSheet(col);
+    for (let i = 0; i < s.length; i++) {
+      const gi = GLYPH_ORDER.indexOf(s[i] === 'x' ? 'x' : s[i]);
+      if (gi < 0) continue;                    // spaces and unknown chars are just gaps
+      ctx.drawImage(sheet, gi * 6, 0, 5, 7, x + ox + i * 6 * sc, y + oy, 5 * sc, 7 * sc);
+    }
+  };
+  if (outline) {                               // thick outline: draw around in 8 directions
+    for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) if (ox || oy) put(outline, ox * sc, oy * sc);
+  } else if (shadow) put(shadow, sc, sc);      // simple drop shadow
+  put(color, 0, 0);
+}
+
+// ---------------------------------------------------------------------
+// 4. SPRITES
+// ---------------------------------------------------------------------
+// Turn a list of strings + a palette into a canvas. '.' = transparent.
+function spriteFrom(rows, pal) {
+  const c = document.createElement('canvas');
+  c.width = rows[0].length; c.height = rows.length;
+  const g = c.getContext('2d');
+  rows.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === '.' || !pal[ch]) return;
+    g.fillStyle = pal[ch]; g.fillRect(x, y, 1, 1);
+  }));
+  return c;
+}
+// Build a sprite from a grid of palette indexes, then add a dark outline
+// around everything (the 16-bit "sticker" look).
+function spriteFromGrid(grid, w, h, colors) {
+  const out = grid.slice();
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    if (grid[y * w + x]) continue;             // only empty pixels can become outline
+    const n = (xx, yy) => xx >= 0 && yy >= 0 && xx < w && yy < h && grid[yy * w + xx] > 1;
+    if (n(x - 1, y) || n(x + 1, y) || n(x, y - 1) || n(x, y + 1)) out[y * w + x] = 1;
+  }
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d');
+  for (let i = 0; i < w * h; i++) if (out[i]) {
+    g.fillStyle = colors[out[i]]; g.fillRect(i % w, (i / w) | 0, 1, 1);
+  }
+  return c;
+}
+
+// --- SKY (our runner), seen from behind and above, 16x20 ---
+// Palette slots: 1 outline, 2 hair, 3 hair shine, 4 skin, 5 jacket, 6 jacket shade,
+// 7 pants, 8 shoes, 9 scarf, 10 scarf dark, 11 hair dark
+const SKY_COLORS = [null, '#101014', '#00F6D6', '#9ffff2', '#f0c39b', '#F3F7FF', '#a9b5d6', '#2b3a6b', '#FFD93D', '#FF4BCB', '#b02a88', '#00a896'];
+// legL / legR: how far each leg reaches below the jacket. armL / armR: arm swing
+// (negative = forward/up). pose: 'run' | 'jump' | 'hurt'
+function makeSky(legL, legR, armL, armR, pose) {
+  const w = 16, h = 20, grid = new Array(w * h).fill(0);
+  const set = (x, y, c) => { if (x >= 0 && y >= 0 && x < w && y < h) grid[y * w + x] = c; };
+  // legs first (they sit under the jacket)
+  const leg = (x0, len) => {
+    for (let y = 12; y < 13 + len; y++) { set(x0, y, 7); set(x0 + 1, y, 7); }
+    set(x0, 13 + len, 8); set(x0 + 1, 13 + len, 8);          // yellow shoes
+  };
+  leg(5, legL); leg(9, legR);
+  // arms: 2px wide jacket sleeves with a skin-colored hand on the end
+  const arm = (x0, swing) => {
+    if (pose === 'hurt') {                     // arms flung out sideways
+      const dir = x0 < 8 ? -1 : 1;
+      for (let i = 0; i < 3; i++) { set(x0 + dir * i, 8, 5); set(x0 + dir * i, 9, 6); }
+      set(x0 + dir * 3, 8, 4); set(x0 + dir * 3, 9, 4);
+      return;
+    }
+    const top = 8 + swing, bot = 11 + swing;
+    for (let y = top; y <= bot; y++) { set(x0, y, 5); set(x0 + 1, y, 6); }
+    const hy = swing < 0 ? top - 1 : bot + 1; // hand at the leading end
+    set(x0, hy, 4); set(x0 + 1, hy, 4);
+  };
+  arm(2, armL); arm(12, armR);
+  // jacket body (rows 7-12)
+  for (let y = 7; y <= 12; y++) for (let x = 4; x <= 11; x++) {
+    let c = 5;                                 // white jacket
+    if (x === 4 || x === 11 || y === 12) c = 6;   // shaded edges and hem
+    if (x === 7 && y >= 9) c = 6;              // back seam
+    set(x, y, c);
+  }
+  set(4, 7, 0); set(11, 7, 0);                 // round off the shoulders
+  // pink scarf wrapped around the neck
+  for (let x = 5; x <= 10; x++) { set(x, 6, 9); set(x, 7, x % 2 ? 9 : 10); }
+  // head: teal hair seen from behind, with a shine
+  // big squarish chibi head (16-bit proportions): row widths from top to bottom
+  const HEAD = [[5, 10], [4, 11], [4, 11], [4, 11], [4, 11], [5, 10]];
+  HEAD.forEach(([x0, x1], y) => {
+    for (let x = x0; x <= x1; x++) {
+      let c = 2;                               // teal hair
+      if (y <= 1 && x <= 7) c = 3;             // shine on the top-left
+      if (y >= 4 || x === x1) c = 11;          // darker underside and right side
+      if (y === 5 && (x === 6 || x === 9)) c = 2;   // a few strands catching light
+      set(x, y, c);
+    }
+  });
+  set(3, 3, 4); set(12, 3, 4);                 // ears peeking out
+  set(8, 0, 2); set(9, 0, 3);                  // little cowlick on top
+  return spriteFromGrid(grid, w, h, SKY_COLORS);
+}
+// Four running frames (legs and arms swap), plus jump and hurt
+const SKY_RUN = [
+  makeSky(1, 4, -2, 1, 'run'),
+  makeSky(2, 3, -1, 0, 'run'),
+  makeSky(4, 1, 1, -2, 'run'),
+  makeSky(3, 2, 0, -1, 'run'),
+];
+const SKY_JUMP = makeSky(0, 0, -3, -3, 'run');
+const SKY_HURT = makeSky(2, 2, 0, 0, 'hurt');
+const SKY_IDLE = makeSky(2, 2, 0, 0, 'run');
+
+// --- HOVER CARS, 14x21, front at the top ---
+const CAR_ROWS = [
+  '...kkkkkkkk...',
+  '..kLbbbbbbLk..',
+  '.kbbbbbbbbbbk.',
+  '.kbbbbbbbbbbk.',
+  'kbBggggggggBbk',
+  'kbBgGggggggBbk',
+  'kbBggggggggBbk',
+  'kbbbbbbbbbbbbk',
+  'kbBbbbssbbbBbk',
+  'kbBbbbssbbbBbk',
+  'kbBbbbssbbbBbk',
+  'kbBbbbssbbbBbk',
+  'kbBbbbssbbbBbk',
+  'kbbbbbbbbbbbbk',
+  'kbBggggggggBbk',
+  'kbBggggggggBbk',
+  'kbbbbbbbbbbbbk',
+  '.kbbbbbbbbbbk.',
+  '.kbbbbbbbbbbk.',
+  '..kRbbbbbbRk..',
+  '...kkkkkkkk...',
+];
+// Body color, shade, stripe for each paint job
+const CAR_PAINTS = [
+  ['#FF4BCB', '#b02a88', '#F3F7FF'],
+  ['#4DA3FF', '#2a5fa8', '#FFD93D'],
+  ['#FFD93D', '#b8962a', '#101014'],
+  ['#7B5FFF', '#4b38a8', '#00F6D6'],
+  ['#F3F7FF', '#a9b3cc', '#FF4BCB'],
+  ['#00F6D6', '#009e8a', '#101014'],
+];
+// Each paint job gets an "up" version (same direction as Sky) and a flipped
+// "down" version (oncoming, headlights facing Sky)
+const CARS = CAR_PAINTS.map(([b, s, st]) => {
+  const pal = { k: '#101014', b, B: s, s: st, g: '#1b2340', G: '#8fb4ff', L: '#fff6c8', R: '#FF4B5C' };
+  const up = spriteFrom(CAR_ROWS, pal);
+  const down = document.createElement('canvas');   // vertical flip
+  down.width = up.width; down.height = up.height;
+  const dg = down.getContext('2d'); dg.translate(0, up.height); dg.scale(1, -1); dg.drawImage(up, 0, 0);
+  return { up, down };
+});
+
+// --- PROPS ---
+const CONE = spriteFrom([
+  '.kkkkk.',
+  'kOoooOk',
+  'kowwwok',
+  'kowowok',
+  'kowwwok',
+  'kOoooOk',
+  '.kkkkk.',
+], { k: '#101014', o: '#ff8a2a', O: '#b8541a', w: '#F3F7FF' });
+const BARRIER = spriteFrom([
+  'kkkkkkkkkk',
+  'kyyddyyddk',
+  'kyddyyddyk',
+  'kddyyddyyk',
+  'kkkkkkkkkk',
+  '.kk....kk.',
+], { k: '#101014', y: '#FFD93D', d: '#2a2833' });
+// Bloom spark (2 animation frames). c = main color slot
+function sparkSprite(main, bright) {
+  const pal = { w: '#F3F7FF', c: main, C: bright, W: '#ffffff', k: '#101014' };
+  return [
+    spriteFrom(['...w...', '..wcw..', '.wcCcw.', 'wcCWCcw', '.wcCcw.', '..wcw..', '...w...'], pal),
+    spriteFrom(['.......', '...w...', '..wCw..', '.wCWCw.', '..wCw..', '...w...', '.......'], pal),
+  ];
+}
+const SPARK_T = sparkSprite('#00F6D6', '#9ffff2');   // teal = 1 point
+const SPARK_P = sparkSprite('#FF4BCB', '#ffb3ea');   // pink = 5 points (air sparks)
+const CLOCK = spriteFrom([
+  '..kkkkk..',
+  '.kyyyyyk.',
+  'kyywkwyyk',
+  'kyyykyyyk',
+  'kyyykkkyk',
+  'kyyyyyyyk',
+  'kyywyyyyk',
+  '.kyyyyyk.',
+  '..kkkkk..',
+], { k: '#101014', y: '#FFD93D', w: '#F3F7FF' });
+// Boost pad: dark plate with teal chevrons; 2 frames so the arrows "run"
+function boostSprite(phase) {
+  const c = document.createElement('canvas'); c.width = 16; c.height = 16;
+  const g = c.getContext('2d');
+  g.fillStyle = '#101014'; g.fillRect(0, 0, 16, 16);
+  g.fillStyle = '#1d2a33'; g.fillRect(1, 1, 14, 14);
+  for (let i = 0; i < 3; i++) {                // three stacked chevrons ^
+    const y0 = 2 + i * 5;
+    g.fillStyle = (i + phase) % 3 === 0 ? '#ffffff' : '#00F6D6';
+    for (let k = 0; k < 6; k++) {              // each chevron is two diagonal strokes
+      g.fillRect(8 - 1 - k, y0 + k * 0.6 + 0 | 0, 1, 2);
+      g.fillRect(8 + k, y0 + k * 0.6 + 0 | 0, 1, 2);
+    }
+  }
+  return c;
+}
+const BOOST = [boostSprite(0), boostSprite(1), boostSprite(2)];
+// Glitch puddle: shimmering neon oil, 22x10, 3 frames
+function puddleSprite(phase) {
+  const c = document.createElement('canvas'); c.width = 22; c.height = 10;
+  const g = c.getContext('2d');
+  const cols = ['#2a1f4a', '#7B5FFF', '#FF4BCB', '#4DA3FF', '#00F6D6'];
+  for (let y = 0; y < 10; y++) for (let x = 0; x < 22; x++) {
+    const dx = (x - 10.5) / 11, dy = (y - 4.5) / 5;
+    const d = dx * dx + dy * dy;
+    if (d > 1) continue;                       // outside the oval
+    let ci = d > 0.75 ? 0 : 1 + ((x + y * 2 + phase * 2) >> 2) % 4;   // diagonal neon bands
+    if (d > 0.75 && (x + y) % 2) ci = 1;       // dithered rim
+    g.fillStyle = cols[ci]; g.fillRect(x, y, 1, 1);
+  }
+  return c;
+}
+const PUDDLE = [puddleSprite(0), puddleSprite(1), puddleSprite(2)];
+// Dithered oval (every other pixel) - the 16-bit way to fake see-through glow/shadow
+function ditherOval(w, h, color, solidCore) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); g.fillStyle = color;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const dx = (x + 0.5 - w / 2) / (w / 2), dy = (y + 0.5 - h / 2) / (h / 2);
+    const d = dx * dx + dy * dy;
+    if (d > 1) continue;
+    if (d < solidCore || (x + y) % 2 === 0) g.fillRect(x, y, 1, 1);
+  }
+  return c;
+}
+const SHADOW_SKY = ditherOval(12, 5, '#06060a', 0.35);    // Sky's shadow on the ground
+const SHADOW_CAR = ditherOval(16, 24, '#06060a', 0.3);    // hover car shadow
+const GLOW_CAR = ditherOval(20, 27, '#00F6D6', 0);        // teal underglow
+// Headlight beam for oncoming cars: dithered yellow wedge pointing down the screen
+const BEAM = (() => {
+  const c = document.createElement('canvas'); c.width = 22; c.height = 40;
+  const g = c.getContext('2d'); g.fillStyle = '#fff6c8';
+  for (let y = 0; y < 40; y++) {
+    const half = 4 + y * 0.18;                 // wedge widens as it goes
+    for (let x = 0; x < 22; x++) {
+      if (Math.abs(x + 0.5 - 11) > half) continue;
+      const keep = y < 14 ? (x + y) % 2 === 0 : (x % 2 === 0 && y % 2 === 0);  // fades out
+      if (keep) g.fillRect(x, y, 1, 1);
+    }
+  }
+  return c;
+})();
+
+// ---------------------------------------------------------------------
+// 5. CITY MAP GENERATOR
+//    Every pixel of the city is decided by math: which lap of road is
+//    nearest, how far from its center, which block, which building.
+// ---------------------------------------------------------------------
+// Roof colors for each district (one district per lap)
+const DIST_ROOFS = [
+  ['#3b4a55', '#4a3d36', '#2f4148', '#45484f'],   // OUTER DOCKS: steel and rust
+  ['#4a2f5a', '#3a2f63', '#5a2f4a', '#33284f'],   // NEON MARKET: purples
+  ['#2c3c66', '#26345a', '#34466e', '#3a3a62'],   // SIGNAL HEIGHTS: blues
+  ['#2f4a3f', '#3a4a36', '#2c3f4a', '#45403a'],   // BLOOM GARDENS: greens
+  ['#26262f', '#2c2438', '#212c32', '#322a3a'],   // THE COIL: near-black
+  ['#4a4a62', '#545472', '#3e4a66', '#5a5070'],   // THE CORE: silver
+];
+const DIST_NEON = [['#4DA3FF', '#FFD93D'], ['#FF4BCB', '#7B5FFF'], ['#FFD93D', '#4DA3FF'], ['#00F6D6', '#FFD93D'], ['#00F6D6', '#FF4BCB'], ['#F3F7FF', '#00F6D6']];
+const DIST_LIT = ['#FFD93D', '#FF4BCB', '#4DA3FF', '#FFD93D', '#00F6D6', '#00F6D6'];
+const DIST_PARK = [0.05, 0.06, 0.06, 0.32, 0.04, 0.12];   // chance a block is a park
+// Pre-packed roof shades: highlight edge, base, shadow edge, gravel dither
+const ROOF = DIST_ROOFS.map(list => list.map(h => ({
+  hi: px32(shadeHex(h, 26)), base: px32(h), lo: px32(shadeHex(h, -24)), dith: px32(shadeHex(h, -11)),
+})));
+const NEON32 = DIST_NEON.map(p => p.map(px32));
+const NEON32_DIM = DIST_NEON.map(p => p.map(h => px32(shadeHex(h, -90))));
+const LIT32 = DIST_LIT.map(px32);
+// Every other fixed color the city uses, pre-packed
+const Q = {
+  outline: px32('#121019'), alley: px32('#17151f'),
+  asph: px32('#25232f'), asphSpeck: px32('#2d2b39'), gutter: px32('#1d1b26'),
+  asphLit: px32('#3a3650'), asphLitSpeck: px32('#45405e'),
+  laneLine: px32('#8d8aa6'), edgeLine: px32('#b9b6d0'), yellowLine: px32('#c9a227'),
+  startA: px32('#F3F7FF'), startB: px32('#101014'), cpA: px32('#00F6D6'), cpB: px32('#007a6b'),
+  rail: px32('#8a86a3'),
+  curb: px32('#6e6a86'), walk: px32('#3b3850'), walkLit: px32('#55506e'), walkSeam: px32('#302d42'),
+  post: px32('#101014'), lamp: px32('#FFE98A'),
+  water: px32('#0c1233'), wave: px32('#1d2f63'), waveDim: px32('#142050'), foam: px32('#5a7ab0'),
+  seawall: px32('#5a566e'),
+  plazaA: px32('#3a3650'), plazaB: px32('#433e5c'), plazaSeam: px32('#2c2940'), inlay: px32('#0f6f66'),
+  plazaWall: px32('#6e6a86'),
+  coreRing: px32('#00F6D6'), coreDark: px32('#16161f'), corePink: px32('#FF4BCB'), coreWhite: px32('#F3F7FF'),
+  glass: px32('#1b2238'), ac: px32('#6e6b84'), acDark: px32('#4a475c'), fan: px32('#2a2838'),
+  tank: px32('#7a5a40'), tankDark: px32('#4e3828'),
+  heli: px32('#3a3a48'), heliRing: px32('#c9c6dd'), heliH: px32('#FFD93D'),
+  grass: px32('#1f3d2a'), grassD: px32('#23452f'), treeD: px32('#173322'), treeL: px32('#3c8a4a'), tree: px32('#2a5e36'),
+  path: px32('#4a4560'), hedge: px32('#14301e'),
+  lot: px32('#2a2833'), stall: px32('#6e6a86'),
+  tileA: px32('#3c3852'), tileB: px32('#423d5a'), fountain: px32('#2f7fbf'), fountainHi: px32('#9fd8ff'),
+  yard: px32('#2f2d3a'), ware: px32('#44465a'), wareRidge: px32('#55576e'), wareDark: px32('#383a4c'),
+};
+const CONTAINERS = ['#8a4a3a', '#2a5a8a', '#2a7a70', '#a88a2a', '#7a3a6a'].map(h => [px32(h), px32(shadeHex(h, -30))]);
+const CAR32 = CAR_PAINTS.map(p => px32(p[0]));
+
+// Brightness (0..1+) of streetlight pools at road distance s, sideways x.
+// Lights stand every 48px, alternating sides of the road.
+function lightLevel(s, x) {
+  let best = 0;
+  const k0 = Math.round(s / 48);
+  for (let k = k0 - 1; k <= k0 + 1; k++) {
+    const lx = (k & 1) ? 49 : -49;             // which side this lamp is on
+    const ds = s - k * 48, dx = x - lx;
+    const d = Math.sqrt(ds * ds + dx * dx);
+    if (d < 30) best = Math.max(best, (1 - d / 30) * 1.15);
+  }
+  return best;
+}
+
+// The road surface, its paint, the bridge and the special lines
+function roadPixel(px, py, th, x, ax, r) {
+  const sR = th * rArm(th);                    // distance along the road (for dashes)
+  if (r > R_COAST - 4 && ax > 41) return ax > 43 ? Q.outline : Q.rail;   // bridge railings
+  const dStart = arcLen(th);                   // start line at distance 0
+  if (Math.abs(dStart) < 4) return ((Math.floor(ax / 3) + Math.floor((dStart + 4) / 3)) & 1) ? Q.startA : Q.startB;
+  const dFin = (th - THETA_FIN) * rArm(th);    // finish line
+  if (Math.abs(dFin) < 4) return ((Math.floor(ax / 3) + Math.floor((dFin + 4) / 3)) & 1) ? Q.startA : Q.startB;
+  const cpK = Math.round(th / Math.PI);        // checkpoint lines every half lap
+  if (cpK >= 1 && th < THETA_FIN - 0.4) {
+    const dc = (th - cpK * Math.PI) * rArm(th);
+    if (Math.abs(dc) < 1.3) return (Math.floor(ax / 4) & 1) ? Q.cpA : Q.cpB;
+  }
+  if (Math.abs(ax - 1.5) < 0.55) return Q.yellowLine;        // double yellow center line
+  if (Math.abs(ax - 40) < 0.6) return Q.edgeLine;            // solid white edge lines
+  if (Math.abs(ax - 20) < 0.55 && (((sR % 22) + 22) % 22) < 11) return Q.laneLine;   // dashed lane lines
+  const speck = hash2(px, py) > 0.93;          // asphalt grit
+  if (lightLevel(sR, x) > bayer(px, py)) return speck ? Q.asphLitSpeck : Q.asphLit;  // dithered lamp light
+  if (ax > 41) return Q.gutter;                // dark gutter at the road edge
+  return speck ? Q.asphSpeck : Q.asph;
+}
+
+// Sidewalks with curbs, tile seams and streetlight posts
+function sidewalkPixel(px, py, th, x, ax) {
+  if (ax <= ROAD_HALF + 2) return Q.curb;
+  const s = th * rArm(th);
+  const k = Math.round(s / 48), lx = (k & 1) ? 49 : -49;
+  if (Math.sign(lx) === Math.sign(x) && Math.abs(s - k * 48) < 1.6 && Math.abs(x - lx) < 1.6) {
+    return (Math.abs(s - k * 48) < 0.6 && Math.abs(x - lx) < 0.6) ? Q.lamp : Q.post;   // lamp head
+  }
+  if ((((s % 8) + 8) % 8) < 1) return Q.walkSeam;
+  if (lightLevel(s, x) > bayer(px, py) + 0.15) return Q.walkLit;
+  return Q.walk;
+}
+
+// The bay around the island: waves, foam, city-light reflections
+function waterPixel(px, py, r) {
+  if (r < R_COAST + 2) return Q.foam;
+  const w = Math.sin(px * 0.23 + Math.sin(py * 0.07) * 2.2) + Math.sin(py * 0.19 + px * 0.05);   // small ripples
+  if (w > 1.6) return Q.wave;
+  if (r < R_COAST + 40 && hash2(px, py) > 0.992) return NEON32[(px + py) % 6][py & 1];   // reflections
+  if (w > 1.15 && ((px ^ py) & 1)) return Q.waveDim;
+  return Q.water;
+}
+
+// The Core plaza in the middle, with the Core itself at the very center
+function plazaPixel(px, py, r, ang) {
+  if (r > R_PLAZA - 3) return Q.plazaWall;
+  if (r < 40) {                                // the Core
+    if (r > 36) return Q.coreRing;
+    if (r > 33) return Q.outline;
+    if (r < 4) return Q.coreWhite;
+    const f = (r / 9 + ang / TAU) % 1;         // a pink spiral painted on the Core
+    return f < 0.2 ? Q.corePink : Q.coreDark;
+  }
+  if ((((r / 30 - ang / TAU) % 1) + 1) % 1 < 0.05) return Q.inlay;   // teal spiral inlay in the tiles
+  if (((ang * 32 / TAU) % 1) < 0.06) return Q.plazaSeam;              // radial seams
+  return (Math.floor(r / 10) & 1) ? Q.plazaA : Q.plazaB;              // tile rings
+}
+
+// Parks: grass, hedges, a path and trees
+function parkPixel(px, py, u, v, L, D) {
+  if (u === 0 || v === 0 || u === L - 1 || v === D - 1) return Q.hedge;
+  if (Math.abs(v - D / 2) < 1) return Q.path;
+  const gx = Math.floor(px / 9), gy = Math.floor(py / 9);
+  const h = hash2(gx + 7, gy + 3);
+  if (h > 0.35) {                              // a tree in this little cell
+    const tx = gx * 9 + 4.5 + (hash2(gx, gy) - 0.5) * 2, ty = gy * 9 + 4.5 + (hash2(gy, gx) - 0.5) * 2;
+    const dx = px + 0.5 - tx, dy = py + 0.5 - ty, d = dx * dx + dy * dy;
+    if (d < 11) return (dx + dy < -2) ? Q.treeL : (d > 7 ? Q.treeD : Q.tree);
+  }
+  return ((px + py) & 1) && hash2(px, py) > 0.6 ? Q.grassD : Q.grass;
+}
+
+// Parking lots: stalls and a few parked cars
+function lotPixel(px, py, u, v, L, D, cell, row) {
+  if (u === 0 || v === 0 || u === L - 1 || v === D - 1) return Q.outline;
+  const top = v < D * 0.38, bot = v > D * 0.62;
+  if (!top && !bot) return Q.lot;              // driving aisle
+  if (u % 7 === 0) return Q.stall;             // stall lines
+  const slot = (u / 7) | 0;
+  if (hash2(cell * 3 + row, slot + (top ? 0 : 50)) > 0.45 && u % 7 >= 2 && u % 7 <= 5) {
+    const inner = top ? v >= 3 && v <= D * 0.38 - 2 : v >= D * 0.62 + 2 && v <= D - 4;
+    if (inner) return CAR32[(hash2(cell, slot) * CAR32.length) | 0];
+  }
+  return Q.lot;
+}
+
+// Little paved squares with a fountain
+function squarePixel(px, py, u, v, L, D) {
+  if (u === 0 || v === 0 || u === L - 1 || v === D - 1) return Q.outline;
+  const dx = u - L / 2, dy = v - D / 2, d = Math.sqrt(dx * dx + dy * dy);
+  if (d < 7) return d > 5.5 ? Q.plazaWall : (((u + v) & 3) === 0 ? Q.fountainHi : Q.fountain);
+  return ((u >> 2) + (v >> 2)) & 1 ? Q.tileA : Q.tileB;
+}
+
+// A building rooftop: outline, lit edges, neon sign, AC units, tanks, skylights...
+function roofPixel(px, py, u, v, L, D, h, dist, row, cell, big) {
+  const pal = ROOF[dist][(h * 1000 | 0) % 4];
+  if (u === 0 || v === 0 || u === L - 1 || v === D - 1) return Q.outline;
+  // neon sign along the edge that faces the road
+  const rv = big ? Math.min(v, D - 1 - v) : (row === 1 ? D - 1 - v : v);
+  const h2 = hash(cell * 13 + row * 5 + 1);
+  const signLen = 8 + ((h2 * 100) | 0) % 16;
+  if (h2 > 0.42 && (rv === 2 || rv === 3) && u >= 3 && u < 3 + signLen) {
+    const col = h2 > 0.72 ? 1 : 0;
+    return (u - 3) % 5 === 4 ? NEON32_DIM[dist][col] : NEON32[dist][col];   // letters with gaps
+  }
+  if (u === 1 || v === 1) return pal.hi;       // lit top-left edge
+  if (u === L - 2 || v === D - 2) return pal.lo;   // shadow bottom-right edge
+  const h3 = hash(cell * 17 + row * 3 + 5);
+  // helipad on big towers
+  if (big && h3 > 0.55) {
+    const dx = u - L / 2, dy = v - D / 2, d = Math.sqrt(dx * dx + dy * dy);
+    if (d < 10) {
+      if (d > 8.6) return Q.heliRing;
+      if (Math.abs(dy) <= 4 && (Math.abs(Math.abs(dx) - 3) < 0.6 || (Math.abs(dy) < 0.6 && Math.abs(dx) <= 3))) return Q.heliH;
+      return Q.heli;
+    }
+  }
+  // rooftop garden
+  if (h3 < 0.12 && u > 3 && v > 3 && u < L - 4 && v < D - 4) {
+    if ((u + v * 3) % 7 === 0) return Q.treeL;
+    return ((u + v) & 1) ? Q.grass : Q.grassD;
+  }
+  // AC unit
+  const ax0 = 4 + ((hash(cell * 3 + row) * (L - 12)) | 0), ay0 = 4 + ((hash(cell * 5 + row + 2) * (D - 10)) | 0);
+  if (u >= ax0 && u < ax0 + 6 && v >= ay0 && v < ay0 + 4) {
+    if (u === ax0 + 2 && v === ay0 + 1 || u === ax0 + 3 && v === ay0 + 2) return Q.fan;
+    return (u === ax0 + 5 || v === ay0 + 3) ? Q.acDark : Q.ac;
+  }
+  // water tank
+  if (h2 < 0.3) {
+    const tx = L - 7, ty = 6, dx = u - tx, dy = v - ty, d = dx * dx + dy * dy;
+    if (d < 10) return d > 5 ? Q.tankDark : Q.tank;
+  }
+  // skylight / window grid, some lit
+  if (h3 > 0.3 && u >= 4 && u <= L - 5 && v >= 5 && v <= D - 6 && (u - 4) % 5 < 2 && (v - 5) % 5 < 2) {
+    const lit = hash2(cell * 31 + (((u - 4) / 5) | 0), row * 97 + (((v - 5) / 5) | 0)) > 0.55;
+    return lit ? LIT32[dist] : Q.glass;
+  }
+  // plain roof with a little gravel dither
+  return ((u + v) & 1) === 0 && hash2(px >> 1, py >> 1) > 0.72 ? pal.dith : pal.base;
+}
+
+// One block in the ring between two laps of road
+function blockPixel(px, py, g, ta) {
+  const dist = lapOf(ta);
+  if (g > 72) return parkPixel(px, py, 1, 1, 9, 9);   // ring of gardens around the plaza
+  const rMid = rArm(ta) - PITCH / 2;
+  const s = ta * rMid;                         // position along the ring
+  const cell = Math.floor(s / 34);             // which block
+  const u = s - cell * 34;                     // position across the block
+  const big = hash(cell * 7 + 3) > 0.86;       // some towers fill both rows
+  let row, v, D;
+  if (big) { row = 2; v = g; D = 73; }
+  else if (g < 34) { row = 0; v = g; D = 34; }
+  else if (g < 38) return Q.alley;
+  else { row = 1; v = g - 38; D = 35; }
+  if (u < 3) return Q.alley;                   // alley between blocks
+  const u0 = Math.floor(u - 3), vi = Math.floor(v), L = 31;
+  const h = hash(cell * 7 + row + 11);
+  const pp = DIST_PARK[dist];
+  if (h < pp) return parkPixel(px, py, u0, vi, L, D);
+  if (h < pp + 0.06) return lotPixel(px, py, u0, vi, L, D, cell, row);
+  if (h < pp + 0.09) return squarePixel(px, py, u0, vi, L, D);
+  return roofPixel(px, py, u0, vi, L, D, h, dist, row, cell, big);
+}
+
+// The docks outside the first lap: container yards and warehouses on a grid
+function dockPixel(px, py) {
+  const cx = Math.floor(px / 46), cy = Math.floor(py / 30);
+  const lx = px - cx * 46, ly = py - cy * 30;
+  if (lx < 3 || ly < 3) return Q.alley;
+  const u = lx - 3, v = ly - 3, L = 43, D = 27;
+  if (u === 0 || v === 0 || u === L - 1 || v === D - 1) return Q.outline;
+  const h = hash2(cx + 500, cy + 900);
+  if (h < 0.5) {                               // container yard
+    const ci = Math.floor((u - 2) / 10), cr = Math.floor((v - 2) / 6);
+    const iu = (u - 2) % 10, iv = (v - 2) % 6;
+    if (u >= 2 && v >= 2 && iu < 9 && iv < 5 && hash2(cx * 9 + ci, cy * 9 + cr) > 0.25) {
+      const col = CONTAINERS[(hash2(ci + cx, cr + cy) * CONTAINERS.length) | 0];
+      return (iu % 2 === 0 || iv === 4) ? col[1] : col[0];   // ribbed metal
+    }
+    return Q.yard;
+  }
+  if (v % 4 === 0) return Q.wareRidge;         // warehouse roof ridges
+  if (u > 4 && u < L - 5 && v % 8 === 2 && u % 6 < 3) return LIT32[0];   // skylights
+  return (u + v) % 2 && hash2(px, py) > 0.8 ? Q.wareDark : Q.ware;
+}
+
+// The master function: what color is the city at image pixel (px, py)?
+function cityPixel(px, py) {
+  const dx = px + 0.5 - CX, dy = py + 0.5 - CY;
+  const r = Math.sqrt(dx * dx + dy * dy);      // distance from the city center
+  let ang = Math.atan2(dy, dx);                // direction from the center
+  if (ang < 0) ang += TAU;
+  const t = (R0 - r) / B;                      // spiral angle whose road radius equals r
+  const k = Math.round((t - ang) / TAU);       // how many laps in
+  const th = ang + k * TAU;                    // nearest road's spiral angle
+  const x = rArm(th) - r;                      // sideways distance from that road's center
+  const ax = Math.abs(x);
+  const realRoad = th >= THETA_START && th <= THETA_END;
+  if (realRoad && ax <= ROAD_HALF) return roadPixel(px, py, th, x, ax, r);
+  if (r > R_COAST) return waterPixel(px, py, r);
+  if (r > R_COAST - 3) return Q.seawall;
+  if (r < R_PLAZA) return plazaPixel(px, py, r, ang);
+  if (realRoad && ax <= ROAD_HALF + SIDEWALK) return sidewalkPixel(px, py, th, x, ax);
+  // in the ring of blocks between two laps
+  let g, ta;
+  if (x > 0) { g = x - (ROAD_HALF + SIDEWALK); ta = th; }          // inward of this road
+  else { g = PITCH + x - (ROAD_HALF + SIDEWALK); ta = th - TAU; }  // outward: belongs to the lap before
+  if (ta < THETA_START || g < 0) return dockPixel(px, py);         // outside the first lap: the docks
+  return blockPixel(px, py, g, ta);
+}
+
+// Generation runs a few rows per frame so the page never freezes
+const mapCanvas = document.createElement('canvas');
+mapCanvas.width = mapCanvas.height = MAP;
+const gen = { row: 0, done: false, img: null, buf: null, ctx: null };
+let overview = null, minimap = null;           // small versions for the title and HUD
+function genStep(budgetMs) {
+  if (gen.done) return;
+  if (!gen.img) {                              // first call: allocate the pixel buffer
+    gen.ctx = mapCanvas.getContext('2d');
+    gen.img = gen.ctx.createImageData(MAP, MAP);
+    gen.buf = new Uint32Array(gen.img.data.buffer);
+  }
+  const t0 = performance.now();
+  while (gen.row < MAP && performance.now() - t0 < budgetMs) {
+    const y = gen.row, o = y * MAP;
+    for (let x = 0; x < MAP; x++) gen.buf[o + x] = cityPixel(x, y);
+    gen.row++;
+  }
+  if (gen.row >= MAP) {                        // finished: upload and build the small maps
+    gen.ctx.putImageData(gen.img, 0, 0);
+    gen.img = gen.buf = null;
+    gen.done = true;
+    buildOverviews();
+  }
+}
+// Shrink the city in halves (keeps it smooth) for the spinning title backdrop,
+// and draw the HUD minimap as a clean pixel spiral
+function buildOverviews() {
+  let src = mapCanvas;
+  while (src.width > 400) {
+    const c = document.createElement('canvas');
+    c.width = c.height = Math.round(src.width / 2);
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(src, 0, 0, c.width, c.height);
+    src = c;
+  }
+  overview = src;
+  minimap = document.createElement('canvas');
+  minimap.width = minimap.height = 46;
+  const m = minimap.getContext('2d');
+  const sc = 21 / R_COAST;                     // world -> minimap scale
+  for (let y = 0; y < 46; y++) for (let x = 0; x < 46; x++) {   // dark disc
+    const d = Math.hypot(x + 0.5 - 23, y + 0.5 - 23);
+    if (d < 22.5) { m.fillStyle = d > 21.5 ? '#3b3850' : ((x + y) & 1 ? '#101014' : '#16141f'); m.fillRect(x, y, 1, 1); }
+  }
+  m.fillStyle = '#2f6f8a';                     // the road
+  for (let th = THETA_START; th <= THETA_END; th += 0.01) {
+    const [wx, wy] = worldPoint(th, 0);
+    m.fillRect(Math.floor(23 + (wx - CX) * sc), Math.floor(23 + (wy - CY) * sc), 1, 1);
+  }
+  m.fillStyle = '#FF4BCB'; m.fillRect(22, 22, 2, 2);   // the Core
+}
+const miniPos = (th, x) => {                   // where a road point lands on the minimap
+  const [wx, wy] = worldPoint(th, x), sc = 21 / R_COAST;
+  return [Math.floor(23 + (wx - CX) * sc), Math.floor(23 + (wy - CY) * sc)];
+};
+
+// ---------------------------------------------------------------------
+// 6. AUDIO - a tiny 16-bit style band (pulse lead + echo, arps, triangle
+//    bass, noise drums) and all the sound effects. Starts on first input.
+// ---------------------------------------------------------------------
+let AC = null, master = null, musicBus = null, sfxBus = null, echoIn = null, noiseBuf = null;
+const waves = {};                              // custom pulse waveforms
+let musicOn = true;
+try { musicOn = localStorage.getItem('scr_music') !== 'off'; } catch (e) {}
+const mf = n => 440 * Math.pow(2, (n - 69) / 12);   // MIDI note number -> Hz
+// A pulse (square-ish) wave with a given duty cycle, built from harmonics
+function pulseWave(duty) {
+  const n = 48, re = new Float32Array(n), im = new Float32Array(n);
+  for (let k = 1; k < n; k++) re[k] = (2 / (k * Math.PI)) * Math.sin(k * Math.PI * duty);
+  return AC.createPeriodicWave(re, im);
+}
+// Create the audio graph (only allowed after the player presses something)
+function audioInit() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;                            // very old browser: play silently
+  AC = new Ctx();
+  master = AC.createGain(); master.gain.value = 0.8; master.connect(AC.destination);
+  musicBus = AC.createGain(); musicBus.gain.value = musicOn ? 0.55 : 0; musicBus.connect(master);
+  sfxBus = AC.createGain(); sfxBus.gain.value = 0.6; sfxBus.connect(master);
+  // SNES-style echo: a filtered feedback delay the lead and arps are sent into
+  const delay = AC.createDelay(1); delay.delayTime.value = 0.19;
+  const fb = AC.createGain(); fb.gain.value = 0.32;
+  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2400;
+  const wet = AC.createGain(); wet.gain.value = 0.4;
+  echoIn = AC.createGain();
+  echoIn.connect(delay); delay.connect(lp); lp.connect(fb); fb.connect(delay); lp.connect(wet); wet.connect(musicBus);
+  // one second of white noise, reused by drums and crunchy effects
+  noiseBuf = AC.createBuffer(1, AC.sampleRate, AC.sampleRate);
+  const d = noiseBuf.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  waves.p25 = pulseWave(0.25); waves.p125 = pulseWave(0.125);
+  if (G.state === 'title' || G.state === 'play' || G.state === 'count') musicStart();
+}
+// Play one note. wave: 'square' | 'triangle' | 'sine' | a PeriodicWave.
+// slideTo: optional pitch to glide to. send: optional extra output (echo)
+function osc(wave, f, t, dur, vol, out, slideTo, send) {
+  const o = AC.createOscillator();
+  if (typeof wave === 'string') o.type = wave; else o.setPeriodicWave(wave);
+  o.frequency.setValueAtTime(f, t);
+  if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t + dur);
+  const g = AC.createGain();
+  g.gain.setValueAtTime(0.0001, t);            // quick attack, decay, release
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
+  g.gain.exponentialRampToValueAtTime(vol * 0.55, t + Math.max(0.012, dur * 0.5));
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(out);
+  if (send) g.connect(send);
+  o.start(t); o.stop(t + dur + 0.03);
+}
+// A burst of filtered noise (drums, crashes, whooshes)
+function noise(t, dur, vol, out, type, freq) {
+  const s = AC.createBufferSource(); s.buffer = noiseBuf;
+  const f = AC.createBiquadFilter(); f.type = type; f.frequency.value = freq;
+  const g = AC.createGain();
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.connect(f); f.connect(g); g.connect(out);
+  s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+}
+
+// --- the song: "Spiral City Run" theme, 8 bars in A minor, loops ---
+const BPM = 148;
+const ROOTS = [45, 41, 48, 43, 45, 41, 43, 40];   // bass roots: Am F C G Am F G E
+const CHORDS = [[57, 60, 64, 69], [53, 57, 60, 65], [55, 60, 64, 67], [55, 59, 62, 67],
+                [57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67], [56, 59, 64, 68]];
+// Lead melody per bar: [step, note, length in 16ths]
+const LEAD_BARS = [
+  [[0, 76, 2], [2, 81, 2], [4, 76, 2], [6, 72, 2], [8, 74, 4], [12, 72, 2], [14, 71, 2]],
+  [[0, 69, 4], [4, 72, 2], [6, 77, 4], [10, 76, 2], [12, 72, 4]],
+  [[0, 67, 2], [2, 72, 2], [4, 76, 2], [6, 79, 4], [10, 76, 2], [12, 74, 2], [14, 72, 2]],
+  [[0, 74, 6], [6, 71, 2], [8, 67, 4]],
+  [[0, 76, 2], [2, 81, 2], [4, 76, 2], [6, 72, 2], [8, 74, 4], [12, 72, 2], [14, 71, 2]],
+  [[0, 69, 2], [2, 72, 2], [4, 77, 2], [6, 81, 4], [10, 79, 2], [12, 77, 2], [14, 76, 2]],
+  [[0, 74, 4], [4, 79, 4], [8, 83, 4], [12, 79, 4]],
+  [[0, 80, 6], [6, 76, 2], [8, 71, 4], [12, 68, 4]],
+];
+const LEAD_MAP = {};                           // absolute step (0-127) -> [note, length]
+LEAD_BARS.forEach((bar, bi) => bar.forEach(([s, n, l]) => { LEAD_MAP[bi * 16 + s] = [n, l]; }));
+let seqStep = 0, seqTime = 0, seqTimer = null, tempoMul = 1;
+function musicStart() {
+  if (!AC || seqTimer) return;
+  seqStep = 0; seqTime = AC.currentTime + 0.08;
+  seqTimer = setInterval(seqTick, 25);         // look-ahead scheduler
+}
+function musicStop() { if (seqTimer) clearInterval(seqTimer); seqTimer = null; }
+function musicVolume(v) { if (musicBus) musicBus.gain.setTargetAtTime(musicOn ? v : 0, AC.currentTime, 0.05); }
+function seqTick() {
+  const sd = 60 / (BPM * tempoMul) / 4;        // length of one 16th note
+  while (seqTime < AC.currentTime + 0.12) {
+    playStep(seqStep, seqTime, sd);
+    seqTime += sd; seqStep = (seqStep + 1) % 128;
+  }
+}
+function playStep(i, t, sd) {
+  const bar = i >> 4, s = i & 15;
+  // drums
+  if (s === 0 || s === 8 || (s === 10 && bar % 2 === 1)) {   // kick: sine with a fast pitch drop
+    osc('sine', 150, t, 0.13, 0.55, musicBus, 42);
+  }
+  if (s === 4 || s === 12) {                   // snare: noise + a little tone
+    noise(t, 0.12, 0.28, musicBus, 'bandpass', 1900); osc('triangle', 190, t, 0.07, 0.18, musicBus, 120);
+  }
+  if (s % 2 === 1) noise(t, s === 15 ? 0.06 : 0.03, 0.09, musicBus, 'highpass', 7000);   // hats
+  // bass: root / octave bounce, fifth at the end of the bar
+  if (s % 2 === 0) {
+    const root = ROOTS[bar];
+    const n = s === 14 ? root + 7 : (s % 4 === 2 ? root + 12 : root);
+    osc('triangle', mf(n), t, sd * 1.8, 0.3, musicBus);
+  }
+  // arpeggio sparkle
+  osc(waves.p125, mf(CHORDS[bar][s % 4] + 12), t, sd * 0.9, 0.032, musicBus, null, echoIn);
+  // lead
+  const L = LEAD_MAP[i];
+  if (L) osc(waves.p25, mf(L[0]), t, sd * L[1] * 0.95, 0.085, musicBus, null, echoIn);
+}
+
+// Sound effects
+function sfx(name) {
+  if (!AC) return;
+  const t = AC.currentTime, o = sfxBus;
+  switch (name) {
+    case 'jump': osc(waves.p25, 300, t, 0.15, 0.18, o, 760); break;
+    case 'land': noise(t, 0.05, 0.12, o, 'lowpass', 900); break;
+    case 'spark': osc(waves.p125, 1568, t, 0.05, 0.11, o); osc(waves.p125, 2093, t + 0.045, 0.08, 0.11, o); break;
+    case 'big': [1319, 1568, 2093, 2637].forEach((f, i) => osc(waves.p125, f, t + i * 0.04, 0.08, 0.12, o)); break;
+    case 'hit': noise(t, 0.28, 0.42, o, 'lowpass', 1400); osc('square', 230, t, 0.32, 0.17, o, 50); break;
+    case 'cone': noise(t, 0.08, 0.25, o, 'bandpass', 1200); osc('triangle', 520, t, 0.1, 0.2, o, 170); break;
+    case 'slip': osc('sine', 900, t, 0.35, 0.12, o, 200); osc('sine', 1250, t, 0.35, 0.06, o, 300); break;
+    case 'boost': osc(waves.p25, 200, t, 0.35, 0.15, o, 1300); noise(t, 0.3, 0.1, o, 'highpass', 3000); break;
+    case 'clock': [988, 1319, 1976].forEach((f, i) => osc('triangle', f, t + i * 0.06, 0.12, 0.22, o)); break;
+    case 'check': [523, 659, 784, 1047].forEach((f, i) => osc(waves.p25, f, t + i * 0.07, 0.15, 0.15, o)); break;
+    case 'lap': [784, 988, 1175, 1568].forEach((f, i) => osc('triangle', f, t + i * 0.08, 0.2, 0.2, o)); break;
+    case 'tick': osc('square', 1760, t, 0.05, 0.07, o); break;
+    case 'count': osc(waves.p25, 523, t, 0.16, 0.17, o); break;
+    case 'go': osc(waves.p25, 1047, t, 0.45, 0.18, o); osc(waves.p25, 1319, t, 0.45, 0.1, o); break;
+    case 'menu': osc(waves.p125, 880, t, 0.04, 0.1, o); break;
+    case 'select': osc(waves.p25, 660, t, 0.06, 0.12, o); osc(waves.p25, 990, t + 0.06, 0.1, 0.12, o); break;
+    case 'pause': osc(waves.p25, 784, t, 0.08, 0.12, o); osc(waves.p25, 523, t + 0.08, 0.12, 0.12, o); break;
+    case 'tired': osc('triangle', 330, t, 0.22, 0.15, o, 170); break;
+    case 'timeup':
+      [523, 494, 466, 440].forEach((f, i) => osc(waves.p25, f, t + i * 0.22, 0.24, 0.16, o));
+      osc('triangle', 110, t + 0.88, 0.9, 0.25, o); break;
+    case 'win':
+      [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => osc(waves.p25, f, t + i * 0.1, 0.2, 0.15, o));
+      [262, 330, 392, 523].forEach((f, i) => osc('triangle', f, t + i * 0.2, 0.3, 0.2, o));
+      osc(waves.p25, 1568, t + 0.75, 0.8, 0.14, o, null, echoIn); break;
+  }
+}
+// Controller rumble, if the pad supports it
+function rumble(strong, weak, ms) {
+  try {
+    const gp = navigator.getGamepads()[padIndex];
+    if (gp && gp.vibrationActuator) gp.vibrationActuator.playEffect('dual-rumble', { duration: ms, strongMagnitude: strong, weakMagnitude: weak }).catch(() => {});
+  } catch (e) {}
+}
+
+// ---------------------------------------------------------------------
+// 7. INPUT - keyboard + gamepad merged into one set of "buttons"
+// ---------------------------------------------------------------------
+const keys = new Set();                        // keyboard codes held right now
+const tapped = new Set();                      // keys pressed since the last frame (catches very quick taps)
+let padIndex = -1;                             // which gamepad we listen to
+const inp = { ax: 0, ay: 0, jump: false, sprint: false, brake: false, confirm: false, back: false, pause: false, mute: false, up: false, down: false };
+let prevInp = { ...inp };
+const pressed = k => inp[k] && !prevInp[k];    // true only on the frame a button goes down
+const GAME_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', 'Tab'];
+addEventListener('keydown', e => {
+  if (GAME_KEYS.includes(e.code)) e.preventDefault();   // stop the page scrolling
+  keys.add(e.code); tapped.add(e.code);
+  audioInit();                                 // browsers need a key/click before sound
+});
+addEventListener('keyup', e => keys.delete(e.code));
+// Input latch safety: forget held keys whenever focus is lost
+addEventListener('blur', () => { keys.clear(); tapped.clear(); if (G.state === 'play') pauseGame(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) { keys.clear(); if (G.state === 'play') pauseGame(); } });
+addEventListener('pointerdown', () => { audioInit(); screenCv.focus(); });
+addEventListener('gamepadconnected', e => { padIndex = e.gamepad.index; toast('GAMEPAD READY'); });
+addEventListener('gamepaddisconnected', e => {
+  if (e.gamepad.index !== padIndex) return;
+  padIndex = -1; toast('GAMEPAD UNPLUGGED');
+  if (G.state === 'play') pauseGame();
+});
+function pollInput() {
+  prevInp = { ...inp };
+  const k = c => keys.has(c) || tapped.has(c);   // held now, or tapped and released between frames
+  let ax = 0, ay = 0;
+  if (k('ArrowLeft') || k('KeyA')) ax -= 1;
+  if (k('ArrowRight') || k('KeyD')) ax += 1;
+  if (k('ArrowUp') || k('KeyW')) ay -= 1;
+  if (k('ArrowDown') || k('KeyS')) ay += 1;
+  let jump = k('Space') || k('KeyJ') || k('KeyZ');
+  let sprint = k('ShiftLeft') || k('ShiftRight') || k('KeyK') || k('KeyX');
+  let confirm = k('Enter') || k('Space') || k('KeyJ') || k('KeyZ');
+  let back = k('Escape') || k('Backspace');
+  let pause = k('Escape') || k('KeyP');
+  let mute = k('KeyM');
+  let brake = false;
+  // gamepad (standard mapping)
+  const pads = navigator.getGamepads ? navigator.getGamepads() : null;
+  let gp = pads && padIndex >= 0 ? pads[padIndex] : null;
+  if (!gp && pads) for (const p of pads) if (p && p.connected) { gp = p; padIndex = p.index; break; }
+  if (gp) {
+    const b = i => !!(gp.buttons[i] && (gp.buttons[i].pressed || gp.buttons[i].value > 0.5));
+    let sx = gp.axes[0] || 0, sy = gp.axes[1] || 0;
+    const m = Math.hypot(sx, sy);              // radial deadzone, rescaled so it ramps from 0
+    if (m < 0.28) { sx = 0; sy = 0; } else { const s = (m - 0.28) / (1 - 0.28) / m; sx *= s; sy *= s; }
+    if (Math.abs(sx) < 0.08) sx = 0;           // hard zero for tiny drift
+    if (Math.abs(sy) < 0.08) sy = 0;
+    if (b(14)) sx = -1; if (b(15)) sx = 1;     // d-pad wins over the stick
+    if (b(12)) sy = -1; if (b(13)) sy = 1;
+    if (Math.abs(sx) > Math.abs(ax)) ax = sx;
+    if (Math.abs(sy) > Math.abs(ay)) ay = sy;
+    jump = jump || b(0) || b(1);               // A / B jump
+    sprint = sprint || b(2) || b(3) || b(5) || b(7);   // X / Y / RB / RT dash
+    brake = b(4) || b(6);                      // LB / LT slow down
+    confirm = confirm || b(0);
+    back = back || b(1);
+    pause = pause || b(9);                     // Start
+    mute = mute || b(8);                       // Select / Back
+  }
+  inp.ax = clamp(ax, -1, 1); inp.ay = clamp(ay, -1, 1);
+  inp.jump = jump; inp.confirm = confirm; inp.back = back; inp.pause = pause; inp.mute = mute;
+  inp.sprint = sprint || inp.ay < -0.5;        // pushing up also dashes
+  inp.brake = brake || inp.ay > 0.5;           // pulling down slows down
+  inp.up = inp.ay < -0.5; inp.down = inp.ay > 0.5;   // menu navigation
+  tapped.clear();
+}
+
+// ---------------------------------------------------------------------
+// 8. GAME STATE
+// ---------------------------------------------------------------------
+const G = {
+  state: 'loading',     // loading | title | count | play | pause | over | win
+  t: 0,                 // clock that always runs (animations)
+  time: 0,              // seconds left
+  runTime: 0,           // seconds since GO
+  count: 0,             // countdown before the run
+  menu: 0,              // highlighted menu item
+  menuT: 0,             // time spent on an end screen
+  lap: 0,               // current lap (0-based)
+  nextCP: 0,            // index of the next checkpoint
+  obIdx: 0,             // first obstacle not yet far behind Sky
+  banner: null,         // big lap/district banner
+  toast: null,          // small message at the top
+  shake: 0, sx: 0, sy: 0,   // screen shake
+  camX: 0,              // camera's sideways follow
+  rank: '', newBest: false,
+  lastTick: 0,          // last whole second announced in hurry mode
+};
+const sky = {};                                // the runner (filled in by resetSky)
+let obstacles = [], cars = [], parts = [], pops = [], streaks = [];
+let checkpoints = [];                          // [{th, bonus, passed}]
+let carTimerOn = 0, carTimerSame = 0;          // countdown to next car spawn
+let bestTime = 0;                              // best finishing time ever (seconds)
+try { bestTime = +localStorage.getItem('scr_best') || 0; } catch (e) {}
+const cam = { px: 0, py: 0, rho: 0, cos: 1, sin: 0, th: 0 };
+
+function resetSky() {
+  Object.assign(sky, {
+    th: -10 / R0, x: 10, vx: 0, v: 0,          // just behind the start line, right lane
+    z: 0, vz: 0,                               // height + vertical speed (jumping)
+    sprint: 1, tired: false,                   // dash meter
+    stun: 0, inv: 0, boost: 0, slip: 0, slipDir: 0,
+    anim: 0, sparks: 0, hits: 0,
+  });
+}
+// Checkpoints every half lap. Each one gives enough time to reach the next
+// at a decent pace; dashing and dodging well builds a cushion.
+function buildCheckpoints() {
+  checkpoints = [];
+  for (let k = 1; k * Math.PI < THETA_FIN - 0.5; k++) checkpoints.push({ th: k * Math.PI, passed: false, bonus: 0 });
+  // The pace the clock expects (pixels per second) starts gentle and gets
+  // stricter toward the Core. Tuned with a bot playtest: a careful runner who
+  // never dashes runs out near the end; dashing well leaves a cushion.
+  const paceAt = i => lerp(160, 192, i / checkpoints.length);
+  checkpoints.forEach((c, i) => {
+    const next = i + 1 < checkpoints.length ? checkpoints[i + 1].th : THETA_FIN;
+    c.bonus = (arcLen(next) - arcLen(c.th)) / paceAt(i + 1) + 1.0;
+  });
+  G.startTime = arcLen(checkpoints[0].th) / paceAt(0) + 2.5;
+}
+// Scatter obstacles and pickups down the whole road ("beats"), harder further in
+const dTh = (th, px) => px / rArm(th);         // pixels along the road -> angle step there
+function addOb(type, th, x, extra) { obstacles.push(Object.assign({ type, th, x, z: 0, alive: true }, extra || {})); }
+function placeBeat(th, p) {
+  const roll = Math.random();
+  const lanes = LANES.slice().sort(() => Math.random() - 0.5);   // shuffled lanes
+  if (roll < 0.25) {                           // a weaving trail of sparks
+    const l0 = pick(LANES), l1 = clamp(l0 + pick([-20, 0, 20]), -30, 30);
+    for (let i = 0; i < 6; i++) addOb('spark', th + dTh(th, i * 13), lerp(l0, l1, i / 5));
+  } else if (roll < 0.43) {                    // cones (never all four lanes)
+    const n = 1 + (Math.random() < 0.4 + p * 0.5 ? 1 : 0) + (p > 0.5 && Math.random() < 0.4 ? 1 : 0);
+    for (let i = 0; i < n; i++) addOb('cone', th + dTh(th, rand(-6, 6)), lanes[i] + rand(-3, 3));
+  } else if (roll < 0.57 && p > 0.08) {        // barrier with one gap; sparks show the way
+    const gap = pick(LANES);
+    for (let x = -35; x <= 35; x += 10) if (Math.abs(x - gap) > 11) addOb('bar', th, x);
+    for (let i = 1; i <= 3; i++) addOb('spark', th - dTh(th, i * 12), gap);
+  } else if (roll < 0.67 && p > 0.2) {         // full barrier: jump it, grab the air sparks
+    for (let x = -35; x <= 35; x += 10) addOb('bar', th, x);
+    const lx = pick(LANES);
+    for (let i = -1; i <= 1; i++) addOb('aspark', th + dTh(th, i * 9), lx, { z: 18 });
+  } else if (roll < 0.77 && p > 0.05) {        // glitch puddle
+    addOb('pud', th, pick(LANES));
+  } else if (roll < 0.87) {                    // boost pads
+    addOb('boost', th, pick(LANES));
+    if (Math.random() < 0.5) addOb('boost', th + dTh(th, 26), pick(LANES));
+  } else if (roll < 0.895 && p > 0.12) {       // bonus clock (rare)
+    addOb('clock', th, pick(LANES));
+  } else {                                     // a cone guarding a line of sparks
+    const l = pick(LANES);
+    addOb('cone', th, l);
+    for (let i = 1; i <= 4; i++) addOb('spark', th + dTh(th, i * 12), l);
+  }
+}
+function buildCourse() {
+  obstacles = [];
+  let S = 230;                                 // first beat a little after the start
+  const end = arcLen(THETA_FIN) - 60;
+  while (S < end) {
+    const th = thetaAt(S), p = th / THETA_FIN;
+    const nearGate = checkpoints.some(c => Math.abs(c.th - th) * rArm(th) < 45);
+    if (!nearGate) placeBeat(th, p);
+    S += rand(85, 140) - p * 28;               // beats come faster deeper in
+  }
+  obstacles.sort((a, b) => a.th - b.th);       // sorted so we can scan a window cheaply
+}
+
+function startRun() {
+  resetSky(); buildCheckpoints(); buildCourse();
+  cars = []; parts = []; pops = []; streaks = [];
+  carTimerOn = 2.5; carTimerSame = 1.2;
+  G.time = G.startTime; G.runTime = 0; G.lap = 0; G.nextCP = 0; G.obIdx = 0;
+  G.camX = sky.x * 0.35; G.count = 3.2; G.lastCount = 4; G.state = 'count';
+  G.banner = { a: 'LAP 1/' + LAPS, b: DISTRICTS[0], t: 0 };
+  tempoMul = 1; G.hurry = false;
+  audioInit(); musicStart(); musicVolume(0.55);
+}
+function pauseGame() { G.state = 'pause'; G.menu = 0; sfx('pause'); musicVolume(0.18); }
+function toast(s) { G.toast = { s, t: 0 }; }
+function pop(s, col, sx, sy) { pops.push({ s, col: col || PAL.white, x: sx == null ? W / 2 : sx, y: sy == null ? SKY_Y - 34 : sy, t: 0 }); }
+function burst(sx, sy, col, n, spd) {          // little square particles
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, TAU), v = rand(20, spd || 70);
+    parts.push({ x: sx, y: sy, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.3, 0.6), t: 0, col });
+  }
+}
+function puff(n) {                             // dust behind Sky's feet
+  for (let i = 0; i < n; i++) parts.push({ x: W / 2 + (sky.x - G.camX) + rand(-3, 3), y: SKY_Y + rand(-1, 2), vx: rand(-12, 12), vy: sky.v * 0.6 + rand(0, 30), life: rand(0.2, 0.4), t: 0, col: '#5d5a78' });
+}
+const skyScreen = () => [W / 2 + (sky.x - G.camX), SKY_Y];   // Sky's spot on screen
+
+// Sky takes a real hit (car or barrier)
+function hurt() {
+  if (sky.inv > 0) return;
+  sky.stun = 0.55; sky.inv = 1.5; sky.v *= 0.2; sky.hits++;
+  sky.boost = 0;
+  G.shake = 0.35; sfx('hit'); rumble(0.9, 0.6, 260);
+  const lost = Math.min(sky.sparks, 5);        // drop some sparks
+  sky.sparks -= lost;
+  const [sx, sy] = skyScreen();
+  burst(sx, sy - 8, PAL.teal, 6 + lost * 2, 90);
+  pop(lost ? 'OUCH! -' + lost : 'OUCH!', PAL.red);
+}
+
+function updateSky(dt) {
+  const p = clamp(sky.th / THETA_FIN, 0, 1);
+  // --- sideways movement ---
+  let ax = inp.ax;
+  if (sky.stun > 0) ax *= 0.3;
+  sky.vx += (ax * 100 - sky.vx) * Math.min(1, dt * (sky.slip > 0 ? 2 : 14));
+  if (sky.slip > 0) { sky.vx += sky.slipDir * 150 * dt; sky.slip -= dt; }   // skidding on glitch
+  sky.x += sky.vx * dt;
+  if (sky.x < -SKY_LIMIT) { sky.x = -SKY_LIMIT; sky.vx = 0; }
+  if (sky.x > SKY_LIMIT) { sky.x = SKY_LIMIT; sky.vx = 0; }
+  // --- forward speed ---
+  const base = 150 + 18 * p;                   // a little faster deeper in
+  const wantDash = inp.sprint && !sky.tired && sky.stun <= 0;
+  let target = base;
+  if (wantDash) target = base + 80;
+  if (inp.brake) target = base * 0.55;
+  if (sky.boost > 0) { target = Math.max(target, 310); sky.boost -= dt; }
+  if (sky.stun > 0) { target = 25; sky.stun -= dt; }
+  sky.v += (target - sky.v) * Math.min(1, dt * (sky.v < target ? 2.4 : 4));
+  // --- dash meter ---
+  if (wantDash && sky.boost <= 0) {
+    sky.sprint -= 0.34 * dt;
+    if (sky.sprint <= 0) { sky.sprint = 0; sky.tired = true; sfx('tired'); }
+  } else {
+    sky.sprint = Math.min(1, sky.sprint + 0.16 * dt);
+    if (sky.tired && sky.sprint > 0.35) sky.tired = false;
+  }
+  // --- jumping ---
+  if (pressed('jump') && sky.z <= 0 && sky.stun <= 0) { sky.vz = 155; sfx('jump'); }
+  if (sky.z > 0 || sky.vz > 0) {
+    sky.z += sky.vz * dt; sky.vz -= 540 * dt;
+    if (sky.z <= 0) { sky.z = 0; sky.vz = 0; sfx('land'); puff(4); }
+  }
+  // --- run forward along the spiral ---
+  sky.th += sky.v / rArm(sky.th) * dt;
+  sky.anim += sky.v * dt / 9;                  // next run frame every 9px
+  if (sky.inv > 0) sky.inv -= dt;
+  if (sky.z === 0 && sky.v > 185 && Math.random() < dt * 22) puff(1);
+}
+
+// Cars: oncoming ones on the left lanes, slower same-direction ones on the right
+function spawnCar(dir) {
+  const r = rArm(sky.th), ahead = 250;
+  const th = sky.th + ahead / r;
+  if (th > THETA_FIN - 0.05) return;           // none past the finish
+  const lane = dir < 0 ? pick([-30, -10]) : pick([10, 30]);
+  if (cars.some(c => Math.abs(c.x - lane) < 14 && Math.abs(c.th - th) * r < 70)) return;   // lane busy
+  const p = clamp(sky.th / THETA_FIN, 0, 1);
+  cars.push({
+    th, x: lane, lane, dir,
+    v: dir < 0 ? rand(60, 85) + 35 * p : rand(70, 105),
+    paint: (Math.random() * CARS.length) | 0,
+    blink: 0, toLane: lane,
+    changeT: dir > 0 && p > 0.3 && Math.random() < 0.4 ? rand(0.4, 2.2) : -1,   // will change lanes
+  });
+}
+function updateCars(dt, spawn) {
+  const p = clamp(sky.th / THETA_FIN, 0, 1);
+  if (spawn) {
+    carTimerOn -= dt;
+    if (carTimerOn <= 0) { spawnCar(-1); carTimerOn = lerp(3.2, 1.05, p) * rand(0.6, 1.4); }
+    carTimerSame -= dt;
+    if (carTimerSame <= 0) { spawnCar(1); carTimerSame = lerp(4.0, 2.0, p) * rand(0.6, 1.4); }
+  }
+  for (const c of cars) {
+    c.th += c.dir * c.v / rArm(c.th) * dt;     // drive along the road
+    if (c.changeT > 0) {                       // blinker on, then switch lanes
+      c.changeT -= dt;
+      if (c.changeT <= 0) { c.toLane = c.lane === 10 ? 30 : 10; c.blink = 0.7; }
+    }
+    if (c.blink > 0) { c.blink -= dt; if (c.blink <= 0) c.lane = c.toLane; }
+    c.x += (c.lane - c.x) * Math.min(1, dt * 2.5);
+  }
+  const r = rArm(sky.th);
+  cars = cars.filter(c => { const d = (c.th - sky.th) * r; return d > -140 && d < 420; });
+}
+
+// Touching things
+function collide() {
+  const r = rArm(sky.th);
+  while (G.obIdx < obstacles.length && (obstacles[G.obIdx].th - sky.th) * r < -110) G.obIdx++;   // skip far-behind
+  const [sx, sy] = skyScreen();
+  for (let i = G.obIdx; i < obstacles.length; i++) {
+    const o = obstacles[i];
+    const dS = (o.th - sky.th) * r;            // along-road distance (+ = ahead)
+    if (dS > 24) break;
+    if (!o.alive || dS < -24) continue;
+    const dx = Math.abs(o.x - sky.x);
+    switch (o.type) {
+      case 'spark':
+        if (Math.abs(dS) < 8 && dx < 9 && sky.z < 12) {
+          o.alive = false; sky.sparks++; sky.sprint = Math.min(1, sky.sprint + 0.03);
+          sfx('spark'); burst(sx + (o.x - sky.x), sy - 6, PAL.teal, 5, 50);
+        }
+        break;
+      case 'aspark':
+        if (Math.abs(dS) < 9 && dx < 10 && Math.abs(sky.z - o.z) < 10) {
+          o.alive = false; sky.sparks += 5; sfx('big');
+          burst(sx + (o.x - sky.x), sy - 6 - o.z, PAL.pink, 8, 70); pop('+5', PAL.pink, sx, sy - 40);
+        }
+        break;
+      case 'clock':
+        if (Math.abs(dS) < 8 && dx < 9 && sky.z < 12) {
+          o.alive = false; G.time += 2; sfx('clock'); pop('+2 SEC', PAL.yellow);
+          burst(sx + (o.x - sky.x), sy - 6, PAL.yellow, 8, 60);
+        }
+        break;
+      case 'cone':
+        if (sky.z < 5 && Math.abs(dS) < 5 && dx < 7) {
+          o.alive = false;                     // cone goes flying
+          o.fly = { x: 0, y: 0, z: 0, vx: (o.x >= sky.x ? 1 : -1) * rand(50, 110), vy: -sky.v * 0.5, vz: 120, rot: 0, t: 0 };
+          sky.v *= 0.6; G.shake = Math.max(G.shake, 0.12); sfx('cone'); rumble(0.3, 0.3, 90);
+        }
+        break;
+      case 'bar':
+        if (sky.z < 8 && Math.abs(dS) < 5 && dx < 8) hurt();
+        break;
+      case 'pud':
+        if (sky.z < 2 && Math.abs(dS) < 6 && dx < 11 && sky.slip <= 0) {
+          sky.slip = 0.55; sky.slipDir = Math.random() < 0.5 ? -1 : 1; sky.v *= 0.85; sfx('slip');
+        }
+        break;
+      case 'boost':
+        if (sky.z < 3 && Math.abs(dS) < 8 && dx < 9 && !o.used) {
+          o.used = true; sky.boost = 1.0; sfx('boost'); rumble(0.2, 0.5, 120);
+        }
+        break;
+    }
+  }
+  for (const c of cars) {                      // hover cars always hurt
+    if (Math.abs((c.th - sky.th) * r) < 13 && Math.abs(c.x - sky.x) < 10) hurt();
+  }
+}
+
+// Checkpoints, laps, finish
+function progress() {
+  if (G.nextCP < checkpoints.length && sky.th >= checkpoints[G.nextCP].th) {
+    const c = checkpoints[G.nextCP];
+    c.passed = true; G.time += c.bonus; G.nextCP++;
+    sfx('check'); pop('CHECKPOINT +' + c.bonus.toFixed(1), PAL.teal, W / 2, 96);   // below the lap banner
+  }
+  const lap = lapOf(sky.th);
+  if (lap !== G.lap && sky.th > 0) {
+    G.lap = lap; G.banner = { a: 'LAP ' + (lap + 1) + '/' + LAPS, b: DISTRICTS[lap], t: 0 };
+    sfx('lap');
+  }
+  if (sky.th >= THETA_FIN) finish();
+}
+function finish() {
+  G.state = 'win'; G.menu = 0; G.menuT = 0;
+  const total = arcLen(THETA_FIN);             // rank against par paces
+  const t = G.runTime;
+  G.rank = t < total / 192 ? 'S' : t < total / 178 ? 'A' : t < total / 165 ? 'B' : 'C';
+  G.newBest = !bestTime || t < bestTime;
+  if (G.newBest) { bestTime = t; try { localStorage.setItem('scr_best', String(t)); } catch (e) {} }
+  musicStop(); sfx('win'); rumble(0.4, 0.8, 300);
+  tempoMul = 1;
+}
+function timeUp() {
+  G.time = 0; G.state = 'over'; G.menu = 0; G.menuT = 0;
+  musicStop(); sfx('timeup'); rumble(0.6, 0.3, 400);
+  tempoMul = 1;
+}
+function fmtTime(s) {                          // 83.4 -> "1:23.4"
+  const m = Math.floor(s / 60), r = s - m * 60;
+  return m + ':' + (r < 10 ? '0' : '') + r.toFixed(1);
+}
+
+function updateCamera(dt) {
+  G.camX += (sky.x * 0.35 - G.camX) * Math.min(1, dt * 5);   // follow Sky sideways a little
+  const th = sky.th, x = G.camX;
+  const r = rArm(th) - x, c = Math.cos(th), s = Math.sin(th);
+  cam.px = CX + r * c; cam.py = CY + r * s; cam.th = th;
+  const fx = -B * c - r * s, fy = -B * s + r * c;   // road direction here
+  cam.rho = -Math.PI / 2 - Math.atan2(fy, fx);     // turn the world so that direction is "up"
+  cam.cos = Math.cos(cam.rho); cam.sin = Math.sin(cam.rho);
+  if (G.shake > 0) { G.shake -= dt; G.sx = rand(-1, 1) * G.shake * 10; G.sy = rand(-1, 1) * G.shake * 10; }
+  else { G.sx = G.sy = 0; }
+}
+// Map image position -> screen position, through the rotating camera
+function toScreen(wx, wy) {
+  const dx = wx - cam.px, dy = wy - cam.py;
+  return [W / 2 + dx * cam.cos - dy * cam.sin + G.sx, SKY_Y + dx * cam.sin + dy * cam.cos + G.sy];
+}
+const roadScreen = (th, x) => toScreen(...worldPoint(th, x));
+
+// Menus shared by pause / time up / finish
+const MENUS = { pause: ['RESUME', 'RESTART', 'QUIT TO TITLE'], over: ['TRY AGAIN', 'TITLE'], win: ['RUN AGAIN', 'TITLE'] };
+function menuInput(items, onPick) {
+  if (pressed('up')) { G.menu = (G.menu + items.length - 1) % items.length; sfx('menu'); }
+  if (pressed('down')) { G.menu = (G.menu + 1) % items.length; sfx('menu'); }
+  if (pressed('confirm')) { sfx('select'); onPick(items[G.menu]); }
+}
+function toTitle() { G.state = 'title'; musicStop(); musicStart(); musicVolume(0.45); tempoMul = 1; }
+
+function update(dt) {
+  G.t += dt;
+  if (pressed('mute')) {                       // music on/off from anywhere
+    musicOn = !musicOn;
+    try { localStorage.setItem('scr_music', musicOn ? 'on' : 'off'); } catch (e) {}
+    musicVolume(G.state === 'pause' ? 0.18 : 0.55); toast(musicOn ? 'MUSIC ON' : 'MUSIC OFF');
+  }
+  switch (G.state) {
+    case 'loading':
+      genStep(24);
+      if (gen.done) G.state = 'title';
+      return;
+    case 'title':
+      if (pressed('confirm') || pressed('pause')) { sfx('select'); startRun(); }
+      return;
+    case 'count': {
+      G.count -= dt;
+      const n = Math.ceil(G.count - 0.2);      // 3, 2, 1
+      if (n !== G.lastCount && n >= 1 && n <= 3) { G.lastCount = n; sfx('count'); }
+      if (G.count <= 0.2 && G.lastCount !== 0) { G.lastCount = 0; G.state = 'play'; sfx('go'); }
+      updateCars(dt, false);
+      break;
+    }
+    case 'play':
+      if (pressed('pause')) { pauseGame(); return; }
+      G.time -= dt; G.runTime += dt;
+      updateSky(dt); updateCars(dt, true); collide(); progress();
+      if (G.state === 'play') {
+        const hurry = G.time < 10;             // last ten seconds: faster music + ticks
+        if (hurry !== G.hurry) { G.hurry = hurry; tempoMul = hurry ? 1.14 : 1; }
+        if (hurry && Math.ceil(G.time) !== G.lastTick) { G.lastTick = Math.ceil(G.time); sfx('tick'); }
+        if (G.time <= 0) timeUp();
+      }
+      break;
+    case 'pause':
+      if (pressed('back') || pressed('pause')) { G.state = 'play'; musicVolume(0.55); sfx('select'); return; }
+      menuInput(MENUS.pause, it => {
+        if (it === 'RESUME') { G.state = 'play'; musicVolume(0.55); }
+        else if (it === 'RESTART') startRun();
+        else toTitle();
+      });
+      return;
+    case 'over':
+      G.menuT += dt;
+      sky.v = Math.max(0, sky.v - 240 * dt);   // Sky jogs to a stop
+      sky.th += sky.v / rArm(sky.th) * dt; sky.anim += sky.v * dt / 9;
+      updateCars(dt, false);
+      if (G.menuT > 1) menuInput(MENUS.over, it => it === 'TRY AGAIN' ? startRun() : toTitle());
+      break;
+    case 'win':
+      G.menuT += dt;
+      sky.v = sky.th < THETA_END - 0.05 ? 150 : Math.max(0, sky.v - 300 * dt);   // jog into the plaza
+      sky.x += (0 - sky.x) * Math.min(1, dt * 2);
+      sky.th += sky.v / rArm(sky.th) * dt; sky.anim += sky.v * dt / 9;
+      updateCars(dt, false);
+      if (Math.random() < dt * 30) burst(rand(0, W), rand(0, H * 0.6), pick([PAL.teal, PAL.pink, PAL.yellow, PAL.blue]), 1, 40);
+      if (G.menuT > 1.6) menuInput(MENUS.win, it => it === 'RUN AGAIN' ? startRun() : toTitle());
+      break;
+  }
+  // things that animate in every in-game state
+  updateCamera(dt);
+  for (const o of obstacles) if (o.fly) {      // flying cones
+    const f = o.fly; f.t += dt; f.x += f.vx * dt; f.y += f.vy * dt; f.z += f.vz * dt; f.vz -= 400 * dt; f.rot += dt * 14;
+    if (f.t > 1.2) o.fly = null;
+  }
+  parts = parts.filter(q => { q.t += dt; q.x += q.vx * dt; q.y += q.vy * dt; return q.t < q.life; });
+  pops = pops.filter(q => { q.t += dt; q.y -= 22 * dt; return q.t < 1.1; });
+  if (sky.v > 205 || sky.boost > 0) {          // speed lines at the screen edges
+    if (Math.random() < dt * 40) streaks.push({ x: Math.random() < 0.5 ? rand(4, 50) : rand(206, 252), y: rand(-20, H), len: rand(8, 18) });
+  }
+  streaks = streaks.filter(s => { s.y += 520 * dt; return s.y < H + 20; });
+  if (G.banner) { G.banner.t += dt; if (G.banner.t > 2.6) G.banner = null; }
+}
+
+// ---------------------------------------------------------------------
+// 9. DRAWING
+// ---------------------------------------------------------------------
+// 50% dither overlay (checkerboard of dark pixels) for dimming the screen
+const DITHER = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 2;
+  const g = c.getContext('2d'); g.fillStyle = '#05050a'; g.fillRect(0, 0, 1, 1); g.fillRect(1, 1, 1, 1);
+  return c;
+})();
+function dim(ctx, x, y, w, h) {
+  ctx.save(); ctx.fillStyle = ctx.createPattern(DITHER, 'repeat'); ctx.fillRect(x, y, w, h); ctx.restore();
+}
+// A chunky 16-bit window box
+function box(ctx, x, y, w, h, edge) {
+  ctx.fillStyle = PAL.void; ctx.fillRect(x, y, w, h);
+  ctx.fillStyle = edge || PAL.teal; ctx.fillRect(x + 1, y + 1, w - 2, 1); ctx.fillRect(x + 1, y + h - 2, w - 2, 1);
+  ctx.fillRect(x + 1, y + 1, 1, h - 2); ctx.fillRect(x + w - 2, y + 1, 1, h - 2);
+  ctx.fillStyle = '#1a1830'; ctx.fillRect(x + 2, y + 2, w - 4, h - 4);
+}
+
+function drawSky(ctx) {
+  let [sx, sy] = skyScreen();
+  sx = Math.round(sx + G.sx); sy = Math.round(sy + G.sy);
+  ctx.drawImage(SHADOW_SKY, sx - 6, sy - 3);   // shadow stays on the ground
+  if (sky.inv > 0 && ((G.t * 16) | 0) % 2) return;   // flicker while invincible
+  let spr = SKY_IDLE;
+  if (sky.stun > 0) spr = SKY_HURT;
+  else if (sky.z > 0) spr = SKY_JUMP;
+  else if (sky.v > 5) spr = SKY_RUN[(sky.anim | 0) & 3];
+  const lift = Math.round(sky.z * 0.9);
+  const s = 1 + sky.z / 80;                    // a bit bigger in the air = closer to the camera
+  const w = Math.round(16 * s), h = Math.round(20 * s);
+  const top = sy - h + 2 - lift;
+  ctx.drawImage(spr, sx - (w >> 1), top, w, h);
+  // the pink scarf tails flutter down her back; longer when she's fast
+  const len = 3 + Math.min(7, sky.v / 35) | 0;
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < len; i++) {
+      const wob = Math.round(Math.sin(G.t * 14 + i * 0.9 + side) * Math.min(2, i * 0.45));
+      ctx.fillStyle = i === len - 1 ? '#b02a88' : PAL.pink;
+      ctx.fillRect(sx + (side < 0 ? -2 : 1) + wob, top + Math.round(8 * s) + i, 1, 1);
+    }
+  }
+}
+
+function drawCar(ctx, c, sx, sy) {
+  const spr = c.dir > 0 ? CARS[c.paint].up : CARS[c.paint].down;
+  const rot = c.th - sky.th;                   // the road bends: tilt the car with it
+  ctx.save();
+  ctx.translate(Math.round(sx), Math.round(sy));
+  if (Math.abs(rot) > 0.02) ctx.rotate(rot);
+  ctx.drawImage(SHADOW_CAR, -8 + 3, -12 + 4);  // shadow offset = it hovers
+  ctx.drawImage(GLOW_CAR, -10, -13);           // teal underglow
+  if (c.dir < 0) ctx.drawImage(BEAM, -11, 8);  // oncoming headlights reach toward Sky
+  ctx.drawImage(spr, -7, -13);                 // the car body, lifted 3px
+  if (c.blink > 0 && ((G.t * 8) | 0) % 2) {    // turn signal
+    ctx.fillStyle = PAL.yellow;
+    const right = c.toLane > c.lane;
+    ctx.fillRect(right ? 6 : -8, -12, 2, 2); ctx.fillRect(right ? 6 : -8, 5, 2, 2);
+  }
+  ctx.restore();
+}
+
+// Checkpoint / goal gate: two pylons and a glowing banner over the road
+function drawGate(ctx, th, label, colA, colB) {
+  const [lx, ly] = roadScreen(th, -49), [rx, ry] = roadScreen(th, 49);
+  const lift = 13;
+  // banner: thick line from pylon top to pylon top, striped
+  const n = Math.max(1, Math.ceil(Math.max(Math.abs(rx - lx), Math.abs(ry - ly))));
+  for (let i = 0; i <= n; i++) {
+    const x = Math.round(lx + (rx - lx) * i / n), y = Math.round(ly + (ry - ly) * i / n) - lift;
+    ctx.fillStyle = PAL.void; ctx.fillRect(x, y - 3, 1, 6);
+    ctx.fillStyle = ((i / 6) | 0) % 2 ? colB : colA; ctx.fillRect(x, y - 2, 1, 4);
+  }
+  for (const [x, y] of [[lx, ly], [rx, ry]]) { // pylons
+    const px = Math.round(x), py = Math.round(y);
+    ctx.fillStyle = PAL.void; ctx.fillRect(px - 2, py - lift - 3, 5, lift + 4);
+    ctx.fillStyle = '#55506e'; ctx.fillRect(px - 1, py - lift - 2, 3, lift + 2);
+    ctx.fillStyle = colA; ctx.fillRect(px - 1, py - lift - 4, 3, 2);
+  }
+  text(ctx, label, (lx + rx) / 2, (ly + ry) / 2 - lift - 12, colA, 1, 'center', null, PAL.void);
+}
+
+// Pulsing rings of light around the Core (seen near the end)
+function drawCoreGlow(ctx) {
+  const [cx, cy] = toScreen(CX, CY);
+  if (cx < -120 || cx > W + 120 || cy < -120 || cy > H + 120) return;
+  for (let k = 0; k < 3; k++) {
+    const rr = 40 + ((G.t * 30 + k * 30) % 90);
+    ctx.fillStyle = k % 2 ? PAL.pink : PAL.teal;
+    const steps = Math.ceil(rr * 2.2);
+    for (let i = 0; i < steps; i += 2) {       // dotted ring
+      const a = i / steps * TAU;
+      ctx.fillRect(Math.round(cx + Math.cos(a) * rr), Math.round(cy + Math.sin(a) * rr), 1, 1);
+    }
+  }
+}
+
+function drawWorld(ctx) {
+  ctx.fillStyle = '#0c1233'; ctx.fillRect(0, 0, W, H);   // bay color past the map edge
+  // the whole city, turned so the road ahead points up (Mode 7 style)
+  ctx.save();
+  ctx.translate(W / 2 + G.sx, SKY_Y + G.sy);
+  ctx.rotate(cam.rho);
+  ctx.drawImage(mapCanvas, -cam.px, -cam.py);
+  ctx.restore();
+  if (sky.th > THETA_END - TAU) drawCoreGlow(ctx);
+  const r = rArm(sky.th);
+  const flat = [], list = [];                  // ground decals first, then everything by depth
+  for (let i = G.obIdx; i < obstacles.length; i++) {
+    const o = obstacles[i];
+    const d = (o.th - sky.th) * r;
+    if (d > 250) break;
+    if (!o.alive && !o.fly) continue;
+    const [sx, sy] = roadScreen(o.th, o.x);
+    if (o.type === 'pud' || o.type === 'boost') flat.push([o, sx, sy]); else list.push({ y: sy, o, sx, sy });
+  }
+  for (const c of cars) {
+    const d = (c.th - sky.th) * r;
+    if (d < -80 || d > 300) continue;
+    const [sx, sy] = roadScreen(c.th, c.x);
+    list.push({ y: sy + 6, car: c, sx, sy });
+  }
+  list.push({ y: SKY_Y + 0.5, sky: true });
+  // decals
+  for (const [o, sx, sy] of flat) {
+    if (o.type === 'pud') ctx.drawImage(PUDDLE[((G.t * 6) | 0) % 3], Math.round(sx) - 11, Math.round(sy) - 5);
+    else ctx.drawImage(BOOST[((G.t * 10) | 0) % 3], Math.round(sx) - 8, Math.round(sy) - 8);
+  }
+  // sprites, far (top) to near (bottom)
+  list.sort((a, b) => a.y - b.y);
+  for (const it of list) {
+    if (it.sky) { drawSky(ctx); continue; }
+    if (it.car) { drawCar(ctx, it.car, it.sx, it.sy); continue; }
+    const o = it.o, sx = Math.round(it.sx), sy = Math.round(it.sy);
+    const bob = Math.round(Math.sin(G.t * 5 + o.th * 40) * 1.5);
+    switch (o.type) {
+      case 'spark': ctx.drawImage(SPARK_T[((G.t * 6 + o.x + 100) | 0) & 1], sx - 3, sy - 6 + bob); break;   // & 1 keeps the frame 0/1 even for left lanes
+      case 'aspark':
+        ctx.drawImage(SHADOW_SKY, sx - 6, sy - 2);
+        ctx.drawImage(SPARK_P[((G.t * 8) | 0) % 2], sx - 3, sy - 4 - o.z + bob); break;
+      case 'clock': ctx.drawImage(CLOCK, sx - 4, sy - 7 + bob); break;
+      case 'bar': ctx.drawImage(BARRIER, sx - 5, sy - 4); break;
+      case 'cone':
+        if (o.fly) {                           // tumbling through the air
+          const f = o.fly;
+          ctx.save(); ctx.translate(sx + Math.round(f.x), sy + Math.round(f.y) - Math.round(Math.max(0, f.z))); ctx.rotate(f.rot);
+          ctx.drawImage(CONE, -3, -3); ctx.restore();
+        } else ctx.drawImage(CONE, sx - 3, sy - 4);
+        break;
+    }
+  }
+  // checkpoint gates and the goal
+  for (const c of checkpoints) {
+    const d = (c.th - sky.th) * r;
+    if (d > -60 && d < 260) drawGate(ctx, c.th, c.passed ? 'NICE!' : 'CHECK', c.passed ? PAL.pink : PAL.teal, PAL.void);
+  }
+  const dg = (THETA_FIN - sky.th) * r;
+  if (dg > -80 && dg < 280) drawGate(ctx, THETA_FIN, 'GOAL', PAL.yellow, PAL.white);
+  // particles + speed lines
+  for (const q of parts) { ctx.fillStyle = q.col; ctx.fillRect(Math.round(q.x), Math.round(q.y), 2, 2); }
+  ctx.fillStyle = '#8a86a3';
+  for (const s of streaks) ctx.fillRect(Math.round(s.x), Math.round(s.y), 1, Math.round(s.len));
+}
+
+function drawHUD(ctx) {
+  // time left (top-left), red and flashing in the last 10 seconds
+  text(ctx, 'TIME', 8, 6, PAL.yellow, 1, 'left', null, PAL.void);
+  const low = G.time < 10;
+  const tcol = low && ((G.t * 4) | 0) % 2 ? PAL.red : PAL.white;
+  text(ctx, Math.max(0, G.time).toFixed(1), 8, 15, tcol, 2, 'left', null, PAL.void);   // outlined so rooftops don't hide it
+  // lap (top-center)
+  text(ctx, 'LAP ' + (G.lap + 1) + '/' + LAPS, W / 2, 6, PAL.teal, 1, 'center', null, PAL.void);
+  // sparks + run time (top-right)
+  ctx.drawImage(SPARK_T[0], W - 46, 5);
+  text(ctx, 'x' + String(sky.sparks).padStart(3, '0'), W - 8, 6, PAL.white, 1, 'right', null, PAL.void);
+  text(ctx, fmtTime(G.runTime), W - 8, 16, PAL.grey, 1, 'right', null, PAL.void);
+  // dash meter (bottom-left)
+  text(ctx, 'DASH', 8, H - 14, sky.tired ? PAL.pink : PAL.teal, 1, 'left', null, PAL.void);
+  ctx.fillStyle = PAL.void; ctx.fillRect(34, H - 15, 44, 9);
+  ctx.fillStyle = '#2a2838'; ctx.fillRect(35, H - 14, 42, 7);
+  const fillCol = sky.tired ? (((G.t * 6) | 0) % 2 ? PAL.pink : '#6a1f55') : (sky.boost > 0 ? PAL.yellow : PAL.teal);
+  ctx.fillStyle = fillCol; ctx.fillRect(35, H - 14, Math.round(42 * sky.sprint), 7);
+  ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(35, H - 14, Math.round(42 * sky.sprint), 1);
+  // minimap (bottom-right) with Sky's blinking dot
+  if (minimap) {
+    ctx.drawImage(minimap, W - 50, H - 50);
+    const [mx, my] = miniPos(clamp(sky.th, THETA_START, THETA_END), 0);
+    if (((G.t * 4) | 0) % 2 === 0) { ctx.fillStyle = PAL.white; ctx.fillRect(W - 50 + mx - 1, H - 50 + my - 1, 3, 3); }
+    ctx.fillStyle = PAL.yellow; ctx.fillRect(W - 50 + mx, H - 50 + my, 1, 1);
+  }
+  // lap banner sliding in
+  if (G.banner) {
+    const b = G.banner, t = b.t;
+    const slide = t < 0.25 ? (1 - t / 0.25) * W : t > 2.3 ? -((t - 2.3) / 0.3) * W : 0;
+    const bw = Math.max(textW(b.b, 2), textW(b.a)) + 24;
+    box(ctx, Math.round(W / 2 - bw / 2 + slide), 34, bw, 32, PAL.pink);
+    text(ctx, b.a, W / 2 + slide, 39, PAL.yellow, 1, 'center');
+    text(ctx, b.b, W / 2 + slide, 49, PAL.white, 2, 'center');
+  }
+  // floating messages
+  for (const p of pops) {
+    if (p.t > 0.8 && ((p.t * 16) | 0) % 2) continue;
+    text(ctx, p.s, p.x, Math.round(p.y), p.col, 1, 'center', null, PAL.void);
+  }
+}
+
+function drawMenu(ctx, items, y) {
+  items.forEach((it, i) => {
+    const sel = i === G.menu;
+    text(ctx, it, W / 2, y + i * 13, sel ? PAL.yellow : PAL.grey, 1, 'center');
+    if (sel && ((G.t * 3) | 0) % 2 === 0) text(ctx, '>', W / 2 - textW(it) / 2 - 10, y + i * 13, PAL.yellow);
+  });
+}
+
+function drawTitle(ctx) {
+  ctx.fillStyle = PAL.void; ctx.fillRect(0, 0, W, H);
+  if (overview) {                              // the whole spiral city, slowly turning
+    ctx.save();
+    ctx.translate(W / 2, H / 2 + 58);
+    ctx.rotate(G.t * 0.12);
+    const s = 1.05;
+    ctx.drawImage(overview, -overview.width / 2 * s, -overview.height / 2 * s, overview.width * s, overview.height * s);
+    ctx.restore();
+  }
+  dim(ctx, 0, 0, W, 112);                      // darken behind the logo
+  ctx.fillStyle = 'rgba(5,5,10,0.5)'; ctx.fillRect(0, 0, W, 112);
+  text(ctx, 'SPIRAL CITY', W / 2, 18, PAL.pink, 2, 'center', null, PAL.void);
+  const wob = Math.round(Math.sin(G.t * 3) * 2);
+  text(ctx, 'RUN', W / 2 + 3, 39 + wob + 3, PAL.teal, 5, 'center', null, null);   // teal drop shadow
+  text(ctx, 'RUN', W / 2, 39 + wob, PAL.yellow, 5, 'center', null, PAL.void);
+  text(ctx, 'RACE THE SPIRAL TO THE CORE', W / 2, 84, PAL.white, 1, 'center');
+  if (bestTime) text(ctx, 'BEST ' + fmtTime(bestTime), W / 2, 97, PAL.teal, 1, 'center');
+  // Sky running in place, big
+  const f = SKY_RUN[((G.t * 10) | 0) & 3];
+  ctx.drawImage(SHADOW_SKY, W / 2 - 12, 150, 24, 8);
+  ctx.drawImage(f, W / 2 - 16, 116, 32, 40);
+  if (((G.t * 2) | 0) % 2 === 0) text(ctx, 'PRESS START', W / 2, 166, PAL.yellow, 1, 'center', null, PAL.void);
+  box(ctx, 8, 174, W - 16, 38, PAL.purple);   // controls card
+  text(ctx, 'MOVE  ARROWS / STICK', 16, 180, PAL.white);
+  text(ctx, 'JUMP  SPACE / A', 16, 190, PAL.white);
+  text(ctx, 'DASH  SHIFT / X', 16, 200, PAL.white);
+  text(ctx, 'PAUSE ESC', 140, 180, PAL.grey);
+  text(ctx, 'MUSIC M', 140, 190, PAL.grey);
+  text(ctx, padIndex >= 0 ? 'PAD READY' : 'PAD? PRESS A', 140, 200, padIndex >= 0 ? PAL.teal : PAL.grey);
+  text(ctx, 'QUARTERBITGAMES', W / 2, 215, '#5d5a78', 1, 'center', null);
+}
+
+function drawLoading(ctx) {
+  ctx.fillStyle = PAL.void; ctx.fillRect(0, 0, W, H);
+  text(ctx, 'BUILDING SPIRAL CITY', W / 2, 96, PAL.teal, 1, 'center');
+  const p = gen.row / MAP;
+  box(ctx, 48, 110, 160, 12, PAL.purple);
+  ctx.fillStyle = PAL.pink; ctx.fillRect(51, 113, Math.round(154 * p), 6);
+  text(ctx, Math.round(p * 100) + '%', W / 2, 130, PAL.grey, 1, 'center');
+}
+
+function render(ctx) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  if (G.state === 'loading') drawLoading(ctx);
+  else if (G.state === 'title') drawTitle(ctx);
+  else {
+    drawWorld(ctx);
+    drawHUD(ctx);
+    if (G.state === 'count') {                 // 3 2 1 GO
+      const n = Math.ceil(G.count - 0.2);
+      if (n >= 1) text(ctx, String(n), W / 2, 70, PAL.yellow, 5, 'center', null, PAL.void);
+    }
+    if (G.state === 'play' && G.runTime < 0.8) text(ctx, 'GO!', W / 2, 70, PAL.teal, 5, 'center', null, PAL.void);
+    if (G.state === 'pause') {
+      dim(ctx, 0, 0, W, H);
+      box(ctx, 56, 60, 144, 88, PAL.teal);
+      text(ctx, 'PAUSED', W / 2, 70, PAL.white, 2, 'center');
+      drawMenu(ctx, MENUS.pause, 96);
+      text(ctx, musicOn ? 'MUSIC ON  (M)' : 'MUSIC OFF (M)', W / 2, 136, PAL.dim, 1, 'center');
+    }
+    if (G.state === 'over') {
+      dim(ctx, 0, 0, W, H);
+      text(ctx, 'TIME UP!', W / 2, 52, PAL.red, 3, 'center', null, PAL.void);
+      const pct = Math.round(clamp(sky.th / THETA_FIN, 0, 1) * 100);
+      box(ctx, 40, 86, 176, 74, PAL.red);
+      text(ctx, 'MADE IT TO', W / 2, 94, PAL.grey, 1, 'center');
+      text(ctx, DISTRICTS[G.lap], W / 2, 105, PAL.white, 1, 'center');
+      text(ctx, pct + '% OF THE WAY IN', W / 2, 116, PAL.teal, 1, 'center');
+      if (G.menuT > 1) drawMenu(ctx, MENUS.over, 132);
+    }
+    if (G.state === 'win') {
+      if (G.menuT > 0.6) {
+        dim(ctx, 0, 0, W, H);
+        text(ctx, 'CORE REACHED!', W / 2, 26, PAL.teal, 2, 'center', null, PAL.void);
+        box(ctx, 28, 50, 200, 122, PAL.yellow);
+        text(ctx, 'TIME', 44, 62, PAL.grey); text(ctx, fmtTime(G.runTime), 150, 62, PAL.white, 1, 'right');
+        text(ctx, 'SPARKS', 44, 74, PAL.grey); text(ctx, String(sky.sparks), 150, 74, PAL.white, 1, 'right');
+        text(ctx, 'HITS', 44, 86, PAL.grey); text(ctx, String(sky.hits), 150, 86, PAL.white, 1, 'right');
+        text(ctx, 'BEST', 44, 98, PAL.grey); text(ctx, fmtTime(bestTime), 150, 98, PAL.teal, 1, 'right');
+        text(ctx, 'RANK', 186, 60, PAL.grey, 1, 'center');
+        const rc = { S: PAL.pink, A: PAL.yellow, B: PAL.teal, C: PAL.blue }[G.rank];
+        text(ctx, G.rank, 186, 72, rc, 4, 'center', null, PAL.void);
+        if (G.newBest && ((G.t * 4) | 0) % 2 === 0) text(ctx, 'NEW BEST!', W / 2, 112, PAL.pink, 1, 'center');
+        if (G.menuT > 1.6) drawMenu(ctx, MENUS.win, 132);
+      }
+    }
+  }
+  if (G.toast) {                               // small message top-center
+    G.toast.t += 1 / 60;
+    if (G.toast.t > 1.8) G.toast = null;
+    else { const w = textW(G.toast.s) + 12; box(ctx, W / 2 - w / 2, H - 30, w, 15, PAL.blue); text(ctx, G.toast.s, W / 2, H - 26, PAL.white, 1, 'center'); }
+  }
+}
+
+// ---------------------------------------------------------------------
+// 10. MAIN LOOP + DISPLAY
+//     The game draws into a 256x224 buffer. That buffer is stretched to the
+//     window at 4:3, exactly how an SNES picture looked on a TV.
+// ---------------------------------------------------------------------
+const screenCv = document.getElementById('screen');
+const sctx = screenCv.getContext('2d');
+const bufCv = document.createElement('canvas');
+bufCv.width = W; bufCv.height = H;
+const bctx = bufCv.getContext('2d');
+bctx.imageSmoothingEnabled = false;
+function fit() {
+  const dpr = window.devicePixelRatio || 1;
+  let h = innerHeight, w = h * 4 / 3;          // 4:3 TV shape
+  if (w > innerWidth) { w = innerWidth; h = w * 3 / 4; }
+  screenCv.style.width = Math.floor(w) + 'px'; screenCv.style.height = Math.floor(h) + 'px';
+  screenCv.width = Math.round(Math.floor(w) * dpr); screenCv.height = Math.round(Math.floor(h) * dpr);
+}
+addEventListener('resize', fit);
+fit();
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000);   // cap big gaps (tab switches)
+  last = now;
+  pollInput();
+  update(dt);
+  render(bctx);
+  sctx.imageSmoothingEnabled = false;
+  sctx.drawImage(bufCv, 0, 0, screenCv.width, screenCv.height);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+screenCv.focus();
+</script>
+</body>
+</html>
