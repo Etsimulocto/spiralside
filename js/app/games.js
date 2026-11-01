@@ -40,6 +40,14 @@ export const GAMES = [
     thumb: '/games/shadow-lag/art/thumb.jpg',
     tag: 'gamepad',
   },
+  {
+    id: 'blink',
+    name: 'blink',
+    blurb: 'firefly vs spiders on a barn-door web. bonk them off with a flower.',
+    href: '/games/blink/',
+    thumb: '/games/blink/art/thumb.jpg',   // title screen render, made for this menu
+    tag: 'gamepad',
+  },
 ];
 
 // ── STYLES ─────────────────────────────────────────────────
