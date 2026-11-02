@@ -502,3 +502,69 @@ body.editor-open.catalog-hidden .editor-panel { grid-column: 2; }
   .death-wall-warning { grid-template-rows: none; grid-auto-flow: column; gap: 14px; min-height: 0; padding-top: 6px; font-size: 15px; }
   .death-wall .game-hud { gap: 4px 10px; }
 }
+
+/* =====================================================================
+   COMPACT WALL OF DEATH / HUD (~15% of the screen instead of ~25%).
+   Three short rows: warning strip, title + buttons, stats.
+   The pickup message floats just above the wall; key hints live in Pause.
+   Prefixed with ":root .stage" so it beats the older theme/font rules.
+   ===================================================================== */
+:root .stage .death-wall {
+  min-height: 0;                                   /* size to content, not the old 200-240px */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;      /* title | buttons */
+  grid-template-areas: "warn warn" "title actions" "hud hud";
+  align-items: center;
+  gap: 4px 12px;
+  padding: 0 12px 7px;
+  overflow: visible;                               /* lets the pickup message sit above the wall */
+}
+:root .stage .death-wall .death-wall-header { display: contents; }   /* title and buttons join the grid */
+:root .stage .death-wall .death-wall-title { grid-area: title; min-width: 0; }
+:root .stage .death-wall .death-wall-title .eyebrow { display: none; }
+:root .stage .death-wall .death-wall-title h1 { font-size: clamp(14px, 1.7vw, 19px); white-space: nowrap; }
+:root .stage .death-wall .topbar-actions { grid-area: actions; gap: 5px; flex-wrap: nowrap; }
+:root .stage .death-wall .outline-button { padding: 3px 8px; font-size: clamp(11px, 1.3vw, 14px); }
+/* The warning is now one thin strip across the top edge of the wall. */
+:root .stage .death-wall .death-wall-warning {
+  grid-area: warn;
+  display: flex;
+  justify-content: center;
+  gap: 1.2em;
+  min-height: 0;
+  margin: 0 -12px;
+  padding: 3px 0;
+  border-top: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  font-size: clamp(11px, 1.4vw, 14px);
+  letter-spacing: .14em;
+  line-height: 1.1;
+}
+:root .stage .death-wall .death-wall-warning span + span::before { content: "· "; }
+/* Stats on one row (wraps to two on phones). */
+:root .stage .death-wall .game-hud {
+  grid-area: hud;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 14px;
+  font-size: clamp(13px, 1.6vw, 17px);
+}
+:root .stage .death-wall .health-readout progress { width: clamp(50px, 8vw, 100px); height: 9px; }
+:root .stage .death-wall .control-hint { display: none; }             /* moved into the Pause menu */
+/* Pickup / hit messages float just above the wall, over the playfield. */
+:root .stage .death-wall #pickup-message {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% + 8px);
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 0 6px rgba(0, 0, 0, .9), 0 0 12px rgba(0, 0, 0, .8);
+}
+@media (max-width: 520px) {
+  :root .stage .death-wall { gap: 3px 8px; padding: 0 8px 6px; }
+  :root .stage .death-wall .death-wall-warning { margin: 0 -8px; }
+  :root .stage .death-wall .game-hud { gap: 1px 10px; font-size: 14px; }
+  :root .stage .death-wall .outline-button { padding: 3px 6px; font-size: 11px; }
+}
