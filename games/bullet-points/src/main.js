@@ -1989,7 +1989,7 @@ function spawnEnemy(width) {
 
 function spawnStoneRow(width,y,gapSide,gapFraction=.28,word="STONE",setId="",kindOverride=""){
   const left=roomSettings.wallWidth+12, roomWidth=Math.max(100,width-roomSettings.wallWidth*2-24);
-  const gapWidth=Math.max(72,Math.min(roomWidth*.38,roomWidth*gapFraction)), wallWidth=roomWidth-gapWidth;
+  const gapWidth=Math.max(MIN_WALL_GAP,Math.min(roomWidth*.38,roomWidth*gapFraction)), wallWidth=roomWidth-gapWidth; // gap never narrower than the player lane
   const kind=kindOverride||(word==="GATE"?"gate":word==="LOCK"?"lock":"stone");
   const parts=gapSide==="center"?[{x:left,width:wallWidth/2},{x:left+wallWidth/2+gapWidth,width:wallWidth/2}]:[{x:gapSide==="left"?left+gapWidth:left,width:wallWidth}];
   return parts.filter(p=>p.width>=52).map(p=>{let label="";if(kind==="wordWall"){setCanvasFont(16,"bold");label=word;while(context.measureText(label).width<p.width-24&&label.length<240)label+=" · "+word;}const o={id:(setId||"wall")+"-"+Math.random().toString(36).slice(2,7),kind,word,label,x:p.x,y,width:p.width,height:28,previousY:y,setId};state.obstacles.push(o);return o;});
@@ -2037,6 +2037,22 @@ function spawnObstacleSet(width,setData,startY=-70){
   return true;
 }
 
+// ---- Wall spacing rules (so solid rows can never seal the room) ----
+const MIN_WALL_GAP = 84;        // every row leaves at least this many px open (player is ~20px wide)
+const MIN_ROW_SPACING = 140;    // px of clear space required between a new row and the walls already above
+// Top edge of the highest wall currently in the room (Infinity when there are none).
+function highestWallTop() {
+  return state.obstacles.reduce((top, o) => Math.min(top, o.y - o.height / 2), Infinity);
+}
+// True if a new wall whose lowest edge sits at bottomY keeps a clear lane under the walls above it.
+function roomForWall(bottomY) {
+  return highestWallTop() - bottomY >= MIN_ROW_SPACING;
+}
+// How far down (in px) a new obstacle set's lowest row will be.
+function obstacleSetBottom(startY) {
+  return startY + 14;
+}
+
 function spawnWorldDrop(width) {
   const roomWidth = Math.max(80, width - roomSettings.wallWidth * 2 - 24);
   const enemyChance = enemyList.length ? 0.16 : 0;   // enemies mostly come from the wave timer now
@@ -2062,12 +2078,18 @@ function spawnWorldDrop(width) {
     return;
   }
   if (roll < enemyChance + pickupChance + numberHazardChance + obstacleSetChance) {
-    spawnObstacleSet(width);
+    if (roomForWall(obstacleSetBottom(-70))) spawnObstacleSet(width);
+    else spawnEnemyWave(width, state.level);       // no room for walls yet: send enemies instead
+    return;
+  }
+  // Single word wall: same rule, it must not land on or right against another wall.
+  if (!roomForWall(-28 + 13)) {
+    spawnEnemyWave(width, state.level);
     return;
   }
 
   const left = roomSettings.wallWidth + 12;
-  const maxWidth = Math.max(0, Math.min(roomWidth * 0.9, roomWidth - 28));
+  const maxWidth = Math.max(0, Math.min(roomWidth * 0.82, roomWidth - MIN_WALL_GAP));   // always a real gap
   const minWidth = Math.min(maxWidth, Math.max(72, roomWidth * 0.32));
   const barrierWidth = minWidth + Math.random() * Math.max(0, maxWidth - minWidth);
   const gapSide = state.nextWallSide;
