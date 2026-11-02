@@ -1,0 +1,83 @@
+{
+  "weapons": [
+    {
+      "id": "period",
+      "name": "Period Pistol",
+      "description": "A neat little full stop. Reliable, direct, and very polite.",
+      "projectileGlyph": ".",
+      "damage": 1,
+      "shotsPerSecond": 5,
+      "projectileSpeed": 560,
+      "spreadDegrees": 0,
+      "projectilesPerShot": 1,
+      "pattern": "single",
+      "unlockedByDefault": true
+    },
+    {
+      "id": "colon",
+      "name": "Colon Double-Tap",
+      "description": "Two dots, one sentence. Fires a tight paired shot.",
+      "projectileGlyph": ":",
+      "damage": 1,
+      "shotsPerSecond": 4,
+      "projectileSpeed": 500,
+      "spreadDegrees": 8,
+      "projectilesPerShot": 2,
+      "pattern": "spread",
+      "unlockedByDefault": true
+    },
+    {
+      "id": "semicolon",
+      "name": "Semicolon SMG",
+      "description": "The sentence keeps going. A fast punctuation stream.",
+      "projectileGlyph": ";",
+      "damage": 1,
+      "shotsPerSecond": 11,
+      "projectileSpeed": 520,
+      "spreadDegrees": 5,
+      "projectilesPerShot": 1,
+      "pattern": "single",
+      "unlockedByDefault": true
+    },
+    {
+      "id": "shotgun",
+      "name": "Holey Moley",
+      "description": "A close-range punctuation fan. Five pellets, one loud opinion.",
+      "projectileGlyph": "*",
+      "damage": 1,
+      "shotsPerSecond": 1.6,
+      "projectileSpeed": 390,
+      "spreadDegrees": 48,
+      "projectilesPerShot": 5,
+      "pattern": "spread",
+      "unlockedByDefault": true
+    },
+    {
+      "id": "bracket",
+      "name": "Bracket Blaster",
+      "description": "Three brackets fan out and box in whatever is ahead.",
+      "projectileGlyph": "]",
+      "damage": 1,
+      "shotsPerSecond": 2.4,
+      "projectileSpeed": 420,
+      "spreadDegrees": 24,
+      "projectilesPerShot": 3,
+      "pattern": "spread",
+      "unlockedByDefault": true
+    },
+    {
+      "id": "laser",
+      "name": "The Long Division",
+      "description": "A sharp vertical bar of light. Fires a short, straight beam.",
+      "projectileGlyph": "|",
+      "damage": 2,
+      "shotsPerSecond": 4,
+      "spreadDegrees": 0,
+      "projectilesPerShot": 1,
+      "pattern": "beam",
+      "beamLength": 440,
+      "beamDuration": 0.12,
+      "unlockedByDefault": true
+    }
+  ]
+}

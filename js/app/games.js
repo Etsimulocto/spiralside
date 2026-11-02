@@ -72,6 +72,14 @@ export const GAMES = [
     thumb: '/games/bloom-system/art/thumb.jpg',
     tag: 'usb',
   },
+  {
+    id: 'bulletpoints',
+    name: 'bullet points',
+    blurb: 'neon word-dungeon shooter. shoot letters, break words, find the LOCK.',
+    href: '/games/bullet-points/',
+    thumb: '/games/bullet-points/art/thumb.jpg',   // in-game shot of a LOCK / GATE set
+    tag: 'gamepad',
+  },
 ];
 
 // ── STYLES ─────────────────────────────────────────────────

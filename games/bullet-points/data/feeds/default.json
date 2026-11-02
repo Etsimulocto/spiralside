@@ -1,0 +1,16 @@
+{
+  "name": "First Page",
+  "version": 1,
+  "description": "Starter feed assembled from separate editable game-data files.",
+  "files": {
+    "settings": "../settings.json",
+    "weapons": "../weapons.json",
+    "pickups": "../pickups.json",
+    "enemies": "../enemies.json",
+    "obstacles": "../obstacles.json",
+    "wordSets": "../word-sets/default.json",
+    "spawnPatterns": "../spawn-patterns.json",
+    "menu": "../menu.json",
+    "controls": "../controls.json"
+  }
+}

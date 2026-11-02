@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en" data-theme="neon" data-game-font="crt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05070b">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&display=swap" rel="stylesheet">
+  <title>Bullet Points</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside id="catalog-panel" class="catalog-panel" aria-label="Game content and stats">
+    <header class="catalog-header">
+      <p class="eyebrow">FIELD GUIDE · LIVE DATA</p>
+      <h2>Dungeon Index</h2>
+      <p id="catalog-summary">Loading content and stats…</p>
+      <p id="catalog-run-status">HP 3/3 · LIVES 3 · ARMOR 0 · PTS 0</p>
+      <p class="catalog-shortcut">F6 / L1 hides or shows this index.</p>
+    </header>
+    <div id="catalog-content" class="catalog-content" aria-live="polite"></div>
+  </aside>
+  <main class="app">
+
+    <section class="stage" aria-label="Game viewport">
+      <canvas id="game" aria-label="Bullet Points game canvas"></canvas>
+      <div id="death-wall" class="death-wall" aria-label="Wall of Death and game HUD">
+        <div class="death-wall-header">
+          <div class="death-wall-title">
+            <p class="eyebrow">AN INFINITE WORD DUNGEON</p>
+            <h1>Bullet Points</h1>
+          </div>
+          <div class="topbar-actions">
+            <button id="catalog-toggle" class="outline-button" type="button" aria-controls="catalog-panel" aria-expanded="true" aria-label="Hide Dungeon Index (F6 or L1)" title="Show or hide the Dungeon Index (F6 or L1)">INDEX [F6]</button>
+            <button id="editor-toggle" class="outline-button" type="button" aria-controls="editor-panel">EDITOR [F8]</button>
+            <button id="menu-button" class="outline-button" type="button" aria-haspopup="dialog"><span aria-hidden="true">Ⅱ</span> PAUSE / SETTINGS</button>
+          </div>
+        </div>
+        <div class="game-hud" aria-live="polite">
+          <label class="health-readout"><span>HP</span><progress id="health-meter" max="3" value="3">3/3</progress><span id="health-text">3/3</span></label>
+          <span id="lives-readout">LIVES ●●●</span>
+          <span id="armor-readout">ARMOR 0</span>
+          <span id="score-readout">PTS 0</span>
+          <span id="depth-readout">DEPTH 0 m</span>
+          <span id="weapon-readout">. PERIOD PISTOL</span>
+          <span id="pickup-message" aria-live="polite"></span>
+        </div>
+        <p class="control-hint">MOVE WASD / ARROWS · AIM IJKL / MOUSE · FIRE SPACE / CLICK · INDEX F6 / L1 · WEAPON Q/E · PAD L2 / R1</p>
+        <div class="death-wall-warning">
+          <span id="death-wall-line-1">WALL OF DEATH</span>
+          <span id="death-wall-line-2">NO ESCAPE</span>
+        </div>
+      </div>
+      <div id="touch-sticks" class="touch-sticks" hidden aria-label="Touch controls">
+        <div id="left-stick" class="virtual-stick" role="application" aria-label="Move joystick"><span class="stick-caption">MOVE</span><span id="left-stick-knob" class="stick-knob"></span></div>
+        <div id="right-stick" class="virtual-stick" role="application" aria-label="Aim and fire joystick"><span class="stick-caption">AIM · FIRE</span><span id="right-stick-knob" class="stick-knob"></span></div>
+      </div>
+
+    
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-header">
+      <div>
+        <p class="eyebrow">RUN CONTROL</p>
+        <h2 id="settings-title">PAUSED / SETTINGS</h2>
+      </div>
+      <button id="close-menu" class="icon-button" type="button" aria-label="Resume and close settings">×</button>
+    </div>
+
+    <button id="resume-button" class="primary-button" type="button">RESUME RUN</button>
+
+    <section class="menu-section" aria-labelledby="display-heading">
+      <h3 id="display-heading">DISPLAY & SOUND</h3>
+      <div class="setting-row">
+        <span id="ink-label">Ink colors</span>
+        <button id="invert-button" class="outline-button" type="button" aria-pressed="false">INK: NEON</button>
+      </div>
+      <label class="setting-row" for="font-theme">
+        <span id="font-label">Game font</span>
+        <select id="font-theme" aria-label="Choose game-wide font">
+          <option value="crt">CRT · Glow</option>
+          <option value="dos">DOS · Courier</option>
+          <option value="vga">VGA · Console</option>
+          <option value="arcade">8-BIT · Block</option>
+        </select>
+      </label>
+      <label class="setting-row" for="sound-toggle">
+        <span><span id="sound-label">Sound effects</span> <small id="sound-note">(synth bleeps)</small></span>
+        <input id="sound-toggle" type="checkbox" checked>
+      </label>
+    </section>
+
+    <section class="menu-section" aria-labelledby="controls-heading">
+      <h3 id="controls-heading">CONTROLS</h3>
+      <label class="choice-row">
+        <input type="radio" name="control-scheme" value="auto" checked>
+        <span id="auto-label">Auto: use any active input</span>
+      </label>
+      <label class="choice-row">
+        <input type="radio" name="control-scheme" value="keyboard">
+        <span id="keyboard-label">Keyboard and mouse</span>
+      </label>
+      <label class="choice-row">
+        <input type="radio" name="control-scheme" value="gamepad">
+        <span id="gamepad-label">Gamepad</span>
+      </label>
+      <label class="choice-row">
+        <input type="radio" name="control-scheme" value="touch">
+        <span><span id="touch-label">Dual mobile sticks</span> <small id="touch-note">(left moves · right aims and fires)</small></span>
+      </label>
+      <p id="gamepad-status" class="gamepad-status" role="status" aria-live="polite">Looking for a connected controller…</p>
+      <p class="control-panel-note">F6 / L1 shows or hides the Dungeon Index · F8 / SELECT opens or closes the editor.</p>
+    </section>
+
+    <section class="menu-section" aria-labelledby="slots-heading">
+      <div class="section-title-row">
+        <h3 id="slots-heading">SAVE SLOTS</h3>
+        <small id="slot-storage-note">Stored in this browser</small>
+      </div>
+      <div id="save-slots" class="save-slots"></div>
+    </section>
+
+    <div class="dialog-footer">
+      <p id="menu-status" role="status" aria-live="polite"></p>
+      <button id="restart-button" class="danger-button" type="button">RESTART RUN</button>
+    </div>
+  </dialog>
+  </section>
+
+  </main>
+
+  <aside id="editor-panel" class="editor-panel" aria-label="Feed editor" hidden>
+    <div class="editor-header">
+      <div>
+        <p class="eyebrow">F8 · CONTENT WORKBENCH</p>
+        <h2>Feed editor</h2>
+      </div>
+      <button id="editor-close" class="icon-button" type="button" aria-label="Close editor">×</button>
+    </div>
+    <p class="editor-intro">Pick a data file, edit its JSON, then save a local draft or download it. F6 / L1 shows or hides the Dungeon Index.</p>
+    <label for="editor-file">EDIT DATA FILE</label>
+    <select id="editor-file">
+      <option value="../data/settings.json">Settings</option>
+      <option value="../data/controls.json">Controls</option>
+      <option value="../data/weapons.json">Weapons</option>
+      <option value="../data/pickups.json">Pickups</option>
+      <option value="../data/enemies.json">Enemies</option>
+      <option value="../data/obstacles.json">Obstacles</option>
+      <option value="../data/word-sets/default.json">Word set · First Page</option>
+      <option value="../data/spawn-patterns.json">Spawn patterns</option>
+      <option value="../data/menu.json">Menu text</option>
+      <option value="../data/feeds/default.json">Feed manifest</option>
+    </select>
+    <p id="editor-file-path" class="editor-file-path"></p>
+    <section id="enemy-tuner" class="enemy-tuner" aria-labelledby="enemy-tuner-title" hidden>
+      <h3 id="enemy-tuner-title">A–Z ENEMY TUNER</h3>
+      <label for="enemy-tuner-select">CHOOSE ENEMY</label>
+      <select id="enemy-tuner-select" aria-label="Choose an enemy to tune"></select>
+      <div class="enemy-preview">
+        <span id="enemy-preview-letter">A</span>
+        <strong id="enemy-preview-name">Artic Arganon</strong>
+      </div>
+      <div id="enemy-tuner-fields" class="enemy-tuner-fields"></div>
+      <div class="explosion-preview-wrap">
+        <small>LETTER BURST PREVIEW</small>
+        <div id="explosion-preview" class="explosion-preview">A A A A A A A A</div>
+      </div>
+      <p class="enemy-tuner-help">Changes apply live. Use SAVE DRAFT or DOWNLOAD FILE to keep the roster.</p>
+    </section>
+    <section id="spawn-tools" class="spawn-tools" aria-labelledby="spawn-tools-title" hidden>
+      <h3 id="spawn-tools-title">LIVE SPAWNER</h3>
+      <label for="spawn-item-select">CHOOSE WHAT TO SPAWN</label>
+      <select id="spawn-item-select" aria-label="Choose a live game object to spawn"></select>
+      <div class="spawn-tools-actions">
+        <button id="spawn-selected" type="button">SPAWN SELECTED</button>
+        <button id="spawn-all" type="button">SPAWN ALL</button>
+      </div>
+      <p id="spawn-tools-help">Spawns test objects onto the paused game canvas. Close F8 to resume.</p>
+    </section>
+    <textarea id="editor-text" spellcheck="false" aria-label="Selected JSON data file"></textarea>
+    <div class="editor-actions">
+      <button id="editor-validate" type="button">CHECK JSON</button>
+      <button id="editor-save" type="button">SAVE DRAFT</button>
+      <button id="editor-download" type="button">DOWNLOAD FILE</button>
+      <button id="editor-reset" type="button">RESET FILE</button>
+    </div>
+    <p id="editor-status" class="editor-status" role="status" aria-live="polite">Drafts stay in this browser until downloaded.</p>
+    <p class="editor-shortcut">F8 or × closes the editor.</p>
+  </aside>
+
+
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

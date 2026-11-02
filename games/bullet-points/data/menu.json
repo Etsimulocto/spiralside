@@ -1,0 +1,80 @@
+{
+  "title": "Bullet Points",
+  "subtitle": "An Infinite Word Dungeon",
+  "buttons": [
+    {
+      "id": "play",
+      "label": "START RUN"
+    },
+    {
+      "id": "editor",
+      "label": "FEED EDITOR"
+    },
+    {
+      "id": "settings",
+      "label": "SETTINGS"
+    },
+    {
+      "id": "credits",
+      "label": "CREDITS"
+    }
+  ],
+  "labels": {
+    "move": "WASD / ARROWS TO MOVE",
+    "aim": "AIM AND FIRE",
+    "mobile": "LEFT STICK: MOVE · RIGHT STICK: AIM / FIRE",
+    "invert": "INVERT INK",
+    "gameOver": "THE PAGE CAUGHT YOU",
+    "retry": "TRY AGAIN"
+  },
+  "settingsMenu": {
+    "title": "PAUSED / SETTINGS",
+    "pauseSettings": "Ⅱ PAUSE / SETTINGS",
+    "resume": "RESUME RUN",
+    "displayHeading": "DISPLAY & SOUND",
+    "inkLabel": "Ink colors",
+    "invertOn": "INK: PAPER",
+    "invertOff": "INK: NEON",
+    "soundLabel": "Sound effects",
+    "soundNote": "(synth bleeps)",
+    "controlsHeading": "CONTROLS",
+    "keyboard": "Keyboard and mouse",
+    "touch": "Dual mobile sticks",
+    "touchNote": "(left moves · right aims and fires)",
+    "saveSlots": "SAVE SLOTS",
+    "storageNote": "Stored in this browser",
+    "slotName": "SAVE SLOT {slot}",
+    "empty": "EMPTY",
+    "savedPrefix": "Saved ",
+    "savedRun": "Saved run",
+    "save": "SAVE",
+    "load": "LOAD",
+    "clear": "CLEAR",
+    "restart": "RESTART RUN",
+    "replacePrompt": "Replace Save Slot ",
+    "clearPrompt": "Clear Save Slot ",
+    "restartPrompt": "Restart this run?",
+    "savedMessage": "Saved to Slot ",
+    "saveFailed": "Could not save. Browser storage may be unavailable.",
+    "loadEmpty": " has no readable save.",
+    "loadSuccess": "Loaded Slot ",
+    "clearedMessage": "Slot ",
+    "clearFailed": "Could not clear this save slot.",
+    "restartSuccess": "Run restarted.",
+    "soundEnabled": "Sound effects enabled.",
+    "soundMuted": "Sound effects muted.",
+    "keyboardSelected": "Keyboard and mouse selected.",
+    "touchSelected": "Dual mobile sticks selected.",
+    "auto": "Auto: use any active input",
+    "gamepad": "Gamepad",
+    "noGamepad": "No controller detected. Connect a USB or Bluetooth gamepad.",
+    "gamepadConnected": "Connected: {name}",
+    "gamepadUnsupported": "Gamepad API unavailable in this browser.",
+    "gamepadSelected": "Gamepad selected.",
+    "fontLabel": "Game font"
+  },
+  "messages": {
+    "loading": "TURNING THE PAGE…",
+    "editorUnsaved": "UNSAVED FEED CHANGES"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "patterns": [
+    {
+      "id": "single-file",
+      "name": "Single File",
+      "description": "One obstacle or enemy at a time.",
+      "entries": [
+        { "type": "enemy", "id": "mimic", "count": 1, "spacing": 0 }
+      ]
+    },
+    {
+      "id": "split-lane",
+      "name": "Split Lane",
+      "description": "Two objects leave a gap down the middle.",
+      "entries": [
+        { "type": "obstacle", "id": "stone-wall", "count": 2, "spacing": 120 }
+      ]
+    },
+    {
+      "id": "word-storm",
+      "name": "Word Storm",
+      "description": "A small group of enemies enters together.",
+      "entries": [
+        { "type": "enemy", "id": "error", "count": 3, "spacing": 55 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+{
+  "obstacles": [
+    {
+      "id": "stone-wall",
+      "name": "STONE",
+      "wordSet": "walls",
+      "collision": "solid",
+      "health": 3,
+      "breaksIntoLetters": true,
+      "type": "stone"
+    },
+    {
+      "id": "block",
+      "name": "BLOCK",
+      "wordSet": "walls",
+      "collision": "solid",
+      "health": 2,
+      "breaksIntoLetters": false,
+      "type": "block",
+      "size": 60,
+      "fallSpeed": 105,
+      "gravity": 45,
+      "slideSpeed": 210
+    },
+    {
+      "id": "locked-gate",
+      "name": "LOCK",
+      "wordSet": "doors",
+      "collision": "solid",
+      "health": 1,
+      "requiresKey": true,
+      "type": "lock",
+      "size": 44,
+      "description": "Solid Lock marker inside the Gate set's safe lane."
+    },
+    {
+      "id": "open-gate",
+      "name": "GATE",
+      "wordSet": "doors",
+      "collision": "passable",
+      "health": 0,
+      "requiresKey": false,
+      "type": "gate",
+      "gapFraction": 0.32,
+      "description": "A word wall with a deliberately wide safe opening."
+    },
+    {
+      "id": "equation-black-hole",
+      "type": "number",
+      "name": "EQUATION · BLACK HOLE",
+      "equation": "8 ÷ 0 = ∞",
+      "behavior": "suction-hold",
+      "triggerRadius": 165,
+      "captureRadius": 30,
+      "suctionSpeed": 360,
+      "suctionSeconds": 0.7,
+      "holdSeconds": 1.8,
+      "cooldownSeconds": 3.5,
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "equation-wall-slam",
+      "type": "number",
+      "name": "EQUATION · SLAM",
+      "equation": "13² = 169",
+      "behavior": "wall-slam",
+      "triggerRadius": 145,
+      "captureRadius": 34,
+      "suctionSpeed": 300,
+      "suctionSeconds": 0.65,
+      "holdSeconds": 0.6,
+      "wallHoldSeconds": 1.5,
+      "slamSpeed": 720,
+      "launchSpeed": 540,
+      "pinballSeconds": 1.6,
+      "directions": [
+        "left",
+        "right",
+        "up",
+        "down"
+      ],
+      "color": "#ff4d6d"
+    },
+    {
+      "id": "equation-pinball",
+      "type": "number",
+      "name": "EQUATION · PINBALL",
+      "equation": "√−1 = i",
+      "behavior": "pinball",
+      "triggerRadius": 135,
+      "captureRadius": 32,
+      "suctionSpeed": 330,
+      "suctionSeconds": 0.55,
+      "holdSeconds": 0.4,
+      "launchSpeed": 660,
+      "pinballSeconds": 2.8,
+      "cooldownSeconds": 3,
+      "color": "#00a6fb"
+    },
+    {
+      "id": "equation-repulsor",
+      "type": "number",
+      "name": "EQUATION · REPULSOR",
+      "equation": "−(−7) = +7",
+      "behavior": "repulsor",
+      "triggerRadius": 155,
+      "suctionSpeed": 520,
+      "suctionSeconds": 1.15,
+      "holdSeconds": 0,
+      "cooldownSeconds": 3,
+      "color": "#ffb703"
+    },
+    {
+      "id": "equation-chaos",
+      "type": "number",
+      "name": "EQUATION · CHAOS",
+      "equation": "0 ÷ 0 = ?",
+      "behavior": "wall-slam",
+      "triggerRadius": 180,
+      "captureRadius": 28,
+      "suctionSpeed": 420,
+      "suctionSeconds": 0.5,
+      "holdSeconds": 0.35,
+      "wallHoldSeconds": 0.7,
+      "slamSpeed": 900,
+      "launchSpeed": 720,
+      "pinballSeconds": 3.2,
+      "directions": [
+        "left",
+        "right",
+        "up",
+        "down"
+      ],
+      "color": "#fb5607"
+    },
+    {
+      "id": "set-stone-switchback",
+      "type": "set",
+      "name": "SET · STONE SWITCHBACK",
+      "formation": "stone-switchback",
+      "rows": 3,
+      "rowSpacing": 185,
+      "gapFraction": 0.28,
+      "gapSequence": [
+        "left",
+        "right",
+        "center"
+      ],
+      "description": "Three spaced Stone walls; the open lane changes each row."
+    },
+    {
+      "id": "set-block-skate",
+      "type": "set",
+      "name": "SET · BLOCK SKATE",
+      "formation": "block-skate",
+      "rows": 3,
+      "rowSpacing": 205,
+      "gapFraction": 0.3,
+      "gapSequence": [
+        "right",
+        "left",
+        "center"
+      ],
+      "blockDropHeight": 88,
+      "block": {
+        "size": 60,
+        "fallSpeed": 110,
+        "gravity": 42,
+        "slideSpeed": 220
+      },
+      "description": "Falling Blocks land on Stone, skate sideways, then drop again."
+    },
+    {
+      "id": "set-lock-gate",
+      "type": "set",
+      "name": "SET · LOCK / GATE",
+      "formation": "lock-gate",
+      "rows": 3,
+      "rowSpacing": 195,
+      "gapFraction": 0.34,
+      "gapSequence": [
+        "left",
+        "center",
+        "right"
+      ],
+      "description": "Gate openings shift lanes; a Lock marker splits one opening while leaving room to pass."
+    }
+  ]
+}

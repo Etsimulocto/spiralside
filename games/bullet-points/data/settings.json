@@ -1,0 +1,35 @@
+{
+  "colors": {
+    "paper": "#f4f0e6",
+    "ink": "#191919",
+    "accent": "#d84b3e",
+    "invertEnabled": true
+  },
+  "world": {
+    "scrollSpeed": 42,
+    "spawnInterval": 2.6
+  },
+  "player": {
+    "startingHealth": 3,
+    "movementSpeed": 240
+  },
+  "display": {
+    "orientation": "portrait",
+    "showTouchControls": "auto"
+  },
+  "room": {
+    "wallWidth": 54,
+    "glyphSpacing": 26,
+    "leftWallGlyphs": "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+    "rightWallGlyphs": "0123456789!?<>+-*/"
+  },
+  "wallOfDeath": {
+    "label": "WALL OF DEATH",
+    "hitText": "ERASED",
+    "height": 200,
+    "lines": [
+      "WALL OF DEATH",
+      "NO ESCAPE"
+    ]
+  }
+}

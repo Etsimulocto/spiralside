@@ -1,0 +1,126 @@
+{
+  "pickups": [
+    {
+      "id": "health",
+      "name": "PATCH NOTES",
+      "description": "Restore one health point.",
+      "glyph": "+",
+      "effect": "restoreHealth",
+      "amount": 1,
+      "durationSeconds": 0,
+      "weight": 18
+    },
+    {
+      "id": "shield",
+      "name": "PARENTHESIS ARMOR",
+      "description": "Absorb one future hit.",
+      "glyph": "()",
+      "effect": "addShield",
+      "amount": 1,
+      "durationSeconds": 0,
+      "weight": 12
+    },
+    {
+      "id": "rapid-fire",
+      "name": "CAFFEINATED INK",
+      "description": "Fire faster for eight seconds.",
+      "glyph": "!",
+      "effect": "modifyFireRate",
+      "amount": 1.8,
+      "durationSeconds": 8,
+      "weight": 13
+    },
+    {
+      "id": "arsenal",
+      "name": "LOST FOOTNOTE",
+      "description": "Switch to a random weapon.",
+      "glyph": "†",
+      "effect": "grantWeapon",
+      "amount": "random",
+      "durationSeconds": 0,
+      "weight": 12
+    },
+    {
+      "id": "double-shot",
+      "name": "ELLIPSIS",
+      "description": "Add two shots to each volley for ten seconds.",
+      "glyph": "...",
+      "effect": "extraProjectiles",
+      "amount": 2,
+      "durationSeconds": 10,
+      "weight": 10
+    },
+    {
+      "id": "slow-scroll",
+      "name": "COMMA BREAK",
+      "description": "Slow the dungeon scroll for six seconds.",
+      "glyph": ",",
+      "effect": "slowScroll",
+      "amount": 0.55,
+      "durationSeconds": 6,
+      "weight": 12
+    },
+    {
+      "id": "max-health",
+      "name": "NEW CHAPTER",
+      "description": "Gain one maximum health and heal one.",
+      "glyph": "♥",
+      "effect": "increaseMaxHealth",
+      "amount": 1,
+      "durationSeconds": 0,
+      "weight": 6
+    },
+    {
+      "id": "distance",
+      "name": "PAGE SKIP",
+      "description": "Skip ahead a little in the endless page.",
+      "glyph": "»",
+      "effect": "bonusDistance",
+      "amount": 250,
+      "durationSeconds": 0,
+      "weight": 7
+    },
+    {
+      "id": "speed-boost",
+      "name": "HOTKEY HASTE",
+      "description": "Move faster for seven seconds.",
+      "glyph": "»",
+      "effect": "speedBoost",
+      "amount": 1.7,
+      "durationSeconds": 7,
+      "weight": 10
+    },
+    {
+      "id": "radial-fire",
+      "name": "ASTERISK STORM",
+      "description": "Auto-fire in every direction for eight seconds.",
+      "glyph": "✳",
+      "effect": "radialFire",
+      "amount": 12,
+      "intervalSeconds": 0.9,
+      "durationSeconds": 8,
+      "weight": 8
+    },
+    {
+      "id": "word-wall",
+      "name": "BRACKET FORTRESS",
+      "description": "A protective word-wall blocks hazards for six seconds.",
+      "glyph": "[ ]",
+      "effect": "wordWall",
+      "amount": 1,
+      "durationSeconds": 6,
+      "weight": 8
+    },
+    {
+      "id": "clones",
+      "name": "COPY / PASTE",
+      "description": "Split into a three-player firing formation for ten seconds.",
+      "glyph": "@@@",
+      "effect": "clones",
+      "amount": 2,
+      "durationSeconds": 10,
+      "weight": 7
+    }
+  ],
+  "version": 2
+}
