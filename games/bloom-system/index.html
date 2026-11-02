@@ -124,9 +124,11 @@ input { font-family: inherit; }
 .dnd .col { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
 .mapwrap { position: relative; min-height: 0; display: flex; align-items: flex-start; justify-content: center; }
 #map { width: 100%; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 6px; background: #010203; }
-.feed { flex: 1; min-height: 120px; overflow: hidden; display: flex; flex-direction: column; gap: 1px; }
-.feed div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.feed div:first-child { color: var(--yellow); }
+.feed { flex: 1; min-height: 120px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px;
+  -webkit-mask-image: linear-gradient(transparent, #000 40px); mask-image: linear-gradient(transparent, #000 40px); }   /* old lines fade out at the top */
+.feed div { line-height: 1.2; flex-shrink: 0; color: var(--dim); }   /* tall enough lines: VT323 glyphs no longer get clipped */
+.feed div:last-child { color: var(--yellow); }                       /* newest action at the bottom */
+.feed div:nth-last-child(2), .feed div:nth-last-child(3) { color: var(--oled); }
 .kv { display: flex; justify-content: space-between; gap: 6px; }
 .enemyrow { display: grid; grid-template-columns: 22px 1fr auto; gap: 6px; align-items: center; font-size: 19px; }
 .overlay { position: absolute; inset: 0; background: rgba(1,3,5,.86); display: flex; align-items: center; justify-content: center; z-index: 5; padding: 14px; }
@@ -766,7 +768,18 @@ const scaled = (b, min) => clamp(b + signedMod(), min, 30000);
 const enemyScaled = (b, min) => clamp(b + Math.floor(depth() / 3) + signedMod(), min, 30000);
 function levelFromXp(xp) { let lv = 1, need = 40, spent = 0; while (lv < 99 && xp >= spent + need) { spent += need; lv++; need += 20 + lv * 8; } return lv; }
 function xpAt(L) { let lv = 1, need = 40, spent = 0; while (lv < L) { spent += need; lv++; need += 20 + lv * 8; } return spent; }
-function log(msg) { T.log.unshift(msg); if (T.log.length > 60) T.log.length = 60; T.dirty = true; }
+// The log is a list of entries in time order. Each entry is one action
+// (one keypress, one enemy turn, one new room) and holds all its messages,
+// shown on one line: ATTACK RAT · ROLL 14 · TOTAL 18 · DAMAGE 5
+let entryOpen = false;
+function beginEntry() { entryOpen = false; }
+function log(msg) {
+  if (entryOpen && T.log.length) T.log[T.log.length - 1].push(msg);
+  else { T.log.push([msg]); entryOpen = true; }
+  if (T.log.length > 60) T.log.splice(0, T.log.length - 60);
+  T.dirty = true;
+}
+const lastEntryIs = msg => { const e = T.log[T.log.length - 1]; return e && e.length === 1 && e[0] === msg; };
 function dsave() { SV.dnd = D; save(); T.lastSave = performance.now(); }
 function checkLevel() {
   const target = levelFromXp(D.xp);
@@ -812,6 +825,7 @@ function spawnEnemy() {
   T.enemies.push(e);
 }
 function genRoom(announce) {
+  beginEntry();
   T.enemies = []; T.flashes = []; T.armedUntil = 0;
   T.map = Array.from({ length: RH }, (_, y) => Array.from({ length: RW }, (_, x) => (x === 0 || y === 0 || x === RW - 1 || y === RH - 1) ? '#' : '.'));
   const M = T.map;
@@ -906,9 +920,9 @@ function attack(e, verb) {
   }
 }
 function attackDir(dx, dy) {
-  T.armedUntil = 0; log('ATTACK');
+  T.armedUntil = 0;
   const e = enemyAt(T.px + dx, T.py + dy);
-  if (e) attack(e, 'ATTACK'); else { log('SWING AIR'); SFX.swing(); }
+  if (e) attack(e, 'ATTACK'); else { log('ATTACK'); log('SWING AIR'); SFX.swing(); }
 }
 function rollCatalog() {
   const maxR = Math.min(4, Math.floor(D.room / 8));
@@ -957,7 +971,7 @@ function interact(x, y) {
 }
 function movePlayer(dx, dy) {
   const nx = T.px + dx, ny = T.py + dy;
-  if (!walkable(nx, ny)) { if (T.log[0] !== 'WALL') log('WALL'); return; }
+  if (!walkable(nx, ny)) { if (!lastEntryIs('WALL')) log('WALL'); return; }
   interact(nx, ny);
 }
 // Enemies act on their own clocks, but only while you're in the room (not in menus)
@@ -966,6 +980,7 @@ function serviceEnemies(now) {
   for (const e of T.enemies.slice()) {
     if (!T.enemies.includes(e) || now < e.next) continue;
     e.next = now + rr(e.mmin, e.mmax + 1);
+    beginEntry();
     const dxp = T.px - e.x, dyp = T.py - e.y;
     if (Math.abs(dxp) + Math.abs(dyp) === 1) {
       const total = rr(1, 21) + e.hit + Math.trunc(e.dex / 3);
@@ -1071,7 +1086,7 @@ VIEWS.dnd = {
   refresh() {                                   // update the side panels without rebuilding the map
     if (!$('dStat')) return;
     $('dStat').innerHTML = '<div class="h2">ADVENTURER</div>' + statusRows();
-    $('dLog').innerHTML = T.log.slice(0, 18).map(m => '<div>' + esc(m) + '</div>').join('');
+    $('dLog').innerHTML = T.log.slice(-14).map(e => '<div>' + esc(e.join(' \u00b7 ')) + '</div>').join('');
     $('dRoom').innerHTML = '<div class="h2">ROOM ' + D.room + '</div><div class="glow">' + esc(THEMES[D.theme]) + '</div><div class="dim">' + STYLES[T.style] + ' layout &middot; tier ' + Math.min(5, Math.floor(D.room / 8)) + ' foes</div>';
     const foes = T.enemies.slice().sort((a, b) => (Math.abs(a.x - T.px) + Math.abs(a.y - T.py)) - (Math.abs(b.x - T.px) + Math.abs(b.y - T.py)));
     $('dFoes').innerHTML = '<div class="h2">IN THIS ROOM</div>' + (foes.length ? foes.map(e => '<div class="enemyrow"><b style="color:' + TIER_COL[e.tier] + '">' + esc(e.glyph) + '</b><span>' + esc(e.name) + '</span><span class="dim">' + Math.max(0, e.hp) + '/' + e.maxHp + '</span></div>').join('') : '<div class="dim">nothing moves. find a door (+).</div>');
@@ -1086,12 +1101,13 @@ VIEWS.dnd = {
     const x = Math.floor((ev.clientX - r.left) / r.width * RW), y = Math.floor((ev.clientY - r.top) / r.height * RH);
     const dx = x - T.px, dy = y - T.py;
     if (Math.abs(dx) + Math.abs(dy) !== 1) return;
-    audioInit();
+    audioInit(); beginEntry();
     if (performance.now() < T.armedUntil || ev.shiftKey) attackDir(dx, dy); else movePlayer(dx, dy);
     this.refresh();
   },
   key(k) {
     const s = T.screen;
+    beginEntry();
     if (s === 'play') {
       if (k === 'B') { T.screen = 'menu'; T.sel = 0; SFX.sel(); }
       else if (k === 'A') { T.armedUntil = performance.now() + 700; log('AIM'); SFX.swing(); }
