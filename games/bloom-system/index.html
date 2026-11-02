@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BLOOM SYSTEM</title>
+<link rel="icon" type="image/png" href="art/icon-64.png">
+<link rel="apple-touch-icon" href="art/icon-256.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Silkscreen&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   BLOOM SYSTEM (web) - BloomPetz + DND from the Happy Jarz ESP32 box,
+   redrawn big for the browser, plus a USB mode that drives the real box.
+   ===================================================================== */
+:root {
+  --bg: #06080b;
+  --glass: #020406;
+  --oled: #00e5ff;          /* the box's default text color */
+  --oled2: #9ff6ff;
+  --dim: #4f6b76;
+  --line: rgba(0, 229, 255, .28);
+  --brass: #c9a24a;
+  --copper: #c8743a;
+  --pink: #FF4BCB;
+  --yellow: #FFD93D;
+  --teal: #00F6D6;
+  --red: #ff5a6a;
+  --green: #7cf08a;
+  --purple: #b48cff;
+  --font: 'VT323', 'Courier New', monospace;
+  --title: 'Silkscreen', 'VT323', monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: radial-gradient(ellipse at 50% 20%, #10161c, var(--bg) 70%); color: var(--oled); font-family: var(--font); font-size: 21px; overflow: hidden; }
+button { font-family: inherit; font-size: inherit; color: inherit; cursor: pointer; }
+input { font-family: inherit; }
+.hidden { display: none !important; }
+
+/* the wood + brass box around the screen */
+#frame { height: 100%; max-width: 1340px; margin: 0 auto; display: grid; grid-template-rows: 1fr auto; gap: 10px; padding: 12px; }
+#bezel {
+  min-height: 0; border-radius: 18px; padding: 14px;
+  background: repeating-linear-gradient(92deg, rgba(0,0,0,.08) 0 3px, transparent 3px 11px), linear-gradient(160deg, #6a4428, #46301c 55%, #3a2614);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), inset 0 -3px 0 rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.6);
+}
+#glass {
+  height: 100%; display: flex; flex-direction: column; background: var(--glass); border: 3px solid var(--brass); border-radius: 10px;
+  box-shadow: inset 0 0 40px rgba(0,229,255,.06), 0 0 0 2px #2a1c0e; position: relative; overflow: hidden;
+}
+#glass::after {             /* faint scanlines */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(transparent 0 2px, rgba(0,0,0,.18) 2px 3px);
+}
+#bar { display: flex; align-items: center; gap: 14px; padding: 8px 14px; border-bottom: 1px solid var(--line); }
+.led { width: 12px; height: 12px; border-radius: 50%; background: #2a1040; box-shadow: 0 0 6px currentColor; transition: background .15s, box-shadow .15s; }
+#brand { font-family: var(--title); font-size: 16px; letter-spacing: .12em; color: var(--oled); text-shadow: 0 0 8px rgba(0,229,255,.6); }
+#clock { margin-left: auto; color: var(--oled2); }
+.tab { background: none; border: 1px solid var(--line); padding: 2px 10px; border-radius: 4px; color: var(--dim); }
+.tab.on { color: var(--oled); border-color: var(--oled); box-shadow: 0 0 8px rgba(0,229,255,.35); }
+#screen { flex: 1; min-height: 0; overflow: auto; padding: 16px 18px; position: relative; text-shadow: 0 0 6px rgba(0,229,255,.35); }
+
+/* shared bits */
+.glow { color: var(--oled2); text-shadow: 0 0 10px rgba(0,229,255,.8); }
+.dim { color: var(--dim); }
+.btn {
+  background: rgba(0,229,255,.05); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; text-align: left;
+  transition: background .1s, border-color .1s, box-shadow .1s;
+}
+.btn:hover { border-color: rgba(0,229,255,.6); }
+.btn.sel { background: rgba(0,229,255,.17); border-color: var(--oled2); box-shadow: 0 0 12px rgba(0,229,255,.35); color: var(--oled2); }
+.btn.done { border-style: dashed; }
+.btn[disabled] { opacity: .4; }
+.h1 { font-family: var(--title); font-size: 22px; letter-spacing: .08em; margin: 0 0 8px; }
+.h2 { font-family: var(--title); font-size: 15px; letter-spacing: .1em; color: var(--oled2); margin: 0 0 6px; }
+.panel { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: rgba(0,229,255,.025); }
+.hint { color: var(--dim); font-size: 18px; }
+.barwrap { height: 12px; border: 1px solid var(--line); border-radius: 3px; overflow: hidden; background: rgba(0,0,0,.4); }
+.barwrap i { display: block; height: 100%; background: var(--oled); box-shadow: 0 0 8px var(--oled); }
+.toast { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: #031015; border: 1px solid var(--oled); padding: 4px 14px; border-radius: 6px; z-index: 30; box-shadow: 0 0 14px rgba(0,229,255,.4); animation: pop .2s ease-out; }
+@keyframes pop { from { transform: translate(-50%, 8px); opacity: 0; } }
+
+/* launcher */
+.launch { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; }
+.logo { font-family: var(--title); font-size: clamp(28px, 5vw, 54px); letter-spacing: .14em; color: var(--oled2); text-shadow: 0 0 18px rgba(0,229,255,.9); }
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 260px)); gap: 16px; width: 100%; justify-content: center; }
+.card { padding: 18px 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 190px; justify-content: center; text-align: center; }
+.card .big { font-size: 44px; line-height: 1; white-space: pre; }
+.card .t { font-family: var(--title); font-size: 18px; letter-spacing: .1em; }
+
+/* bloompetz */
+.pets { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(300px, 1.25fr); gap: 16px; height: 100%; }
+.stage { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.petcv { width: min(300px, 70vw); aspect-ratio: 1; image-rendering: pixelated; }
+.bubble { min-height: 36px; padding: 4px 12px; border: 1px solid var(--line); border-radius: 12px; color: var(--oled2); max-width: 90%; text-align: center; }
+.art { font-size: 30px; white-space: pre; color: var(--yellow); text-shadow: 0 0 10px rgba(255,217,61,.6); }
+.acts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.acts .btn { text-align: center; padding: 10px 4px; }
+.util { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
+.util .btn { text-align: center; }
+.ticker { margin-top: 10px; color: var(--teal); min-height: 26px; }
+.slots { display: grid; grid-template-columns: repeat(3, minmax(0, 300px)); gap: 16px; justify-content: center; margin-top: 20px; }
+.slot { min-height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; }
+.slot canvas { width: 120px; height: 120px; image-rendering: pixelated; }
+.simon { display: flex; flex-direction: column; align-items: center; gap: 14px; height: 100%; justify-content: center; }
+.pad4 { display: grid; grid-template-columns: repeat(3, 92px); grid-template-rows: repeat(3, 92px); gap: 8px; }
+.pad4 button { border: 2px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.03); font-size: 44px; transition: background .08s, box-shadow .08s; }
+.pad4 button.lit { color: #000; text-shadow: none; }
+.statgrid { display: grid; grid-template-columns: 260px 1fr; gap: 14px; height: 100%; min-height: 0; }
+.catlist { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px; }
+.catlist .btn { padding: 3px 10px; display: flex; justify-content: space-between; }
+.statrow { display: grid; grid-template-columns: 220px 1fr 110px; gap: 10px; align-items: center; padding: 3px 0; }
+.statrow.hot { color: var(--yellow); }
+.form { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.form label { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 10px; }
+.form input { background: #031015; border: 1px solid var(--line); color: var(--oled2); font-size: 24px; padding: 4px 10px; border-radius: 4px; outline: none; }
+.form input:focus { border-color: var(--oled); box-shadow: 0 0 10px rgba(0,229,255,.35); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets .btn { padding: 2px 8px; white-space: pre; }
+
+/* dnd */
+.dnd { display: grid; grid-template-columns: 250px 1fr 230px; gap: 12px; height: 100%; min-height: 0; }
+.dnd .col { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.mapwrap { position: relative; min-height: 0; display: flex; align-items: flex-start; justify-content: center; }
+#map { width: 100%; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 6px; background: #010203; }
+.feed { flex: 1; min-height: 120px; overflow: hidden; display: flex; flex-direction: column; gap: 1px; }
+.feed div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.feed div:first-child { color: var(--yellow); }
+.kv { display: flex; justify-content: space-between; gap: 6px; }
+.enemyrow { display: grid; grid-template-columns: 22px 1fr auto; gap: 6px; align-items: center; font-size: 19px; }
+.overlay { position: absolute; inset: 0; background: rgba(1,3,5,.86); display: flex; align-items: center; justify-content: center; z-index: 5; padding: 14px; }
+.menu { width: min(620px, 100%); max-height: 100%; overflow-y: auto; }
+.menu .btn { display: flex; justify-content: space-between; width: 100%; margin-bottom: 5px; gap: 8px; }
+.menu .btn small { color: var(--dim); }
+.symgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 5px; }
+.rar0 { color: var(--oled2); } .rar1 { color: var(--green); } .rar2 { color: #6fb6ff; } .rar3 { color: var(--purple); } .rar4 { color: var(--yellow); }
+
+/* device (USB) */
+.devwrap { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.devoled { background: #000; border: 3px solid #1b2b33; border-radius: 8px; padding: 18px 20px; font-size: clamp(22px, 4.2vw, 46px); line-height: 1.15; white-space: pre; color: var(--oled); text-shadow: 0 0 10px rgba(0,229,255,.8); overflow-x: auto; }
+.devlog { max-height: 180px; overflow-y: auto; font-size: 17px; color: var(--dim); white-space: pre-wrap; }
+
+/* the six copper touch pads under the screen */
+#pads { display: flex; justify-content: center; gap: 26px; align-items: center; }
+.pad {
+  width: 58px; height: 58px; border-radius: 50%; border: none; font-size: 26px; color: #2a1608;
+  background: radial-gradient(circle at 35% 30%, #f0b27a, #c8743a 55%, #7a3f1a); box-shadow: 0 3px 0 #4a2610, 0 4px 10px rgba(0,0,0,.5), inset 0 0 0 3px rgba(120,190,170,.18);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.pad.hit { transform: translateY(2px); box-shadow: 0 1px 0 #4a2610, 0 0 14px rgba(255,180,100,.8); }
+.dpad { display: grid; grid-template-columns: repeat(3, 58px); grid-template-rows: repeat(2, 58px); gap: 4px 6px; }
+.dpad .pad:nth-child(1) { grid-column: 2; }
+.dpad .pad:nth-child(2) { grid-column: 1; grid-row: 2; }
+.dpad .pad:nth-child(3) { grid-column: 2; grid-row: 2; }
+.dpad .pad:nth-child(4) { grid-column: 3; grid-row: 2; }
+.ab { display: flex; gap: 14px; }
+.ab .pad { font-family: var(--title); font-size: 20px; }
+
+@media (max-width: 980px) {
+  html, body { overflow: auto; font-size: 19px; }
+  #bar { flex-wrap: wrap; gap: 6px 10px; }
+  #clock { font-size: 17px; }
+  #screen { padding-bottom: 150px; }
+  .mapwrap { order: -1; }
+  #frame { height: auto; min-height: 100%; padding: 6px; }
+  #bezel { padding: 8px; }
+  #glass { min-height: 80vh; }
+  .pets, .dnd, .statgrid { grid-template-columns: 1fr; height: auto; }
+  .cards, .slots { grid-template-columns: 1fr; }
+  .card { min-height: 120px; }
+  .util { grid-template-columns: repeat(3, 1fr); }
+  .statrow { grid-template-columns: 1fr 1fr 90px; }
+  #pads { position: sticky; bottom: 0; background: rgba(6,8,11,.9); padding: 6px 0; gap: 14px; }
+  .pad { width: 50px; height: 50px; }
+  .dpad { grid-template-columns: repeat(3, 50px); grid-template-rows: repeat(2, 50px); }
+}
+</style>
+</head>
+<body>
+<div id="frame">
+  <div id="bezel">
+    <div id="glass">
+      <div id="bar">
+        <span class="led" id="led1"></span><span class="led" id="led2"></span>
+        <span id="brand">BLOOM SYSTEM</span>
+        <span id="clock"></span>
+        <button class="tab on" id="tabPlay" title="Play in the browser">PLAY</button>
+        <button class="tab" id="tabDev" title="Connect the real BloomPetz box over USB">BOX &middot; USB</button>
+        <button class="tab" id="tabSnd" title="Sound (M)">&#9835;</button>
+      </div>
+      <div id="screen"></div>
+    </div>
+  </div>
+  <div id="pads">
+    <div class="dpad">
+      <button class="pad" data-k="UP">&#9650;</button>
+      <button class="pad" data-k="LEFT">&#9664;</button>
+      <button class="pad" data-k="DOWN">&#9660;</button>
+      <button class="pad" data-k="RIGHT">&#9654;</button>
+    </div>
+    <div class="ab"><button class="pad" data-k="A">A</button><button class="pad" data-k="B">B</button></div>
+  </div>
+</div>
+<script>
+'use strict';
+// =====================================================================
+//  BLOOM SYSTEM for the web - a QuarterbitGames original
+//  Same rules as the ESP32 firmware in Etsimulocto/BloomCircuit/BloomPetz:
+//   - BloomPetz: 3 slots, 200 developmental stats (20 x 10), 8 daily
+//     actions with a 3-step memory game, 12.5 energy each, feed at empty,
+//     3 treats a day, midnight reset that never empties the stomach.
+//   - DND: 30x16 rooms, 8 room layouts x 48 themes, depth scaling,
+//     48 enemy species in 6 tiers, d20 combat, 288-item catalog,
+//     equipment slots, 4-offer shop that restocks per room.
+//  Plus BOX mode: drive the real box over Web Serial like the Pi Mini.
+//
+//  Sections: 1 data  2 helpers/save/sound/input  3 launcher
+//            4 BloomPetz  5 DND  6 BOX (USB)  7 loop + boot
+// =====================================================================
+
+// ---------------------------------------------------------------------
+// 1. DATA (pulled from the BloomPetz repo: data/stats, tools/*.py)
+// ---------------------------------------------------------------------
+const STAT_CATS = [["Bond / Social",["affection","attachment","companionship","comfort","empathy","friendliness","loyalty","patience","sociability","trust"]],["Courage / Mental Strength",["boldness","bravery","composure","confidence","determination","fear_resistance","nerve","resilience","resolve","willpower"]],["Intelligence",["adaptability","attention","focus","intelligence","learning_speed","logic","memory","pattern_recognition","problem_solving","reasoning"]],["Curiosity / Discovery",["awareness","curiosity","discovery","environmental_awareness","exploration_drive","investigation","intuition","novelty_seeking","observation","wonder"]],["Creativity",["artistic_sense","creativity","expression","imagination","improvisation","inventiveness","musicality","originality","playfulness","storytelling"]],["Strength / Body",["body_control","constitution","durability","endurance","muscle","physical_condition","power","recovery","stamina","strength"]],["Defense",["armor","cold_resistance","damage_resistance","fatigue_resistance","heat_resistance","illness_resistance","impact_resistance","pain_tolerance","stress_resistance","toughness"]],["Speed / Movement",["agility","balance","coordination","dexterity","grace","mobility","precision","reaction_time","reflex","speed"]],["Energy",["activity_drive","burst_energy","energy","energy_control","energy_recovery","enthusiasm","metabolic_efficiency","rest_efficiency","vitality","wakefulness"]],["Health",["body_stability","circulation","digestion","healing","health","immune_strength","longevity","respiratory_health","sleep_quality","wellness"]],["Food / Nutrition",["appetite_control","food_affinity","food_curiosity","healthy_eating","hydration_efficiency","metabolic_balance","nutrient_absorption","nutrition","taste_sensitivity","treat_affinity"]],["Cleanliness / Care",["care_awareness","care_tolerance","cleanliness","environmental_comfort","grooming","hygiene","maintenance","routine_acceptance","self_care","tidiness"]],["Emotional",["calmness","contentment","emotional_awareness","emotional_depth","emotional_stability","excitement","happiness","mood_recovery","optimism","serenity"]],["Personality",["assertiveness","gentleness","goofiness","independence","mischief","obedience","seriousness","shyness","stubbornness","temperament"]],["Habits",["care_habit","consistency","discipline","habit_memory","interaction_habit","morning_affinity","night_affinity","play_habit","rest_habit","routine_strength"]],["Fidget / Input Personality",["down_affinity","input_accuracy","input_confidence","left_affinity","rapid_tap_affinity","rhythm_affinity","right_affinity","slow_tap_affinity","tap_affinity","up_affinity"]],["Memory / Sequence Skills",["anticipation","direction_memory","response_control","sequence_accuracy","sequence_focus","sequence_memory","sequence_recovery","sequence_speed","short_term_memory","timing"]],["Luck / Rare Traits",["coincidence","discovery_luck","event_luck","fortune","luck","mystery","rare_event_affinity","reward_luck","serendipity","treasure_sense"]],["Growth / Evolution",["adaptation","development","evolution_progress","form_affinity","growth","life_experience","maturity","potential","specialization","trait_stability"]],["Weird / Hidden",["ancientness","chaos","cosmic_affinity","dream_intensity","glitch_affinity","secret_knowledge","soulfulness","sparkle","spookiness","weirdness"]]];            // [[category, [10 stat names]] x 20], canonical save order
+const SAYINGS = ["hi friend","tiny victory","you got this","good vibes","be curious","stay cozy","keep going","nice work","yay you","breathe easy","small steps","big heart","be kind","shine on","keep blooming","good job","still growing","you matter","one more try","soft power","happy dance","snack time?","boop!","beep boop","tiny chaos","much wow","oh hello","zoom zoom","no thoughts","head empty","pet approved","good human","best human","hehe","teehee","plot twist","so shiny","sparkle mode","wiggle time","cozy mode","nap pending","snack pending","loading joy","joy found","oops!","who, me?","very pet","such pet","tiny legend","big mood","main character","stay weird","be silly","have fun","try again","almost there","nice save","good catch","nailed it","level up","you did it","keep at it","steady now","easy does it","all good","we got this","carry on","keep moving","go gently","be brave","brave little bean","bright bean","good bean","silly bean","cozy bean","happy bean","tiny bean","magic bean","bean power","bean mode","hello world","hello you","good morning","good evening","hi there","hey buddy","hey pal","sup?","yo!","hiya!","spark joy","choose joy","find wonder","make magic","stay bright","dream big","think small","look closer","wonder more","play more","rest counts","pause is okay","slow is fine","take your time","no rush","easy now","you are okay","keep breathing","gentle day","soft day","sunshine mode","moon mode","star mode","cloud mode","rain mode","storm mode","glow mode","bloom mode","dream mode","chill mode","tiny spark","little star","bright star","moon buddy","cloud buddy","sun buddy","spark buddy","glow buddy","bloom buddy","dream buddy","snacks?","treat?","more snacks","where snack","need snack","snack quest","snack radar","snack detected","snack secured","snack wizard","boop nose","pat pat","scritch pls","pet me pls","hug mode","cuddle mode","cozy pls","blanket pls","nap with me","sit with me","I believe","I see you","I got you","you're doing it","you're growing","you're learning","you're enough","you're awesome","you're neat","you're cool","good energy","calm energy","wild energy","chaos energy","cozy energy","bright energy","soft energy","fun energy","pet energy","joy energy","tiny win","big win","bonus win","secret win","daily win","win unlocked","quest clear","nice quest","quest on","next quest","hmmmmm","interesting","curious...","thinking...","processing","calculating","probably fine","seems legit","science!","for science","not a bug","feature!","works for me","ship it","good enough","one sec","almost ready","still here","all systems go","systems cozy","100% pet","certified pet","real creature","very official","totally normal","normal-ish","probably pet","pet online","pet awake","pet says hi","do a wiggle","wiggle wiggle","tiny spin","spin move","dance break","party time","confetti!","celebrate","woohoo!","yayyyy!","be excellent","stay excellent","keep shining","keep smiling","smile time","good day","better day","new day","fresh start","start small","learn stuff","make stuff","build stuff","fix stuff","try stuff","cool idea","good idea","weird idea","wild idea","tiny idea","brain spark","idea spark","spark found","idea found","hmm yes","hmm maybe","why not?","let's go","do the thing","thing done","pet wisdom","pet logic","pet science","pet magic","pet business","pet meeting","pet report","pet status","pet update","pet fact","fact: you're cool","fact: snack good","fact: naps rule","fact: play helps","fact: joy wins","fact: pets know","fact: you tried","fact: still here","fact: progress","fact: boop","today counts","this counts","effort counts","rest matters","play matters","fun matters","you count","joy matters","kindness wins","care matters","stay curious","stay gentle","stay playful","stay hopeful","stay cozy","stay sunny","stay goofy","stay kind","stay you","stay awesome"];            // the 290 pet sayings from the HOME ticker patch
+const DNDDATA = {"fam":{"WEAPONS":["RUSTY KNIFE","DAGGER","IRON SWORD","SHORT SWORD","HAND AXE","MACE","SPEAR","WAR AXE","LONG SWORD","CROSSBOW","BONE BLADE","SILVER SWORD","FROST BLADE","FLAME SWORD","VOID AXE","DRAGON BLADE","BRONZE SABER","HUNTER BOW","WAR HAMMER","TRIDENT","SCIMITAR","RAPIER","BATTLE STAFF","CLEAVER","MOON BLADE","SUN SPEAR","THORN WHIP","CRYSTAL MACE","STORM BOW","EMBER AXE","ICE SPEAR","SHADOW DAGGER","ROYAL SWORD","GIANT HAMMER","PHANTOM BLADE","RUNE STAFF","BLOOD AXE","STAR PIKE","CHAOS BOW","WARDEN MACE","TITAN SWORD","NIGHT REAPER","CELESTIAL SPEAR","INFERNO BLADE","ABYSS HAMMER","WORLD AXE","BLOOM EDGE","CROWN BLADE"],"ARMOR":["LEATHER CAP","LEATHER ARMOR","IRON HELM","CHAIN MAIL","IRON ARMOR","STEEL ARMOR","DRAGON SCALE","PADDED COAT","HIDE ARMOR","BRONZE MAIL","SCALE MAIL","RANGER COAT","SOLDIER MAIL","KNIGHT PLATE","MITHRIL MAIL","SILVER PLATE","FROST MAIL","FLAME MAIL","THORN MAIL","BONE ARMOR","ROYAL PLATE","RUNE ROBE","SHADOW COAT","CRYSTAL MAIL","STORM PLATE","EMBER MAIL","MOON ROBE","SUN PLATE","VOID MAIL","BLOOD PLATE","WARDEN ARMOR","PHANTOM MAIL","GIANT PLATE","DRAGON PLATE","DEMON MAIL","ANGEL ROBE","CHAOS PLATE","STAR ARMOR","TITAN MAIL","NIGHT PLATE","ABYSS ARMOR","CELESTIAL PLATE","INFERNO MAIL","WORLD PLATE","BLOOM MAIL","ANCIENT PLATE","CROWN ARMOR","WARDEN PLATE"],"SHIELDS":["WOOD SHIELD","IRON SHIELD","TOWER SHIELD","BUCKLER","BRONZE SHIELD","BONE SHIELD","ROUND SHIELD","KITE SHIELD","STEEL SHIELD","SPIKE SHIELD","RANGER SHIELD","SILVER SHIELD","FROST SHIELD","FLAME SHIELD","THORN SHIELD","RUNE SHIELD","MOON SHIELD","SUN SHIELD","CRYSTAL SHIELD","STORM SHIELD","EMBER SHIELD","SHADOW SHIELD","ROYAL SHIELD","DRAGON SHIELD","PHANTOM SHIELD","BLOOD SHIELD","VOID SHIELD","WARDEN SHIELD","GIANT SHIELD","DEMON SHIELD","ANGEL SHIELD","CHAOS SHIELD","STAR SHIELD","TITAN SHIELD","NIGHT SHIELD","ABYSS SHIELD","CELESTIAL SHIELD","INFERNO SHIELD","WORLD SHIELD","BLOOM SHIELD","ANCIENT SHIELD","CROWN SHIELD","MIRROR SHIELD","OBSIDIAN SHIELD","AETHER SHIELD","NOVA SHIELD","ETERNAL SHIELD","FINAL SHIELD"],"RINGS":["COPPER RING","LUCKY RING","RUBY RING","EMERALD RING","SAPPHIRE RING","SKULL RING","ROYAL SEAL","IRON RING","SILVER RING","GOLD RING","AGATE RING","ONYX RING","MOON RING","SUN RING","FROST RING","FLAME RING","THORN RING","BONE RING","RUNE RING","CRYSTAL RING","STORM RING","EMBER RING","SHADOW RING","DRAGON RING","PHANTOM RING","BLOOD RING","VOID RING","WARDEN RING","GIANT RING","DEMON RING","ANGEL RING","CHAOS RING","STAR RING","TITAN RING","NIGHT RING","ABYSS RING","CELESTIAL RING","INFERNO RING","WORLD RING","BLOOM RING","ANCIENT RING","CROWN RING","MIRROR RING","AETHER RING","NOVA RING","ETERNAL RING","FATE RING","FINAL RING"],"CHARMS":["GOBLIN TOOTH","BONE CHARM","MOON CHARM","SUN CHARM","ANCIENT IDOL","BLACK PEARL","STAR RELIC","VOID HEART","CROWN OF BLOOM","RAT TAIL","WOLF FANG","SPIDER EYE","ORC TUSK","TROLL STONE","WYVERN SCALE","DRAGON EYE","FROST RELIC","FLAME RELIC","THORN RELIC","RUNE RELIC","CRYSTAL RELIC","STORM RELIC","EMBER RELIC","SHADOW RELIC","ROYAL RELIC","PHANTOM RELIC","BLOOD RELIC","WARDEN RELIC","GIANT RELIC","DEMON RELIC","ANGEL RELIC","CHAOS RELIC","TITAN RELIC","NIGHT RELIC","ABYSS RELIC","CELESTIAL RELIC","INFERNO RELIC","WORLD RELIC","BLOOM RELIC","ANCIENT HEART","CROWN RELIC","MIRROR RELIC","OBSIDIAN IDOL","AETHER HEART","NOVA HEART","ETERNAL IDOL","FATE RELIC","FINAL RELIC"],"CONSUMABLES":["BANDAGE","RED POTION","BIG RED POTION","ELIXIR","PHOENIX TONIC","FULL RESTORE","HERB","HEALING HERB","MOSS TONIC","HONEY DRAUGHT","IRON TONIC","SILVER TONIC","FROST TONIC","FLAME TONIC","THORN TONIC","RUNE TONIC","MOON TONIC","SUN TONIC","CRYSTAL TONIC","STORM TONIC","EMBER TONIC","SHADOW TONIC","ROYAL TONIC","DRAGON TONIC","PHANTOM TONIC","BLOOD TONIC","VOID TONIC","WARDEN TONIC","GIANT TONIC","DEMON TONIC","ANGEL TONIC","CHAOS TONIC","STAR TONIC","TITAN TONIC","NIGHT TONIC","ABYSS TONIC","CELESTIAL TONIC","INFERNO TONIC","WORLD TONIC","BLOOM TONIC","ANCIENT TONIC","CROWN TONIC","MIRROR TONIC","AETHER TONIC","NOVA TONIC","ETERNAL TONIC","FATE TONIC","FINAL TONIC"]},"enemies":[["r","RAT",0,5,9,1,4,520,900],["b","BAT",0,4,10,1,3,360,650],["s","SLIME",0,7,8,1,3,850,1350],["g","GOBLIN",0,9,11,2,6,820,1350],["k","KOBOLD",0,8,11,2,5,720,1180],["w","WOLF",0,10,11,2,6,520,900],["p","SPIDER",0,7,12,1,5,430,800],["z","ZOMBIE",0,12,9,2,6,1050,1750],["s","SKELETON",1,12,12,3,7,1050,1700],["o","ORC",1,16,12,3,8,900,1450],["h","HOBGOBLIN",1,15,13,3,7,760,1260],["c","CULTIST",1,13,12,2,8,820,1380],["m","MIMIC",1,18,11,3,9,1100,1750],["v","VIPER",1,11,13,2,7,430,760],["f","FUNGUS",1,17,10,2,7,1200,1900],["d","DARKLING",1,14,14,3,8,650,1080],["t","TROLL",2,26,13,4,11,1150,1800],["O","OGRE",2,30,12,5,13,1250,1950],["G","GHOUL",2,22,14,4,10,720,1200],["W","WRAITH",2,20,15,4,11,560,980],["e","ELEMENTAL",2,24,15,5,12,760,1250],["n","NAGA",2,25,14,4,12,690,1160],["B","BUGBEAR",2,27,14,5,12,860,1420],["a","ASSASSIN",2,19,16,5,12,390,720],["M","MINOTAUR",3,38,15,6,15,880,1450],["C","CHIMERA",3,36,16,6,16,640,1080],["L","LICH",3,34,17,7,17,820,1380],["D","DEMON",3,40,17,7,18,650,1100],["V","VAMPIRE",3,35,18,6,17,500,880],["Y","WYVERN",3,42,16,7,18,580,1000],["K","DEATH KNIGHT",3,45,18,7,19,760,1260],["H","HYDRA",3,50,16,8,20,900,1450],["R","STONE GOLEM",4,62,19,9,22,1300,2050],["F","FROST GIANT",4,68,18,10,24,1150,1850],["I","INFERNAL",4,60,20,10,25,760,1260],["P","PHANTOM",4,52,21,9,23,430,790],["Q","QUEEN SPIDER",4,58,20,9,24,520,900],["X","VOID HORROR",4,70,21,11,27,650,1100],["A","ABOMINATION",4,76,19,11,28,980,1580],["N","NIGHTMARE",4,64,22,10,27,390,720],["J","JUGGERNAUT",5,88,21,12,31,950,1520],["S","STORM LORD",5,82,23,12,32,560,960],["E","ELDER LICH",5,78,24,13,34,720,1200],["U","UNDERKING",5,94,23,13,35,820,1340],["Z","VOID TITAN",5,110,24,14,38,960,1560],["T","ANCIENT DRAGON",5,120,25,15,40,660,1120],["!","CHAOS BEAST",5,105,25,15,39,520,920],["*","BLOOM WARDEN",5,128,26,16,42,620,1040]],"themes":["CRUMBLING RUINS","TORCH HALL","BROKEN CORRIDORS","DUST CHAMBERS","SPIKE RUN","COIN VAULT","RAT DEN","BLACK VOID","MOSS RUINS","BANNER HALL","BONE CORRIDORS","CRYPT CHAMBERS","BLADE RUN","JEWEL VAULT","GOBLIN DEN","ECHO VOID","FROST RUINS","IRON HALL","WEB CORRIDORS","MUMMY CHAMBERS","FIRE RUN","RELIC VAULT","WOLF DEN","STARLESS VOID","SUNKEN RUINS","ROYAL HALL","ROOT CORRIDORS","RUNE CHAMBERS","POISON RUN","DRAGON VAULT","TROLL DEN","DEEP VOID","ASH RUINS","MIRROR HALL","SHADOW CORRIDORS","BLOOD CHAMBERS","CHAOS RUN","ANCIENT VAULT","DEMON DEN","DREAM VOID","BLOOM RUINS","CROWN HALL","CRYSTAL CORRIDORS","WARDEN CHAMBERS","VOID RUN","FINAL VAULT","TITAN DEN","BLOOM VOID"],"symbols":[["@","PLAYER"],["#","WALL"],[".","FLOOR"],["+","NEXT ROOM DOOR"],["/","OPEN DOOR"],["^","TRAP"],["c","CHEST"],["$","GOLD"],["!","POTION"],["w","WEAPON"],["k","KEY"],["?","MYSTERY"],["~","WATER OR HAZARD"],["*","MAGIC OR RELIC"],["x","HIT MARK"],["r","RAT"],["b","BAT"],["s","SLIME"],["g","GOBLIN"],["K","KOBOLD"],["W","WOLF"],["p","SPIDER"],["z","ZOMBIE"],["o","ORC"],["h","HOBGOBLIN"],["C","CULTIST"],["m","MIMIC"],["v","VIPER"],["f","FUNGUS"],["d","DARKLING"],["t","TROLL"],["O","OGRE"],["G","GHOUL"],["R","STONE GOLEM"],["e","ELEMENTAL"],["n","NAGA"],["B","BUGBEAR"],["a","ASSASSIN"],["M","MINOTAUR"],["L","LICH"],["D","DEMON"],["V","VAMPIRE"],["Y","WYVERN"],["H","HYDRA"],["X","VOID HORROR"],["T","ANCIENT DRAGON"],["Z","VOID TITAN"],["&","SPECIAL ENTITY"]]};                // item families, 48 enemies, 48 themes, 48 symbols
+const STAT_NAMES = [];                        // flat 0..199 in firmware index order
+STAT_CATS.forEach(([, list]) => list.forEach(n => STAT_NAMES.push(n)));
+const ACTIONS = ['CHECK', 'CLEAN', 'PET', 'PLAY', 'REST', 'SCRATCH', 'SOCIALIZE', 'TRAIN'];
+// Four favored stat categories per action (same table as ACTION_FAVORED in the firmware)
+const ACTION_FAVORED = [[2, 3, 9, 16], [9, 11, 14, 12], [0, 12, 13, 15], [7, 1, 4, 15], [8, 9, 12, 14], [0, 12, 15, 13], [0, 12, 13, 4], [1, 2, 5, 16]];
+const ACTION_GLYPH = ['?', '~', '<3', '*', 'z', '#', '&', '!'];
+const GAIN_MIN = 0.0001, GAIN_MAX = 0.005, ACTION_COST = 12.5, TREAT_LIMIT = 3, ROLLS = 25;
+const DIRS = ['UP', 'DOWN', 'LEFT', 'RIGHT'];
+const DIR_ARROW = ['▲', '▼', '◀', '▶'];
+const DIR_LED = ['#00ff2a', '#0050ff', '#a000ff', '#ff7a00'];   // firmware flashDirection() colors
+const ART_PRESETS = ['(=^.^=)', '<(o.o)>', '(\\_/)', '~(o_o)~', '[o_o]', '{*_*}', 'c(-.-)c', '(^v^)', '/\\_/\\', 'ovo'];
+
+// ---------------------------------------------------------------------
+// 2. HELPERS, SAVE, SOUND, LEDS, INPUT
+// ---------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const rnd = n => Math.floor(Math.random() * n);          // Arduino random(n): 0..n-1
+const rr = (a, b) => a + rnd(b - a);                     // Arduino random(a, b): a..b-1
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ascii = (s, n) => String(s || '').replace(/[^\x20-\x7e]/g, '').slice(0, n);   // device-safe printable ASCII
+const pct4 = v => (v * 100).toFixed(4) + '%';             // stats shown like the device: 4 decimals
+const pretty = s => s.replace(/_/g, ' ');
+function dayKey() { const d = new Date(); return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate(); }
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function strHash(s) { let h = 2166136261 >>> 0; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; }
+const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'], MONS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+function clockLine() { const d = new Date(); return DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONS[d.getMonth()] + '  ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0'); }
+
+// One save for everything, like the box's single BLOOM SYSTEM blob
+const SAVE_KEY = 'bloomsys_web_v1';
+let SV = null;
+try { SV = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch (e) {}
+if (!SV || SV.v !== 1) SV = { v: 1, active: 0, pets: [null, null, null], dnd: null, sound: true };
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(SV)); } catch (e) {} }
+
+// Tiny blip sounds
+let AC = null, master = null;
+function audioInit() {
+  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
+  const C = window.AudioContext || window.webkitAudioContext;
+  if (!C) return;
+  AC = new C(); master = AC.createGain(); master.gain.value = SV.sound ? 0.35 : 0; master.connect(AC.destination);
+}
+function beep(f, dur = 0.08, type = 'square', vol = 0.3, slide) {
+  if (!AC || !SV.sound) return;
+  const t = AC.currentTime, o = AC.createOscillator(), g = AC.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.02);
+}
+const later = (ms, f) => setTimeout(f, ms);
+const SFX = {
+  move: () => beep(220, 0.03, 'square', 0.06),
+  sel: () => beep(660, 0.04, 'square', 0.1),
+  ok: () => { beep(784, 0.06); later(60, () => beep(1175, 0.09)); },
+  back: () => beep(392, 0.06, 'square', 0.1),
+  bad: () => beep(170, 0.14, 'square', 0.2),
+  coin: () => { beep(988, 0.05, 'square', 0.14); later(50, () => beep(1319, 0.1, 'square', 0.14)); },
+  hit: () => beep(150, 0.12, 'sawtooth', 0.25, 60),
+  swing: () => beep(620, 0.05, 'triangle', 0.15, 300),
+  level: () => [523, 659, 784, 1047].forEach((f, i) => later(i * 90, () => beep(f, 0.1, 'triangle', 0.25))),
+  door: () => beep(330, 0.16, 'triangle', 0.2, 660),
+  simon: i => beep([329.6, 392, 523.3, 659.3][i], 0.28, 'triangle', 0.3),
+  yum: () => [660, 880, 990].forEach((f, i) => later(i * 70, () => beep(f, 0.07, 'triangle', 0.2))),
+};
+function toggleSound() { audioInit(); SV.sound = !SV.sound; if (master) master.gain.value = SV.sound ? 0.35 : 0; save(); $('tabSnd').classList.toggle('on', SV.sound); toast(SV.sound ? 'sound on' : 'sound off'); }
+
+// The box's two APA106 LEDs, as two glowing dots in the top bar
+let ledTimer = 0;
+function setLeds(a, b, ms) {
+  const l1 = $('led1'), l2 = $('led2');
+  l1.style.background = a; l1.style.color = a; l2.style.background = b; l2.style.color = b;
+  clearTimeout(ledTimer);
+  if (ms) ledTimer = setTimeout(() => setLeds('#2a1040', '#102a40', 0), ms);
+}
+let toastT = 0;
+function toast(msg) {
+  let t = document.querySelector('.toast');
+  if (!t) { t = document.createElement('div'); t.className = 'toast'; $('glass').appendChild(t); }
+  t.textContent = msg; clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2200);
+}
+
+// Input: everything becomes one of the box's six buttons
+const KEYMAP = { ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', KeyA: 'A', KeyZ: 'A', Enter: 'A', Space: 'A', NumpadEnter: 'A', KeyB: 'B', KeyX: 'B', Escape: 'B', Backspace: 'B' };
+let MODE = 'play';                              // 'play' (browser games) or 'device' (USB box)
+function press(k) {
+  audioInit();
+  const pad = document.querySelector('.pad[data-k="' + k + '"]');
+  if (pad) { pad.classList.add('hit'); setTimeout(() => pad.classList.remove('hit'), 120); }
+  if (MODE === 'device') { BOX.key(k); return; }
+  VIEWS[UI.view].key(k);
+}
+addEventListener('keydown', e => {
+  const typing = e.target.tagName === 'INPUT';
+  if (typing && !['Escape', 'Enter', 'ArrowUp', 'ArrowDown', 'NumpadEnter'].includes(e.code)) return;   // let people type names
+  if (e.code === 'KeyM' && !typing) { toggleSound(); return; }
+  const k = KEYMAP[e.code];
+  if (!k) return;
+  e.preventDefault();
+  if (e.repeat && (k === 'A' || k === 'B')) return;   // A/B are taps; arrows may repeat
+  press(k);
+});
+document.querySelectorAll('.pad').forEach(p => p.addEventListener('pointerdown', e => { e.preventDefault(); press(p.dataset.k); }));
+// Gamepad: d-pad or stick for directions (with hold-repeat), A/X = A, B/Y = B
+const GP = { prev: {}, rep: {} };
+function pollPad(now) {
+  const list = navigator.getGamepads ? navigator.getGamepads() : [];
+  let g = null;
+  for (const p of list) if (p && p.connected) { g = p; break; }
+  if (!g) return;
+  const b = i => !!(g.buttons[i] && g.buttons[i].pressed);
+  const ax = g.axes[0] || 0, ay = g.axes[1] || 0;
+  const st = { UP: b(12) || ay < -0.6, DOWN: b(13) || ay > 0.6, LEFT: b(14) || ax < -0.6, RIGHT: b(15) || ax > 0.6, A: b(0) || b(2), B: b(1) || b(3) };
+  for (const k in st) {
+    if (st[k] && !GP.prev[k]) { press(k); GP.rep[k] = now + 320; }
+    else if (st[k] && DIRS.includes(k) && now >= GP.rep[k]) { press(k); GP.rep[k] = now + 130; }
+    GP.prev[k] = st[k];
+  }
+}
+// Move a highlight around a grid of items {r, c} toward the pressed direction
+function gridMove(items, sel, k) {
+  const cur = items[sel];
+  let best = sel, bd = 1e9;
+  items.forEach((it, i) => {
+    if (i === sel) return;
+    const dr = it.r - cur.r, dc = it.c - cur.c;
+    const ok = k === 'UP' ? dr < 0 : k === 'DOWN' ? dr > 0 : k === 'LEFT' ? (dr === 0 && dc < 0) : (dr === 0 && dc > 0);
+    if (!ok) return;
+    const d = Math.abs(dr) * 10 + Math.abs(dc - (k === 'UP' || k === 'DOWN' ? 0 : 0));
+    if (d < bd) { bd = d; best = i; }
+  });
+  if (best !== sel) SFX.move();
+  return best;
+}
+
+// Views: each one renders into #screen and handles the six buttons
+const UI = { view: 'launcher', sel: 0 };
+const VIEWS = {};
+function go(v, sel) { UI.view = v; UI.sel = sel || 0; if (VIEWS[v].enter) VIEWS[v].enter(); render(); }
+function render() { if (MODE === 'device') BOX.render(); else VIEWS[UI.view].render(); }
+// Clicking anything with data-i selects it and presses A
+$('screen').addEventListener('click', e => {
+  if (MODE === 'device') return;
+  audioInit();
+  const k = e.target.closest('[data-k]');            // on-screen arrow pads (memory game)
+  if (k) { press(k.dataset.k); return; }
+  const c = e.target.closest('[data-cat]');          // stat categories
+  if (c) { PET.statCat = +c.dataset.cat; PET.statTop = false; SFX.move(); render(); return; }
+  const el = e.target.closest('[data-i]');
+  if (!el || el.tagName === 'INPUT') return;
+  if (UI.view === 'dnd') T.sel = +el.dataset.i; else UI.sel = +el.dataset.i;
+  VIEWS[UI.view].key('A');
+});
+
+// ---------------------------------------------------------------------
+// 3. LAUNCHER (BLOOM SYSTEM home)
+// ---------------------------------------------------------------------
+VIEWS.launcher = {
+  render() {
+    const p = SV.pets[SV.active], d = SV.dnd;
+    const card = (i, big, t, sub) => '<button class="btn card' + (UI.sel === i ? ' sel' : '') + '" data-i="' + i + '"><div class="big glow">' + esc(big) + '</div><div class="t">' + t + '</div><div class="dim">' + sub + '</div></button>';
+    $('screen').innerHTML = '<div class="launch"><div class="logo">BLOOM SYSTEM</div><div class="dim">' + clockLine() + '</div><div class="cards">' +
+      card(0, p ? (p.art || '(=^.^=)') : '(=^.^=)', 'BLOOMPETZ', p ? esc(p.name) + ' &middot; ' + energyWord(p.food) : 'no pet yet. make one!') +
+      card(1, '@', 'DND', d ? 'ROOM ' + d.room + ' &middot; LV ' + d.level + ' &middot; ' + d.gold + 'G' : 'a tiny brutal dungeon') +
+      card(2, '[USB]', 'BOX', 'play on your real BloomPetz box from here') +
+      '</div><div class="hint">arrows / d-pad to choose &middot; A to enter &middot; keys: arrows + A/Z/Enter and B/X/Esc &middot; gamepads work &middot; M = sound</div></div>';
+  },
+  key(k) {
+    if (DIRS.includes(k)) { UI.sel = gridMove([{ r: 0, c: 0 }, { r: 0, c: 1 }, { r: 0, c: 2 }], UI.sel, k); render(); return; }
+    if (k === 'A') { SFX.sel(); [() => go('pets'), () => go('dnd'), () => setMode('device')][UI.sel](); }
+  },
+};
+
+// ---------------------------------------------------------------------
+// 4. BLOOMPETZ
+// ---------------------------------------------------------------------
+const PET = { sub: 'home', bubble: '', bubbleUntil: 0, mood: '', moodUntil: 0, sayI: rnd(SAYINGS.length), sayAt: 0, tick: '', tickAt: 0, simon: null, statCat: 0, statTop: false, edit: null, hot: new Set() };
+const activePet = () => SV.pets[SV.active];
+function energyWord(e) { return e >= 76 ? 'Full' : e >= 51 ? 'Good' : e >= 26 ? 'Peckish' : e > 0 ? 'Hungry' : 'Empty'; }
+function makePet(name, type, art) {
+  return { name, type, art, id: (Math.random() * 4294967296) >>> 0, created: dayKey(), lastDay: dayKey(),
+    lifeActions: 0, lifeTouches: 0, lifeTreats: 0, food: 100, treats: 0, mask: 0, stats: new Array(200).fill(0) };
+}
+// Midnight: daily actions and treats reset; food carries over (the stomach never resets)
+function dailyReset(p) {
+  const t = dayKey();
+  if (p.lastDay !== t) { p.lastDay = t; p.mask = 0; p.treats = 0; save(); petSay('a new day!', 'happy'); }
+}
+const actionDone = (p, i) => !!(p.mask & (1 << i));
+// Faster answers grow more: 0.6s or less = 0.0050, 6s or more = 0.0001 (firmware gainFromResponseMs)
+function gainFromMs(ms) { const x = 1 - clamp((ms - 600) / (6000 - 600), 0, 1); return GAIN_MIN + x * (GAIN_MAX - GAIN_MIN); }
+// 80%: a stat from one of the action's four favored categories. 20%: any of the 200.
+function chooseStat(a) { if (rnd(100) < 80) { const cat = ACTION_FAVORED[a][rnd(4)]; return cat * 10 + rnd(10); } return rnd(200); }
+function applyGrowth(p, a, base) {
+  const hit = new Set(), gains = [];
+  let tries = 0;
+  while (gains.length < ROLLS && tries < 200) {
+    tries++;
+    const s = chooseStat(a);
+    if (hit.has(s)) continue;
+    hit.add(s);
+    const g = clamp(base * (rr(850, 1151) / 1000), GAIN_MIN, GAIN_MAX);   // small wobble per stat
+    p.stats[s] = Math.min(1, p.stats[s] + g);
+    gains.push([s, g]);
+  }
+  return gains;
+}
+function petSay(text, mood) { PET.bubble = text; PET.bubbleUntil = performance.now() + 3600; if (mood) { PET.mood = mood; PET.moodUntil = performance.now() + 3600; } const b = $('petBubble'); if (b) b.textContent = text; }
+
+// A pixel critter grown from the pet's id (color) and type (body shape)
+const spriteCache = new Map();
+// Body shape from the type: common words get the obvious look, anything else is hashed
+function petShape(type) {
+  const t = String(type || '').toLowerCase();
+  if (/cat|kit|fox|lynx|tiger|lion|wolf|dog/.test(t)) return 1;      // pointy ears
+  if (/bun|rabbit|hare/.test(t)) return 2;                            // long ears
+  if (/bot|robot|droid|alien|bug|ant|bee/.test(t)) return 3;          // antenna
+  if (/drag|demon|devil|goat|bull|imp|dino/.test(t)) return 4;        // horns
+  if (/plant|sprout|bloom|seed|leaf|flower|tree|moss/.test(t)) return 5;   // sprout
+  if (/slime|blob|ghost|jelly|bean/.test(t)) return 0;                // tuft
+  return strHash(t.toUpperCase()) % 6;
+}
+function petSprite(p, mood, blink) {
+  const key = p.id + '|' + p.type + '|' + mood + '|' + blink;
+  if (spriteCache.has(key)) return spriteCache.get(key);
+  const R = mulberry(p.id), shape = petShape(p.type), hue = Math.floor(R() * 360);
+  const W = 32, H = 32, g = new Array(W * H).fill(0);
+  const set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) g[y * W + x] = v; };
+  const cx = 16, cy = 20, rx = 10 + Math.floor(R() * 3), ry = 8 + Math.floor(R() * 3);
+  const top = cy - ry;
+  // extras behind/above the body
+  if (shape === 1) for (let i = 0; i < 5; i++) for (let j = 0; j <= i; j++) { set(cx - 7 + j, top - 4 + i, i === 4 ? 2 : 2); set(cx + 7 - j, top - 4 + i, 2); }   // cat ears
+  if (shape === 2) for (let y = top - 9; y < top + 1; y++) { set(cx - 5, y, 2); set(cx - 4, y, y < top - 2 ? 4 : 2); set(cx + 4, y, 2); set(cx + 5, y, y < top - 2 ? 4 : 2); }   // bunny ears
+  if (shape === 3) { for (let y = top - 6; y < top + 1; y++) set(cx, y, 3); set(cx - 1, top - 8, 8); set(cx, top - 8, 8); set(cx - 1, top - 7, 8); set(cx, top - 7, 8); set(cx + 1, top - 8, 8); set(cx + 1, top - 7, 8); }   // antenna
+  if (shape === 4) for (let i = 0; i < 4; i++) { set(cx - 6 - (i >> 1), top - i, 8); set(cx + 6 + (i >> 1), top - i, 8); }   // little horns
+  if (shape === 5) { set(cx, top - 1, 3); set(cx, top - 2, 3); set(cx - 1, top - 3, 8); set(cx - 2, top - 3, 8); set(cx - 2, top - 4, 8); set(cx + 1, top - 4, 8); set(cx + 2, top - 5, 8); set(cx + 1, top - 5, 8); }   // sprout
+  if (shape === 0) { set(cx, top - 1, 2); set(cx + 1, top - 2, 2); set(cx - 1, top - 1, 2); }   // tuft
+  // body + belly
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const dx = (x + 0.5 - cx) / rx, dy = (y + 0.5 - cy) / ry;
+    if (dx * dx + dy * dy <= 1) {
+      set(x, y, dy > 0.5 ? 3 : 2);
+      if (dx * dx * 1.7 + (dy - 0.35) * (dy - 0.35) * 2.4 < 0.4) set(x, y, 4);
+    }
+  }
+  for (const fx of [cx - 5, cx + 3]) { set(fx, cy + ry, 3); set(fx + 1, cy + ry, 3); set(fx + 2, cy + ry, 3); }   // feet
+  // face
+  const ey = cy - 3, ex = [cx - 5, cx + 3];
+  if (blink || mood === 'sleep') ex.forEach(x => { set(x, ey + 1, 5); set(x + 1, ey + 1, 5); });
+  else if (mood === 'happy') ex.forEach(x => { set(x - 1, ey + 1, 5); set(x, ey, 5); set(x + 1, ey, 5); set(x + 2, ey + 1, 5); });
+  else if (mood === 'sad') ex.forEach((x, i) => { set(x, ey, 5); set(x + 1, ey, 5); set(x, ey + 1, 5); set(x + 1, ey + 1, 5); set(i ? x + 2 : x - 1, ey - 1, 5); });
+  else ex.forEach(x => { set(x, ey, 5); set(x + 1, ey, 5); set(x, ey + 1, 5); set(x + 1, ey + 1, 5); set(x, ey, 6); });
+  set(cx - 7, ey + 3, 7); set(cx - 6, ey + 3, 7); set(cx + 5, ey + 3, 7); set(cx + 6, ey + 3, 7);   // cheeks
+  if (mood === 'sad') { set(cx - 1, ey + 5, 9); set(cx, ey + 4, 9); set(cx + 1, ey + 5, 9); }
+  else { set(cx - 1, ey + 4, 9); set(cx, ey + 5, 9); set(cx + 1, ey + 4, 9); }
+  if (mood === 'sleep') { set(cx + 9, top - 3, 6); set(cx + 10, top - 3, 6); set(cx + 10, top - 4, 6); set(cx + 9, top - 5, 6); set(cx + 10, top - 5, 6); }
+  // dark outline around everything
+  const out = g.slice();
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (g[y * W + x]) continue;
+    const n = (xx, yy) => xx >= 0 && yy >= 0 && xx < W && yy < H && g[yy * W + xx] > 1 && g[yy * W + xx] !== 6;
+    if (n(x - 1, y) || n(x + 1, y) || n(x, y - 1) || n(x, y + 1)) out[y * W + x] = 1;
+  }
+  const pal = [null, '#05070a', 'hsl(' + hue + ',75%,62%)', 'hsl(' + hue + ',62%,44%)', 'hsl(' + hue + ',85%,84%)', '#0b0b14', '#ffffff', '#ff7aa8', 'hsl(' + ((hue + 150) % 360) + ',85%,60%)', '#3a1020'];
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const cx2 = c.getContext('2d');
+  for (let i = 0; i < W * H; i++) if (out[i]) { cx2.fillStyle = pal[out[i]]; cx2.fillRect(i % W, (i / W) | 0, 1, 1); }
+  spriteCache.set(key, c);
+  return c;
+}
+function petMood(p) {
+  if (performance.now() < PET.moodUntil && PET.mood) return PET.mood;
+  const h = new Date().getHours();
+  if (p.food <= 0) return 'sad';
+  if (h >= 23 || h < 6) return 'sleep';
+  return '';
+}
+function drawPetCanvas(cv, p, t, bigBounce) {
+  if (!cv) return;
+  const g = cv.getContext('2d');
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, cv.width, cv.height);
+  const mood = petMood(p);
+  const blink = ((t / 160) | 0) % 28 === 0;
+  const bob = Math.round(Math.sin(t / (mood === 'sleep' ? 900 : 380)) * (bigBounce ? 1.5 : 1));
+  g.fillStyle = 'rgba(0,229,255,.12)';        // glowing floor shadow
+  g.beginPath(); g.ellipse(cv.width / 2, cv.height - 5, 11, 2.5, 0, 0, Math.PI * 2); g.fill();
+  g.drawImage(petSprite(p, mood, blink), (cv.width - 32) / 2, cv.height - 36 + bob);
+}
+
+// --- the views ---
+const PET_UTIL = ['FEED', 'TREAT', 'STATS', 'EDIT', 'SLOTS'];
+VIEWS.pets = {
+  enter() { PET.sub = SV.pets.some(Boolean) && activePet() ? 'home' : 'slots'; if (PET.sub === 'slots') UI.sel = SV.active; },
+  items() { return ACTIONS.map((_, i) => ({ r: i < 4 ? 0 : 1, c: i % 4 })).concat(PET_UTIL.map((_, i) => ({ r: 2, c: i * 0.8 }))); },
+  render() {
+    const s = PET.sub;
+    if (s === 'slots') return this.renderSlots();
+    if (s === 'simon') return this.renderSimon();
+    if (s === 'stats') return this.renderStats();
+    if (s === 'edit') return this.renderEdit();
+    this.renderHome();
+  },
+  renderSlots() {
+    $('screen').innerHTML = '<div class="h1" style="text-align:center">PICK A PET SLOT</div><div class="slots">' + SV.pets.map((p, i) =>
+      '<button class="btn slot' + (UI.sel === i ? ' sel' : '') + '" data-i="' + i + '">' + (p
+        ? '<canvas class="slotcv" data-slot="' + i + '" width="40" height="40"></canvas><div class="art" style="font-size:22px">' + esc(p.art) + '</div><div class="t glow">' + esc(p.name) + '</div><div class="dim">' + esc(p.type) + ' &middot; ' + energyWord(p.food) + '</div>'
+        : '<div class="big dim" style="font-size:40px">+</div><div class="t">SLOT ' + (i + 1) + '</div><div class="dim">empty &middot; create a pet</div>') + '</button>').join('') +
+      '</div><p class="hint" style="text-align:center">A choose &middot; B back to BLOOM SYSTEM &middot; the box also keeps three slots</p>';
+  },
+  renderHome() {
+    const p = activePet();
+    dailyReset(p);
+    const done = ACTIONS.filter((_, i) => actionDone(p, i)).length;
+    const age = Math.max(0, Math.round((new Date(String(p.lastDay).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')) - new Date(String(p.created).replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3'))) / 86400000));
+    const sel = UI.sel;
+    $('screen').innerHTML = '<div class="pets"><div class="stage panel">' +
+      '<div class="bubble" id="petBubble">' + esc(PET.bubble || SAYINGS[PET.sayI]) + '</div>' +
+      '<canvas id="petCv" class="petcv" width="40" height="40"></canvas>' +
+      '<div class="art">' + esc(p.art) + '</div><div class="h1 glow">' + esc(p.name) + '</div>' +
+      '<div class="dim">' + esc(p.type) + ' &middot; slot ' + (SV.active + 1) + '/3 &middot; ' + age + ' days old</div></div>' +
+      '<div style="display:flex;flex-direction:column;gap:10px;min-width:0">' +
+      '<div class="panel"><div class="kv"><span>ENERGY ' + Math.round(p.food * 10) / 10 + '</span><span class="glow">' + energyWord(p.food) + '</span></div>' +
+      '<div class="barwrap"><i style="width:' + p.food + '%"></i></div>' +
+      '<div class="kv" style="margin-top:6px"><span>TREATS ' + p.treats + '/3</span><span>TODAY ' + done + '/8</span><span class="dim">LIFE ' + p.lifeActions + ' acts &middot; ' + p.lifeTreats + ' treats</span></div></div>' +
+      '<div class="h2">DAILY ACTIONS</div><div class="acts">' + ACTIONS.map((a, i) =>
+        '<button class="btn' + (sel === i ? ' sel' : '') + (actionDone(p, i) ? ' done' : '') + '" data-i="' + i + '"><div class="glow">' + esc(ACTION_GLYPH[i]) + '</div>' + a + (actionDone(p, i) ? ' <span class="dim">*</span>' : '') + '</button>').join('') + '</div>' +
+      '<div class="util">' + PET_UTIL.map((u, j) => '<button class="btn' + (sel === 8 + j ? ' sel' : '') + '" data-i="' + (8 + j) + '">' + u + '</button>').join('') + '</div>' +
+      '<div class="ticker" id="petTicker">' + esc(PET.tick) + '</div>' +
+      '<div class="hint">A do it &middot; B back &middot; actions: watch three arrows, then repeat them fast. Faster grows more. The first time each day counts; after that it is just for fun (*). Feed when Empty.</div>' +
+      '</div></div>';
+  },
+  renderSimon() {
+    const S = PET.simon, p = activePet();
+    const cell = (d, r, c) => '<button style="grid-row:' + r + ';grid-column:' + c + (S.lit === d ? ';background:' + DIR_LED[d] + ';box-shadow:0 0 24px ' + DIR_LED[d] : '') + '" class="' + (S.lit === d ? 'lit' : '') + '" data-k="' + DIRS[d] + '">' + DIR_ARROW[d] + '</button>';
+    let body = '';
+    if (S.phase === 'done') {
+      const r = S.result;
+      body = r.first
+        ? '<div class="h2">+' + r.gain.toFixed(4) + ' growth &middot; E-12.5 &middot; ' + (r.ms / 1000).toFixed(2) + 's</div><div class="panel" style="max-width:560px;width:100%">' + r.gains.slice(0, 6).map(([s, g]) => '<div class="kv"><span>' + pretty(STAT_NAMES[s]) + ' <span class="dim">(' + STAT_CATS[(s / 10) | 0][0] + ')</span></span><span class="glow">+' + (g * 100).toFixed(4) + '%</span></div>').join('') + '<div class="dim">...and ' + (r.gains.length - 6) + ' more stats grew a little.</div></div>'
+        : '<div class="h2">FUN ONLY TODAY</div><div class="dim">You already did ' + ACTIONS[S.a] + ' today. It still counts as a hang.</div>';
+      body += '<div class="hint">A or B: back</div>';
+    } else if (S.phase === 'fail') body = '<div class="h2" style="color:var(--red)">WRONG &mdash; ' + esc(p.name) + ' o_o</div><div class="hint">A retry &middot; B back</div>';
+    else body = '<div class="h2">' + (S.phase === 'input' ? [0, 1, 2].map(i => i < S.idx ? 'X' : '_').join(' ') : '&nbsp;') + '</div><div class="hint">' + (S.phase === 'input' ? 'repeat the arrows &middot; B cancel' : 'watch...') + '</div>';
+    $('screen').innerHTML = '<div class="simon"><div class="h1 glow">' + ACTIONS[S.a] + '</div><div class="h2">' + esc(S.msg) + '</div>' +
+      '<div class="pad4">' + cell(0, 1, 2) + cell(2, 2, 1) + '<div style="grid-row:2;grid-column:2;display:flex;align-items:center;justify-content:center"><canvas id="petCv" width="40" height="40" style="width:88px;height:88px;image-rendering:pixelated"></canvas></div>' + cell(3, 2, 3) + cell(1, 3, 2) + '</div>' + body + '</div>';
+  },
+  renderStats() {
+    const p = activePet(), cat = PET.statCat;
+    const catAvg = i => p.stats.slice(i * 10, i * 10 + 10).reduce((a, b) => a + b, 0) / 10;
+    let rows, title;
+    if (PET.statTop) {
+      title = 'TOP 20 OF 200';
+      rows = p.stats.map((v, i) => [i, v]).sort((a, b) => b[1] - a[1]).slice(0, 20);
+    } else {
+      title = STAT_CATS[cat][0].toUpperCase();
+      rows = STAT_CATS[cat][1].map((_, j) => [cat * 10 + j, p.stats[cat * 10 + j]]);
+    }
+    const max = Math.max(0.0001, ...rows.map(r => r[1]));
+    $('screen').innerHTML = '<div class="statgrid"><div class="catlist">' + STAT_CATS.map(([n], i) =>
+      '<button class="btn' + (i === cat && !PET.statTop ? ' sel' : '') + '" data-cat="' + i + '"><span>' + esc(n) + '</span><span class="dim">' + (catAvg(i) * 100).toFixed(3) + '%</span></button>').join('') + '</div>' +
+      '<div style="min-width:0;overflow-y:auto"><div class="h1 glow">' + esc(title) + '</div><div class="hint" style="margin-bottom:8px">' + esc(p.name) + ' has 200 developmental stats, 20 categories of 10. ' + (PET.statTop ? 'A: back to categories' : 'A: show the top 20') + ' &middot; B back</div>' +
+      rows.map(([i, v]) => '<div class="statrow' + (PET.hot.has(i) ? ' hot' : '') + '"><span>' + pretty(STAT_NAMES[i]) + (PET.statTop ? ' <span class="dim">' + STAT_CATS[(i / 10) | 0][0] + '</span>' : '') + '</span><div class="barwrap"><i style="width:' + (v / max * 100) + '%"></i></div><span style="text-align:right">' + pct4(v) + '</span></div>').join('') + '</div></div>';
+  },
+  renderEdit() {
+    const e = PET.edit;
+    $('screen').innerHTML = '<div class="form"><div class="h1 glow">' + (e.creating ? 'CREATE PET &middot; SLOT ' + (e.slot + 1) : 'EDIT PET') + '</div>' +
+      '<div style="display:flex;gap:16px;align-items:center"><canvas id="editCv" width="40" height="40" style="width:140px;height:140px;image-rendering:pixelated"></canvas><div class="art" id="editArt">' + esc(e.art) + '</div></div>' +
+      '<label>NAME <input id="fName" maxlength="12" value="' + esc(e.name) + '" placeholder="up to 12"></label>' +
+      '<label>TYPE <input id="fType" maxlength="12" value="' + esc(e.type) + '" placeholder="cat, slime, robot..."></label>' +
+      '<label>ART <input id="fArt" maxlength="16" value="' + esc(e.art) + '" placeholder="up to 16 ASCII"></label>' +
+      '<div class="presets">' + ART_PRESETS.map(a => '<button class="btn" data-preset="' + esc(a) + '">' + esc(a) + '</button>').join('') + '</div>' +
+      '<div class="hint">Same limits as the box: name and type up to 12, art up to 16 printable ASCII characters. The type picks your pet\'s body shape; the color is its own.</div>' +
+      '<div style="display:flex;gap:10px"><button class="btn sel" id="fSave">SAVE (Enter)</button><button class="btn" id="fCancel">CANCEL (Esc)</button></div></div>';
+    const upd = () => { e.name = ascii($('fName').value, 12); e.type = ascii($('fType').value, 12); e.art = ascii($('fArt').value, 16); $('editArt').textContent = e.art; };
+    ['fName', 'fType', 'fArt'].forEach(id => $(id).addEventListener('input', upd));
+    document.querySelectorAll('[data-preset]').forEach(b => b.onclick = () => { $('fArt').value = b.dataset.preset; upd(); });
+    $('fSave').onclick = () => this.saveEdit();
+    $('fCancel').onclick = () => this.cancelEdit();
+    setTimeout(() => { const f = $('fName'); if (f) f.focus(); }, 30);
+  },
+  saveEdit() {
+    const e = PET.edit;
+    if (!e.name.trim()) { toast('your pet needs a name'); SFX.bad(); $('fName').focus(); return; }
+    if (e.creating) { SV.pets[e.slot] = makePet(e.name.trim(), e.type.trim() || 'BLOOM', e.art || '(=^.^=)'); SV.active = e.slot; petSay('hi! i am ' + e.name.trim().toLowerCase() + '!', 'happy'); }
+    else { const p = activePet(); p.name = e.name.trim(); p.type = e.type.trim() || p.type; p.art = e.art || p.art; spriteCache.clear(); }
+    save(); SFX.ok(); PET.sub = 'home'; UI.sel = 0; render();
+  },
+  cancelEdit() { SFX.back(); PET.sub = activePet() ? 'home' : 'slots'; UI.sel = 0; render(); },
+  key(k) {
+    const s = PET.sub;
+    if (s === 'slots') {
+      if (k === 'B') { SFX.back(); go('launcher', 0); return; }
+      if (DIRS.includes(k)) { UI.sel = gridMove([{ r: 0, c: 0 }, { r: 0, c: 1 }, { r: 0, c: 2 }], UI.sel, k); render(); return; }
+      if (k === 'A') {
+        SFX.sel();
+        if (SV.pets[UI.sel]) { SV.active = UI.sel; save(); PET.sub = 'home'; UI.sel = 0; }
+        else { PET.edit = { slot: UI.sel, creating: true, name: '', type: '', art: pick(ART_PRESETS) }; PET.sub = 'edit'; }
+        render();
+      }
+      return;
+    }
+    if (s === 'edit') {
+      if (k === 'B') return this.cancelEdit();
+      if (k === 'A') return this.saveEdit();
+      if (k === 'UP' || k === 'DOWN') {                  // hop between the three text boxes
+        const ids = ['fName', 'fType', 'fArt'];
+        const i = ids.indexOf(document.activeElement && document.activeElement.id);
+        $(ids[(i + (k === 'DOWN' ? 1 : 2)) % 3]).focus();
+      }
+      return;
+    }
+    if (s === 'simon') return this.simonKey(k);
+    if (s === 'stats') {
+      if (k === 'B') { SFX.back(); PET.sub = 'home'; UI.sel = 10; render(); return; }
+      if (k === 'A') { PET.statTop = !PET.statTop; SFX.sel(); render(); return; }
+      if (k === 'UP' || k === 'LEFT') { PET.statCat = (PET.statCat + 19) % 20; PET.statTop = false; SFX.move(); }
+      if (k === 'DOWN' || k === 'RIGHT') { PET.statCat = (PET.statCat + 1) % 20; PET.statTop = false; SFX.move(); }
+      render(); return;
+    }
+    // home
+    if (k === 'B') { SFX.back(); go('launcher', 0); return; }
+    if (DIRS.includes(k)) { UI.sel = gridMove(this.items(), UI.sel, k); render(); return; }
+    if (k !== 'A') return;
+    const p = activePet();
+    if (UI.sel < 8) return this.startAction(UI.sel);
+    const u = PET_UTIL[UI.sel - 8];
+    if (u === 'FEED') {
+      dailyReset(p);
+      if (p.food > 0.01) { petSay(p.name + ' ' + energyWord(p.food).toLowerCase() + '. still has food.', ''); SFX.bad(); }
+      else { p.food = 100; save(); petSay('yum! energy 100', 'happy'); SFX.yum(); setLeds('#00d81a', '#78b400', 900); }
+    } else if (u === 'TREAT') {
+      dailyReset(p);
+      if (p.treats >= TREAT_LIMIT) { petSay(p.name + ' says nope. no more treats today.', 'sad'); SFX.bad(); setLeds('#8c0028', '#8c0028', 700); }
+      else {
+        const st = rnd(200), g = rr(1, 51) / 10000;
+        p.stats[st] = Math.min(1, p.stats[st] + g); p.treats++; p.lifeTreats++;
+        PET.hot = new Set([st]); save();
+        petSay('yum! ' + pretty(STAT_NAMES[st]) + ' +' + (g * 100).toFixed(4) + '%', 'happy'); SFX.yum(); setLeds('#f05000', '#c80090', 900);
+      }
+    } else if (u === 'STATS') { SFX.sel(); PET.sub = 'stats'; PET.statTop = false; }
+    else if (u === 'EDIT') { SFX.sel(); PET.edit = { slot: SV.active, creating: false, name: p.name, type: p.type, art: p.art }; PET.sub = 'edit'; }
+    else if (u === 'SLOTS') { SFX.sel(); PET.sub = 'slots'; UI.sel = SV.active; }
+    render();
+  },
+  // --- the 3-step memory sequence ---
+  startAction(a) {
+    const p = activePet();
+    dailyReset(p);
+    if (p.food < ACTION_COST) { petSay(p.name + ' is hungry. needs food first.', 'sad'); SFX.bad(); render(); return; }
+    SFX.sel();
+    PET.simon = { a, seq: [rnd(4), rnd(4), rnd(4)], phase: 'watch', idx: 0, lit: -1, start: 0, msg: 'WATCH', result: null };
+    PET.sub = 'simon'; render(); this.showSeq();
+  },
+  showSeq() {
+    const S = PET.simon;
+    let k = 0;
+    const step = () => {
+      if (PET.simon !== S || PET.sub !== 'simon') return;
+      if (k >= 3) { S.lit = -1; S.phase = 'input'; S.idx = 0; S.start = performance.now(); S.msg = 'YOUR TURN'; render(); return; }
+      S.lit = S.seq[k]; S.msg = 'WATCH ' + (k + 1) + '/3'; SFX.simon(S.seq[k]); setLeds(DIR_LED[S.seq[k]], DIR_LED[S.seq[k]], 380); render();
+      later(380, () => { if (PET.simon !== S) return; S.lit = -1; render(); k++; later(170, step); });
+    };
+    S.phase = 'watch'; S.msg = 'WATCH'; later(450, step);
+  },
+  simonKey(k) {
+    const S = PET.simon, p = activePet();
+    if (S.phase === 'done') { if (k === 'A' || k === 'B') { PET.sub = 'home'; UI.sel = S.a; render(); } return; }
+    if (S.phase === 'fail') { if (k === 'A') this.startAction(S.a); else if (k === 'B') { SFX.back(); PET.sub = 'home'; UI.sel = S.a; render(); } return; }
+    if (k === 'B') { SFX.back(); PET.sub = 'home'; UI.sel = S.a; render(); return; }
+    if (S.phase !== 'input' || !DIRS.includes(k)) return;
+    const d = DIRS.indexOf(k);
+    p.lifeTouches++;
+    SFX.simon(d); S.lit = d; later(140, () => { if (PET.simon === S && S.lit === d) { S.lit = -1; render(); } });
+    if (d !== S.seq[S.idx]) { S.phase = 'fail'; S.lit = -1; S.msg = 'WRONG - RETRY'; SFX.bad(); setLeds('#c80000', '#c80000', 800); render(); return; }
+    S.idx++;
+    if (S.idx < 3) { render(); return; }
+    // finished: same reward rules as finishSimon() in the firmware
+    const ms = performance.now() - S.start, first = !actionDone(p, S.a), gain = gainFromMs(ms);
+    p.lifeActions++;
+    let gains = [];
+    if (first) { gains = applyGrowth(p, S.a, gain); p.mask |= (1 << S.a); p.food = Math.max(0, p.food - ACTION_COST); }
+    gains.sort((x, y) => y[1] - x[1]);
+    PET.hot = new Set(gains.map(g => g[0]));
+    S.result = { first, gain, ms, gains }; S.phase = 'done'; S.lit = -1; S.msg = esc(p.name) + ' ^_^';
+    save(); SFX.ok(); setLeds('#00c850', '#5050f0', 1000); petSay(first ? 'that was fun! i grew a little.' : 'again! again!', 'happy');
+    render();
+  },
+};
+const pick = a => a[rnd(a.length)];
+
+// ---------------------------------------------------------------------
+// 5. DND
+// ---------------------------------------------------------------------
+// The 288-item catalog, generated with the exact formulas from
+// tools/patch_dnd_equipment_catalog_v2.py (row()).
+function itemRow(name, type, i) {
+  const fl = Math.floor, rarity = Math.min(4, fl(i / 10));
+  let price, dmin = 0, dmax = 0, hit = 0, str = 0, dex = 0, ac = 0, hp = 0, heal = 0;
+  if (type === 'W') { price = 12 + i * 7 + rarity * 28; dmin = 1 + fl(i / 7) + rarity; dmax = dmin + 3 + fl(i / 5) + rarity; hit = -1 + (i % 5) + rarity; str = fl(i / 16); dex = [2, 3, 4].includes(i % 9) ? 1 : 0; }
+  else if (type === 'A') { price = 14 + i * 8 + rarity * 32; str = (i >= 36 && i % 3 === 0) ? 1 : 0; dex = [9, 10, 11].includes(i % 12) ? -1 : 0; ac = 1 + fl(i / 8) + rarity; hp = fl(i / 12) * 2 + rarity; }
+  else if (type === 'D') { price = 10 + i * 7 + rarity * 30; hit = [10, 11].includes(i % 12) ? -1 : 0; str = (i >= 32 && i % 5 === 0) ? 1 : 0; dex = [3, 4].includes(i % 12) ? 1 : ([10, 11].includes(i % 12) ? -1 : 0); ac = 1 + fl(i / 10) + rarity; hp = fl(i / 16) + rarity; }
+  else if (type === 'R') { price = 18 + i * 9 + rarity * 38; str = (i % 4 === 0 ? 1 : 0) + ((i >= 32 && i % 8 === 0) ? 1 : 0); dex = (i % 4 === 1 ? 1 : 0) + ((i >= 32 && i % 8 === 1) ? 1 : 0); ac = i % 4 === 2 ? 1 : (i >= 40 ? 1 : 0); hp = i % 4 === 3 ? (2 + rarity * 2) : rarity; }
+  else if (type === 'C') { price = 22 + i * 10 + rarity * 42; str = rarity + (i % 5 === 0 ? 1 : 0); dex = rarity + (i % 5 === 1 ? 1 : 0); ac = fl(rarity / 2) + (i % 5 === 2 ? 1 : 0); hp = 2 + rarity * 3 + (i % 5 === 3 ? 2 : 0); }
+  else { price = 8 + i * 5 + rarity * 20; heal = name === 'FULL RESTORE' ? 9999 : 5 + i * 2 + rarity * 8; }
+  return { name, type, price, dmin, dmax, hit, str, dex, ac, hp, heal, rarity };
+}
+const ITEMS = [];
+[['W', 'WEAPONS'], ['A', 'ARMOR'], ['D', 'SHIELDS'], ['R', 'RINGS'], ['C', 'CHARMS'], ['H', 'CONSUMABLES']].forEach(([t, f]) => DNDDATA.fam[f].forEach((n, i) => ITEMS.push(itemRow(n, t, i))));
+const ENEMIES = DNDDATA.enemies.map(([glyph, name, tier, hp, ac, dmin, dmax, mmin, mmax]) => ({ glyph, name, tier, hp, ac, dmin, dmax, mmin, mmax }));
+const THEMES = DNDDATA.themes, SYMBOLS = DNDDATA.symbols;
+const STYLES = ['RUINS', 'HALL', 'CORRIDORS', 'CHAMBERS', 'TRAP RUN', 'TREASURE', 'DEN', 'VOID'];
+const RW = 30, RH = 16, MAX_ENEMIES = 8;
+const TYPE_NAME = { W: 'WEAPON', A: 'ARMOR', D: 'SHIELD', R: 'RING', C: 'CHARM', H: 'CONSUMABLE' };
+const EQ_CATS = ['WEAPON', 'ARMOR', 'SHIELD', 'RING 1', 'RING 2', 'CHARM', 'CONSUMABLES'];
+const EQ_TYPE = ['W', 'A', 'D', 'R', 'R', 'C', 'H'];
+const EQ_KEYS = ['weapon', 'armor', 'shield', 'ring1', 'ring2', 'charm'];
+const TIER_COL = ['#7cf08a', '#FFD93D', '#ffa04a', '#ff5a6a', '#b48cff', '#FF4BCB'];
+const DND_MENU = ['CHARACTER', 'INVENTORY', 'SHOP', 'SYMBOLS', 'NEW ADVENTURE', 'BLOOM SYSTEM'];
+const findItem = (name, type) => ITEMS.findIndex(it => it.name === name && (!type || it.type === type));
+
+let D = null;                                  // durable progress (saved, like the box's DND blob)
+const T = { map: [], px: 0, py: 0, enemies: [], style: 0, screen: 'play', sel: 0, armedUntil: 0, log: [], flashes: [], loaded: false, lastSave: 0, cat: 0 };
+function newDnd() {
+  const w = findItem('IRON SWORD', 'W');
+  return { hp: 18, maxHp: 18, str: 3, dex: 2, ac: 12, xp: 0, gold: 0, level: 1, keys: 0, room: 1, deepest: 1, inv: [w],
+    eq: { weapon: w, armor: -1, shield: -1, ring1: -1, ring2: -1, charm: -1 }, shop: [], shopRoom: 0, theme: 0, kills: 0, deaths: 0 };
+}
+// equipment adds to base stats
+function gear(f) { let t = 0; for (const k of EQ_KEYS) { const id = D.eq[k]; if (id >= 0) { const it = ITEMS[id]; t += f === 'S' ? it.str : f === 'D' ? it.dex : f === 'A' ? it.ac : it.hp; } } return t; }
+const effStr = () => D.str + gear('S'), effDex = () => D.dex + gear('D'), effAc = () => D.ac + gear('A'), effMax = () => Math.max(1, D.maxHp + gear('H'));
+const weapon = () => ITEMS[D.eq.weapon >= 0 ? D.eq.weapon : findItem('IRON SWORD', 'W')];
+// Depth scaling: every roll swings +/- the room number (capped at 120)
+const depth = () => Math.min(120, D.room);
+const signedMod = () => { const d = depth(); return rr(-d, d + 1); };
+const scaled = (b, min) => clamp(b + signedMod(), min, 30000);
+const enemyScaled = (b, min) => clamp(b + Math.floor(depth() / 3) + signedMod(), min, 30000);
+function levelFromXp(xp) { let lv = 1, need = 40, spent = 0; while (lv < 99 && xp >= spent + need) { spent += need; lv++; need += 20 + lv * 8; } return lv; }
+function xpAt(L) { let lv = 1, need = 40, spent = 0; while (lv < L) { spent += need; lv++; need += 20 + lv * 8; } return spent; }
+function log(msg) { T.log.unshift(msg); if (T.log.length > 60) T.log.length = 60; T.dirty = true; }
+function dsave() { SV.dnd = D; save(); T.lastSave = performance.now(); }
+function checkLevel() {
+  const target = levelFromXp(D.xp);
+  while (D.level < target) {
+    D.level++;
+    const hpGain = 2 + (D.level % 3);
+    D.maxHp += hpGain; D.hp += hpGain;
+    if (D.level % 2 === 0) D.str++;
+    if (D.level % 3 === 0) D.dex++;
+    if (D.level % 4 === 0) D.ac++;
+    log('LEVEL ' + D.level); log('MAX HP +' + hpGain); SFX.level(); setLeds('#ffd93d', '#00f6d6', 900);
+  }
+}
+
+// --- room generation: 8 layouts (weighted) over 48 themes ---
+const inside = (x, y) => x >= 0 && x < RW && y >= 0 && y < RH;
+const walkable = (x, y) => inside(x, y) && T.map[y][x] !== '#';
+const enemyAt = (x, y) => T.enemies.find(e => e.x === x && e.y === y);
+function freeTile() {
+  for (let t = 0; t < 250; t++) {
+    const x = rr(1, RW - 1), y = rr(1, RH - 1);
+    if (T.map[y][x] === '.' && !(x === T.px && y === T.py) && !enemyAt(x, y)) return [x, y];
+  }
+  return null;
+}
+function placeTile(ch, n) { for (let i = 0; i < n; i++) { const p = freeTile(); if (p) T.map[p[1]][p[0]] = ch; } }
+function spawnEnemy() {
+  const maxTier = Math.min(5, Math.floor(D.room / 8));
+  let want = maxTier;
+  if (maxTier > 0 && rnd(100) < 28) want = rnd(maxTier + 1);   // some under-tier creatures keep showing up
+  const def = pick(ENEMIES.filter(e => e.tier === want));
+  const pos = freeTile();
+  if (!pos) return;
+  const e = { glyph: def.glyph, name: def.name, tier: def.tier, x: pos[0], y: pos[1],
+    str: enemyScaled(3, 1), dex: enemyScaled(3, 1), maxHp: enemyScaled(def.hp, 1), ac: enemyScaled(def.ac, 1),
+    hit: enemyScaled(1, -20), dmin: enemyScaled(def.dmin, 1) };
+  e.dmax = enemyScaled(def.dmax, e.dmin); e.hp = e.maxHp;
+  e.xp = enemyScaled(def.hp + def.ac, 1); e.gold = enemyScaled(def.dmax + 2, 0);
+  const sw = signedMod() * 8;
+  let mn = def.mmin - sw, mx = def.mmax + sw;
+  if (mn < 220) mn = 220; if (mx < mn + 100) mx = mn + 100; if (mx > 5000) mx = 5000;
+  e.mmin = mn; e.mmax = mx; e.next = performance.now() + rr(mn, mx + 1);
+  T.enemies.push(e);
+}
+function genRoom(announce) {
+  T.enemies = []; T.flashes = []; T.armedUntil = 0;
+  T.map = Array.from({ length: RH }, (_, y) => Array.from({ length: RW }, (_, x) => (x === 0 || y === 0 || x === RW - 1 || y === RH - 1) ? '#' : '.'));
+  const M = T.map;
+  D.theme = (D.room - 1 + rnd(48)) % 48;
+  T.px = rr(2, RW - 2); T.py = rr(2, RH - 2);
+  const r = rnd(100);
+  T.style = r < 24 ? 0 : r < 40 ? 1 : r < 55 ? 2 : r < 69 ? 3 : r < 80 ? 4 : r < 89 ? 5 : r < 96 ? 6 : 7;
+  const wall = (x, y) => { if (x > 0 && x < RW - 1 && y > 0 && y < RH - 1) M[y][x] = '#'; };
+  if (T.style === 0) {                         // RUINS: broken wall scars
+    for (let i = 0, n = 8 + rnd(8); i < n; i++) { const x = rr(2, RW - 2), y = rr(2, RH - 2), h = rnd(2) === 0, len = rr(2, 6); for (let j = 0; j < len; j++) wall(x + (h ? j : 0), y + (h ? 0 : j)); }
+  } else if (T.style === 1) {                  // HALL: pillars
+    for (let y = 3; y < RH - 2; y += 4) for (let x = 4; x < RW - 3; x += 6) if (rnd(100) < 78) M[y][x] = '#';
+  } else if (T.style === 2) {                  // CORRIDORS: three broken walls
+    for (const x of [7, 15, 23]) { const g1 = 3 + rnd(3), g2 = 9 + rnd(4); for (let y = 1; y < RH - 1; y++) if (y !== g1 && y !== g1 + 1 && y !== g2 && y !== g2 + 1) M[y][x] = '#'; }
+  } else if (T.style === 3) {                  // CHAMBERS: a cross with doorways
+    const mx = RW / 2, my = RH / 2;
+    for (let y = 1; y < RH - 1; y++) M[y][mx] = '#';
+    for (let x = 1; x < RW - 1; x++) M[my][x] = '#';
+    M[3][mx] = M[4][mx] = M[RH - 4][mx] = M[RH - 5][mx] = '.'; M[my][6] = M[my][7] = M[my][RW - 7] = M[my][RW - 8] = '.';
+  } else if (T.style === 4) {                  // TRAP RUN: alternating barricades + traps
+    for (let y = 3; y < RH - 2; y += 3) { if (((y / 3) & 1) === 0) for (let x = 2; x < RW - 8; x++) M[y][x] = '#'; else for (let x = 8; x < RW - 2; x++) M[y][x] = '#'; }
+    for (let i = 0; i < 10; i++) { const tx = rr(2, RW - 2), ty = rr(2, RH - 2); if (M[ty][tx] === '.') M[ty][tx] = '^'; }
+  } else if (T.style === 5) {                  // TREASURE: central vault
+    for (let x = 9; x <= 20; x++) { M[4][x] = '#'; M[11][x] = '#'; } for (let y = 4; y <= 11; y++) { M[y][9] = '#'; M[y][20] = '#'; }
+    M[4][14] = M[11][15] = M[7][9] = M[8][20] = '.'; M[6][13] = 'c'; M[9][16] = 'c'; M[7][16] = '$'; M[9][13] = 'w';
+  } else if (T.style === 6) {                  // DEN: arena ring
+    for (let x = 6; x <= 23; x++) { M[3][x] = '#'; M[12][x] = '#'; } for (let y = 3; y <= 12; y++) { M[y][6] = '#'; M[y][23] = '#'; }
+    M[3][14] = M[12][15] = M[7][6] = M[8][23] = '.';
+    for (let i = 0; i < 4; i++) { const tx = rr(8, 22), ty = rr(5, 11); if (M[ty][tx] === '.') M[ty][tx] = '^'; }
+  } else {                                     // VOID: isolated islands
+    for (let y = 3; y < RH - 3; y += 5) for (let x = 4; x < RW - 4; x += 7) if (rnd(100) < 70) { M[y][x] = M[y][x + 1] = M[y + 1][x] = M[y + 1][x + 1] = '#'; }
+  }
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const x = T.px + dx, y = T.py + dy; if (x > 0 && x < RW - 1 && y > 0 && y < RH - 1) M[y][x] = '.'; }
+  // 2-4 one-way doors on the outer wall
+  const doors = [];
+  for (let i = 0, n = rr(2, 5); i < n; i++) {
+    const side = rnd(4);
+    const d = side === 0 ? [rr(2, RW - 2), 0] : side === 1 ? [rr(2, RW - 2), RH - 1] : side === 2 ? [0, rr(2, RH - 2)] : [RW - 1, rr(2, RH - 2)];
+    M[d[1]][d[0]] = '+'; doors.push(d);
+  }
+  // guarantee a route from the start to at least one door (carve one if needed)
+  const seen = new Set([T.px + ',' + T.py]), q = [[T.px, T.py]];
+  let reach = false;
+  while (q.length) {
+    const [x, y] = q.shift();
+    if (M[y][x] === '+') { reach = true; break; }
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (walkable(nx, ny) && !seen.has(k)) { seen.add(k); q.push([nx, ny]); } }
+  }
+  if (!reach) {
+    const [dx, dy] = doors[0];
+    const tx = clamp(dx, 1, RW - 2), ty = clamp(dy, 1, RH - 2);
+    let x = T.px, y = T.py;
+    while (x !== tx) { if (M[y][x] === '#') M[y][x] = '.'; x += Math.sign(tx - x); }
+    while (y !== ty) { if (M[y][x] === '#') M[y][x] = '.'; y += Math.sign(ty - y); }
+    if (M[ty][tx] === '#') M[ty][tx] = '.';
+  }
+  placeTile('c', rr(1, 4)); placeTile('^', rr(1, 5)); placeTile('$', rr(0, 3)); placeTile('!', rr(0, 3));
+  if (rnd(100) < 35) placeTile('w', 1);
+  const count = Math.min(MAX_ENEMIES, 3 + Math.floor(D.room / 8));
+  for (let i = 0; i < count; i++) spawnEnemy();
+  log('ROOM ' + D.room + ' ' + STYLES[T.style]);
+  if (announce) { log(THEMES[D.theme]); log('DEPTH MOD +/-' + D.room); }
+  T.loaded = true;
+}
+function nextRoom() { D.room++; if (D.room > D.deepest) D.deepest = D.room; genRoom(true); SFX.door(); dsave(); }
+
+// --- player actions ---
+function flash(x, y) { T.flashes.push({ x, y, until: performance.now() + 260 }); }
+function damagePlayer(amount, source) {
+  amount = Math.max(0, amount);
+  D.hp = Math.max(0, D.hp - amount);
+  log(source + ' HIT'); log('DAMAGE ' + amount); flash(T.px, T.py); SFX.hit(); setLeds('#c80000', '#600000', 350);
+  if (D.hp <= 0) {                              // death: half your gold, back to room 1, full HP
+    log('YOU FALL'); D.gold = Math.floor(D.gold / 2); D.room = 1; D.hp = effMax(); D.deaths++;
+    genRoom(false); log('BACK TO ROOM 1'); dsave();
+    return true;
+  }
+  return false;
+}
+function attack(e, verb) {
+  const roll = rr(1, 21), w = weapon(), total = roll + effStr() + w.hit;
+  log(verb + ' ' + e.name); log('ROLL ' + roll); log('TOTAL ' + total);
+  if (roll === 1 || total < e.ac) { log('MISS AC ' + e.ac); SFX.swing(); return; }
+  let dmg = rr(w.dmin, w.dmax + 1) + Math.trunc(effStr() / 2);
+  if (roll === 20) { dmg *= 2; log('CRITICAL'); }
+  e.hp -= dmg; log('DAMAGE ' + dmg); flash(e.x, e.y); SFX.hit(); setLeds('#ff7a00', '#ff7a00', 200);
+  if (e.hp <= 0) {
+    T.enemies = T.enemies.filter(x => x !== e);
+    D.xp += e.xp; D.gold += e.gold; D.kills++;
+    checkLevel();
+    log(e.name + ' DOWN'); log('+' + e.xp + ' XP'); log('+' + e.gold + ' GOLD'); SFX.coin(); dsave();
+  }
+}
+function attackDir(dx, dy) {
+  T.armedUntil = 0; log('ATTACK');
+  const e = enemyAt(T.px + dx, T.py + dy);
+  if (e) attack(e, 'ATTACK'); else { log('SWING AIR'); SFX.swing(); }
+}
+function rollCatalog() {
+  const maxR = Math.min(4, Math.floor(D.room / 8));
+  let want = maxR;
+  if (maxR > 0 && rnd(100) < 35) want = rnd(maxR + 1);
+  for (let t = 0; t < 250; t++) { const id = rnd(ITEMS.length); if (ITEMS[id].rarity === want) return id; }
+  return rnd(ITEMS.length);
+}
+function itemLine(id) {
+  const it = ITEMS[id];
+  if (it.type === 'W') return 'DMG ' + it.dmin + '-' + it.dmax + ' HIT ' + it.hit + ' S' + it.str + ' D' + it.dex;
+  if (it.type === 'H') return it.heal >= 9999 ? 'FULL RESTORE' : 'HEAL ' + it.heal;
+  const o = [];
+  if (it.str) o.push('STR ' + it.str); if (it.dex) o.push('DEX ' + it.dex); if (it.ac) o.push('AC ' + it.ac); if (it.hp) o.push('HP ' + it.hp);
+  return o.join(' ') || 'NO BONUS';
+}
+function findWeapon() {                         // floor weapons go into the pack (not auto-equipped)
+  let id = -1;
+  for (let t = 0; t < 250; t++) { const p = rollCatalog(); if (ITEMS[p].type === 'W') { id = p; break; } }
+  if (id < 0) id = findItem('IRON SWORD', 'W');
+  if (D.inv.length < 288) { D.inv.push(id); log('FOUND ' + ITEMS[id].name); log(itemLine(id)); SFX.coin(); }
+  else log('PACK FULL');
+}
+function interact(x, y) {
+  const e = enemyAt(x, y);
+  if (e) { attack(e, 'BUMP'); return; }
+  const M = T.map, t = M[y][x];
+  if (t === '+') { log('THROUGH DOOR'); nextRoom(); return; }
+  if (t === 'c') {
+    const diff = scaled(10 + Math.floor(D.room / 3), 2), roll = rr(1, 21) + effDex();
+    log('OPEN CHEST'); log('ROLL ' + roll);
+    if (roll >= diff) { const l = rnd(100); M[y][x] = l < 35 ? 'w' : l < 72 ? '$' : '!'; log('CHEST OPEN'); SFX.ok(); }
+    else { log('LOCK ' + diff); SFX.bad(); }
+    return;
+  }
+  if (t === '^') {
+    const diff = scaled(12 + Math.floor(D.room / 4), 3), total = rr(1, 21) + effDex(), dmg = scaled(4 + Math.floor(D.room / 4), 1);
+    M[y][x] = '.'; log('TRAP ' + diff);
+    if (total < diff) damagePlayer(dmg, 'TRAP'); else { log('DODGED'); SFX.swing(); }
+    return;
+  }
+  if (t === '$') { const g = scaled(8 + Math.floor(D.room / 2), 1); D.gold += g; M[y][x] = '.'; T.px = x; T.py = y; log('+' + g + ' GOLD'); SFX.coin(); dsave(); return; }
+  if (t === '!') { const h = scaled(6 + Math.floor(D.room / 3), 1); D.hp = Math.min(effMax(), D.hp + h); M[y][x] = '.'; T.px = x; T.py = y; log('HEAL ' + h); SFX.yum(); return; }
+  if (t === 'w') { M[y][x] = '.'; T.px = x; T.py = y; findWeapon(); dsave(); return; }
+  T.px = x; T.py = y; SFX.move();
+}
+function movePlayer(dx, dy) {
+  const nx = T.px + dx, ny = T.py + dy;
+  if (!walkable(nx, ny)) { if (T.log[0] !== 'WALL') log('WALL'); return; }
+  interact(nx, ny);
+}
+// Enemies act on their own clocks, but only while you're in the room (not in menus)
+function serviceEnemies(now) {
+  if (T.screen !== 'play') return;
+  for (const e of T.enemies.slice()) {
+    if (!T.enemies.includes(e) || now < e.next) continue;
+    e.next = now + rr(e.mmin, e.mmax + 1);
+    const dxp = T.px - e.x, dyp = T.py - e.y;
+    if (Math.abs(dxp) + Math.abs(dyp) === 1) {
+      const total = rr(1, 21) + e.hit + Math.trunc(e.dex / 3);
+      log(e.name + ' ATTACK'); log('ROLL ' + total);
+      if (total >= effAc()) { if (damagePlayer(rr(e.dmin, e.dmax + 1), e.name)) return; }
+      else log('MISS');
+      continue;
+    }
+    let dx = 0, dy = 0;
+    if (Math.abs(dxp) + Math.abs(dyp) <= 10) {   // chase when close
+      if (Math.abs(dxp) >= Math.abs(dyp) && dxp !== 0) dx = Math.sign(dxp); else if (dyp !== 0) dy = Math.sign(dyp);
+    } else { const r = rnd(4); dx = r === 0 ? 1 : r === 1 ? -1 : 0; dy = r === 2 ? 1 : r === 3 ? -1 : 0; }
+    const nx = e.x + dx, ny = e.y + dy;
+    if (!walkable(nx, ny) || (nx === T.px && ny === T.py) || enemyAt(nx, ny) || 'c^$!w+'.includes(T.map[ny][nx])) continue;
+    e.x = nx; e.y = ny;
+  }
+}
+// shop: four offers that restock when you enter a new room
+const price = id => Math.min(65000, ITEMS[id].price + D.room * (1 + ITEMS[id].rarity));
+function rollShop(force) {
+  if (!force && D.shopRoom === D.room && D.shop.length === 4) return;
+  D.shopRoom = D.room; D.shop = [];
+  while (D.shop.length < 4) { const id = rollCatalog(); if (!D.shop.includes(id)) D.shop.push(id); }
+}
+function buy(i) {
+  const id = D.shop[i], pr = price(id);
+  if (D.gold < pr) { log('NEED ' + pr + ' GOLD'); SFX.bad(); return; }
+  if (D.inv.length >= 288) { log('INVENTORY FULL'); SFX.bad(); return; }
+  D.gold -= pr; D.inv.push(id); log('BOUGHT ' + ITEMS[id].name); log('-' + pr + ' GOLD'); SFX.coin(); dsave();
+}
+function equip(id, cat) {
+  const it = ITEMS[id], n = D.inv.filter(x => x === id).length;
+  if (cat === 0 && it.type === 'W') D.eq.weapon = id;
+  else if (cat === 1 && it.type === 'A') D.eq.armor = id;
+  else if (cat === 2 && it.type === 'D') D.eq.shield = id;
+  else if (cat === 3 && it.type === 'R') { if (D.eq.ring2 === id && n < 2) { log('NEED SECOND RING'); SFX.bad(); return; } D.eq.ring1 = id; }
+  else if (cat === 4 && it.type === 'R') { if (D.eq.ring1 === id && n < 2) { log('NEED SECOND RING'); SFX.bad(); return; } D.eq.ring2 = id; }
+  else if (cat === 5 && it.type === 'C') D.eq.charm = id;
+  else return;
+  if (D.hp > effMax()) D.hp = effMax();
+  log('EQUIPPED ' + it.name); SFX.ok(); dsave();
+}
+function useItem(invIndex) {
+  const id = D.inv[invIndex], it = ITEMS[id];
+  if (!it || it.type !== 'H') return;
+  const cap = effMax();
+  D.hp = it.heal >= 9999 ? cap : Math.min(cap, D.hp + it.heal);
+  D.inv.splice(invIndex, 1); log('USED ' + it.name); log('HP ' + D.hp + '/' + cap); SFX.yum(); dsave();
+}
+function quickUse(invIndex) {                   // inventory A: equip in the right slot, or drink it
+  const id = D.inv[invIndex], t = ITEMS[id].type;
+  if (t === 'H') return useItem(invIndex);
+  if (t === 'R') return equip(id, D.eq.ring1 < 0 || D.eq.ring1 === id ? 3 : 4);
+  equip(id, { W: 0, A: 1, D: 2, C: 5 }[t]);
+}
+const owned = type => D.inv.map((id, i) => [id, i]).filter(([id]) => ITEMS[id].type === type);
+
+// --- DND view ---
+function statusRows() {
+  const nx = xpAt(D.level + 1), w = weapon();
+  return '<div class="kv"><span>HP</span><span class="glow">' + D.hp + '/' + effMax() + '</span></div><div class="barwrap"><i style="width:' + (D.hp / effMax() * 100) + '%;background:' + (D.hp / effMax() < 0.3 ? 'var(--red)' : 'var(--oled)') + '"></i></div>' +
+    '<div class="kv" style="margin-top:6px"><span>LEVEL ' + D.level + '</span><span class="dim">XP ' + D.xp + '/' + nx + '</span></div>' +
+    '<div class="barwrap"><i style="width:' + clamp((D.xp - xpAt(D.level)) / Math.max(1, nx - xpAt(D.level)) * 100, 0, 100) + '%;background:var(--yellow)"></i></div>' +
+    '<div class="kv" style="margin-top:6px"><span>STR ' + effStr() + '</span><span>DEX ' + effDex() + '</span><span>AC ' + effAc() + '</span></div>' +
+    '<div class="kv"><span>GOLD</span><span style="color:var(--yellow)">' + D.gold + '</span></div>' +
+    '<div class="kv"><span>WEAPON</span><span>' + esc(w.name) + '</span></div><div class="dim" style="text-align:right">' + itemLine(ITEMS.indexOf(w)) + '</div>' +
+    '<div class="kv"><span>ROOM ' + D.room + '</span><span class="dim">DEEPEST ' + D.deepest + '</span></div>' +
+    '<div class="kv dim"><span>KILLS ' + D.kills + '</span><span>FALLS ' + D.deaths + '</span></div>';
+}
+function overlayHTML() {
+  const s = T.screen, sel = T.sel;
+  const row = (i, l, r, cls) => '<button class="btn' + (i === sel ? ' sel' : '') + '" data-i="' + i + '"><span class="' + (cls || '') + '">' + l + '</span><small>' + (r || '') + '</small></button>';
+  if (s === 'menu') return '<div class="menu panel"><div class="h1 glow">MENU</div>' + DND_MENU.map((m, i) => row(i, m, ['equipment', 'your pack', 'buy gear', 'what is what', 'start over', 'leave DND'][i])).join('') + '<div class="hint">A select &middot; B back to the dungeon</div></div>';
+  if (s === 'equipcats') return '<div class="menu panel"><div class="h1 glow">CHARACTER</div><div class="hint" style="margin-bottom:6px">LV ' + D.level + ' &middot; HP ' + D.hp + '/' + effMax() + ' &middot; STR ' + effStr() + ' DEX ' + effDex() + ' AC ' + effAc() + '</div>' +
+    EQ_CATS.map((c, i) => { const id = i < 6 ? D.eq[EQ_KEYS[i]] : -1; return row(i, c, i < 6 ? (id >= 0 ? esc(ITEMS[id].name) : '-') : owned('H').length + ' owned'); }).join('') + '<div class="hint">A choose &middot; B back</div></div>';
+  if (s === 'equiplist') {
+    const type = EQ_TYPE[T.cat], list = owned(type), cur = T.cat < 6 ? D.eq[EQ_KEYS[T.cat]] : -1;
+    return '<div class="menu panel"><div class="h1 glow">' + EQ_CATS[T.cat] + '</div>' + (list.length ? list.map(([id], i) => row(i, (id === cur ? '* ' : '') + esc(ITEMS[id].name), itemLine(id), 'rar' + ITEMS[id].rarity)).join('') : '<p class="dim">No owned items of this kind. Find some, or buy them in the shop.</p>') +
+      '<div class="hint">' + (type === 'H' ? 'A use' : 'A equip') + ' &middot; B back</div></div>';
+  }
+  if (s === 'inventory') return '<div class="menu panel"><div class="h1 glow">INVENTORY ' + D.inv.length + '/288</div><div class="hint" style="margin-bottom:6px">GOLD ' + D.gold + '</div>' +
+    D.inv.map((id, i) => { const eqd = EQ_KEYS.some(k => D.eq[k] === id); return row(i, (eqd ? '* ' : '') + esc(ITEMS[id].name), TYPE_NAME[ITEMS[id].type] + ' &middot; ' + itemLine(id), 'rar' + ITEMS[id].rarity); }).join('') +
+    '<div class="hint">A equip / use &middot; B back &middot; * = equipped</div></div>';
+  if (s === 'shop') { rollShop(false); return '<div class="menu panel"><div class="h1 glow">SHOP &middot; GOLD ' + D.gold + '</div>' + D.shop.map((id, i) => row(i, esc(ITEMS[id].name) + ' <span class="dim">' + TYPE_NAME[ITEMS[id].type] + '</span>', price(id) + 'G &middot; ' + itemLine(id), 'rar' + ITEMS[id].rarity)).join('') + '<div class="hint">A buy &middot; B back &middot; four offers, restocked in every new room</div></div>'; }
+  if (s === 'symbols') return '<div class="menu panel" style="width:min(900px,100%)"><div class="h1 glow">SYMBOLS ' + (sel + 1) + '/48</div><div class="symgrid">' + SYMBOLS.map(([g, n], i) => '<button class="btn' + (i === sel ? ' sel' : '') + '" data-i="' + i + '"><b class="glow">' + esc(g) + '</b> ' + esc(n) + '</button>').join('') + '</div><div class="hint">arrows move &middot; B back</div></div>';
+  if (s === 'confirm') return '<div class="menu panel"><div class="h1" style="color:var(--red)">NEW ADVENTURE?</div><p>This wipes your adventurer: level, gear, gold and depth.</p><div class="hint">A yes, start over &middot; B no</div></div>';
+  return '';
+}
+VIEWS.dnd = {
+  enter() {
+    if (!SV.dnd) { SV.dnd = newDnd(); D = SV.dnd; T.log = []; genRoom(false); log('DND BEGINS'); dsave(); }
+    else { D = SV.dnd; if (!T.loaded) { genRoom(false); log('RESUME ROOM ' + D.room); } }
+    T.screen = 'play'; T.sel = 0;
+  },
+  render() {
+    $('screen').innerHTML = '<div class="dnd"><div class="col"><div class="panel" id="dStat"></div><div class="panel feed" id="dLog"></div></div>' +
+      '<div class="mapwrap"><canvas id="map" width="' + RW * 24 + '" height="' + RH * 30 + '"></canvas><div id="dOver"></div></div>' +
+      '<div class="col"><div class="panel" id="dRoom"></div><div class="panel" style="flex:1;min-height:0;overflow:auto" id="dFoes"></div>' +
+      '<div class="panel hint">Move: arrows. Bump to fight. Attack without moving: A, then an arrow within 0.7s. B: menu. Doors (+) are one-way.</div></div></div>';
+    $('map').addEventListener('click', ev => this.mapClick(ev));
+    this.refresh();
+  },
+  refresh() {                                   // update the side panels without rebuilding the map
+    if (!$('dStat')) return;
+    $('dStat').innerHTML = '<div class="h2">ADVENTURER</div>' + statusRows();
+    $('dLog').innerHTML = T.log.slice(0, 18).map(m => '<div>' + esc(m) + '</div>').join('');
+    $('dRoom').innerHTML = '<div class="h2">ROOM ' + D.room + '</div><div class="glow">' + esc(THEMES[D.theme]) + '</div><div class="dim">' + STYLES[T.style] + ' layout &middot; tier ' + Math.min(5, Math.floor(D.room / 8)) + ' foes</div>';
+    const foes = T.enemies.slice().sort((a, b) => (Math.abs(a.x - T.px) + Math.abs(a.y - T.py)) - (Math.abs(b.x - T.px) + Math.abs(b.y - T.py)));
+    $('dFoes').innerHTML = '<div class="h2">IN THIS ROOM</div>' + (foes.length ? foes.map(e => '<div class="enemyrow"><b style="color:' + TIER_COL[e.tier] + '">' + esc(e.glyph) + '</b><span>' + esc(e.name) + '</span><span class="dim">' + Math.max(0, e.hp) + '/' + e.maxHp + '</span></div>').join('') : '<div class="dim">nothing moves. find a door (+).</div>');
+    $('dOver').innerHTML = T.screen === 'play' ? '' : '<div class="overlay">' + overlayHTML() + '</div>';
+    const s = $('dOver').querySelector('.sel');
+    if (s) s.scrollIntoView({ block: 'nearest' });
+    T.dirty = false;
+  },
+  mapClick(ev) {                                // tap a tile next to you to step there (or attack it while aiming)
+    if (T.screen !== 'play') return;
+    const c = $('map'), r = c.getBoundingClientRect();
+    const x = Math.floor((ev.clientX - r.left) / r.width * RW), y = Math.floor((ev.clientY - r.top) / r.height * RH);
+    const dx = x - T.px, dy = y - T.py;
+    if (Math.abs(dx) + Math.abs(dy) !== 1) return;
+    audioInit();
+    if (performance.now() < T.armedUntil || ev.shiftKey) attackDir(dx, dy); else movePlayer(dx, dy);
+    this.refresh();
+  },
+  key(k) {
+    const s = T.screen;
+    if (s === 'play') {
+      if (k === 'B') { T.screen = 'menu'; T.sel = 0; SFX.sel(); }
+      else if (k === 'A') { T.armedUntil = performance.now() + 700; log('AIM'); SFX.swing(); }
+      else {
+        const [dx, dy] = { UP: [0, -1], DOWN: [0, 1], LEFT: [-1, 0], RIGHT: [1, 0] }[k];
+        if (performance.now() < T.armedUntil) attackDir(dx, dy); else movePlayer(dx, dy);
+      }
+      return this.refresh();
+    }
+    const lists = { menu: DND_MENU.length, equipcats: 7, equiplist: owned(EQ_TYPE[T.cat]).length, inventory: D.inv.length, shop: 4, symbols: 48, confirm: 0 };
+    const n = lists[s];
+    if (k === 'B') {
+      SFX.back();
+      T.screen = { menu: 'play', equipcats: 'menu', equiplist: 'equipcats', inventory: 'menu', shop: 'menu', symbols: 'menu', confirm: 'menu' }[s];
+      T.sel = s === 'equiplist' ? T.cat : 0;
+      if (T.screen === 'play') { const now = performance.now(); T.enemies.forEach(e => { e.next = Math.max(e.next, now + 400); }); }   // a beat to get ready
+      return this.refresh();
+    }
+    if (DIRS.includes(k) && n) {
+      const cols = s === 'symbols' ? Math.max(1, Math.round(($('dOver').querySelector('.symgrid') || { clientWidth: 170 }).clientWidth / 175)) : 1;
+      const step = (k === 'UP' ? -cols : k === 'DOWN' ? cols : k === 'LEFT' ? -1 : 1);
+      if (cols === 1 && (k === 'LEFT' || k === 'RIGHT')) return;
+      T.sel = (T.sel + step + n) % n; SFX.move(); return this.refresh();
+    }
+    if (k !== 'A') return;
+    if (s === 'menu') {
+      const m = DND_MENU[T.sel]; SFX.sel();
+      if (m === 'CHARACTER') { T.screen = 'equipcats'; T.sel = 0; }
+      else if (m === 'INVENTORY') { T.screen = 'inventory'; T.sel = 0; }
+      else if (m === 'SHOP') { T.screen = 'shop'; T.sel = 0; }
+      else if (m === 'SYMBOLS') { T.screen = 'symbols'; T.sel = 0; }
+      else if (m === 'NEW ADVENTURE') { T.screen = 'confirm'; }
+      else { dsave(); go('launcher', 1); return; }
+    } else if (s === 'equipcats') { T.cat = T.sel; T.screen = 'equiplist'; T.sel = 0; SFX.sel(); }
+    else if (s === 'equiplist') { const list = owned(EQ_TYPE[T.cat]); if (list[T.sel]) { if (T.cat === 6) { useItem(list[T.sel][1]); T.sel = Math.min(T.sel, Math.max(0, owned('H').length - 1)); } else equip(list[T.sel][0], T.cat); } }
+    else if (s === 'inventory') { if (D.inv[T.sel] != null) { quickUse(T.sel); T.sel = Math.min(T.sel, Math.max(0, D.inv.length - 1)); } }
+    else if (s === 'shop') buy(T.sel);
+    else if (s === 'confirm') { SV.dnd = D = newDnd(); T.log = []; genRoom(false); log('DND BEGINS'); dsave(); T.screen = 'play'; SFX.ok(); }
+    this.refresh();
+  },
+};
+// Draw the room: glyph tiles, theme-tinted walls, tier-colored foes, aim arrows, hit marks
+function drawMap(now) {
+  const c = $('map');
+  if (!c) return;
+  const g = c.getContext('2d'), cw = 24, ch = 30;
+  g.fillStyle = '#010203'; g.fillRect(0, 0, c.width, c.height);
+  const hue = (D.theme * 37) % 360;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '30px VT323, monospace';
+  const glyph = (ch2, x, y, col, glow) => { g.fillStyle = col; g.shadowColor = col; g.shadowBlur = glow || 0; g.fillText(ch2, x * cw + cw / 2, y * ch + ch / 2 + 1); g.shadowBlur = 0; };
+  for (let y = 0; y < RH; y++) for (let x = 0; x < RW; x++) {
+    const t = T.map[y][x];
+    if (t === '#') {
+      g.fillStyle = 'hsl(' + hue + ',30%,16%)'; g.fillRect(x * cw, y * ch, cw, ch);
+      g.fillStyle = 'hsl(' + hue + ',35%,26%)'; g.fillRect(x * cw, y * ch, cw, 3);
+      g.fillStyle = 'hsl(' + hue + ',30%,11%)'; g.fillRect(x * cw, y * ch + ch - 3, cw, 3);
+    } else if (t === '.') { g.fillStyle = 'hsl(' + hue + ',25%,22%)'; g.fillRect(x * cw + cw / 2 - 1, y * ch + ch / 2 - 1, 2, 2); }
+    else if (t === '+') { g.fillStyle = 'rgba(255,217,61,.15)'; g.fillRect(x * cw, y * ch, cw, ch); glyph('+', x, y, '#FFD93D', 10); }
+    else if (t === 'c') glyph('c', x, y, '#e0a050', 6);
+    else if (t === '^') glyph('^', x, y, '#ff5a6a', 6);
+    else if (t === '$') glyph('$', x, y, '#FFD93D', 8);
+    else if (t === '!') glyph('!', x, y, '#FF4BCB', 8);
+    else if (t === 'w') glyph('w', x, y, '#9ff6ff', 8);
+  }
+  for (const e of T.enemies) {
+    glyph(e.glyph, e.x, e.y, TIER_COL[e.tier], 8);
+    g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(e.x * cw + 3, e.y * ch + ch - 4, cw - 6, 3);
+    g.fillStyle = TIER_COL[e.tier]; g.fillRect(e.x * cw + 3, e.y * ch + ch - 4, (cw - 6) * Math.max(0, e.hp) / e.maxHp, 3);
+  }
+  glyph('@', T.px, T.py, '#ffffff', 14);
+  if (now < T.armedUntil) {                     // aiming: arrows around you
+    g.globalAlpha = 0.5 + 0.5 * Math.sin(now / 60);
+    [['^', 0, -1], ['v', 0, 1], ['<', -1, 0], ['>', 1, 0]].forEach(([a, dx, dy]) => glyph(a, T.px + dx, T.py + dy, '#ffa04a', 6));
+    g.globalAlpha = 1;
+  }
+  T.flashes = T.flashes.filter(f => f.until > now);
+  for (const f of T.flashes) glyph('x', f.x, f.y, '#ff3040', 14);
+}
+function dndTick(now) {
+  if (!D || !T.loaded) return;
+  serviceEnemies(now);
+  drawMap(now);
+  if (T.dirty) VIEWS.dnd.refresh();
+  if (now - T.lastSave > 30000) dsave();        // 30-second checkpoint, like the box
+}
+
+// ---------------------------------------------------------------------
+// 6. BOX MODE: talk to the real ESP32 over Web Serial (Chrome / Edge)
+//    Same protocol as the Pi Mini: read BP|SCREEN mirror lines, send
+//    KEY UP/DOWN/LEFT/RIGHT/A/B, and hand over the time with SET HOSTTIME.
+// ---------------------------------------------------------------------
+const BOX = {
+  port: null, reader: null, connected: false, lines: ['', '', '', ''], cols: 16, fw: '', pet: '', log: [], timer: 0, timeAt: null, statusAt: 0,
+  supported: 'serial' in navigator,
+  note(s) { this.log.unshift(s); if (this.log.length > 80) this.log.length = 80; if (MODE === 'device') this.renderLog(); },
+  render() {
+    const sup = this.supported;
+    $('screen').innerHTML = '<div class="devwrap"><div class="h1 glow">YOUR BLOOMPETZ BOX</div>' +
+      (sup ? '' : '<div class="panel" style="color:var(--yellow)">This browser can\'t talk to USB devices. Web Serial works in Chrome or Edge on a computer. Everything else on this page still works.</div>') +
+      '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
+      (this.connected ? '<button class="btn sel" id="boxOff">DISCONNECT</button>' : '<button class="btn sel" id="boxOn"' + (sup ? '' : ' disabled') + '>CONNECT BOX</button>') +
+      '<button class="btn" id="boxBack">BACK TO BROWSER GAMES</button>' +
+      '<span class="dim" id="boxStatus">' + this.statusText() + '</span></div>' +
+      '<div class="devoled" id="boxOled">' + this.oledText() + '</div>' +
+      '<div class="hint">' + (this.connected ? 'Your arrows, A, B, the copper pads below and any gamepad now press the box\'s buttons. The box keeps its own saves; this page just mirrors its screen and sends the time once a minute so its clock is right.' : 'Plug the box in with USB, then CONNECT BOX and pick its port. Close the Pi Mini or anything else using the port first.') + '</div>' +
+      '<details class="panel"><summary class="dim">serial log</summary><div class="devlog" id="boxLog"></div></details></div>';
+    if ($('boxOn')) $('boxOn').onclick = () => this.connect();
+    if ($('boxOff')) $('boxOff').onclick = () => this.disconnect();
+    $('boxBack').onclick = () => setMode('play');
+    this.renderLog();
+  },
+  statusText() { return this.connected ? 'connected' + (this.fw ? ' &middot; fw ' + esc(this.fw) : '') + (this.pet ? ' &middot; ' + esc(this.pet) : '') + (this.timeAt ? ' &middot; time sent ' + this.timeAt.getHours() + ':' + String(this.timeAt.getMinutes()).padStart(2, '0') : '') : 'not connected'; },
+  oledText() { const w = this.cols; return this.lines.map(l => esc(l.padEnd(w).slice(0, w))).join('\n'); },
+  renderLog() { const el = $('boxLog'); if (el) el.textContent = this.log.join('\n'); },
+  refreshScreen() { const o = $('boxOled'); if (o) o.innerHTML = this.oledText(); const s = $('boxStatus'); if (s) s.innerHTML = this.statusText(); },
+  async connect() {
+    if (!this.supported) return;
+    try { const port = await navigator.serial.requestPort(); await this.open(port); }
+    catch (e) { this.note('no port opened: ' + (e && e.message ? e.message : e)); toast('no box connected'); }
+  },
+  async open(port) {
+    await port.open({ baudRate: 115200 });
+    // The Pi Mini opens with DTR/RTS low and never toggles them (that's what
+    // stopped the old second boot). Match it as closely as Web Serial allows.
+    try { await port.setSignals({ dataTerminalReady: false, requestToSend: false }); } catch (e) {}
+    this.port = port; this.connected = true; this.note('opened port at 115200');
+    this.readLoop();
+    await this.send('HELLO'); await this.send('GET SCREEN'); await this.send('GET STATUS');
+    await this.sendTime();
+    clearInterval(this.timer); this.timer = setInterval(() => this.sendTime(), 60000);   // refresh every 60s
+    setLeds('#00c850', '#00e5ff', 800); toast('box connected');
+    if (MODE === 'device') this.render();
+  },
+  async send(cmd) {
+    if (!this.port || !this.port.writable) return;
+    const w = this.port.writable.getWriter();
+    try { await w.write(new TextEncoder().encode(cmd + '\n')); this.note('> ' + cmd); }
+    catch (e) { this.note('write failed: ' + e.message); }
+    finally { w.releaseLock(); }
+  },
+  async sendTime() {                            // SET HOSTTIME <unix seconds> <utc offset minutes>
+    this.timeAt = new Date();
+    await this.send('SET HOSTTIME ' + Math.floor(Date.now() / 1000) + ' ' + (-new Date().getTimezoneOffset()));
+    this.refreshScreen();
+  },
+  async readLoop() {
+    const dec = new TextDecoder();
+    let buf = '';
+    while (this.port && this.port.readable) {
+      this.reader = this.port.readable.getReader();
+      try {
+        for (;;) {
+          const { value, done } = await this.reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          let i;
+          while ((i = buf.indexOf('\n')) >= 0) { const line = buf.slice(0, i).replace(/\r$/, ''); buf = buf.slice(i + 1); if (line) this.handle(line); }
+        }
+      } catch (e) { this.note('read stopped: ' + e.message); break; }
+      finally { try { this.reader.releaseLock(); } catch (e) {} }
+    }
+    this.closed();
+  },
+  handle(line) {
+    const m = line.match(/^BP\|SCREEN\|1=(.*)\|2=(.*)\|3=(.*)\|4=(.*)$/);
+    if (m) {
+      this.lines = [m[1], m[2], m[3], m[4]];
+      this.cols = this.lines.some(l => l.length > 16) ? 21 : 16;   // DND frames use the full 21 columns
+      this.refreshScreen();
+      const now = Date.now();
+      if (now - this.statusAt > 1500) { this.statusAt = now; this.send('GET STATUS'); }
+      return;
+    }
+    if (line.startsWith('BP|STATUS|')) {
+      const f = Object.fromEntries(line.split('|').slice(2).map(p => p.split('=')).filter(p => p.length === 2));
+      this.pet = f.occupied === '1' ? (f.name || '').trim() : 'no pet';
+      this.refreshScreen(); return;
+    }
+    if (line.startsWith('BP|IDENTITY|')) { const f = line.match(/fw=([^|]*)/); this.fw = f ? f[1] : ''; }
+    if (line.startsWith('BP|BOOT|')) { this.send('GET STATUS'); this.sendTime(); }
+    this.note(line);
+  },
+  async disconnect() {
+    clearInterval(this.timer);
+    try { if (this.reader) await this.reader.cancel(); } catch (e) {}
+    try { if (this.port) await this.port.close(); } catch (e) {}
+    this.closed();
+  },
+  closed() {
+    if (!this.connected && !this.port) return;
+    this.connected = false; this.port = null; clearInterval(this.timer); this.note('disconnected');
+    if (MODE === 'device') this.render();
+  },
+  key(k) {
+    if (this.connected) { this.send('KEY ' + k); return; }
+    if (k === 'A') this.connect();
+    if (k === 'B') setMode('play');
+  },
+};
+if (BOX.supported) navigator.serial.addEventListener('disconnect', e => { if (BOX.port && e.target === BOX.port) BOX.closed(); });
+
+// ---------------------------------------------------------------------
+// 7. MODE SWITCH, MAIN LOOP, BOOT
+// ---------------------------------------------------------------------
+function setMode(m) {
+  MODE = m;
+  $('tabPlay').classList.toggle('on', m === 'play');
+  $('tabDev').classList.toggle('on', m === 'device');
+  if (m === 'play' && UI.view === 'launcher') UI.sel = 0;
+  SFX.sel(); render();
+}
+$('tabPlay').onclick = () => { audioInit(); setMode('play'); };
+$('tabDev').onclick = () => { audioInit(); setMode('device'); };
+$('tabSnd').onclick = toggleSound;
+$('tabSnd').classList.toggle('on', SV.sound);
+function petsTick(now) {
+  const p = activePet();
+  if (PET.sub === 'slots') document.querySelectorAll('.slotcv').forEach(cv => { const sp = SV.pets[+cv.dataset.slot]; if (sp) drawPetCanvas(cv, sp, now, false); });
+  if (!p) return;
+  if (PET.sub === 'edit') {
+    const e = PET.edit;
+    drawPetCanvas($('editCv'), { id: e.creating ? (e.previewId || (e.previewId = (Math.random() * 4294967296) >>> 0)) : p.id, type: e.type, food: 100 }, now, true);
+    return;
+  }
+  drawPetCanvas($('petCv'), p, now, PET.sub === 'simon');
+  if (PET.sub !== 'home') return;
+  // sayings rotate every 10 seconds (the box's HOME ticker)
+  if (now > PET.bubbleUntil && PET.bubble) { PET.bubble = ''; const b = $('petBubble'); if (b) b.textContent = SAYINGS[PET.sayI]; }
+  if (now - PET.sayAt > 10000) { PET.sayAt = now; PET.sayI = (PET.sayI + 1) % SAYINGS.length; if (!PET.bubble) { const b = $('petBubble'); if (b) b.textContent = SAYINGS[PET.sayI]; } }
+  if (now - PET.tickAt > 4000) {                // live stat ticker
+    PET.tickAt = now;
+    const nz = p.stats.map((v, i) => [i, v]).filter(x => x[1] > 0);
+    const [i, v] = nz.length && rnd(3) ? pick(nz) : [rnd(200), 0];
+    PET.tick = p.name + '  ' + pretty(STAT_NAMES[i]) + ' ' + pct4(v || p.stats[i]);
+    const t = $('petTicker'); if (t) t.textContent = PET.tick;
+  }
+}
+let lastClock = 0;
+function frame(now) {
+  pollPad(now);
+  if (MODE === 'play') {
+    if (UI.view === 'pets') petsTick(now);
+    if (UI.view === 'dnd') dndTick(now);
+  }
+  if (now - lastClock > 1000) {
+    lastClock = now; $('clock').textContent = clockLine();
+    const p = activePet();
+    if (p && MODE === 'play' && UI.view === 'pets' && PET.sub === 'home' && p.lastDay !== dayKey()) { dailyReset(p); render(); }
+  }
+  requestAnimationFrame(frame);
+}
+addEventListener('visibilitychange', () => { if (document.hidden) { if (D) dsave(); save(); } });
+addEventListener('beforeunload', () => { if (D) SV.dnd = D; save(); });
+setLeds('#2a1040', '#102a40', 0);
+render();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

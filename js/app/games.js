@@ -64,6 +64,14 @@ export const GAMES = [
     thumb: '/games/form-27-b-6/art/thumb.jpg',
     tag: 'idle',
   },
+  {
+    id: 'bloomsys',
+    name: 'bloom system',
+    blurb: 'BloomPetz + DND from the Happy Jarz box. play here, or plug your box in over USB.',
+    href: '/games/bloom-system/',
+    thumb: '/games/bloom-system/art/thumb.jpg',
+    tag: 'usb',
+  },
 ];
 
 // ── STYLES ─────────────────────────────────────────────────
