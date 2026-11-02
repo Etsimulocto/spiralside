@@ -1157,6 +1157,11 @@ function drawScrollingSidewall(x, wallWidth, glyphs, color, side) {
   context.globalAlpha = 1;
 }
 
+// Width of the side walls as actually drawn on screen (narrow screens shrink them).
+function drawnWallWidth(width) {
+  return Math.min(roomSettings.wallWidth, Math.max(34, width * 0.16));
+}
+
 function getDeathWallHeight() {
   return deathWall.getBoundingClientRect().height || roomSettings.deathWallHeight;
 }
@@ -1446,7 +1451,7 @@ function draw() {
 
   if (color.glow) drawNeonGrid(width, height, color);     // faint scrolling grid
 
-  const wallWidth = Math.min(roomSettings.wallWidth, Math.max(34, width * 0.16));
+  const wallWidth = drawnWallWidth(width);
   drawScrollingSidewall(0, wallWidth, roomSettings.leftWallGlyphs, color, "left");
   drawScrollingSidewall(width - wallWidth, wallWidth, roomSettings.rightWallGlyphs, color, "right");
 
@@ -1805,7 +1810,7 @@ function update(time) {
       return obstacle.y < state.world.deathWallY - 12;
     });
     updateFallingBlocks(dt, width, scrollStep);
-    const wallMargin = Math.min(0.18, roomSettings.wallWidth / Math.max(width, 1) + 0.025);
+    const wallMargin = Math.min(0.3, (drawnWallWidth(width) + 11) / Math.max(width, 1));   // touch the wall, no invisible strip
     const minX = wallMargin, maxX = 1 - wallMargin;
     const minY = 0.08, maxY = Math.min(0.98, (state.world.deathWallY - 16) / height);
     state.numberHazards = state.numberHazards.filter(hazard => hazard.y < state.world.deathWallY + 50);
