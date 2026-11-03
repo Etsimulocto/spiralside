@@ -143,3 +143,7 @@
 }
 /* very narrow phones (iPhone SE size): tighter nav labels so they don't touch */
 @media(max-width:360px){.hud small{font-size:6px;letter-spacing:.04em}}
+/* Square product photos everywhere (photos are shot/edited at 1000x1000),
+   so nothing gets cropped on the grid. Overrides the 1.24 / 1.45 ratios above. */
+.product-photo{aspect-ratio:1 / 1}
+@media(max-width:600px){.product-photo{aspect-ratio:1 / 1}}
