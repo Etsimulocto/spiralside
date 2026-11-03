@@ -313,6 +313,31 @@
     }
     @media (max-width: 899px) { #header-utils { display: none; } }
 
+    /* ── MARKET header link (left side, beside the logo) ──
+       Same pill look as the gm/lab/games buttons, but pink so the shop stands out. */
+    #market-launch {
+      display:flex; align-items:center; gap:6px;
+      height:28px; padding:0 12px; border-radius:14px;
+      border:1px solid rgba(255,75,203,0.45); background:rgba(15,15,24,0.6);
+      color:var(--pink); text-decoration:none; cursor:pointer;
+      font-family:var(--font-ui); font-size:0.68rem; letter-spacing:0.08em;
+      transition:all 0.2s; position:relative; z-index:5; flex-shrink:0;
+    }
+    #market-launch:hover { color:var(--teal); border-color:var(--teal); }
+    /* desktop: pin to the header's far-left edge. (In normal flow it lands
+       mid-header, because the header spreads its items with space-between
+       and the decorative .header-glow counts as an item.) */
+    @media (min-width:900px){
+      /* "#app-header >" is needed to beat the header's own
+         "#app-header > *:not(#sky-canvas) { position:relative }" rule */
+      #app-header > a#market-launch { position:absolute; left:14px; top:50%; transform:translateY(-50%); }
+    }
+    /* phones: icon only, like the other header buttons */
+    @media (max-width:899px){
+      #market-launch .gm-launch-label { display:none; }
+      #market-launch { padding:0 9px; }
+    }
+
     /* ── GAME MAKER header launch ── */
     #gm-launch, #b3-launch, #lab-launch, #games-launch {
       display:flex; align-items:center; gap:6px;
@@ -1941,6 +1966,8 @@
   <div id="app-header">
     <canvas id="sky-canvas"></canvas>
     <div class="header-glow" id="header-glow"></div>
+    <!-- market: Bloomcore Market store (far left of header). Files in /market/ come from scripts/sync_market.py -->
+    <a id="market-launch" href="/market/" title="bloomcore market · shop">&#10035;&#xFE0E; <span class="gm-launch-label">market</span></a>
         <div class="header-logo-row">
         <div class="app-logo">spiralside</div><span class="beta-badge">BETA</span>
       </div>

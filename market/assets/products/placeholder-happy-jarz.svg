@@ -1,0 +1,24 @@
+<!-- Placeholder product photo for Happy Jarz listings, until real photos go up.
+     Bloomcore colors: lime #c8ff3d, cyan #54f5e8, pink #ff4fa3 on near-black. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <!-- dark panel background -->
+  <rect width="800" height="600" fill="#0b0e13"/>
+  <!-- faint grid, same as the store hero -->
+  <defs><pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M40 0H0V40" fill="none" stroke="#54f5e8" stroke-opacity=".08"/></pattern></defs>
+  <rect width="800" height="600" fill="url(#g)"/>
+  <!-- jar lid -->
+  <rect x="340" y="140" width="120" height="34" rx="6" fill="none" stroke="#ff4fa3" stroke-width="4"/>
+  <!-- jar body -->
+  <rect x="318" y="174" width="164" height="226" rx="34" fill="rgba(84,245,232,.05)" stroke="#54f5e8" stroke-width="4"/>
+  <!-- little things floating inside the jar -->
+  <circle cx="365" cy="300" r="14" fill="none" stroke="#c8ff3d" stroke-width="3"/>
+  <circle cx="420" cy="260" r="10" fill="none" stroke="#ff4fa3" stroke-width="3"/>
+  <circle cx="440" cy="340" r="16" fill="none" stroke="#54f5e8" stroke-width="3"/>
+  <circle cx="385" cy="360" r="9" fill="none" stroke="#ff4fa3" stroke-width="3"/>
+  <circle cx="400" cy="215" r="7" fill="none" stroke="#c8ff3d" stroke-width="3"/>
+  <!-- wooden stand under the jar -->
+  <path d="M280 400 H520 L500 440 H300 Z" fill="none" stroke="#c8ff3d" stroke-width="4" stroke-linejoin="round"/>
+  <!-- caption -->
+  <text x="400" y="500" text-anchor="middle" fill="#89939a" font-family="ui-monospace,monospace" font-size="20" letter-spacing="5">PHOTO COMING SOON</text>
+</svg>

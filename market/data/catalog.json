@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "HJ-PREVIEW",
+      "name": "Happy Jarz",
+      "type": "happy-jarz",
+      "kind": "unique",
+      "price": "",
+      "upc": "",
+      "quantity": 1,
+      "condition": "new",
+      "status": "preview",
+      "published": true,
+      "description": "Handmade Happy Jarz, each one its own little world. Every jar gets its own listing and photo; this batch is being photographed now.",
+      "checkoutUrl": "",
+      "image": "placeholder-happy-jarz.svg",
+      "imageAlt": "Placeholder drawing of a Happy Jarz jar on a wooden stand"
+    }
+  ]
+}
